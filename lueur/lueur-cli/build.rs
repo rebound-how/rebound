@@ -12,15 +12,15 @@ fn main() -> anyhow::Result<()> {
             "src/plugin/rpc",
         ])?;
 
-    let cargo_metadata::Metadata { packages, .. } =
-        cargo_metadata::MetadataCommand::new()
-            .no_deps()
-            .exec()
-            .context("MetadataCommand::exec")?;
-
     // Only build the eBPF package if we're on Linux.
     #[cfg(target_os = "linux")]
     {
+        let cargo_metadata::Metadata { packages, .. } =
+            cargo_metadata::MetadataCommand::new()
+                .no_deps()
+                .exec()
+                .context("MetadataCommand::exec")?;
+    
         let ebpf_package = packages
             .into_iter()
             .find(|cargo_metadata::Package { name, .. }| {
