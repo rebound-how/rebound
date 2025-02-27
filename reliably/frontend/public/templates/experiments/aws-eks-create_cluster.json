@@ -1,0 +1,106 @@
+{
+  "metadata": {
+    "name": "create_cluster",
+    "labels": [
+      "AWS",
+      "EKS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Cluster Name",
+          "key": "name",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Role ARN",
+          "key": "role_arn",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "VPC Config",
+          "key": "vpc_config",
+          "help": "",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        },
+        {
+          "title": "Version",
+          "key": "version",
+          "help": "",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Create a new EKS cluster",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "AWS",
+        "EKS"
+      ],
+      "configuration": {
+        "name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "role_arn": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ROLE_ARN",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "vpc_config": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_VPC_CONFIG",
+          "env_var_type": "json"
+        },
+        "version": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_VERSION",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "create-cluster",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.eks.actions",
+            "func": "create_cluster",
+            "arguments": {
+              "name": "${name}",
+              "role_arn": "${role_arn}",
+              "vpc_config": "${vpc_config}",
+              "version": "${version}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

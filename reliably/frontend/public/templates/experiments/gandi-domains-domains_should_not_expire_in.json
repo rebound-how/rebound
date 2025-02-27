@@ -1,0 +1,75 @@
+{
+  "metadata": {
+    "name": "domains_should_not_expire_in",
+    "labels": [
+      "Domains",
+      "Gandi"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Value",
+          "key": "value",
+          "help": null,
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "When",
+          "key": "when",
+          "help": null,
+          "placeholder": "",
+          "default": "1 month",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Go through the list of Gandi domains and fails if any expires before the given date threshold as a relative time to now",
+      "contributions": {},
+      "description": null,
+      "tags": [
+        "Domains",
+        "Gandi"
+      ],
+      "configuration": {
+        "value": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_VALUE",
+          "env_var_type": "json"
+        },
+        "when": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_WHEN",
+          "default": "1 month",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "domains-should-not-expire-in",
+          "type": "tolerance",
+          "provider": {
+            "type": "python",
+            "module": "chaosgandi.domains.tolerances",
+            "func": "domains_should_not_expire_in",
+            "arguments": {
+              "value": "${value}",
+              "when": "${when}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

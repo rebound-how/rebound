@@ -1,0 +1,30 @@
+.screen-reader-text {
+  border: 0;
+  clip: rect(1px, 1px, 1px, 1px);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+  word-wrap: normal !important;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.block-center {
+  display: block;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+ul.list-reset,
+ol.list-reset {
+  margin: 0;
+  padding: 0;
+
+  list-style-type: none;
+}

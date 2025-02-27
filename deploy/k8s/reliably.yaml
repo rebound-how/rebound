@@ -1,0 +1,286 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: reliably-app
+  labels:
+    app.kubernetes.io/name: reliably
+data:
+  reliably.env: |
+    ################################################################################
+    #    ____  ________    _______    ____  ____  __
+    #   / __ \/ ____/ /   /  _/   |  / __ )/ /\ \/ /
+    #  / /_/ / __/ / /    / // /| | / __  / /  \  / 
+    # / _, _/ /___/ /____/ // ___ |/ /_/ / /___/ /  
+    #/_/ |_/_____/_____/___/_/  |_/_____/_____/_/   
+    #
+    ###############################################################################
+
+
+    ###############################################################################
+    # Domain publicly serving the app without the scheme (e.g. my-domain.com)
+    ###############################################################################
+    RELIABLY_DOMAIN="<domain>"
+    # The hosts to use to call back from Reliably/Chaos Toolkit when they run
+    # By default this is set respectively to https://${RELIABLY_DOMAIN} and
+    # ${RELIABLY_DOMAIN}. But sometimes these need to be different, notably
+    # when running locally
+    # CLI_RELIABLY_SERVICE_HOST=<cli_service_host>
+    # CLI_RELIABLY_HOST=<cli_host>
+    # CLI_RELIABLY_VERIFY_TLS=
+
+    ###############################################################################
+    # Database settings
+    ###############################################################################
+    DATABASE_URL="postgresql+asyncpg://<dbuser>:<dbpassword>@<dbaddress>:<dbport>/<dbname>"
+    # if you need to communicate over TLS between the application and the db
+    #DATABASE_WITH_SSL="true"
+    #DATABASE_SSL_CLIENT_CERT_FILE="./my-client-cert"
+    #DATABASE_SSL_CLIENT_KEY_FILE="./my-client-key"
+    #DATABASE_SSL_SERVER_CA_FILE="./my-ca-server"
+    #DATABASE_HOSTADDR="IP:PORT"
+
+
+    ###############################################################################
+    # Logging settings
+    ###############################################################################
+    LOG_LEVEL="INFO"
+    LOG_FORMAT="plain"
+    APPLICATION_LOG_STDOUT="true"
+    ACCESS_LOG_STDOUT="true"
+    # one of "INFO", "DEBUG", "ERROR", "WARNING"
+    LOG_LEVEL="INFO"
+    APPLICATION_LOG_FILE_LEVEL="DEBUG"
+    ACCESS_LOG_LOG_LEVEL="INFO"
+    APPLICATION_LOG_FILE="./reliably.log"
+    ACCESS_LOG_FILE="./reliably_access.log"
+
+
+    ###############################################################################
+    # Secret encryption settings
+    ###############################################################################
+    # if you change this, all data already encrypted will be unrecoverable
+    # BE VERY CAREFUL!
+    # The encryption will take place within the application itself
+    # The key MUST be base64 URL-encoded string of length 32 exactly
+    CRYPTO_PROVIDER="cryptography"
+    CRYPTO_CRYPTOGRAPHY_SECRET_KEY="<db_secret_key>"
+
+
+    ###############################################################################
+    # HTTP session signing key
+    ###############################################################################
+    # if you change this, all sessions will be rendered invalid and users will
+    # have to log in again
+    SESSION_SECRET_KEY="<session_secret_key>"
+
+
+    ###############################################################################
+    # Local installation settings
+    ###############################################################################
+    # orgs to create automatically on startup
+    # all users will be automatically added to these orgs when they register
+    DEFAULT_ORGANIZATIONS=["<defaultorg>"]
+    DEPLOYMENT_STRATEGY="local"
+    ENVIRONMENT_STORE_STRATEGY="local"
+
+    ###############################################################################
+    # Feature flags
+    ###############################################################################
+    FEATURE_LOGIN_EMAIL="true"
+    FEATURE_CONTAINER_DEPLOYMENT="false"
+    FEATURE_CLOUD_DEPLOYMENT="false"
+    FEATURE_K8S_JOB_DEPLOYMENT="false"
+    FEATURE_NOTIFICATION_VIA_EMAIL="true"
+    FEATURE_NOTIFICATION_VIA_WEBHOOK="true"
+
+
+    ###############################################################################
+    # Job settings
+    ###############################################################################
+    JOB_CONTAINER_IMAGE="reliably/job:latest"
+
+
+    ###############################################################################
+    # Open Telemetry
+    ###############################################################################
+    OTEL_ENABLED="false"
+    OTEL_SERVICE_NAME="reliably"
+    #OTEL_EXPORTER_OTLP_ENDPOINT=
+    #OTEL_EXPORTER_OTLP_HEADERS=
+
+
+    ###############################################################################
+    # Oauth support
+    ###############################################################################
+    #OAUTH_GITHUB_ENABLED="false"
+    #OAUTH_GITHUB_CLIENT_ID=
+    #OAUTH_GITHUB_CLIENT_SECRET=
+
+    #OAUTH_GOOGLE_ENABLED="false"
+    #OAUTH_GOOGLE_CLIENT_ID=
+    #OAUTH_GOOGLE_CLIENT_SECRET=
+
+    #OAUTH_OKTA_ENABLED="false"
+    #OAUTH_OKTA_CLIENT_ID=
+    #OAUTH_OKTA_CLIENT_SECRET=
+    #OAUTH_OKTA_BASE_URL=
+
+
+    ###############################################################################
+    # AI assistant support
+    ###############################################################################
+    ASSISTANT_SCENARIO_ENABLED="true"
+    ASSISTANT_SCENARIO_MODEL="gpt-4o"
+    ASSISTANT_MAX_TOKENS=4096
+    #OPENAI_API_KEY=
+    #ASSISTANT_LIBRARY_FILE=
+
+
+
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: reliably-app
+  labels:
+    app.kubernetes.io/name: reliably
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: reliably
+  template:
+    metadata:
+      name: reliably-app
+      labels:
+        app.kubernetes.io/name: reliably
+    spec:
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: reliably
+      containers:
+      - image: localhost:32000/reliably/app
+        name: producer
+        volumeMounts:
+          - name: reliably-env
+            mountPath: /home/svc/.env
+            readOnly: true
+            subPath: env-file
+        ports:
+        - containerPort: 8090
+          protocol: TCP
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1000m"
+            memory: 512Mi
+          requests:
+            cpu: "100m"
+            memory: 64Mi
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8090
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8090
+          initialDelaySeconds: 5
+      volumes:
+        - name: reliably-env
+          configMap:
+            name: reliably-app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: reliably-app
+  labels:
+    app.kubernetes.io/name: reliably
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8090
+    targetPort: 8090
+  selector:
+    app.kubernetes.io/name: reliably
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: reliably-app
+  labels:
+    app.kubernetes.io/name: reliably
+spec:
+  rules:
+    - http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: reliably-app
+              port:
+                number: 8090
+
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  namespace: default
+  name: reliably-app
+  labels:
+    app.kubernetes.io/name: reliably
+automountServiceAccountToken: false
+
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  namespace: default
+  name: reliably-job
+  labels:
+    app.kubernetes.io/name: reliably-job
+automountServiceAccountToken: false
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: reliably-job
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: reliably-job
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: reliably-job
+subjects:
+  - kind: ServiceAccount
+    name: reliably-job
+    namespace: default

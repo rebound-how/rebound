@@ -1,0 +1,36 @@
+---
+import LoginPageLayout from "@/layouts/LoginPageLayout.astro";
+import RegistrationForm from "@/components/login/RegistrationForm.vue";
+import ReliablyLogo from "@/components/svg/ReliablyLogo.vue";
+---
+
+<LoginPageLayout
+  title="Register · Reliably"
+  description="Create your Reliably account to store and run your chaos engineering experiments, and measure their impact on your Service Level Objectives."
+>
+  <h1>
+    Welcome to <span class="screen-reader-text">Reliably</span>
+    <ReliablyLogo />
+  </h1>
+  <p class="preMessage">Please take a few seconds to complete your profile.</p>
+  <RegistrationForm client:load />
+  <p class="postMessage">
+    By registering, you agree to our terms of service and privacy policy
+  </p>
+</LoginPageLayout>
+
+<style lang="scss" scoped>
+  h1 {
+    svg {
+      height: 2.6rem;
+      vertical-align: -0.55rem;
+    }
+  }
+  p {
+    &.postMessage {
+      max-width: 30rem;
+
+      font-size: 1.4rem;
+    }
+  }
+</style>

@@ -1,0 +1,26 @@
+@font-face {
+    font-family: "<font>";
+    src: "...";
+  }
+
+.lueur-logo {
+  color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-clip: text;
+  /* 
+  background-image: url(https://media.istockphoto.com/id/1260295088/vector/seamless-pattern-with-tropical-leaves-on-a-blue-background-vector-graphics.webp?s=2048x2048&w=is&k=20&c=lGyxekbKsra7MHs9IUW3YrWDAl0eTL5NeH7tVImhWOk=);
+  */
+  background-image: conic-gradient(from 180deg at 50% 120%, #e85907, #eb5638, #f83fa4, #a87cff, #00c477, #b8b500, #daac00, #deab02);
+  background-size: contain;
+  color: transparent;
+  font-family: "Tilt Neon", serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-size: 160px;
+  font-style: normal;
+  font-variation-settings:
+    "XROT" 0,
+    "YROT" 0;
+}

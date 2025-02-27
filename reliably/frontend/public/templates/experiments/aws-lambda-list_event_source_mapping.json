@@ -1,0 +1,68 @@
+{
+  "metadata": {
+    "name": "list_event_source_mapping",
+    "labels": ["AWS", "Lambda"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Source",
+          "key": "source_arn",
+          "help": "ARN of the event source",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Function Name",
+          "key": "function_name",
+          "help": "",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "List event source mappings for the provided lambda function or ARN of the event source",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["AWS", "Lambda"],
+      "configuration": {
+        "source_arn": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_SOURCE_ARN",
+          "env_var_type": "str"
+        },
+        "function_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FUNCTION_NAME",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "list-event-source-mapping",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.awslambda.probes",
+            "func": "list_event_source_mapping",
+            "arguments": {
+              "source_arn": "${source_arn}",
+              "function_name": "${function_name}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

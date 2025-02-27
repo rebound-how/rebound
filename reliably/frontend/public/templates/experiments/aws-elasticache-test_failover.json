@@ -1,0 +1,76 @@
+{
+  "metadata": {
+    "name": "test_failover",
+    "labels": [
+      "ElastiCache",
+      "AWS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Replication Group ID",
+          "key": "replication_group_id",
+          "help": "Group/cluster targetted",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Node Group ID",
+          "key": "node_group_id",
+          "help": "Node group/shard within the replication group",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Tests automatic failover on a single shard (also known as node groups)",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "ElastiCache",
+        "AWS"
+      ],
+      "configuration": {
+        "replication_group_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_REPLICATION_GROUP_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "node_group_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NODE_GROUP_ID",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "test-failover",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.elasticache.actions",
+            "func": "test_failover",
+            "arguments": {
+              "replication_group_id": "${replication_group_id}",
+              "node_group_id": "${node_group_id}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

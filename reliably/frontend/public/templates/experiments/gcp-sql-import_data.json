@@ -1,0 +1,184 @@
+{
+  "metadata": {
+    "name": "import_data",
+    "labels": [
+      "SQL",
+      "Google Cloud"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Instance ID",
+          "key": "instance_id",
+          "help": "Cloud SQL instance identifier",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Storage URI",
+          "key": "storage_uri",
+          "help": "Cloud Storage URI of the SQL/CSV dump",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Database",
+          "key": "database",
+          "help": "Name of the database to import into",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Project ID",
+          "key": "project_id",
+          "help": "Google Cloud Project identifier",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Data File",
+          "key": "file_type",
+          "help": "Dump file type: sql, csv",
+          "placeholder": "",
+          "default": "sql",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Import User",
+          "key": "import_user",
+          "help": "Name of the user to import with",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Table",
+          "key": "table",
+          "help": "Name of the table to import",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Columns",
+          "key": "columns",
+          "help": "Which columns to import",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Wait Until Complete",
+          "key": "wait_until_complete",
+          "help": "Wait until operation has completed",
+          "placeholder": "",
+          "default": true,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Imports data into a Cloud SQL instance from a SQL dump or CSV file in Cloud Storage",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "SQL",
+        "Google Cloud"
+      ],
+      "configuration": {
+        "instance_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_INSTANCE_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "storage_uri": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_STORAGE_URI",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "database": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DATABASE",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "project_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PROJECT_ID",
+          "env_var_type": "str"
+        },
+        "file_type": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FILE_TYPE",
+          "default": "sql",
+          "env_var_type": "str"
+        },
+        "import_user": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_IMPORT_USER",
+          "env_var_type": "str"
+        },
+        "table": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TABLE",
+          "env_var_type": "str"
+        },
+        "columns": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_COLUMNS",
+          "env_var_type": "json"
+        },
+        "wait_until_complete": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_WAIT_UNTIL_COMPLETE",
+          "default": true,
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "import-data",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.sql.actions",
+            "func": "import_data",
+            "arguments": {
+              "instance_id": "${instance_id}",
+              "storage_uri": "${storage_uri}",
+              "database": "${database}",
+              "project_id": "${project_id}",
+              "file_type": "${file_type}",
+              "import_user": "${import_user}",
+              "table": "${table}",
+              "columns": "${columns}",
+              "wait_until_complete": "${wait_until_complete}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

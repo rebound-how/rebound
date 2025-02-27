@@ -1,0 +1,76 @@
+{
+  "metadata": {
+    "name": "put_function_concurrency",
+    "labels": [
+      "AWS",
+      "Lambda"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Function Name",
+          "key": "function_name",
+          "help": "Name of the function",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Concurrency",
+          "key": "concurrent_executions",
+          "help": "New execution concurrency set on the function",
+          "placeholder": "",
+          "default": "",
+          "type": "integer",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Throttles Lambda by setting reserved concurrency amount",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "AWS",
+        "Lambda"
+      ],
+      "configuration": {
+        "function_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FUNCTION_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "concurrent_executions": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CONCURRENT_EXECUTIONS",
+          "default": "",
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "put-function-concurrency",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.awslambda.actions",
+            "func": "put_function_concurrency",
+            "arguments": {
+              "function_name": "${function_name}",
+              "concurrent_executions": "${concurrent_executions}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

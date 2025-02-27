@@ -1,0 +1,153 @@
+:root {
+  // Typography
+  --body-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --monospace-font: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+  --heading-font: Barlow, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Helvetica, Arial, sans-serif;
+  --base-font-size: 1.6rem;
+
+  --text-color: var(--grey-800);
+  --text-color-bright: var(--grey-900);
+  --text-color-dim: var(--grey-700);
+  --link-color: var(--pink-500);
+  --link-color-visited: var(--pink-600);
+  --button-color: var(--grey-800);
+
+  --inline-code-color: var(--pink-800);
+  --inline-code-border: var(--pink-200);
+  --inline-code-background: var(--pink-100);
+
+  // Brand
+  --accentColorPrimary: var(--yellow-500);
+  --accentColorSecondary: var(--pink-500);
+
+  // Status
+  --statusColor-ok: var(--green-500);
+  --statusColor-ok-bright: var(--green-600);
+  --statusColor-ok-dim: var(--green-300);
+  --statusColor-warning: var(--sand-500);
+  --statusColor-warning-bright: var(--sand-600);
+  --statusColor-warning-dim: var(--sand-300);
+  --statusColor-ko: var(--red-500);
+  --statusColor-ko-bright: var(--red-700);
+  --statusColor-ko-dim: var(--red-300);
+  --statusColor-danger: var(--purple-500);
+  --statusColor-never: var(--grey-700);
+
+  // Layout
+  --max-width: 132rem;
+
+  // Vertical Rythm
+  --space-small: 1.6rem;
+  --space-medium: 3rem;
+  --space-large: 6rem;
+
+  // Border radiuses
+  --border-radius-s: 0.4rem;
+  --border-radius-m: 0.6rem;
+  --border-radius-l: 1rem;
+
+  // Section
+  --section-background: var(--grey-100);
+  --section-separator-color: var(--grey-300);
+
+  // Tables
+  --table-background: var(--grey-100);
+  --table-header-color: var(--grey-200);
+  --table-separator-color: var(--section-separator-color);
+
+  // Organization Switcher
+  --switcher-summary-background: var(--grey-200);
+  --switcher-summary-background-hover: var(--grey-300);
+  --switcher-background: var(--grey-100);
+  --switcher-border-color: var(--gray-300);
+  --switcher-button-hover: var(--grey-200);
+  --current-organization-background: var(--statusColor-ok);
+  --current-organization-text: white;
+
+  // Sidebar
+  --sidebar-link-active: var(--grey-100);
+  --sidebar-link-active-pill: var(--pink-500);
+  --sidebar-link-hover: var(--grey-200);
+
+  // Buttons
+  --button-primary-background: var(--pink-500);
+  --button-primary-background-hover: var(--pink-600);
+  --button-primary-text: white;
+  --button-secondary-background: var(--yellow-500);
+  --button-secondary-background-hover: var(--yellow-600);
+  --button-secondary-text: var(--yellow-900);
+  --button-tertiary-background: var(--pink-200);
+  --button-tertiary-background-hover: var(--pink-300);
+  --button-tertiary-text: var(--pink-800);
+  --button-destructive-background: var(--statusColor-ko);
+  --button-destructive-background-hover: var(--statusColor-ko-bright);
+  --button-destructive-text: white;
+  --button-destructive-light-background: var(--grey-200);
+  --button-destructive-light-text: var(--statusColor-ko);
+  --button-creative-background: var(--statusColor-ok);
+  --button-creative-background-hover: var(--statusColor-ok-bright);
+  --button-creative-text: white;
+  --button-ghost-background: transparent;
+  --button-ghost-background-hover: hsla(220, 27.27%, 97.84%, 0.9);
+  --button-ghost-text: var(--text-color);
+  --button-light-background: var(--grey-200);
+  --button-light-background-hover: var(--grey-400);
+  --button-light-text: var(--text-color-bright);
+  --button-icon-background: var(--grey-200);
+  --button-icon-background-hover: var(--grey-500);
+
+  // Tags
+  --tag-background: var(--pink-100);
+  --tag-text-color: var(--pink-800);
+
+  // Pills (probes, extensions, controls, etc.)
+  --pill-background: var(--grey-200);
+  --pill-background-hover: var(--grey-400);
+
+  --probe-tolerance-background: var(--yellow-300);
+  --probe-tolerance-text: var(--yellow-800);
+
+  --experiment-method-action-background: var(--pink-100);
+  --experiment-method-action-text: var(--pink-500);
+  --experiment-method-probe-background: var(--green-100);
+  --experiment-method-probe-text: var(--green-500);
+  --experiment-method-background-background: var(--blue-100);
+  --experiment-method-background-text: var(--blue-500);
+
+  // Modal
+  --modal-background: rgba(255, 255, 255, 0.8);
+  --modal-content-background: white;
+  --modal-header-background: var(--yellow-500);
+  --modal-close-background: var(--yellow-600);
+
+  // JSON Viewer
+  --lang-switcher-label: transparent;
+  --lang-switcher-label-active: var(--grey-200);
+  --lang-switcher-label-hover: var(--grey-300);
+
+  // Forms
+  --form-input-background: white;
+  --form-input-background-disabled: var(--grey-100);
+  --form-input-border: var(--grey-300);
+  --form-input-focus: var(--pink-500);
+  --form-legend-color: var(--pink-500);
+
+  // infoBox
+  --infoxBox-background: var(--grey-900);
+  --infoxBox-color: var(--grey-100);
+
+  // Experiment Page
+  --workflow-arrow-color: var(--grey-600);
+  --workflow-arrow-spacing: 0.6rem;
+
+  // Login
+  --github-background: rgb(36, 41, 47);
+  --github-color: white;
+  --google-background: white;
+
+  // Profile
+  --profile-picture-border: var(--grey-200);
+  --token-response-background: var(--grey-100);
+}

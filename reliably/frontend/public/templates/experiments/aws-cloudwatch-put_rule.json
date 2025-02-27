@@ -1,0 +1,135 @@
+{
+  "metadata": {
+    "name": "put_rule",
+    "labels": [
+      "CloudWatch",
+      "AWS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Rule Name",
+          "key": "rule_name",
+          "help": "Name of the rule to remove",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Schedule Expression",
+          "key": "schedule_expression",
+          "help": "",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Event Pattern",
+          "key": "event_pattern",
+          "help": "",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "State",
+          "key": "state",
+          "help": "",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Description",
+          "key": "description",
+          "help": "",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Role ARN",
+          "key": "role_arn",
+          "help": "",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Creates or updates a CloudWatch event rule",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "CloudWatch",
+        "AWS"
+      ],
+      "configuration": {
+        "rule_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_RULE_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "schedule_expression": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_SCHEDULE_EXPRESSION",
+          "env_var_type": "str"
+        },
+        "event_pattern": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_EVENT_PATTERN",
+          "env_var_type": "str"
+        },
+        "state": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_STATE",
+          "env_var_type": "str"
+        },
+        "description": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DESCRIPTION",
+          "env_var_type": "str"
+        },
+        "role_arn": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ROLE_ARN",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "put-rule",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.cloudwatch.actions",
+            "func": "put_rule",
+            "arguments": {
+              "rule_name": "${rule_name}",
+              "schedule_expression": "${schedule_expression}",
+              "event_pattern": "${event_pattern}",
+              "state": "${state}",
+              "description": "${description}",
+              "role_arn": "${role_arn}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

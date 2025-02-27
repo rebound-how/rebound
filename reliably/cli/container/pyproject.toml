@@ -1,0 +1,48 @@
+[project]
+name = "reliably-cli-container"
+version = "0.1.0"
+description = "Reliably CLI container"
+authors = [
+    {name = "Sylvain Hellegouarch", email = "sylvain@reliably.com"},
+]
+dependencies = [
+    "chaostoolkit>=1.16.0",
+    "chaostoolkit-lib>=1.41.0",
+    "chaostoolkit-aws>=0.26.0",
+    "chaostoolkit-kubernetes>=0.34.1",
+    "chaostoolkit-google-cloud-platform>=0.14.1",
+    "chaostoolkit-prometheus>=0.6.0",
+    "chaostoolkit-opentracing>=0.14.0",
+    "chaostoolkit-wiremock>=0.1.2",
+    "chaostoolkit-gandi>=0.2.0",
+    "chaostoolkit-dynatrace>=0.2.0",
+    "chaostoolkit-reliably>=0.73.0",
+    "chaostoolkit-addons>=0.9.0",
+    "chaostoolkit-grafana>=0.2.0",
+    "chaostoolkit-slack>=0.10.0",
+    "aws-az-failure-chaostoolkit>=0.1.10",
+    "opentelemetry-api>=1.21.0",
+    "opentelemetry-sdk>=1.21.0",
+    "opentelemetry-instrumentation-httpx>=0.42b0",
+    "opentelemetry-instrumentation-logging>=0.42b0",
+    "opentelemetry-exporter-otlp-proto-http>=1.21.0",
+    "opentelemetry-opentracing-shim>=0.42b0",
+    "opentelemetry-propagator-b3>=1.21.0",
+    "opentelemetry-semantic-conventions>=0.42b0",
+    "opentelemetry-exporter-gcp-trace>=1.6.0",
+    "opentelemetry-resourcedetector-gcp>=1.6.0a0",
+    "opentelemetry-propagator-gcp>=1.6.0",
+    "httpx[http2]>=0.25.1",
+    "jsonpath2>=0.4.5",
+    "reliably-cli>=0.24.0",
+    "chaostoolkit-azure>=0.16.0",
+    "chaostoolkit-honeycomb>=0.6.2",
+    "awscli>=1.30.4",
+]
+requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"

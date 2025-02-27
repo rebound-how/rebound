@@ -1,0 +1,76 @@
+{
+  "metadata": {
+    "name": "create_new_nodepool",
+    "labels": [
+      "Google Cloud",
+      "GKE"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Definition",
+          "key": "body",
+          "help": "Nodepool definition",
+          "placeholder": null,
+          "default": null,
+          "type": "object",
+          "required": true
+        },
+        {
+          "title": "Wait Until Complete",
+          "key": "wait_until_complete",
+          "help": "Wait until operation has completed",
+          "placeholder": null,
+          "default": true,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Create a new node pool in the given cluster/zone of the provided project",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Google Cloud",
+        "GKE"
+      ],
+      "configuration": {
+        "body": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_BODY",
+          "env_var_type": "json"
+        },
+        "wait_until_complete": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_WAIT_UNTIL_COMPLETE",
+          "default": true,
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "create-new-nodepool",
+          "type": "action",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.gke.nodepool.actions",
+            "func": "create_new_nodepool",
+            "arguments": {
+              "body": "${body}",
+              "wait_until_complete": "${wait_until_complete}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

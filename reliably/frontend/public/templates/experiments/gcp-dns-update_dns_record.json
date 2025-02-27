@@ -1,0 +1,173 @@
+{
+  "metadata": {
+    "name": "update_dns_record",
+    "labels": [
+      "DNS",
+      "Google Cloud"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Project Identifier",
+          "key": "project_id",
+          "help": "Project identifier where the record resides",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Zone Name",
+          "key": "zone_name",
+          "help": "DNS zone name",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Name",
+          "key": "name",
+          "help": "Record name",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "IP Address",
+          "key": "ip_address",
+          "help": "New IP address",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Kind",
+          "key": "kind",
+          "help": "Kind of record",
+          "placeholder": null,
+          "default": "dns#resourceRecordSet",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Wait Until Complete",
+          "key": "ttl",
+          "help": "TTL operation has completed",
+          "placeholder": null,
+          "default": 5,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Record Type",
+          "key": "record_type",
+          "help": "Record type",
+          "placeholder": null,
+          "default": "A",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Existing Type",
+          "key": "existing_type",
+          "help": "Current record type",
+          "placeholder": null,
+          "default": "A",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Update DNS records",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "DNS",
+        "Google Cloud"
+      ],
+      "configuration": {
+        "project_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PROJECT_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "zone_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ZONE_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "ip_address": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_IP_ADDRESS",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "kind": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_KIND",
+          "default": "dns#resourceRecordSet",
+          "env_var_type": "str"
+        },
+        "ttl": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TTL",
+          "default": 5,
+          "env_var_type": "int"
+        },
+        "record_type": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_RECORD_TYPE",
+          "default": "A",
+          "env_var_type": "str"
+        },
+        "existing_type": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_EXISTING_TYPE",
+          "default": "A",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "update-dns-record",
+          "type": "action",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.dns.actions",
+            "func": "update_dns_record",
+            "arguments": {
+              "project_id": "${project_id}",
+              "zone_name": "${zone_name}",
+              "name": "${name}",
+              "ip_address": "${ip_address}",
+              "kind": "${kind}",
+              "ttl": "${ttl}",
+              "record_type": "${record_type}",
+              "existing_type": "${existing_type}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

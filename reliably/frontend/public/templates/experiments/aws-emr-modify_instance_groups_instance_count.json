@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "name": "modify_instance_groups_instance_count",
+    "labels": [
+      "EMR",
+      "AWS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Cluster ID",
+          "key": "cluster_id",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Group ID",
+          "key": "group_id",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Group Size",
+          "key": "instance_count",
+          "help": "Target size for the instance group",
+          "placeholder": "",
+          "default": "",
+          "type": "integer",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Modify the number of instances in an instance group",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "EMR",
+        "AWS"
+      ],
+      "configuration": {
+        "cluster_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CLUSTER_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "group_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_GROUP_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "instance_count": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_INSTANCE_COUNT",
+          "default": "",
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "modify-instance-groups-instance-count",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.emr.actions",
+            "func": "modify_instance_groups_instance_count",
+            "arguments": {
+              "cluster_id": "${cluster_id}",
+              "group_id": "${group_id}",
+              "instance_count": "${instance_count}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

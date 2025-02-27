@@ -1,0 +1,54 @@
+{
+  "metadata": {
+    "name": "get_experiment",
+    "labels": ["AWS", "Fault Injection Simulator"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Experiment ID",
+          "key": "experiment_id",
+          "help": "FIS experiment identifier",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Gets information about the specified experiment",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["AWS", "Fault Injection Simulator"],
+      "configuration": {
+        "experiment_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_EXPERIMENT_ID",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-experiment",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.fis.probes",
+            "func": "get_experiment",
+            "arguments": {
+              "experiment_id": "${experiment_id}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

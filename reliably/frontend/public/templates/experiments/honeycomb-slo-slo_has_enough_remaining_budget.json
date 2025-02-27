@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "name": "slo_has_enough_remaining_budget",
+    "labels": [
+      "SLO",
+      "Honeycomb"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Dataset",
+          "key": "dataset_slug",
+          "help": "Dataset slug",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "SLO Identifier",
+          "key": "slo_id",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Remaining Budget",
+          "key": "min_budget",
+          "help": "A number representing how much budget left should exist still",
+          "placeholder": "",
+          "default": 1.0,
+          "type": "float",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Verifies that an SLO has enough error budget left",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "SLO",
+        "Honeycomb"
+      ],
+      "configuration": {
+        "dataset_slug": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DATASET_SLUG",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "slo_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_SLO_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "min_budget": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_MIN_BUDGET",
+          "default": 1.0,
+          "env_var_type": "float"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "slo-has-enough-remaining-budget",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaoshoneycomb.slo.probes",
+            "func": "slo_has_enough_remaining_budget",
+            "arguments": {
+              "dataset_slug": "${dataset_slug}",
+              "slo_id": "${slo_id}",
+              "min_budget": "${min_budget}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

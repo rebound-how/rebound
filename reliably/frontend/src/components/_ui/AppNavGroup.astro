@@ -1,0 +1,43 @@
+---
+import AppNavLink from "@/components/_ui/AppNavLink.astro";
+import type { NavLink } from "@/types/ui-types";
+// import { removeTrailingSlash } from "@/utils/strings";
+
+export interface Props {
+  group: NavLink[];
+}
+
+const { group } = Astro.props;
+---
+
+<ul class="appNavGroup">
+  {group.map((link) => <AppNavLink link={link} />)}
+</ul>
+
+<style lang="scss" scoped>
+  .appNavGroup {
+    position: relative;
+
+    display: flex;
+    gap: var(--space-small);
+    margin: 0;
+    padding: .4rem var(--space-small);
+
+    list-style-type: none;
+  }
+
+  .appNavGroup + .appNavGroup {
+    &::before {
+      content: "";
+
+      position: absolute;
+      left: 0;
+
+      display: block;
+      height: 3.5rem;
+      width: .1rem;
+
+      background-color: var(--grey-600);
+    }
+  }
+</style>

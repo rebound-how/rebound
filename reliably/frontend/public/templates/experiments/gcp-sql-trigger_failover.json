@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "name": "trigger_failover",
+    "labels": [
+      "SQL",
+      "Google Cloud"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Instance ID",
+          "key": "instance_id",
+          "help": "Cloud SQL instance identifier to failover",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Wait Until Complete",
+          "key": "wait_until_complete",
+          "help": "Wait until operation has completed",
+          "placeholder": "",
+          "default": true,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Version",
+          "key": "settings_version",
+          "help": "Current settings version of the instance",
+          "placeholder": "",
+          "type": "integer",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Causes a high-availability Cloud SQL instance to failover",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "SQL",
+        "Google Cloud"
+      ],
+      "configuration": {
+        "instance_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_INSTANCE_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "wait_until_complete": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_WAIT_UNTIL_COMPLETE",
+          "default": true,
+          "env_var_type": "bool"
+        },
+        "settings_version": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_SETTINGS_VERSION",
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "trigger-failover",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.sql.actions",
+            "func": "trigger_failover",
+            "arguments": {
+              "instance_id": "${instance_id}",
+              "wait_until_complete": "${wait_until_complete}",
+              "settings_version": "${settings_version}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

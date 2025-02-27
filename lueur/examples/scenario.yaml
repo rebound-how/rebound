@@ -1,0 +1,79 @@
+---
+title: "Latency Increase By 30ms Steps From Downstream"
+description: ""
+scenarios:
+  - call:
+      method: GET
+      url: http://localhost:7070/ping
+    context:
+      upstreams:
+        - https://postman-echo.com
+      faults:
+        - type: latency
+          mean: 80
+          stddev: 5
+          direction: ingress
+          side: client
+      strategy:
+        mode: Repeat
+        step: 30
+        count: 3
+        add_baseline_call: true
+    expect:
+      status: 200
+      response_time_under: 490
+
+---
+title: "Within Allowed Latency While Bandwidth At 5 bytes/second"
+description: ""
+scenarios:
+  - call:
+      method: POST
+      url: http://localhost:7070/uppercase
+      headers:
+        "Content-Type": "application/json"
+      body: '{"content": "hello"}'
+    context:
+      upstreams:
+        - http://localhost:7070
+      faults:
+        - type: bandwidth
+          rate: 5
+          unit: Bps
+          direction: ingress
+    expect:
+      response_time_under: 8
+
+---
+title: "Circuit Breaker Takes Care of 404"
+description: ""
+scenarios:
+  - call:
+      method: GET
+      url: http://localhost:7070/ping/myself
+    context:
+      upstreams:
+        - http://127.0.0.1:7070
+      faults:
+        - type: httperror
+          status_code: 404
+          probability: 0.9
+    expect:
+      status: 200
+
+---
+title: "Packet loss has no impact on service performance"
+description: ""
+scenarios:
+  - call:
+      method: GET
+      url: http://localhost:7070/ping
+    context:
+      upstreams:
+        - https://postman-echo.com
+      faults:
+        - type: packetloss
+          direction: ingress
+          side: client
+    expect:
+      status: 200

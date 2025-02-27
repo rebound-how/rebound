@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "name": "desired_equals_healthy_tags",
+    "labels": ["AWS", "ASG"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "ASG Tags",
+          "key": "tags",
+          "help": "List of AWS tags for to identify ASG by tags",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Returns if desired number matches the number of healthy instances for each of the auto-scaling groups matching tags provided",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["AWS", "ASG"],
+      "configuration": {
+        "tags": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TAGS",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "desired-equals-healthy-tags",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.asg.probes",
+            "func": "desired_equals_healthy_tags",
+            "arguments": {
+              "tags": "${tags}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

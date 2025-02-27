@@ -1,0 +1,77 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { Icon } from 'astro-icon/components';
+import DashboardStartNow from "@/components/dashboard/DashboardStartNow.vue";
+import PeriodMetrics from "@/components/charts/PeriodMetrics.vue";
+import DashboardContributions from "@/components/dashboard/DashboardContributions.vue";
+import MetricsImpactScatter from "@/components/charts/MetricsImpactScatter.vue";
+import MetricsFreshnessBubble from "@/components/charts/MetricsFreshnessBubble.vue";
+import AsyncExecutionsMatrix from "@/components/charts/AsyncExecutionsMatrix.vue";
+import DashboardActions from "@/components/_ui/DashboardActions.vue";
+import URLParametersHandler from "@/components/_ui/URLParametersHandler.vue";
+---
+
+<BaseLayout
+  title="Reliably Dashboard"
+  description="This is the Reliably dashboard"
+>
+  <div class="container">
+    <div class="dashboard">
+      <DashboardStartNow client:load />
+      <section class="dashboardItem">
+        <h2>
+          Executions trends
+          <span
+            class="hasTooltip hasTooltip--bottom-right"
+            aria-label="Deleted executions are not counted. Drag to view older data."
+          >
+            <Icon name="help-circle" />
+          </span>
+        </h2>
+        <PeriodMetrics client:load />
+      </section>
+      <section class="dashboardItem">
+        <h2>Contributions</h2>
+        <DashboardContributions client:load />
+      </section>
+      <DashboardActions client:load />
+      <section class="dashboardItem dashboardItem--medium">
+        <h2>
+          Activity
+          <span
+            class="hasTooltip hasTooltip--top-right"
+            aria-label="Each activity that benefits your resilience efforts awards you points: creating an experiment or a plan, running an experiment, etc."
+          >
+            <Icon name="help-circle" />
+          </span>
+        </h2>
+        <AsyncExecutionsMatrix client:load />
+      </section>
+      <section class="dashboardItem dashboardItem--medium">
+        <h2>
+          Impact
+          <span
+            class="hasTooltip hasTooltip--bottom-right"
+            aria-label="This chart shows of often executions and plans are run, and how often they deviate."
+          >
+            <Icon name="help-circle" />
+          </span>
+        </h2>
+        <MetricsImpactScatter client:load />
+      </section>
+      <section class="dashboardItem dashboardItem--medium">
+        <h2>
+          Scores
+          <span
+            class="hasTooltip hasTooltip--bottom-right"
+            aria-label="Your score is computed from the number of deviated executions against the total number of finished executions. The freshness represent how recently your experiment was last run. Fresher executions are more relevant than older ones."
+          >
+            <Icon name="help-circle" />
+          </span>
+        </h2>
+        <MetricsFreshnessBubble client:load />
+      </section>
+    </div>
+    <URLParametersHandler client:load />
+  </div>
+</BaseLayout>

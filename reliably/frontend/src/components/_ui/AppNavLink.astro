@@ -1,0 +1,97 @@
+---
+import type { NavLink } from "@/types/ui-types";
+import { removeTrailingSlash } from "@/utils/strings";
+
+export interface Props {
+  link: NavLink;
+}
+
+const { link } = Astro.props;
+
+const currentPath = Astro.url.pathname;
+const isHeaderLinkActive = () => {
+  if (link.path === "/") {
+    return currentPath === "/" ? "page" : false;
+  } else if (link.path === "/experiments/") {
+    return currentPath.startsWith(removeTrailingSlash(link.path)) &&
+      (!currentPath.startsWith("/experiments/custom-templates") && !currentPath.startsWith("/experiments/workflows"))
+      ? "page"
+      : false;
+  } else {
+    return currentPath.startsWith(removeTrailingSlash(link.path))
+      ? "page"
+      : false;
+  }
+};
+---
+  <li>
+  <a
+    href={link.path}
+    class="appNavLink"
+    data-before={link.label}
+    aria-current={isHeaderLinkActive()}
+  >
+    {link.label}
+  </a>
+</li>
+
+<style lang="scss" scoped>
+  .appNavLink {
+    position: relative;
+
+    display: inline-block;
+    padding: 0.4rem 0.6rem 0.6rem;
+
+    border-radius: var(--border-radius-s);
+
+    color: var(--text-color);
+    text-decoration: none;
+
+    &::before {
+      content: attr(data-before);
+
+      display: block;
+      height: 1px;
+      overflow: hidden;
+
+      color: transparent;
+      font-weight: 500;
+
+      visibility: hidden;
+    }
+
+    &::after {
+      content: "";
+
+      position: absolute;
+      left: 0;
+      top: calc(100% + 1rem);
+
+      display: block;
+      height: 0.2rem;
+      width: 100%;
+
+      background-color: transparent;
+    }
+
+    &:hover,
+    &:visited {
+      color: var(--text-color);
+    }
+
+    &:hover {
+      background-color: var(--grey-300);
+
+      text-decoration: none;
+    }
+
+    &[aria-current="page"] {
+      color: var(--text-color-bright);
+      font-weight: 500;
+
+      &::after {
+        background-color: var(--pink-500);
+      }
+    }
+  }
+</style>

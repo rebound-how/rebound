@@ -1,0 +1,194 @@
+---
+import { Icon } from 'astro-icon/components';
+import type { ExperimentStarter } from "@/types/ui-types";
+
+interface Props {
+  starter: ExperimentStarter;
+}
+
+const { starter } = Astro.props;
+
+let icon: string = starter.icon !== undefined ? starter.icon : "check-circle";
+---
+
+<article
+  class={starter.color
+    ? `experimentStarterCard experimentStarterCard--${starter.color}`
+    : "experimentStarterCard"}
+>
+  <div class="experimentStarterCard__wrapper">
+    <h3 class="experimentStarterCard__title">
+      <Icon class="experimentStarterCard__icon" name={icon} />
+      <a href={starter.url}>
+        {starter.title}
+      </a>
+    </h3>
+    <div class="experimentStarterCard__content">
+      <p class="experimentStarterCard__description">
+        {starter.description}
+      </p>
+      <p class="experimentStarterCard__tags">
+        {starter.tags.map((tag: string) => <span>{tag}</span>)}
+      </p>
+    </div>
+  </div>
+</article>
+
+<style lang="scss">
+  @use "../../styles/abstracts/mixins" as *;
+
+  .experimentStarterCard {
+    position: relative;
+
+    // display: flex;
+    // flex-direction: column;
+    height: 100%;
+
+    background-color: var(--grey-100);
+    border-radius: var(--border-radius-s);
+    cursor: pointer;
+
+    &__wrapper {
+      height: 40rem;
+      overflow: hidden;
+
+      border-radius: var(--border-radius-s);
+    }
+
+    &__title {
+      position: relative;
+
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-small);
+      justify-content: flex-start;
+      height: 100%;
+      margin-bottom: 0;
+      padding: var(--space-medium) var(--space-small) var(--space-large);
+
+      background-color: var(--starterBackgroundColor);
+
+      color: var(--starterHeadingColor);
+
+      transition: all 0.3s ease-in-out;
+
+      a {
+        font-size: 4.8rem;
+        text-decoration: none;
+
+        transition: font-size 0.3s ease-in-out;
+
+        &,
+        &:visited {
+          color: inherit;
+        }
+      }
+    }
+
+    &__icon {
+      position: absolute;
+      top: var(--space-small);
+      right: var(--space-small);
+      height: 2.4rem;
+
+      transition: transform 0.3s ease-in-out;
+    }
+
+    &__content {
+      display: flex;
+      flex: 1 0 auto;
+      flex-direction: column;
+      padding: var(--space-small);
+    }
+
+    &__tags {
+      position: absolute;
+      bottom: var(--space-small);
+
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-small);
+      width: calc(100% - 2 * var(--space-small));
+      margin-top: auto;
+      margin-bottom: 0;
+
+      span {
+        // display: inline-block;
+        padding: 0.4rem 0.6rem;
+        background-color: var(--tagBackgroundColor);
+        border-radius: var(--border-radius-s);
+
+        color: var(--starterTextColor);
+        font-size: 1.6rem;
+
+        transition: all 0.1s ease-in-out 0.2s;
+      }
+    }
+
+    &::after {
+      @include shadow;
+
+      border-radius: var(--border-radius-s);
+      opacity: 0;
+
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    &--pink {
+      --starterBackgroundColor: var(--pink-500);
+      --tagBackgroundColor: var(--pink-600);
+      --starterHeadingColor: white;
+      --starterTextColor: white;
+    }
+
+    &--yellow {
+      --starterBackgroundColor: var(--yellow-500);
+      --tagBackgroundColor: var(--yellow-600);
+      --starterHeadingColor: var(--text-color-bright);
+      --starterTextColor: var(--text-color-bright);
+    }
+
+    &--darkBlue {
+      --starterBackgroundColor: var(--blue-900);
+      --tagBackgroundColor: var(--blue-800);
+      --starterHeadingColor: var(--blue-100);
+      --starterTextColor: var(--blue-200);
+    }
+
+    &--k8sBlue {
+      --starterBackgroundColor: #2e6de7;
+      --tagBackgroundColor: #104dc8;
+      --starterHeadingColor: white;
+      --starterTextColor: var(--blue-100);
+    }
+
+    &:hover {
+      // cursor: pointer;
+
+      // .experimentStarterCard__icon {
+      //   transform: scale(1.2);
+      // }
+      --tagBackgroundColor: var(--grey-300);
+      --starterTextColor: var(--text-color);
+
+      .experimentStarterCard__title {
+        height: 20rem;
+        padding: var(--space-small);
+
+        a {
+          font-size: 3.6rem;
+        }
+      }
+
+      .experimentStarterCard__tags {
+        span {
+          transition: all 0.25s ease-in-out 0.05s;
+        }
+      }
+
+      &::after {
+        opacity: 1;
+      }
+    }
+  }
+</style>

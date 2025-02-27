@@ -1,0 +1,21 @@
+{
+  "count": 1,
+  "items": [
+    {
+      "id": "5653c16d-1e17-44b4-9f12-2fea9b246749",
+      "title": "Losing an AZ should not impact availability"
+    },
+    {
+      "id": "5653c16d-1e17-44b4-9f12-2fea9b246750",
+      "title": "Losing an AY should not impact availability"
+    },
+    {
+      "id": "5653c16d-1e17-44b4-9f12-2fea9b246751",
+      "title": "Losing an AX should not impact availability"
+    },
+    {
+      "id": "5653c16d-1e17-44b4-9f12-2fea9b246752",
+      "title": "Losing an AW should not impact availability"
+    }
+  ]
+}

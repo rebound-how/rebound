@@ -1,0 +1,70 @@
+{
+  "metadata": {
+    "name": "get_proxy_attribute",
+    "labels": ["Proxy", "ToxiProxy"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Proxy Name",
+          "key": "proxy_name",
+          "help": "Name of the proxy",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Attribute",
+          "key": "attribute",
+          "help": "Name of the attribute to fetch a value for",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Returns an attribute of a specified proxy",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["Proxy", "ToxiProxy"],
+      "configuration": {
+        "proxy_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PROXY_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "attribute": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ATTRIBUTE",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-proxy-attribute",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaostoxi.proxy.probes",
+            "func": "get_proxy_attribute",
+            "arguments": {
+              "proxy_name": "${proxy_name}",
+              "attribute": "${attribute}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,116 @@
+[project]
+name = "reliably-cli"
+description = "Reliably CLI"
+dynamic = ["version"]
+authors = [
+    {name = "Sylvain Hellegouarch", email = "sylvain@reliably.com"},
+]
+requires-python = ">=3.12"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Development Status :: 5 - Production/Stable",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: System :: Monitoring",
+    "Topic :: Utilities"
+]
+dependencies = [
+    "httpx[http2]>=0.28.1",
+    "pydantic>=2.10.6",
+    "typer>=0.15.1",
+    "anyio[trio]>=4.8.0",
+    "ruamel-yaml>=0.18.10",
+    "rich>=13.9.4",
+    "chaostoolkit-addons>=0.11.0",
+    "chaostoolkit>=1.19.0",
+    "chaostoolkit-lib>=1.44.0",
+    "chaostoolkit-reliably>=0.79.0",
+    "msgspec>=0.19.0",
+    "pydantic-settings>=2.7.1"
+]
+
+[project.urls]
+Homepage = "https://reliably.com/"
+Repository = "https://github.com/rebound-how/reliably/cli"
+Documentation = "https://reliably.com/docs/cli/"
+Changelog = "https://github.com/rebound-how/reliably/cli/blob/main/CHANGELOG.md"
+
+[project.scripts]
+reliably = "reliably_cli.__main__:cli"
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.9.3",
+    "pytest>=8.3.4",
+    "coverage>=7.6.10",
+    "pytest-cov>=6.0.0",
+    "pytest-sugar>=1.0.0",
+    "rich>=13.9.4",
+    "respx>=0.22.0",
+    "pytest-asyncio>=0.25.3",
+]
+cleaner = [
+    "pyclean>=3.1.0",
+]
+chaostoolkit = [
+    "chaostoolkit-aws>=0.35.1",
+    "chaostoolkit-kubernetes>=0.39.0",
+    "chaostoolkit-google-cloud-platform>=0.37.0",
+    "chaostoolkit-prometheus>=0.6.0",
+    "chaostoolkit-opentracing>=0.17.0",
+    "chaostoolkit-dynatrace>=0.2.0",
+    "chaostoolkit-grafana>=0.2.0",
+    "chaostoolkit-slack>=0.10.0",
+    "chaostoolkit-datadog>=0.3.1",
+    "jsonpath2>=0.4.5",
+]
+
+[build-system]
+requires = [
+    "pdm-backend",
+]
+build-backend = "pdm.backend"
+
+[tool]
+
+[tool.ruff]
+line-length = 80
+target-version = "py312"
+exclude = [
+    ".eggs",
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "build",
+    "dist",
+]
+
+[tool.ruff.lint]
+select = [
+    "F",
+    "E",
+    "W",
+]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["tests"]
+addopts = "-v -rxs --cov reliably_cli --cov-report term-missing:skip-covered -p no:warnings"
+
+[tool.pdm]
+version = { source = "scm" }
+
+[tool.pdm.scripts]
+lint = {composite = ["ruff check reliably_cli/"]}
+format = {composite = ["ruff check --fix reliably_cli/", "ruff format reliably_cli/"]}
+test = {cmd = "pytest"}
+clean = {cmd = "pyclean reliably_cli"}

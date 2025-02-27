@@ -1,0 +1,74 @@
+{
+  "metadata": {
+    "name": "set_subnets",
+    "labels": [
+      "AWS",
+      "ELBv2"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Load Balancer Names",
+          "key": "load_balancer_names",
+          "help": "",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        },
+        {
+          "title": "Subnet IDs",
+          "key": "subnet_ids",
+          "help": "List of subnet identifiers",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Changes the subnets for the specified application load balancer(s)",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "AWS",
+        "ELBv2"
+      ],
+      "configuration": {
+        "load_balancer_names": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LOAD_BALANCER_NAMES",
+          "env_var_type": "json"
+        },
+        "subnet_ids": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_SUBNET_IDS",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "set-subnets",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.elbv2.actions",
+            "func": "set_subnets",
+            "arguments": {
+              "load_balancer_names": "${load_balancer_names}",
+              "subnet_ids": "${subnet_ids}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

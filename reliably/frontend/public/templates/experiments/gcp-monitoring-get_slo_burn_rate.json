@@ -1,0 +1,108 @@
+{
+  "metadata": {
+    "name": "get_slo_burn_rate",
+    "labels": [
+      "Google Cloud",
+      "Monitoring"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Name",
+          "key": "name",
+          "help": "The full path to the SLO name such as projects/PROJECT_ID/services/SVC_NAME/serviceLevelObjectives/SLO_ID",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "End Window",
+          "key": "end_time",
+          "help": "",
+          "placeholder": "",
+          "default": "now",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Window Length",
+          "key": "window",
+          "help": "",
+          "placeholder": "",
+          "default": "5 minutes",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Loopback Period",
+          "key": "loopback_period",
+          "help": "Rate within which to compute number of bad requests",
+          "placeholder": "",
+          "default": "300s",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Answers the question, “How much of the error budget remained at the time of the measurement?”",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Google Cloud",
+        "Monitoring"
+      ],
+      "configuration": {
+        "name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "end_time": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_END_TIME",
+          "default": "now",
+          "env_var_type": "str"
+        },
+        "window": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_WINDOW",
+          "default": "5 minutes",
+          "env_var_type": "str"
+        },
+        "loopback_period": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LOOPBACK_PERIOD",
+          "default": "300s",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-slo-burn-rate",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.monitoring.probes",
+            "func": "get_slo_burn_rate",
+            "arguments": {
+              "name": "${name}",
+              "end_time": "${end_time}",
+              "window": "${window}",
+              "loopback_period": "${loopback_period}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

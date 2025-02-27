@@ -1,0 +1,77 @@
+{
+  "metadata": {
+    "name": "delete_nodepool",
+    "labels": [
+      "Google Cloud",
+      "GKE"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Node Pool Identifier",
+          "key": "node_pool_id",
+          "help": "Name of the nodepool to delete",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Wait Until Complete",
+          "key": "wait_until_complete",
+          "help": "Wait until operation has completed",
+          "placeholder": null,
+          "default": true,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Delete node pool from the given cluster/zone of the provided project",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Google Cloud",
+        "GKE"
+      ],
+      "configuration": {
+        "node_pool_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NODE_POOL_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "wait_until_complete": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_WAIT_UNTIL_COMPLETE",
+          "default": true,
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "delete-nodepool",
+          "type": "action",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.gke.nodepool.actions",
+            "func": "delete_nodepool",
+            "arguments": {
+              "node_pool_id": "${node_pool_id}",
+              "wait_until_complete": "${wait_until_complete}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

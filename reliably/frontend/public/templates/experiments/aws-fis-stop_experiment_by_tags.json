@@ -1,0 +1,61 @@
+{
+  "metadata": {
+    "name": "stop_experiments_by_tags",
+    "labels": [
+      "Fault Injection Simulator",
+      "AWS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Tags",
+          "key": "tags",
+          "help": "Comma separated list of tags used to identify experiments to stop",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Stops the experiments matching the given tags",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Fault Injection Simulator",
+        "AWS"
+      ],
+      "configuration": {
+        "tags": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TAGS",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "stop-experiments-by-tags",
+          "type": "action",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.fis.actions",
+            "func": "stop_experiments_by_tags",
+            "arguments": {
+              "tags": "${tags}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

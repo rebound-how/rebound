@@ -1,0 +1,188 @@
+{
+  "metadata": {
+    "name": "get_metrics",
+    "labels": [
+      "Monitoring",
+      "Google Cloud"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Type",
+          "key": "metric_type",
+          "help": "The metric type",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Metrics Labels Filter",
+          "key": "metric_labels_filters",
+          "help": "",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Resource Labels Filter",
+          "key": "resource_labels_filters",
+          "help": "",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "End Time",
+          "key": "end_time",
+          "help": "",
+          "placeholder": null,
+          "default": "now",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Window",
+          "key": "window",
+          "help": "",
+          "placeholder": null,
+          "default": "5 minutes",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Aligner",
+          "key": "aligner",
+          "help": "",
+          "placeholder": null,
+          "default": 0,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Aligner Minutes",
+          "key": "aligner_minutes",
+          "help": "",
+          "placeholder": null,
+          "default": 1,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Reducer",
+          "key": "reducer",
+          "help": "",
+          "placeholder": null,
+          "default": 0,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Reducer Group By",
+          "key": "reducer_group_by",
+          "help": "",
+          "placeholder": null,
+          "default": null,
+          "type": "object",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Fetch metrics from the Cloud Monitoring service",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Monitoring",
+        "Google Cloud"
+      ],
+      "configuration": {
+        "metric_type": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_METRIC_TYPE",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "metric_labels_filters": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_METRIC_LABELS_FILTERS",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "resource_labels_filters": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_RESOURCE_LABELS_FILTERS",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "end_time": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_END_TIME",
+          "default": "now",
+          "env_var_type": "str"
+        },
+        "window": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_WINDOW",
+          "default": "5 minutes",
+          "env_var_type": "str"
+        },
+        "aligner": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ALIGNER",
+          "default": 0,
+          "env_var_type": "int"
+        },
+        "aligner_minutes": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ALIGNER_MINUTES",
+          "default": 1,
+          "env_var_type": "int"
+        },
+        "reducer": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_REDUCER",
+          "default": 0,
+          "env_var_type": "int"
+        },
+        "reducer_group_by": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_REDUCER_GROUP_BY",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-metrics",
+          "type": "probe",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.monitoring.probes",
+            "func": "get_metrics",
+            "arguments": {
+              "metric_type": "${metric_type}",
+              "metric_labels_filters": "${metric_labels_filters}",
+              "resource_labels_filters": "${resource_labels_filters}",
+              "end_time": "${end_time}",
+              "window": "${window}",
+              "aligner": "${aligner}",
+              "aligner_minutes": "${aligner_minutes}",
+              "reducer": "${reducer}",
+              "reducer_group_by": "${reducer_group_by}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

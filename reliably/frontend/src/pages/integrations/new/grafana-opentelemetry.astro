@@ -1,0 +1,33 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import GrafanaIntegrationForm from "@/components/integrations/forms/GrafanaIntegrationForm.vue";
+---
+
+<BaseLayout
+  title="Grafana OpenTelemetry integration · Reliably"
+  description="Send your executions OpenTelemetry traces to Grafana"
+>
+  <div class="container">
+    <PageHeader
+      title="Grafana OpenTelemetry integration"
+      icon="grafana-tempo-logo"
+    />
+    <section class="newIntegration">
+      <p class="newIntegration__intro">
+        Fill the form with the requested information, to create an integration
+        that you can then use in your plans.
+      </p>
+      <section class="newIntegration__form">
+        <div class="newIntegration__info">
+          <div
+            class="newIntegration__infoWrapper newIntegration__infoWrapper--opentelemetry"
+          >
+            <p>Send executions traces to Grafana.</p>
+          </div>
+        </div>
+        <GrafanaIntegrationForm client:load />
+      </section>
+    </section>
+  </div>
+</BaseLayout>

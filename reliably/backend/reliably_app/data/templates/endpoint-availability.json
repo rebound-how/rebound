@@ -1,0 +1,58 @@
+{
+    "metadata": {
+        "name": "Verify service availability",
+        "labels": [
+            "availability"
+        ]
+    },
+    "spec": {
+        "provider": "chaostoolkit",
+        "type": "experiment",
+        "schema": {
+            "configuration": [
+                {
+                    "title": "Target URL",
+                    "help": "Endpoint you wish to verify the availability",
+                    "placeholder": "https://example.com",
+                    "default": null,
+                    "type": "string",
+                    "required": true,
+                    "key": "url"
+                }
+            ]
+        },
+        "template": {
+            "title": "Endpoint Is Available",
+            "method": [],
+            "version": "1.0.0",
+            "rollbacks": [],
+            "description": "Check our users can reach the given url.",
+            "configuration": {
+                "url": {
+                    "key": "RELIABLY_PARAM_TARGET_URL",
+                    "type": "env"
+                }
+            },
+            "contributions": {
+                "errors": "high",
+                "latency": "none",
+                "security": "none",
+                "availability": "high"
+            },
+            "steady-state-hypothesis": {
+                "title": "URL is healthy",
+                "probes": [
+                    {
+                        "name": "Endpoint returns 200 OK",
+                        "type": "probe",
+                        "provider": {
+                            "url": "${url}",
+                            "type": "http"
+                        },
+                        "tolerance": 200
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -1,0 +1,36 @@
+.radioToggle {
+  position: relative;
+
+  display: inline-flex;
+  gap: 0.4rem;
+
+  &__inputWrapper {
+    input {
+      display: none;
+    }
+
+    label {
+      padding: 0.4rem;
+
+      background-color: var(--lang-switcher-label);
+      border-radius: var(--border-radius-s);
+      cursor: pointer;
+
+      color: var(--text-color-dim);
+      font-size: 1.4rem;
+
+      &:hover {
+        background-color: var(--lang-switcher-label-hover);
+
+        color: var(--text-color-bright);
+      }
+    }
+
+    input:checked + label {
+      background-color: var(--lang-switcher-label-active);
+      cursor: default;
+
+      color: var(--text-color);
+    }
+  }
+}

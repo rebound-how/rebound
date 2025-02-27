@@ -1,0 +1,107 @@
+{
+  "metadata": {
+    "name": "set_fault",
+    "labels": [
+      "fault",
+      "Istio"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Virtual Service Name",
+          "key": "virtual_service_name",
+          "help": "Name of the target virtual service",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Fault",
+          "key": "fault",
+          "help": "Definition of the fault to inject",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        },
+        {
+          "title": "Namespace",
+          "key": "ns",
+          "help": "",
+          "placeholder": "",
+          "default": "default",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Version",
+          "key": "version",
+          "help": "Istio fault injection version",
+          "placeholder": "",
+          "default": "networking.istio.io/v1alpha3",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Set fault injection on the virtual service identified by name",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "fault",
+        "Istio"
+      ],
+      "configuration": {
+        "virtual_service_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_VIRTUAL_SERVICE_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "fault": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FAULT",
+          "env_var_type": "json"
+        },
+        "ns": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NS",
+          "default": "default",
+          "env_var_type": "str"
+        },
+        "version": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_VERSION",
+          "default": "networking.istio.io/v1alpha3",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "set-fault",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosistio.fault.actions",
+            "func": "set_fault",
+            "arguments": {
+              "virtual_service_name": "${virtual_service_name}",
+              "fault": "${fault}",
+              "ns": "${ns}",
+              "version": "${version}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

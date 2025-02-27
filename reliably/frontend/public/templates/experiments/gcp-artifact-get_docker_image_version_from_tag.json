@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "name": "get_docker_image_version_from_tag",
+    "labels": [
+      "Cloud Run",
+      "Google Cloud"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Repository",
+          "key": "repository",
+          "help": "Name of the repository",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Container Name",
+          "key": "package_name",
+          "help": "Name of the container in the repository",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Tag",
+          "key": "tag",
+          "help": "Version information for this particular tag",
+          "placeholder": "",
+          "default": "latest",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Get image version (sha256) for most recent tag.",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Cloud Run",
+        "Google Cloud"
+      ],
+      "configuration": {
+        "repository": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_REPOSITORY",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "package_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PACKAGE_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "tag": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TAG",
+          "default": "latest",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-docker-image-version-from-tag",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.artifact.probes",
+            "func": "get_docker_image_version_from_tag",
+            "arguments": {
+              "repository": "${repository}",
+              "package_name": "${package_name}",
+              "tag": "${tag}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

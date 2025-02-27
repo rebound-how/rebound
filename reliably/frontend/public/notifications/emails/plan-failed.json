@@ -1,0 +1,457 @@
+{
+    "root": {
+      "type": "EmailLayout",
+      "data": {
+        "backdropColor": "#EEEEEE",
+        "canvasColor": "#FFFFFF",
+        "textColor": "#000000",
+        "fontFamily": "MODERN_SANS",
+        "childrenIds": [
+          "block-1739830052141",
+          "block-1739818503394",
+          "block_QQqjnauXAixe2LnJXVmHwQ",
+          "block_AC6eRbFVSbXHVCg2zutkLu",
+          "block-1739817882421",
+          "block_FsiiokCgr9bZitHn7sx7TB"
+        ]
+      }
+    },
+    "block_9G37m6eNPw2MpUj6SYGoq1": {
+      "type": "Container",
+      "data": {
+        "style": {
+          "backgroundColor": null,
+          "borderColor": null,
+          "borderRadius": null,
+          "padding": {
+            "top": 0,
+            "bottom": 0,
+            "right": 0,
+            "left": 0
+          }
+        },
+        "props": {
+          "childrenIds": [
+            "block-1739736144645"
+          ]
+        }
+      }
+    },
+    "block_4WmdbYU15yfdpYcYjsVDBA": {
+      "type": "Container",
+      "data": {
+        "style": {
+          "backgroundColor": null,
+          "borderColor": null,
+          "borderRadius": null,
+          "padding": {
+            "top": 0,
+            "bottom": 0,
+            "right": 0,
+            "left": 0
+          }
+        },
+        "props": {
+          "childrenIds": []
+        }
+      }
+    },
+    "block_JQAdLSAtvmfsRih13srJ8m": {
+      "type": "Container",
+      "data": {
+        "style": {
+          "backgroundColor": null,
+          "borderColor": null,
+          "borderRadius": null,
+          "padding": {
+            "top": 0,
+            "bottom": 0,
+            "right": 0,
+            "left": 0
+          }
+        },
+        "props": {
+          "childrenIds": []
+        }
+      }
+    },
+    "block_QQqjnauXAixe2LnJXVmHwQ": {
+      "type": "Text",
+      "data": {
+        "style": {
+          "color": null,
+          "backgroundColor": null,
+          "fontSize": 27,
+          "fontFamily": null,
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "padding": {
+            "top": 16,
+            "bottom": 0,
+            "right": 24,
+            "left": 24
+          }
+        },
+        "props": {
+          "markdown": false,
+          "text": "{plan_title}"
+        }
+      }
+    },
+    "block_AC6eRbFVSbXHVCg2zutkLu": {
+      "type": "Button",
+      "data": {
+        "style": {
+          "backgroundColor": null,
+          "fontSize": 16,
+          "fontFamily": null,
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "padding": {
+            "top": 16,
+            "bottom": 24,
+            "right": 24,
+            "left": 24
+          }
+        },
+        "props": {
+          "buttonBackgroundColor": "#fc1d90",
+          "buttonStyle": "rounded",
+          "buttonTextColor": "#FFFFFF",
+          "fullWidth": false,
+          "size": "medium",
+          "text": "Go to Failed Execution →",
+          "url": "{execution_link}"
+        }
+      }
+    },
+    "block_FpDmSnPwiVzBXUvTc4yWFh": {
+      "type": "Text",
+      "data": {
+        "style": {
+          "color": null,
+          "backgroundColor": null,
+          "fontSize": 16,
+          "fontFamily": null,
+          "fontWeight": "normal",
+          "textAlign": "left",
+          "padding": {
+            "top": 0,
+            "bottom": 0,
+            "right": 0,
+            "left": 0
+          }
+        },
+        "props": {
+          "text": "{plan_desc}"
+        }
+      }
+    },
+    "block_LjuDF6uu4qWL3Ju3ng63ky": {
+      "type": "Container",
+      "data": {
+        "style": {
+          "backgroundColor": "#FAFAFA",
+          "borderColor": null,
+          "borderRadius": 8,
+          "padding": {
+            "top": 24,
+            "bottom": 24,
+            "right": 24,
+            "left": 24
+          }
+        },
+        "props": {
+          "childrenIds": [
+            "block_FpDmSnPwiVzBXUvTc4yWFh"
+          ]
+        }
+      }
+    },
+    "block_FsiiokCgr9bZitHn7sx7TB": {
+      "type": "Divider",
+      "data": {
+        "style": {
+          "backgroundColor": null,
+          "padding": {
+            "top": 40,
+            "bottom": 0,
+            "right": 0,
+            "left": 0
+          }
+        },
+        "props": {
+          "lineColor": "#EEEEEE",
+          "lineHeight": 1
+        }
+      }
+    },
+    "block-1739736144645": {
+      "type": "Image",
+      "data": {
+        "style": {
+          "padding": {
+            "top": 16,
+            "bottom": 16,
+            "right": 24,
+            "left": 24
+          }
+        },
+        "props": {
+          "width": null,
+          "height": 80,
+          "url": "https://lh3.googleusercontent.com/d/1vtIgSIPEcF9BVGVdg2BYB7PmMHnL1UTM",
+          "alt": "Reliably",
+          "linkHref": "https://rebound.how",
+          "contentAlignment": "middle"
+        }
+      }
+    },
+    "block-1739788539917": {
+      "type": "ColumnsContainer",
+      "data": {
+        "style": {
+          "padding": {
+            "top": 16,
+            "bottom": 16,
+            "right": 24,
+            "left": 24
+          }
+        },
+        "props": {
+          "columnsCount": 3,
+          "columnsGap": 16,
+          "columns": [
+            {
+              "childrenIds": []
+            },
+            {
+              "childrenIds": []
+            },
+            {
+              "childrenIds": []
+            }
+          ]
+        }
+      }
+    },
+    "block-1739788783804": {
+      "type": "Text",
+      "data": {
+        "style": {
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "padding": {
+            "top": 16,
+            "bottom": 16,
+            "right": 24,
+            "left": 24
+          }
+        },
+        "props": {
+          "text": "# Runs"
+        }
+      }
+    },
+    "block-1739788844862": {
+      "type": "Text",
+      "data": {
+        "style": {
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "padding": {
+            "top": 16,
+            "bottom": 16,
+            "right": 24,
+            "left": 24
+          }
+        },
+        "props": {
+          "text": "Trend"
+        }
+      }
+    },
+    "block-1739788850142": {
+      "type": "Html",
+      "data": {
+        "style": {
+          "fontSize": 16,
+          "textAlign": "center",
+          "padding": {
+            "top": 16,
+            "bottom": 16,
+            "right": 24,
+            "left": 8
+          }
+        },
+        "props": {
+          "contents": "{trend}\n"
+        }
+      }
+    },
+    "block-1739788958800": {
+      "type": "Html",
+      "data": {
+        "style": {
+          "fontSize": 16,
+          "textAlign": "center",
+          "padding": {
+            "top": 16,
+            "bottom": 16,
+            "right": 24,
+            "left": 24
+          }
+        },
+        "props": {
+          "contents": "{count}"
+        }
+      }
+    },
+    "block-1739789014100": {
+      "type": "Text",
+      "data": {
+        "style": {
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "padding": {
+            "top": 16,
+            "bottom": 16,
+            "right": 24,
+            "left": 24
+          }
+        },
+        "props": {
+          "text": "Score"
+        }
+      }
+    },
+    "block-1739789018276": {
+      "type": "Html",
+      "data": {
+        "style": {
+          "fontSize": 16,
+          "textAlign": "center",
+          "padding": {
+            "top": 16,
+            "bottom": 16,
+            "right": 24,
+            "left": 24
+          }
+        },
+        "props": {
+          "contents": "{score}"
+        }
+      }
+    },
+    "block-1739808989010": {
+      "type": "Text",
+      "data": {
+        "style": {
+          "fontWeight": "normal",
+          "padding": {
+            "top": 16,
+            "bottom": 16,
+            "right": 24,
+            "left": 24
+          }
+        },
+        "props": {
+          "text": "My new text block"
+        }
+      }
+    },
+    "block-1739808992479": {
+      "type": "Text",
+      "data": {
+        "style": {
+          "fontWeight": "normal",
+          "padding": {
+            "top": 16,
+            "bottom": 16,
+            "right": 24,
+            "left": 24
+          }
+        },
+        "props": {
+          "text": "My new text block"
+        }
+      }
+    },
+    "block-1739817882421": {
+      "type": "Container",
+      "data": {
+        "style": {
+          "padding": {
+            "top": 16,
+            "bottom": 16,
+            "right": 24,
+            "left": 24
+          }
+        },
+        "props": {
+          "childrenIds": [
+            "block-1739823335503"
+          ]
+        }
+      }
+    },
+    "block-1739818503394": {
+      "type": "Html",
+      "data": {
+        "style": {
+          "fontSize": 20,
+          "textAlign": "center",
+          "padding": {
+            "top": 16,
+            "bottom": 16,
+            "right": 24,
+            "left": 24
+          }
+        },
+        "props": {
+          "contents": "Hello, your plan has <strong style=\"color: rgb(183, 21, 21)\">failed</strong>"
+        }
+      }
+    },
+    "block-1739823335503": {
+      "type": "Text",
+      "data": {
+        "style": {
+          "fontWeight": "normal",
+          "padding": {
+            "top": 16,
+            "bottom": 16,
+            "right": 24,
+            "left": 24
+          }
+        },
+        "props": {
+          "markdown": true,
+          "text": "When a plan fails, it means everything went as expected until the verification step, which didn’t confirm a positive result. We encourage you to review the run to understand the impact of this issue."
+        }
+      }
+    },
+    "block-1739830052141": {
+        "type": "Image",
+        "data": {
+          "style": {
+            "padding": {
+              "top": 24,
+              "bottom": 0,
+              "right": 24,
+              "left": 24
+            },
+            "textAlign": "center"
+          },
+          "props": {
+            "width": null,
+            "height": 60,
+            "url": "https://lh3.googleusercontent.com/d/1vtIgSIPEcF9BVGVdg2BYB7PmMHnL1UTM",
+            "alt": "Reliably",
+            "linkHref": "https://rebound.how",
+            "contentAlignment": "middle"
+          }
+        }
+    }
+  }
+  

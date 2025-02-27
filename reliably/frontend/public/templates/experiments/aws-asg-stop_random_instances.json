@@ -1,0 +1,133 @@
+{
+  "metadata": {
+    "name": "stop_random_instances",
+    "labels": [
+      "AWS",
+      "ASG"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "ASG Names",
+          "key": "asg_names",
+          "help": "One or many ASG names as a JSON encoded list",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "ASG Tags",
+          "key": "tags",
+          "help": "List of AWS tags for to identify ASG by tags instead of by names",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Number of Instances to Deatch",
+          "key": "instance_count",
+          "help": "The amount of instances to stop, or set the percentage below",
+          "placeholder": "",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Percentage of Instances to Deatch",
+          "key": "instance_percent",
+          "help": "The percentage of instances to stop, or set the number above or the availability zone below",
+          "placeholder": "",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Availability-Zone",
+          "key": "az",
+          "help": "Specificy the availability zone to select ASG from",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Force",
+          "key": "force",
+          "help": "Force stopping the instances",
+          "placeholder": "",
+          "default": false,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Terminates one or more random healthy instances associated with an ALB",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "AWS",
+        "ASG"
+      ],
+      "configuration": {
+        "asg_names": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ASG_NAMES",
+          "env_var_type": "json"
+        },
+        "tags": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TAGS",
+          "env_var_type": "json"
+        },
+        "instance_count": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_INSTANCE_COUNT",
+          "env_var_type": "int"
+        },
+        "instance_percent": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_INSTANCE_PERCENT",
+          "env_var_type": "int"
+        },
+        "az": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_AZ",
+          "env_var_type": "str"
+        },
+        "force": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FORCE",
+          "default": false,
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "stop-random-instances",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.asg.actions",
+            "func": "stop_random_instances",
+            "arguments": {
+              "asg_names": "${asg_names}",
+              "tags": "${tags}",
+              "instance_count": "${instance_count}",
+              "instance_percent": "${instance_percent}",
+              "az": "${az}",
+              "force": "${force}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

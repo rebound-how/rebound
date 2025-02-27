@@ -1,0 +1,76 @@
+{
+  "metadata": {
+    "name": "trigger_is_unresolved",
+    "labels": [
+      "Honeycomb",
+      "Trigger"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Dataset",
+          "key": "dataset_slug",
+          "help": "Dataset slug",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Trigger Identifier",
+          "key": "trigger_id",
+          "help": "",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Checks that the trigger is in unresolved (“triggered”) state.",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Honeycomb",
+        "Trigger"
+      ],
+      "configuration": {
+        "dataset_slug": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DATASET_SLUG",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "trigger_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TRIGGER_ID",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "trigger-is-unresolved",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaoshoneycomb.trigger.probes",
+            "func": "trigger_is_unresolved",
+            "arguments": {
+              "dataset_slug": "${dataset_slug}",
+              "trigger_id": "${trigger_id}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

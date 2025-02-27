@@ -1,0 +1,33 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import DynatraceIntegrationForm from "@/components/integrations/forms/DynatraceIntegrationForm.vue";
+---
+
+<BaseLayout
+  title="Dynatrace OpenTelemetry integration · Reliably"
+  description="Send your executions OpenTelemetry traces to Dynatrace"
+>
+  <div class="container">
+    <PageHeader
+      title="Dynatrace OpenTelemetry integration"
+      icon="dynatrace-logo"
+    />
+    <section class="newIntegration">
+      <p class="newIntegration__intro">
+        Fill the form with the requested information, to create an integration
+        that you can then use in your plans.
+      </p>
+      <section class="newIntegration__form">
+        <div class="newIntegration__info">
+          <div
+            class="newIntegration__infoWrapper newIntegration__infoWrapper--opentelemetry"
+          >
+            <p>Send executions traces to Dynatrace.</p>
+          </div>
+        </div>
+        <DynatraceIntegrationForm client:load />
+      </section>
+    </section>
+  </div>
+</BaseLayout>

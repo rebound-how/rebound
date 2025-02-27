@@ -1,0 +1,59 @@
+{
+  "metadata": {
+    "name": "delete_load_balancer",
+    "labels": [
+      "AWS",
+      "ELBv2"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Load Balancer Names",
+          "key": "load_balancer_names",
+          "help": "List of LB names",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Deletes the provided load balancer(s)",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "AWS",
+        "ELBv2"
+      ],
+      "configuration": {
+        "load_balancer_names": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LOAD_BALANCER_NAMES",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "delete-load-balancer",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.elbv2.actions",
+            "func": "delete_load_balancer",
+            "arguments": {
+              "load_balancer_names": "${load_balancer_names}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

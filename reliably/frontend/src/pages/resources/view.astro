@@ -1,0 +1,13 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ResourceView from "@/components/snapshots/ResourceView.vue";
+---
+
+<BaseLayout
+  title="Resource · Reliably"
+  description="View your Reliably resource details"
+>
+  <div class="container">
+    <ResourceView client:load />
+  </div>
+</BaseLayout>

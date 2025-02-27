@@ -1,0 +1,108 @@
+{
+  "metadata": {
+    "name": "set_service_deployment_configuration",
+    "labels": [
+      "ECS",
+      "AWS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Cluster",
+          "key": "cluster",
+          "help": "Name of the target ECS cluster",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Service",
+          "key": "service",
+          "help": "Name of the target service",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Upper Limit",
+          "key": "maximum_percent",
+          "help": "Number of RUNNING or PENDING tasks upper limit for the service",
+          "placeholder": "",
+          "default": 200,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Lower Limit",
+          "key": "minimum_healthy_percent",
+          "help": "Number of RUNNING tasks lower limit for the service",
+          "placeholder": "",
+          "default": 100,
+          "type": "integer",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Sets the maximum healthy count and minimum healthy percentage values for a services deployment configuration",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "ECS",
+        "AWS"
+      ],
+      "configuration": {
+        "cluster": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CLUSTER",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "service": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_SERVICE",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "maximum_percent": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_MAXIMUM_PERCENT",
+          "default": 200,
+          "env_var_type": "int"
+        },
+        "minimum_healthy_percent": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_MINIMUM_HEALTHY_PERCENT",
+          "default": 100,
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "set-service-deployment-configuration",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.ecs.actions",
+            "func": "set_service_deployment_configuration",
+            "arguments": {
+              "cluster": "${cluster}",
+              "service": "${service}",
+              "maximum_percent": "${maximum_percent}",
+              "minimum_healthy_percent": "${minimum_healthy_percent}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

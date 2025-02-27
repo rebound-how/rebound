@@ -1,0 +1,28 @@
+---
+import ProfileLayout from "@/layouts/ProfileLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import TokensList from "@/components/profile/TokensList.vue";
+
+import type { PageHeaderAction } from "@/types/ui-types";
+
+const actions: PageHeaderAction[] = [
+  {
+    label: "New token",
+    to: "/settings/tokens/new",
+  },
+];
+---
+
+<ProfileLayout
+  title="Tokens · Reliably"
+  description="Tokens allow you Reliably to communicate with external services on your behalf"
+>
+  <div class="profile">
+    <PageHeader title="Your Tokens" actions={actions} />
+    <TokensList client:load />
+  </div>
+</ProfileLayout>
+
+<style lang="scss" scoped>
+
+</style>

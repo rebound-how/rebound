@@ -1,0 +1,164 @@
+{
+  "title": "Qui nostrum aut et.",
+  "description": "Nihil et rerum nihil facilis ducimus.",
+  "contributions": {
+    "reliability": "high",
+    "availability": "high",
+    "performance": "medium",
+    "security": "none"
+  },
+  "tags": [
+    "kubernetes",
+    "openfaas",
+    "cloudnative"
+  ],
+  "uuid": "b6eeb92f-4552-454c-a1a1-97e50354f3ae",
+  "configuration": {
+    "prometheus_base_url": "https://silky-fundraising.biz"
+  },
+  "secrets": {
+    "global": {
+      "auth": "Basic XYZ"
+    }
+  },
+  "extensions": [
+    {
+      "name": "reliably",
+      "objective_id": "e513c26d-e64e-46c1-aac2-9a19aa808437",
+      "createdAt": "2022-09-13T00:35:25.268Z",
+      "createdBy": "Anabel_Emmerich25",
+      "lastExecution": "2022-09-12T10:43:53.239Z",
+      "lastStatuses": [
+        "deviated",
+        "completed",
+        "interrupted",
+        "aborted",
+        ""
+      ]
+    }
+  ],
+  "controls": [
+    {
+      "name": "tracing",
+      "provider": {
+        "type": "python",
+        "module": "chaostracing.control"
+      }
+    },
+    {
+      "name": "reliably",
+      "provider": {
+        "type": "reliably",
+        "module": "reliably.control"
+      }
+    }
+  ],
+  "steady-state-hypothesis": {
+    "title": "ullam sunt ut",
+    "probes": [
+      {
+        "type": "probe",
+        "name": "mollitia-fugit-enim",
+        "tolerance": 200,
+        "provider": {
+          "type": "http",
+          "secrets": [
+            "global"
+          ],
+          "url": "https://starry-sabre.info",
+          "headers": {
+            "Authorization": "${auth}"
+          }
+        }
+      },
+      {
+        "type": "probe",
+        "name": "et-modi-sed",
+        "tolerance": 200,
+        "provider": {
+          "type": "http",
+          "timeout": [
+            3,
+            5
+          ],
+          "secrets": [
+            "global"
+          ],
+          "url": "https://twin-shit.info",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "Authorization": "${auth}"
+          },
+          "arguments": {
+            "city": "Paris"
+          }
+        }
+      }
+    ]
+  },
+  "method": [
+    {
+      "type": "action",
+      "name": "ut-vel-dignissimos",
+      "background": true,
+      "provider": {
+        "type": "process",
+        "path": "magni",
+        "arguments": "-cpus 2 attack -targets=data/scenario.txt -workers=2 -connections=1 -rate=3 -timeout=3s -duration=30s -output=result.bin"
+      }
+    },
+    {
+      "type": "action",
+      "name": "quis-rerum-aut",
+      "provider": {
+        "type": "python",
+        "module": "chaosk8s.pod.actions",
+        "func": "terminate_pods",
+        "arguments": {
+          "ns": "openfaas-fn",
+          "label_selector": "faas_function=astre",
+          "rand": true
+        }
+      },
+      "pauses": {
+        "before": 5
+      }
+    },
+    {
+      "type": "probe",
+      "name": "recusandae-laborum-est",
+      "provider": {
+        "type": "python",
+        "module": "chaosk8s.pod.probes",
+        "func": "read_pod_logs",
+        "arguments": {
+          "label_selector": "app=gateway",
+          "last": "35s",
+          "ns": "openfaas"
+        }
+      }
+    },
+    {
+      "type": "probe",
+      "name": "veniam-et-sunt",
+      "provider": {
+        "type": "python",
+        "module": "chaosprometheus.probes",
+        "func": "query_interval",
+        "secrets": [
+          "global"
+        ],
+        "arguments": {
+          "query": "gateway_function_invocation_total{function_name='astre'}",
+          "start": "1 minute ago",
+          "end": "now",
+          "step": 1
+        }
+      }
+    }
+  ],
+  "rollbacks": [],
+  "id": "1",
+  "organizationId": "1"
+}

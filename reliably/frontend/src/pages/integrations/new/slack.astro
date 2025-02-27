@@ -1,0 +1,34 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import SlackIntegrationForm from "@/components/integrations/forms/SlackIntegrationForm.vue";
+---
+
+<BaseLayout
+  title="Slack integration · Reliably"
+  description="Observe and discuss experiments executions in Slack."
+>
+  <div class="container">
+    <PageHeader title="Slack integration" icon="slack-logo" />
+    <section class="newIntegration">
+      <p class="newIntegration__intro">
+        Fill the form with the requested information, to create an integration
+        that you can then use in your plans.
+      </p>
+      <section class="newIntegration__form">
+        <div class="newIntegration__info">
+          <div
+            class="newIntegration__infoWrapper newIntegration__infoWrapper--communication"
+          >
+            <p>
+              The Slack integration allows you to send execution information to
+              a Slack channel, where you can observe it as it's happening and
+              discuss it with your team.
+            </p>
+          </div>
+        </div>
+        <SlackIntegrationForm client:load />
+      </section>
+    </section>
+  </div>
+</BaseLayout>

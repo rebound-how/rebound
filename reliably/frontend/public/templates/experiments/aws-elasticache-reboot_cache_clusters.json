@@ -1,0 +1,74 @@
+{
+  "metadata": {
+    "name": "reboot_cache_clusters",
+    "labels": [
+      "ElastiCache",
+      "AWS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Cluster IDs",
+          "key": "cluster_ids",
+          "help": "List of cluster identifiers",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        },
+        {
+          "title": "Node IDs",
+          "key": "node_ids",
+          "help": "List of node identifiers",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Reboots one or more nodes in a cache cluster",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "ElastiCache",
+        "AWS"
+      ],
+      "configuration": {
+        "cluster_ids": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CLUSTER_IDS",
+          "env_var_type": "json"
+        },
+        "node_ids": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NODE_IDS",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "reboot-cache-clusters",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.elasticache.actions",
+            "func": "reboot_cache_clusters",
+            "arguments": {
+              "cluster_ids": "${cluster_ids}",
+              "node_ids": "${node_ids}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

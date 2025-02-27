@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "name": "delete_replication_groups",
+    "labels": [
+      "ElastiCache",
+      "AWS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Group IDs",
+          "key": "group_ids",
+          "help": "List of replication group identifiers",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        },
+        {
+          "title": "Final Snapshot ID",
+          "key": "final_snapshot_id",
+          "help": "Identifier to give to the final snapshot",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Retain Primary Cluster",
+          "key": "retain_primary_cluster",
+          "help": "Whether to delete only replicas and not the primary",
+          "placeholder": "",
+          "default": true,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Deletes one or more replication groups and creates a final snapshot",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "ElastiCache",
+        "AWS"
+      ],
+      "configuration": {
+        "group_ids": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_GROUP_IDS",
+          "env_var_type": "json"
+        },
+        "final_snapshot_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FINAL_SNAPSHOT_ID",
+          "env_var_type": "str"
+        },
+        "retain_primary_cluster": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_RETAIN_PRIMARY_CLUSTER",
+          "default": true,
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "delete-replication-groups",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.elasticache.actions",
+            "func": "delete_replication_groups",
+            "arguments": {
+              "group_ids": "${group_ids}",
+              "final_snapshot_id": "${final_snapshot_id}",
+              "retain_primary_cluster": "${retain_primary_cluster}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

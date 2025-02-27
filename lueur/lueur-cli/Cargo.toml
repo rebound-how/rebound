@@ -1,0 +1,87 @@
+[package]
+name = "lueur-cli"
+version = "0.1.0"
+edition = "2024"
+authors = ["Sylvain Hellegouarch <sylvain@lueur.dev>"]
+description = "Lueur CLI" 
+keywords = ["lueur", "ebpf"]
+license-file = "LICENSE" 
+readme = "README.md"
+repository = "https://github.com/lueurdev/lueur" 
+documentation = "https://github.com/lueurdev/lueur/blob/master/README.md" 
+homepage = "https://lueur.dev" 
+
+
+[dependencies]
+axum = { version = "0.7", features = ["http2", "json", "macros"] }
+tokio = { version = "1.42", features = ["full", "tracing"] }
+tonic = { version = "0.12", features = ["transport"] }
+tower = { version = "0.5.1", features = ["full", "make", "util"] }
+hyper = { version = "1.5", features = ["client", "server", "full"] }
+anyhow = "1.0"
+thiserror = "1.0"
+clap = { version = "4.1.8", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tracing-subscriber = { version = "=0.3.19", features = ["fmt", "env-filter"] }
+prost = "0.13"
+prost-types = "0.13"
+futures = "0.3"
+rand = "0.8"
+tokio-stream = "0.1"
+rand_distr = "0.4.3"
+bytes = "1.8.0"
+once_cell = "1.20.2"
+async-trait = "0.1.83"
+serde_yaml = "0.9.34"
+url = "2.5.4"
+oneshot = "0.1.8"
+tracing-appender = "0.2.3"
+indicatif = { version = "0.17.9", features = ["tokio"] }
+hickory-resolver = "0.24.1"
+chrono = { version = "0.4.38", features = ["serde"] }
+
+libc = "0.2.166"
+tracing-log = "0.2.0"
+pnet_datalink = "0.35.0"
+reqwest = { version = "0.12.9", features = ["stream", "json"] }
+tokio-util = { version = "0.7.12", features = ["compat"] }
+hyper-util = "0.1.10"
+pin-project = "1.1.7"
+async-std-resolver = "0.24.1"
+local-ip-address = "0.6.3"
+nix = { version = "0.29.0", features = ["net"] }
+get_if_addrs = "0.5.3"
+tower-http = { version = "0.6.2", features = ["compression-gzip", "decompression-gzip", "trace"] }
+colored = "2.1.0"
+colorful = "0.3.2"
+walkdir = "2.5.0"
+async-stream = "0.3.6"
+dashmap = "6.1.0"
+aya = "0.13.1"
+aya-ebpf = "0.1.1"
+aya-log = "0.2.1"
+aya-log-ebpf = "0.1.1"
+prettytable = "0.10.0"
+tera = "1.20.0"
+governor = "0.8.0"
+opentelemetry = "0.27.1"
+opentelemetry-appender-tracing = "0.27.0"
+opentelemetry-semantic-conventions = { version = "0.27.0", features = ["semconv_experimental"] }
+opentelemetry-stdout = "0.27.0"
+opentelemetry-otlp = "0.27.0"
+opentelemetry_sdk = { version = "0.27.1", features = ["rt-tokio"] }
+tracing-opentelemetry = "0.28.0"
+axum-tracing-opentelemetry = "0.25.0"
+tracing = { version = "0.1.41", features = ["attributes"] }
+
+[build-dependencies]
+anyhow = { workspace = true }
+which = { workspace = true }
+aya-build = { workspace = true }
+tonic-build = "0.12"
+lueur-ebpf-programs = { path = "../lueur-ebpf-programs" }
+
+[[bin]]
+name = "lueur"
+path = "src/main.rs"

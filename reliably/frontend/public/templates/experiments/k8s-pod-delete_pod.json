@@ -1,0 +1,139 @@
+{
+  "metadata": {
+    "name": "delete_pod",
+    "labels": [
+      "Kubernetes",
+      "Pod"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Namespace",
+          "key": "ns",
+          "help": "",
+          "placeholder": null,
+          "default": "default",
+          "type": "string",
+          "required": true,
+          "query": "$.resources[*] ? (@.meta.kind=='pod' && @.meta.platform=='k8s').meta.ns"
+        },
+        {
+          "title": "Label Selector",
+          "key": "label_selector",
+          "help": "Selectors to target the appropriate pod",
+          "placeholder": "app=the-app,env=prod",
+          "default": null,
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "related": [
+      {
+        "block": "method",
+        "name": "reliably-pauses-pause_execution"
+      },
+      {
+        "block": "hypothesis",
+        "name": "k8s-deployment-deployment_fully_available"
+      }
+    ],
+    "template": {
+      "version": "1.0.0",
+      "title": "Delete a single pod gracefully, to simulate a failing condition",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Kubernetes",
+        "Pod"
+      ],
+      "configuration": {
+        "ns": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NS",
+          "default": "default",
+          "env_var_type": "str"
+        },
+        "label_selector": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LABEL_SELECTOR",
+          "env_var_type": "str"
+        },
+        "qty": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_QTY",
+          "default": 1,
+          "env_var_type": "int"
+        },
+        "mode": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_MODE",
+          "default": "fixed",
+          "env_var_type": "str"
+        },
+        "all": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ALL",
+          "default": false,
+          "env_var_type": "bool"
+        },
+        "rand": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_RAND",
+          "default": true,
+          "env_var_type": "bool"
+        },
+        "order": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ORDER",
+          "default": "alphabetic",
+          "env_var_type": "str"
+        },
+        "grace_period": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_GRACE_PERIOD",
+          "default": -1,
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [
+        {
+          "name": "chatgpt",
+          "messages": [
+            {
+              "role": "user",
+              "content": "How to limit the blast radius of a restarting Kubernetes pod?"
+            }
+          ]
+        }
+      ],
+      "method": [
+        {
+          "name": "terminate-pods",
+          "type": "action",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.pod.actions",
+            "func": "terminate_pods",
+            "arguments": {
+              "ns": "${ns}",
+              "label_selector": "${label_selector}",
+              "qty": "${qty}",
+              "mode": "${mode}",
+              "all": "${all}",
+              "rand": "${rand}",
+              "order": "${order}",
+              "grace_period": "${grace_period}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

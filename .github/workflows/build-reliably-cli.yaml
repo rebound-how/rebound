@@ -1,0 +1,136 @@
+name: Build Reliably CLI
+
+on:
+  push:
+    branches:
+      - main
+    paths: 
+      - 'reliably/cli/**'
+    tags-ignore:
+      - "**"
+  pull_request:
+    branches:
+      - main
+    paths: 
+      - 'reliably/cli/**'
+    tags-ignore:
+      - "**"
+
+jobs:
+  backend-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13"]
+        os: ["ubuntu-24.04", "macos-latest"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-suffix: "rebound-how-reliably-backend"
+
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: true
+          prerelease: true
+          cache-dependency-path: 'backend/pdm.lock'
+
+      - name: Configure pdm to use uv
+        run: |
+          pdm config use_uv true
+
+      - name: Ensure lock file is up to date
+        working-directory: ./backend
+        run: |
+          pdm lock --check
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: |
+          pdm sync -d -G gcp
+
+      - name: Run Lint
+        working-directory: ./backend
+        run: |
+          pdm run lint
+
+      - name: Run Tests
+        if: runner.os == 'Linux'
+        working-directory: ./backend
+        run: |
+          pdm run test
+  
+  frontend-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ["ubuntu-24.04", "macos-latest"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 23
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Run Tests
+        working-directory: ./frontend
+        run: |
+          npm run test:coverage
+  
+  build:
+    runs-on: "ubuntu-24.04"
+    needs:
+      - backend-test
+      - frontend-test
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-suffix: "rebound-how-reliably-backend"
+
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: "3.12"
+          cache: true
+          prerelease: true
+          cache-dependency-path: 'backend/pdm.lock'
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: |
+          pdm sync --prod -G gcp
+
+      - name: Build frontend
+        uses: withastro/action@v2
+        with:
+          path: frontend
+          node-version: 23
+
+      - name: Build backend
+        if: runner.os == 'Linux'
+        working-directory: ./backend
+        run: |
+          cp -r ../frontend/dist/* reliably_app/www
+          pdm build

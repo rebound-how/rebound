@@ -1,0 +1,21 @@
+---
+import LoginPageLayout from "@/layouts/LoginPageLayout.astro";
+import LoginForm from "@/components/login/LoginForm.vue";
+
+const loginMode = import.meta.env.LOGIN_MODE;
+const loginProviders = import.meta.env.OAUTH_PROVIDERS
+  ? import.meta.env.OAUTH_PROVIDERS.split(",")
+  : [];
+---
+
+<LoginPageLayout
+  title="Join on organization · Reliably"
+  description="You've been invited to join Reliably!"
+>
+  <LoginForm
+    client:load
+    join={true}
+    mode={loginMode}
+    providers={loginProviders}
+  />
+</LoginPageLayout>

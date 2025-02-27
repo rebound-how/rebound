@@ -1,0 +1,19 @@
+---
+import ProfileLayout from "@/layouts/ProfileLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import BillingInfo from "@/components/profile/BillingInfo.vue";
+---
+
+<ProfileLayout
+  title="Organization settings · Reliably"
+  description="Your organization settings, including members, plan, and billing method"
+>
+  <div class="profile">
+    <PageHeader title="Organization settings" />
+    <BillingInfo client:load />
+  </div>
+</ProfileLayout>
+
+<style lang="scss" scoped>
+
+</style>

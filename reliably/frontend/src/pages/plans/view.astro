@@ -1,0 +1,13 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PlanView from "@/components/plans/PlanView.vue";
+---
+
+<BaseLayout
+  title="Plan · Reliably"
+  description="View your Reliably plan details"
+>
+  <div class="container">
+    <PlanView client:load />
+  </div>
+</BaseLayout>

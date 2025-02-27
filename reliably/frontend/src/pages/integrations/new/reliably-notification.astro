@@ -1,0 +1,33 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import ReliablyNotificationForm from "@/components/integrations/forms/ReliablyNotificationForm.vue";
+---
+
+<BaseLayout
+  title="Notification Integration · Reliably"
+  description="Trigger notifications on specific Reliably Events"
+>
+  <div class="container">
+    <PageHeader
+      title="Notification Integration"
+      icon="reliably-logo-pink"
+    />
+    <section class="newIntegration">
+      <p class="newIntegration__intro">
+        Fill the form with the requested information, to create an integration
+        that you can then use in your plans.
+      </p>
+      <section class="newIntegration__form">
+        <div class="newIntegration__info">
+          <div
+            class="newIntegration__infoWrapper newIntegration__infoWrapper--opentelemetry"
+          >
+            <p>Trigger notifications from Reliably events.</p>
+          </div>
+        </div>
+        <ReliablyNotificationForm client:load />
+      </section>
+    </section>
+  </div>
+</BaseLayout>

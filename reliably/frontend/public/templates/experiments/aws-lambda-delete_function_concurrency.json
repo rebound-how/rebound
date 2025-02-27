@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "name": "delete_function_concurrency",
+    "labels": [
+      "AWS",
+      "Lambda"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Function Name",
+          "key": "function_name",
+          "help": "Name of the function",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Removes concurrency limit applied to the specified Lambda",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "AWS",
+        "Lambda"
+      ],
+      "configuration": {
+        "function_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FUNCTION_NAME",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "delete-function-concurrency",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.awslambda.actions",
+            "func": "delete_function_concurrency",
+            "arguments": {
+              "function_name": "${function_name}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

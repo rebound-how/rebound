@@ -1,0 +1,75 @@
+{
+  "metadata": {
+    "name": "fixed_delay",
+    "labels": [
+      "WireMock",
+      "Wiremock"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Filter",
+          "key": "filter",
+          "help": "Filter to add fixed delay to",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        },
+        {
+          "title": "Fixed Delay",
+          "key": "fixedDelay",
+          "help": "Delay to apply to the matching filter",
+          "placeholder": "",
+          "default": 0,
+          "type": "integer",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Adds a fixed delay to a list of mappings",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "WireMock",
+        "Wiremock"
+      ],
+      "configuration": {
+        "filter": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FILTER",
+          "env_var_type": "json"
+        },
+        "fixedDelay": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FIXEDDELAY",
+          "default": 0,
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "fixed-delay",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaoswm.wiremock.actions",
+            "func": "fixed_delay",
+            "arguments": {
+              "filter": "${filter}",
+              "fixedDelay": "${fixedDelay}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

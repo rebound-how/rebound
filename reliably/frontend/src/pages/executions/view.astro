@@ -1,0 +1,13 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ExecutionView from "@/components/executions/ExecutionView.vue";
+---
+
+<BaseLayout
+  title="Execution · Reliably"
+  description="A Reliably experiment execution"
+>
+  <div class="container">
+    <ExecutionView client:load />
+  </div>
+</BaseLayout>

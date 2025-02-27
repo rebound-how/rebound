@@ -1,0 +1,12 @@
+---
+import LoginPageLayout from "@/layouts/LoginPageLayout.astro";
+import LoginForm from "@/components/login/LoginForm.vue";
+---
+
+<LoginPageLayout
+  title="Register · Reliably"
+  description="Create your Reliably account to store and run your chaos engineering experiments, and measure their impact on your Service Level Objectives."
+>
+  <LoginForm register={true} client:load />
+  <p>Already a user? <a href="/login/">Log in</a></p>
+</LoginPageLayout>

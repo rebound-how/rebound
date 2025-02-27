@@ -1,0 +1,30 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import PageIntro from "@/components/_ui/PageIntro.astro";
+import PlansList from "@/components/plans/PlansList.vue";
+
+import type { PageHeaderAction } from "@/types/ui-types";
+
+const actions: PageHeaderAction[] = [
+  {
+    label: "New plan",
+    to: "/plans/new/",
+  },
+];
+---
+
+<BaseLayout
+  title="Plans · Reliably"
+  description="A list of your Reliably Plans"
+>
+  <div class="container">
+    <PageHeader title="Plans" actions={actions} />
+    <PageIntro>
+      A plan is a set of rules to run your Reliably experiments.
+    </PageIntro>
+    <section class="deployments">
+      <PlansList client:load />
+    </section>
+  </div>
+</BaseLayout>

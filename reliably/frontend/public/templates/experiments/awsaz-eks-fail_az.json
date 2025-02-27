@@ -1,0 +1,156 @@
+{
+  "metadata": {
+    "name": "fail_az",
+    "labels": [
+      "AZ:EKS",
+      "AWS AZ"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Availability Zone",
+          "key": "az",
+          "help": "AZ to target",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Tags",
+          "key": "tags",
+          "help": "Match only resources with these tags",
+          "placeholder": null,
+          "default": "[{\"Name\": \"\"}]",
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Failure Type",
+          "key": "failure_type",
+          "help": "Type of failure to apply: network, instance",
+          "placeholder": null,
+          "default": "network",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Local Path to Operation",
+          "key": "state_path",
+          "help": "Path to a local file that holds the information of this operation, used by the recover_az action. Unless you need to run this action multiple times in the same experiment, you can ignore this field",
+          "placeholder": null,
+          "default": "/tmp/fail_eks_az.json",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Dry Run",
+          "key": "dry_run",
+          "help": "Only perform a dry run for it",
+          "placeholder": null,
+          "default": false,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Simulates the loss of an AZ in an AWS Region for EKS clusters with managed nodegroups",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "AZ:EKS",
+        "AWS AZ"
+      ],
+      "configuration": {
+        "az": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_AZ",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "tags": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TAGS",
+          "default": "[{\"Name\": \"\"}]",
+          "env_var_type": "json"
+        },
+        "failure_type": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FAILURE_TYPE",
+          "default": "network",
+          "env_var_type": "str"
+        },
+        "state_path": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_STATE_PATH",
+          "default": "/tmp/fail_eks_az.json",
+          "env_var_type": "str"
+        },
+        "dry_run": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DRY_RUN",
+          "default": false,
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [
+        {
+          "name": "chatgpt",
+          "messages": [
+            {
+              "role": "user",
+              "content": "Explain the role of an AWS Avaiability-Zone in an EKS cluster."
+            },
+            {
+              "role": "user",
+              "content": "What are the risks of a failing AZ?"
+            },
+            {
+              "role": "user",
+              "content": "What would be the good indicators to follow to detect such a failure? Give some commands with the aws CLI if you can. Or perhaps good Kubernetes approaches."
+            },
+            {
+              "role": "user",
+              "content": "What are good remediations to a failing AZ? Specially around availability and latency."
+            }
+          ]
+        }
+      ],
+      "method": [
+        {
+          "name": "fail-az",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "azchaosaws.eks.actions",
+            "func": "fail_az",
+            "arguments": {
+              "az": "${az}",
+              "tags": "${tags}",
+              "failure_type": "${failure_type}",
+              "state_path": "${state_path}",
+              "dry_run": "${dry_run}"
+            }
+          }
+        }
+      ]
+    },
+    "related": [
+      {
+        "block": "method",
+        "name": "reliably-pauses-pause_execution"
+      },
+      {
+        "block": "rollbacks",
+        "name": "awsaz-eks-recover_az"
+      }
+    ]
+  }
+}

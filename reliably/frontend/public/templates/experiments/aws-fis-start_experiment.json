@@ -1,0 +1,97 @@
+{
+  "metadata": {
+    "name": "start_experiment",
+    "labels": [
+      "Fault Injection Simulator",
+      "AWS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Experiment Template ID",
+          "key": "experiment_template_id",
+          "help": "FIS experiment template identifier",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Client Token",
+          "key": "client_token",
+          "help": "",
+          "placeholder": null,
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Tags",
+          "key": "tags",
+          "help": "",
+          "placeholder": null,
+          "default": null,
+          "type": "object",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Starts running an experiment from the specified experiment template",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Fault Injection Simulator",
+        "AWS"
+      ],
+      "configuration": {
+        "experiment_template_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_EXPERIMENT_TEMPLATE_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "client_token": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CLIENT_TOKEN",
+          "env_var_type": "str"
+        },
+        "tags": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TAGS",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "start-experiment",
+          "type": "action",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.fis.actions",
+            "func": "start_experiment",
+            "arguments": {
+              "experiment_template_id": "${experiment_template_id}",
+              "client_token": "${client_token}",
+              "tags": "${tags}"
+            }
+          }
+        }
+      ]
+    },
+    "related": [
+      {
+        "block": "rollbacks",
+        "name": "aws-fis-stop_experiment_by_tags"
+      }
+    ]
+  }
+}

@@ -1,0 +1,148 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "reliably.fullname" . }}
+  labels:
+    {{- include "reliably.labels" . | nindent 4 }}
+data:
+  env-file: |
+    ################################################################################
+    #    ____  ________    _______    ____  ____  __
+    #   / __ \/ ____/ /   /  _/   |  / __ )/ /\ \/ /
+    #  / /_/ / __/ / /    / // /| | / __  / /  \  / 
+    # / _, _/ /___/ /____/ // ___ |/ /_/ / /___/ /  
+    #/_/ |_/_____/_____/___/_/  |_/_____/_____/_/   
+    #
+    ###############################################################################
+
+
+    ###############################################################################
+    # Domain publicly serving the app without the scheme (e.g. my-domain.com)
+    ###############################################################################
+    RELIABLY_DOMAIN="{{ .Values.reliably.domain }}"
+    # The hosts to use to call back from Reliably/Chaos Toolkit when they run
+    # By default this is set respectively to https://${RELIABLY_DOMAIN} and
+    # ${RELIABLY_DOMAIN}. But sometimes these need to be different, notably
+    # when running locally
+    # CLI_RELIABLY_SERVICE_HOST=<cli_service_host>
+    # CLI_RELIABLY_HOST=<cli_host>
+    # CLI_RELIABLY_VERIFY_TLS=
+
+    ###############################################################################
+    # Database settings
+    ###############################################################################
+    # this would be overriden by the secrets, you can leave the default
+    DATABASE_URL="postgresql+asyncpg://USER:SECRET@IP/reliably"
+    # if you need to communicate over TLS between the application and the db
+    #DATABASE_WITH_SSL="true"
+    #DATABASE_SSL_CLIENT_CERT_FILE="./my-client-cert"
+    #DATABASE_SSL_CLIENT_KEY_FILE="./my-client-key"
+    #DATABASE_SSL_SERVER_CA_FILE="./my-ca-server"
+    #DATABASE_HOSTADDR="IP:PORT"
+
+
+    ###############################################################################
+    # Logging settings
+    ###############################################################################
+    LOG_FORMAT="plain"
+    APPLICATION_LOG_STDOUT="true"
+    ACCESS_LOG_STDOUT="true"
+    # one of "INFO", "DEBUG", "ERROR", "WARNING"
+    LOG_LEVEL="INFO"
+    APPLICATION_LOG_FILE_LEVEL="DEBUG"
+    ACCESS_LOG_LOG_LEVEL="INFO"
+    #APPLICATION_LOG_FILE="./reliably.log"
+    #ACCESS_LOG_FILE="./reliably_access.log"
+
+
+    ###############################################################################
+    # Secret encryption settings
+    ###############################################################################
+    # if you change this, all data already encrypted will be unrecoverable
+    # BE VERY CAREFUL!
+    # The encryption will take place within the application itself
+    # The key MUST be a URL-safe base64-encoded 32-byte key.
+    CRYPTO_PROVIDER="cryptography"
+
+    # This will be set by the Helm chart directly can be overriden here
+    # CRYPTO_CRYPTOGRAPHY_SECRET_KEY="<db_secret_key>"
+
+
+    ###############################################################################
+    # HTTP session signing key
+    ###############################################################################
+    # if you change this, all sessions will be rendered invalid and users will
+    # have to log in again
+    # This will be set by the Helm chart directly can be overriden here
+    # SESSION_SECRET_KEY="<session_secret_key>"
+
+
+    ###############################################################################
+    # Local installation settings
+    ###############################################################################
+    # orgs to create automatically on startup
+    # all users will be automatically added to these orgs when they register
+    DEFAULT_ORGANIZATIONS=["{{ .Values.reliably.organization.default }}"]
+    DEPLOYMENT_STRATEGY="k8s"
+    ENVIRONMENT_STORE_STRATEGY="local"
+
+    ###############################################################################
+    # Feature flags
+    ###############################################################################
+    FEATURE_LOGIN_EMAIL="true"
+    FEATURE_CONTAINER_DEPLOYMENT="false"
+    FEATURE_CLOUD_DEPLOYMENT="false"
+    FEATURE_K8S_JOB_DEPLOYMENT="true"
+    FEATURE_NOTIFICATION_VIA_EMAIL="true"
+    FEATURE_NOTIFICATION_VIA_WEBHOOK="true"
+
+
+    ###############################################################################
+    # Job settings
+    ###############################################################################
+    JOB_CONTAINER_IMAGE="{{ .Values.reliably.job.image }}"
+
+
+    ###############################################################################
+    # Open Telemetry
+    ###############################################################################
+    OTEL_ENABLED="false"
+    OTEL_SERVICE_NAME="reliably"
+    #OTEL_EXPORTER_OTLP_ENDPOINT=
+    #OTEL_EXPORTER_OTLP_HEADERS=
+
+
+    ###############################################################################
+    # Oauth support
+    ###############################################################################
+    #OAUTH_GITHUB_ENABLED="false"
+    #OAUTH_GITHUB_CLIENT_ID=
+    #OAUTH_GITHUB_CLIENT_SECRET=
+
+    #OAUTH_GOOGLE_ENABLED="false"
+    #OAUTH_GOOGLE_CLIENT_ID=
+    #OAUTH_GOOGLE_CLIENT_SECRET=
+
+    #OAUTH_OKTA_ENABLED="false"
+    #OAUTH_OKTA_CLIENT_ID=
+    #OAUTH_OKTA_CLIENT_SECRET=
+    #OAUTH_OKTA_BASE_URL=
+
+
+    ###############################################################################
+    # AI assistant support
+    ###############################################################################
+    ASSISTANT_SCENARIO_ENABLED="true"
+    ASSISTANT_SCENARIO_MODEL="gpt-4o"
+    ASSISTANT_MAX_TOKENS=4096
+    #OPENAI_API_KEY=
+    #ASSISTANT_LIBRARY_FILE=
+
+
+    ###############################################################################
+    # Extra sensitive settings
+    ###############################################################################
+    SENSITIVE_SETTINGS_PROVIDER="kubernetes"
+    SENSITIVE_SETTINGS_KUBERNETES_SECRET_NAME="{{ include "reliably.fullname" . }}"
+    SENSITIVE_SETTINGS_KUBERNETES_SECRET_NS="{{ .Release.Namespace }}"

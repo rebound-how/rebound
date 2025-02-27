@@ -1,0 +1,13 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import TemplateView from "@/components/custom-templates/TemplateView.vue";
+---
+
+<BaseLayout
+  title="Template · Reliably"
+  description="Custom templates allow to quickly create experiments from a reusable template"
+>
+  <div class="container">
+    <TemplateView client:load />
+  </div>
+</BaseLayout>

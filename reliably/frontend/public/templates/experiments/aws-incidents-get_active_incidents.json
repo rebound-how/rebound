@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "name": "get_active_incidents",
+    "labels": [
+      "AWS",
+      "Incidents"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Impact",
+          "key": "impact",
+          "help": "Filter by this impact level. 1 is the highest and 5 is the lowest impact",
+          "placeholder": null,
+          "default": 1,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Created in the Last",
+          "key": "created_in_the_last",
+          "help": "Created after the start of the window. 3 minutes, 2 days...",
+          "placeholder": null,
+          "default": "3 minutes",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Created By",
+          "key": "created_by",
+          "help": "ARN of the incident creator. Useful to filter to a specific role",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "List opened incidents",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "AWS",
+        "Incidents"
+      ],
+      "configuration": {
+        "impact": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_IMPACT",
+          "default": 1,
+          "env_var_type": "int"
+        },
+        "created_in_the_last": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CREATED_IN_THE_LAST",
+          "default": "3 minutes",
+          "env_var_type": "str"
+        },
+        "created_by": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CREATED_BY",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-active-incidents",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.incidents.probes",
+            "func": "get_active_incidents",
+            "arguments": {
+              "impact": "${impact}",
+              "created_in_the_last": "${created_in_the_last}",
+              "created_by": "${created_by}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "metadata": {
+    "name": "deny_all_egress",
+    "labels": [
+      "Kubernetes",
+      "Network"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Namespace",
+          "key": "ns",
+          "help": "",
+          "placeholder": "",
+          "default": "default",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Label Selectors",
+          "key": "label_selectors",
+          "help": "Pod label selectors to target with the action",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Deny all egress from pods",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Kubernetes",
+        "Network"
+      ],
+      "configuration": {
+        "ns": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NS",
+          "default": "default",
+          "env_var_type": "str"
+        },
+        "label_selectors": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LABEL_SELECTORS",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "deny-all-egress",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.networking.actions",
+            "func": "deny_all_egress",
+            "arguments": {
+              "ns": "${ns}",
+              "label_selectors": "${label_selectors}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

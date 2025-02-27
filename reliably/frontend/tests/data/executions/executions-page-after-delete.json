@@ -1,0 +1,2873 @@
+{
+  "count": 24,
+  "items": [
+    {
+      "result": {
+        "end": "2022-09-22T11:45:47.853127",
+        "run": [
+          {
+            "end": "2022-09-22T11:45:42.919143",
+            "start": "2022-09-22T11:40:12.808514",
+            "output": {
+              "status": 0,
+              "stderr": "",
+              "stdout": "{\"success_perc\":100,\"fail_perc\":0,\"success_count\":150,\"fail_count\":0,\"avg_duration\":0.175,\"steps\":{\"1\":{\"name\":\"\",\"status_code_dist\":{\"200\":150},\"error_dist\":{},\"durations\":{\"connection\":0.001,\"dns\":0,\"request_write\":0,\"response_read\":0,\"server_processing\":0.174,\"total\":0.175},\"success_count\":150,\"fail_count\":0,\"success_perc\":100,\"fail_perc\":0}}}\n"
+            },
+            "status": "succeeded",
+            "activity": {
+              "name": "Inject mild load into our application",
+              "type": "action",
+              "provider": {
+                "path": "ddosify",
+                "type": "process",
+                "arguments": "-d 330 -n 150 -o stdout-json -t http://k8s-default-lbdemo-b42659e47c-1929532341.eu-central-1.elb.amazonaws.com/consumer/data"
+              },
+              "background": true
+            },
+            "duration": 330.110629
+          },
+          {
+            "end": "2022-09-22T11:40:14.819604",
+            "start": "2022-09-22T11:40:12.817258",
+            "output": {
+              "DryRun": false,
+              "LoadBalancers": [
+                {
+                  "Type": "application",
+                  "After": {
+                    "SubnetIds": [
+                      "subnet-0be71b8bcc1a209c7",
+                      "subnet-0ecab61e56b44f87e"
+                    ]
+                  },
+                  "Before": {
+                    "SubnetIds": [
+                      "subnet-0be71b8bcc1a209c7",
+                      "subnet-0ecab61e56b44f87e",
+                      "subnet-0bd6f13bfb8796911"
+                    ]
+                  },
+                  "LoadBalancerName": "k8s-default-lbdemo-b42659e47c"
+                }
+              ],
+              "AvailabilityZone": "eu-central-1b"
+            },
+            "status": "succeeded",
+            "activity": {
+              "name": "Simulate AZ Failure for ALB",
+              "type": "action",
+              "pauses": {
+                "after": 300
+              },
+              "provider": {
+                "func": "fail_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions",
+                "arguments": {
+                  "az": "eu-central-1b",
+                  "tags": [
+                    {
+                      "Key": "ingress.k8s.aws/stack",
+                      "Value": "default/lb-demo"
+                    }
+                  ],
+                  "dry_run": false
+                }
+              }
+            },
+            "duration": 2.002346
+          }
+        ],
+        "node": "fv-az449-39",
+        "start": "2022-09-22T11:40:09.927479",
+        "status": "completed",
+        "deviated": false,
+        "duration": 337.9275803565979,
+        "platform": "Linux-5.15.0-1019-azure-x86_64-with-glibc2.31",
+        "rollbacks": [
+          {
+            "end": "2022-09-22T11:45:47.130446",
+            "start": "2022-09-22T11:45:45.836950",
+            "output": true,
+            "status": "succeeded",
+            "activity": {
+              "name": "Recover AZ Failure for ALB",
+              "type": "action",
+              "provider": {
+                "func": "recover_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions"
+              }
+            },
+            "duration": 1.293496
+          }
+        ],
+        "experiment": {
+          "dry": null,
+          "tags": ["aws", "az", "kubernetes"],
+          "title": "Losing an AZ should not impact availability",
+          "method": [
+            {
+              "name": "Inject mild load into our application",
+              "type": "action",
+              "provider": {
+                "path": "ddosify",
+                "type": "process",
+                "arguments": "-d 330 -n 150 -o stdout-json -t http://k8s-default-lbdemo-b42659e47c-1929532341.eu-central-1.elb.amazonaws.com/consumer/data"
+              },
+              "background": true
+            },
+            {
+              "name": "Simulate AZ Failure for ALB",
+              "type": "action",
+              "pauses": {
+                "after": 300
+              },
+              "provider": {
+                "func": "fail_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions",
+                "arguments": {
+                  "az": "eu-central-1b",
+                  "tags": [
+                    {
+                      "Key": "ingress.k8s.aws/stack",
+                      "Value": "default/lb-demo"
+                    }
+                  ],
+                  "dry_run": false
+                }
+              }
+            }
+          ],
+          "secrets": {
+            "slack": {
+              "token": {
+                "key": "SLACK_TOKEN",
+                "type": "env"
+              }
+            }
+          },
+          "controls": [
+            {
+              "name": "reliably",
+              "provider": {
+                "type": "python",
+                "module": "chaosreliably.controls.experiment",
+                "arguments": {
+                  "exp_id": "4e6f6a1f-ebac-41c0-be7b-ac79803d896a",
+                  "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc"
+                }
+              }
+            },
+            {
+              "name": "slack",
+              "provider": {
+                "type": "python",
+                "module": "chaosslack.control",
+                "secrets": ["slack"],
+                "arguments": {
+                  "channel": "chaosdemo"
+                }
+              }
+            },
+            {
+              "name": "opentracing",
+              "provider": {
+                "type": "python",
+                "module": "chaostracing.control"
+              }
+            },
+            {
+              "name": "reliably",
+              "provider": {
+                "type": "python",
+                "module": "chaosreliably.controls.experiment",
+                "arguments": {
+                  "exp_id": "5653c16d-1e17-44b4-9f12-2fea9b246749",
+                  "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc"
+                }
+              }
+            }
+          ],
+          "rollbacks": [
+            {
+              "name": "Recover AZ Failure for ALB",
+              "type": "action",
+              "provider": {
+                "func": "recover_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions"
+              }
+            }
+          ],
+          "description": "Remove all subnets of a zone from the load balancer so that zone cannot be accessed anymore from the internet",
+          "configuration": {
+            "aws_region": "eu-central-1",
+            "tracing_provider": "opentelemetry",
+            "tracing_opentelemetry_exporter": "oltp-http",
+            "tracing_opentelemetry_baggage_prefix": "b3",
+            "tracing_opentelemetry_collector_endpoint": "https://api.honeycomb.io/v1/traces"
+          },
+          "contributions": {
+            "latency": "low",
+            "security": "none",
+            "availability": "high"
+          },
+          "steady-state-hypothesis": {
+            "title": "Users should always see the service available",
+            "probes": [
+              {
+                "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                "type": "action",
+                "provider": {
+                  "func": "get_metric_statistics",
+                  "type": "python",
+                  "module": "chaosaws.cloudwatch.probes",
+                  "arguments": {
+                    "duration": 300,
+                    "namespace": "AWS/ApplicationELB",
+                    "statistic": "Sum",
+                    "metric_name": "HTTPCode_ELB_503_Count",
+                    "dimension_name": "LoadBalancer",
+                    "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                  }
+                },
+                "tolerance": 0
+              }
+            ]
+          }
+        },
+        "steady_states": {
+          "after": {
+            "probes": [
+              {
+                "end": "2022-09-22T11:45:44.664380",
+                "start": "2022-09-22T11:45:43.990246",
+                "output": 0,
+                "status": "succeeded",
+                "activity": {
+                  "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                  "type": "action",
+                  "provider": {
+                    "func": "get_metric_statistics",
+                    "type": "python",
+                    "module": "chaosaws.cloudwatch.probes",
+                    "arguments": {
+                      "duration": 300,
+                      "namespace": "AWS/ApplicationELB",
+                      "statistic": "Sum",
+                      "metric_name": "HTTPCode_ELB_503_Count",
+                      "dimension_name": "LoadBalancer",
+                      "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                    }
+                  },
+                  "tolerance": 0
+                },
+                "duration": 0.674134,
+                "tolerance_met": true
+              }
+            ],
+            "steady_state_met": true
+          },
+          "before": {
+            "probes": [
+              {
+                "end": "2022-09-22T11:40:11.557435",
+                "start": "2022-09-22T11:40:10.826785",
+                "output": 0,
+                "status": "succeeded",
+                "activity": {
+                  "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                  "type": "action",
+                  "provider": {
+                    "func": "get_metric_statistics",
+                    "type": "python",
+                    "module": "chaosaws.cloudwatch.probes",
+                    "arguments": {
+                      "duration": 300,
+                      "namespace": "AWS/ApplicationELB",
+                      "statistic": "Sum",
+                      "metric_name": "HTTPCode_ELB_503_Count",
+                      "dimension_name": "LoadBalancer",
+                      "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                    }
+                  },
+                  "tolerance": 0
+                },
+                "duration": 0.73065,
+                "tolerance_met": true
+              }
+            ],
+            "steady_state_met": true
+          },
+          "during": []
+        },
+        "chaoslib-version": "1.28.0"
+      },
+      "id": "59b92bba-9071-48f9-a110-665b3afa790a",
+      "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc",
+      "experiment_id": "5653c16d-1e17-44b4-9f12-2fea9b246749",
+      "plan_id": null,
+      "created_date": "2022-09-22T11:45:49.054927+00:00"
+    },
+    {
+      "result": {
+        "end": "2022-09-22T10:53:12.869475",
+        "run": [
+          {
+            "end": "2022-09-22T10:53:09.909416",
+            "start": "2022-09-22T10:47:39.795463",
+            "output": {
+              "status": 0,
+              "stderr": "",
+              "stdout": "{\"success_perc\":100,\"fail_perc\":0,\"success_count\":150,\"fail_count\":0,\"avg_duration\":0.089,\"steps\":{\"1\":{\"name\":\"\",\"status_code_dist\":{\"200\":3,\"503\":147},\"error_dist\":{},\"durations\":{\"connection\":0.001,\"dns\":0,\"request_write\":0,\"response_read\":0,\"server_processing\":0.088,\"total\":0.089},\"success_count\":150,\"fail_count\":0,\"success_perc\":100,\"fail_perc\":0}}}\n"
+            },
+            "status": "succeeded",
+            "activity": {
+              "name": "Inject mild load into our application",
+              "type": "action",
+              "provider": {
+                "path": "ddosify",
+                "type": "process",
+                "arguments": "-d 330 -n 150 -o stdout-json -t http://k8s-default-lbdemo-b42659e47c-1929532341.eu-central-1.elb.amazonaws.com/consumer/data"
+              },
+              "background": true
+            },
+            "duration": 330.113953
+          },
+          {
+            "end": "2022-09-22T10:47:41.021091",
+            "start": "2022-09-22T10:47:39.766584",
+            "output": {
+              "DryRun": false,
+              "LoadBalancers": [
+                {
+                  "Type": "application",
+                  "After": {
+                    "SubnetIds": [
+                      "subnet-0be71b8bcc1a209c7",
+                      "subnet-0ecab61e56b44f87e"
+                    ]
+                  },
+                  "Before": {
+                    "SubnetIds": [
+                      "subnet-0be71b8bcc1a209c7",
+                      "subnet-0ecab61e56b44f87e",
+                      "subnet-0bd6f13bfb8796911"
+                    ]
+                  },
+                  "LoadBalancerName": "k8s-default-lbdemo-b42659e47c"
+                }
+              ],
+              "AvailabilityZone": "eu-central-1b"
+            },
+            "status": "succeeded",
+            "activity": {
+              "name": "Simulate AZ Failure for ALB",
+              "type": "action",
+              "pauses": {
+                "after": 300
+              },
+              "provider": {
+                "func": "fail_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions",
+                "arguments": {
+                  "az": "eu-central-1b",
+                  "tags": [
+                    {
+                      "Key": "ingress.k8s.aws/stack",
+                      "Value": "default/lb-demo"
+                    }
+                  ],
+                  "dry_run": false
+                }
+              }
+            },
+            "duration": 1.254507
+          }
+        ],
+        "node": "fv-az167-530",
+        "start": "2022-09-22T10:47:37.926916",
+        "status": "failed",
+        "deviated": true,
+        "duration": 334.94435811042786,
+        "platform": "Linux-5.15.0-1019-azure-x86_64-with-glibc2.31",
+        "rollbacks": [
+          {
+            "end": "2022-09-22T10:53:12.513474",
+            "start": "2022-09-22T10:53:11.623416",
+            "output": true,
+            "status": "succeeded",
+            "activity": {
+              "name": "Recover AZ Failure for ALB",
+              "type": "action",
+              "provider": {
+                "func": "recover_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions"
+              }
+            },
+            "duration": 0.890058
+          }
+        ],
+        "experiment": {
+          "dry": null,
+          "tags": ["aws", "az", "kubernetes"],
+          "title": "Losing an AZ should not impact availability",
+          "method": [
+            {
+              "name": "Inject mild load into our application",
+              "type": "action",
+              "provider": {
+                "path": "ddosify",
+                "type": "process",
+                "arguments": "-d 330 -n 150 -o stdout-json -t http://k8s-default-lbdemo-b42659e47c-1929532341.eu-central-1.elb.amazonaws.com/consumer/data"
+              },
+              "background": true
+            },
+            {
+              "name": "Simulate AZ Failure for ALB",
+              "type": "action",
+              "pauses": {
+                "after": 300
+              },
+              "provider": {
+                "func": "fail_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions",
+                "arguments": {
+                  "az": "eu-central-1b",
+                  "tags": [
+                    {
+                      "Key": "ingress.k8s.aws/stack",
+                      "Value": "default/lb-demo"
+                    }
+                  ],
+                  "dry_run": false
+                }
+              }
+            }
+          ],
+          "secrets": {
+            "slack": {
+              "token": {
+                "key": "SLACK_TOKEN",
+                "type": "env"
+              }
+            }
+          },
+          "controls": [
+            {
+              "name": "reliably",
+              "provider": {
+                "type": "python",
+                "module": "chaosreliably.controls.experiment",
+                "arguments": {
+                  "exp_id": "4e6f6a1f-ebac-41c0-be7b-ac79803d896a",
+                  "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc"
+                }
+              }
+            },
+            {
+              "name": "slack",
+              "provider": {
+                "type": "python",
+                "module": "chaosslack.control",
+                "secrets": ["slack"],
+                "arguments": {
+                  "channel": "chaosdemo"
+                }
+              }
+            },
+            {
+              "name": "opentracing",
+              "provider": {
+                "type": "python",
+                "module": "chaostracing.control"
+              }
+            },
+            {
+              "name": "reliably",
+              "provider": {
+                "type": "python",
+                "module": "chaosreliably.controls.experiment",
+                "arguments": {
+                  "exp_id": "5653c16d-1e17-44b4-9f12-2fea9b246749",
+                  "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc"
+                }
+              }
+            }
+          ],
+          "rollbacks": [
+            {
+              "name": "Recover AZ Failure for ALB",
+              "type": "action",
+              "provider": {
+                "func": "recover_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions"
+              }
+            }
+          ],
+          "description": "Remove all subnets of a zone from the load balancer so that zone cannot be accessed anymore from the internet",
+          "configuration": {
+            "aws_region": "eu-central-1",
+            "tracing_provider": "opentelemetry",
+            "tracing_opentelemetry_exporter": "oltp-http",
+            "tracing_opentelemetry_baggage_prefix": "b3",
+            "tracing_opentelemetry_collector_endpoint": "https://api.honeycomb.io/v1/traces"
+          },
+          "contributions": {
+            "latency": "low",
+            "security": "none",
+            "availability": "high"
+          },
+          "steady-state-hypothesis": {
+            "title": "Users should always see the service available",
+            "probes": [
+              {
+                "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                "type": "action",
+                "provider": {
+                  "func": "get_metric_statistics",
+                  "type": "python",
+                  "module": "chaosaws.cloudwatch.probes",
+                  "arguments": {
+                    "duration": 300,
+                    "namespace": "AWS/ApplicationELB",
+                    "statistic": "Sum",
+                    "metric_name": "HTTPCode_ELB_503_Count",
+                    "dimension_name": "LoadBalancer",
+                    "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                  }
+                },
+                "tolerance": 0
+              }
+            ]
+          }
+        },
+        "steady_states": {
+          "after": {
+            "probes": [
+              {
+                "end": "2022-09-22T10:53:10.910061",
+                "start": "2022-09-22T10:53:10.511491",
+                "output": 129,
+                "status": "succeeded",
+                "activity": {
+                  "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                  "type": "action",
+                  "provider": {
+                    "func": "get_metric_statistics",
+                    "type": "python",
+                    "module": "chaosaws.cloudwatch.probes",
+                    "arguments": {
+                      "duration": 300,
+                      "namespace": "AWS/ApplicationELB",
+                      "statistic": "Sum",
+                      "metric_name": "HTTPCode_ELB_503_Count",
+                      "dimension_name": "LoadBalancer",
+                      "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                    }
+                  },
+                  "tolerance": 0
+                },
+                "duration": 0.39857,
+                "tolerance_met": false
+              }
+            ],
+            "steady_state_met": false
+          },
+          "before": {
+            "probes": [
+              {
+                "end": "2022-09-22T10:47:38.986427",
+                "start": "2022-09-22T10:47:38.545105",
+                "output": 0,
+                "status": "succeeded",
+                "activity": {
+                  "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                  "type": "action",
+                  "provider": {
+                    "func": "get_metric_statistics",
+                    "type": "python",
+                    "module": "chaosaws.cloudwatch.probes",
+                    "arguments": {
+                      "duration": 300,
+                      "namespace": "AWS/ApplicationELB",
+                      "statistic": "Sum",
+                      "metric_name": "HTTPCode_ELB_503_Count",
+                      "dimension_name": "LoadBalancer",
+                      "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                    }
+                  },
+                  "tolerance": 0
+                },
+                "duration": 0.441322,
+                "tolerance_met": true
+              }
+            ],
+            "steady_state_met": true
+          },
+          "during": []
+        },
+        "chaoslib-version": "1.28.0"
+      },
+      "id": "91da1d68-39b8-448e-afb7-4f4b04c45e88",
+      "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc",
+      "experiment_id": "5653c16d-1e17-44b4-9f12-2fea9b246749",
+      "plan_id": null,
+      "created_date": "2022-09-22T10:53:13.390957+00:00"
+    },
+    {
+      "result": {
+        "end": "2022-09-22T09:44:31.448322",
+        "run": [
+          {
+            "end": "2022-09-22T09:44:26.538025",
+            "start": "2022-09-22T09:38:56.427122",
+            "output": {
+              "status": 0,
+              "stderr": "",
+              "stdout": "{\"success_perc\":100,\"fail_perc\":0,\"success_count\":150,\"fail_count\":0,\"avg_duration\":0.16,\"steps\":{\"1\":{\"name\":\"\",\"status_code_dist\":{\"200\":6,\"503\":144},\"error_dist\":{},\"durations\":{\"connection\":0.001,\"dns\":0,\"request_write\":0,\"response_read\":0,\"server_processing\":0.159,\"total\":0.16},\"success_count\":150,\"fail_count\":0,\"success_perc\":100,\"fail_perc\":0}}}\n"
+            },
+            "status": "succeeded",
+            "activity": {
+              "name": "Inject mild load into our application",
+              "type": "action",
+              "provider": {
+                "path": "ddosify",
+                "type": "process",
+                "arguments": "-d 330 -n 150 -o stdout-json -t http://k8s-default-lbdemo-b42659e47c-1929532341.eu-central-1.elb.amazonaws.com/consumer/data"
+              },
+              "background": true
+            },
+            "duration": 330.110903
+          },
+          {
+            "end": "2022-09-22T09:38:58.328266",
+            "start": "2022-09-22T09:38:56.498639",
+            "output": {
+              "DryRun": false,
+              "LoadBalancers": [
+                {
+                  "Type": "application",
+                  "After": {
+                    "SubnetIds": [
+                      "subnet-0be71b8bcc1a209c7",
+                      "subnet-0ecab61e56b44f87e"
+                    ]
+                  },
+                  "Before": {
+                    "SubnetIds": [
+                      "subnet-0ecab61e56b44f87e",
+                      "subnet-0bd6f13bfb8796911",
+                      "subnet-0be71b8bcc1a209c7"
+                    ]
+                  },
+                  "LoadBalancerName": "k8s-default-lbdemo-b42659e47c"
+                }
+              ],
+              "AvailabilityZone": "eu-central-1b"
+            },
+            "status": "succeeded",
+            "activity": {
+              "name": "Simulate AZ Failure for ALB",
+              "type": "action",
+              "pauses": {
+                "after": 300
+              },
+              "provider": {
+                "func": "fail_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions",
+                "arguments": {
+                  "az": "eu-central-1b",
+                  "tags": [
+                    {
+                      "Key": "ingress.k8s.aws/stack",
+                      "Value": "default/lb-demo"
+                    }
+                  ],
+                  "dry_run": false
+                }
+              }
+            },
+            "duration": 1.829627
+          }
+        ],
+        "node": "fv-az449-39",
+        "start": "2022-09-22T09:38:53.622797",
+        "status": "failed",
+        "deviated": true,
+        "duration": 337.8276867866516,
+        "platform": "Linux-5.15.0-1019-azure-x86_64-with-glibc2.31",
+        "rollbacks": [
+          {
+            "end": "2022-09-22T09:44:30.905437",
+            "start": "2022-09-22T09:44:29.535301",
+            "output": true,
+            "status": "succeeded",
+            "activity": {
+              "name": "Recover AZ Failure for ALB",
+              "type": "action",
+              "provider": {
+                "func": "recover_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions"
+              }
+            },
+            "duration": 1.370136
+          }
+        ],
+        "experiment": {
+          "dry": null,
+          "tags": ["aws", "az", "kubernetes"],
+          "title": "Losing an AZ should not impact availability",
+          "method": [
+            {
+              "name": "Inject mild load into our application",
+              "type": "action",
+              "provider": {
+                "path": "ddosify",
+                "type": "process",
+                "arguments": "-d 330 -n 150 -o stdout-json -t http://k8s-default-lbdemo-b42659e47c-1929532341.eu-central-1.elb.amazonaws.com/consumer/data"
+              },
+              "background": true
+            },
+            {
+              "name": "Simulate AZ Failure for ALB",
+              "type": "action",
+              "pauses": {
+                "after": 300
+              },
+              "provider": {
+                "func": "fail_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions",
+                "arguments": {
+                  "az": "eu-central-1b",
+                  "tags": [
+                    {
+                      "Key": "ingress.k8s.aws/stack",
+                      "Value": "default/lb-demo"
+                    }
+                  ],
+                  "dry_run": false
+                }
+              }
+            }
+          ],
+          "secrets": {
+            "slack": {
+              "token": {
+                "key": "SLACK_TOKEN",
+                "type": "env"
+              }
+            }
+          },
+          "controls": [
+            {
+              "name": "reliably",
+              "provider": {
+                "type": "python",
+                "module": "chaosreliably.controls.experiment",
+                "arguments": {
+                  "exp_id": "4e6f6a1f-ebac-41c0-be7b-ac79803d896a",
+                  "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc"
+                }
+              }
+            },
+            {
+              "name": "slack",
+              "provider": {
+                "type": "python",
+                "module": "chaosslack.control",
+                "secrets": ["slack"],
+                "arguments": {
+                  "channel": "chaosdemo"
+                }
+              }
+            },
+            {
+              "name": "opentracing",
+              "provider": {
+                "type": "python",
+                "module": "chaostracing.control"
+              }
+            },
+            {
+              "name": "reliably",
+              "provider": {
+                "type": "python",
+                "module": "chaosreliably.controls.experiment",
+                "arguments": {
+                  "exp_id": "5653c16d-1e17-44b4-9f12-2fea9b246749",
+                  "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc"
+                }
+              }
+            }
+          ],
+          "rollbacks": [
+            {
+              "name": "Recover AZ Failure for ALB",
+              "type": "action",
+              "provider": {
+                "func": "recover_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions"
+              }
+            }
+          ],
+          "description": "Remove all subnets of a zone from the load balancer so that zone cannot be accessed anymore from the internet",
+          "configuration": {
+            "aws_region": "eu-central-1",
+            "tracing_provider": "opentelemetry",
+            "tracing_opentelemetry_exporter": "oltp-http",
+            "tracing_opentelemetry_baggage_prefix": "b3",
+            "tracing_opentelemetry_collector_endpoint": "https://api.honeycomb.io/v1/traces"
+          },
+          "contributions": {
+            "latency": "low",
+            "security": "none",
+            "availability": "high"
+          },
+          "steady-state-hypothesis": {
+            "title": "Users should always see the service available",
+            "probes": [
+              {
+                "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                "type": "action",
+                "provider": {
+                  "func": "get_metric_statistics",
+                  "type": "python",
+                  "module": "chaosaws.cloudwatch.probes",
+                  "arguments": {
+                    "duration": 300,
+                    "namespace": "AWS/ApplicationELB",
+                    "statistic": "Sum",
+                    "metric_name": "HTTPCode_ELB_503_Count",
+                    "dimension_name": "LoadBalancer",
+                    "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                  }
+                },
+                "tolerance": 0
+              }
+            ]
+          }
+        },
+        "steady_states": {
+          "after": {
+            "probes": [
+              {
+                "end": "2022-09-22T09:44:28.298178",
+                "start": "2022-09-22T09:44:27.620891",
+                "output": 144,
+                "status": "succeeded",
+                "activity": {
+                  "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                  "type": "action",
+                  "provider": {
+                    "func": "get_metric_statistics",
+                    "type": "python",
+                    "module": "chaosaws.cloudwatch.probes",
+                    "arguments": {
+                      "duration": 300,
+                      "namespace": "AWS/ApplicationELB",
+                      "statistic": "Sum",
+                      "metric_name": "HTTPCode_ELB_503_Count",
+                      "dimension_name": "LoadBalancer",
+                      "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                    }
+                  },
+                  "tolerance": 0
+                },
+                "duration": 0.677287,
+                "tolerance_met": false
+              }
+            ],
+            "steady_state_met": false
+          },
+          "before": {
+            "probes": [
+              {
+                "end": "2022-09-22T09:38:55.287484",
+                "start": "2022-09-22T09:38:54.568585",
+                "output": 0,
+                "status": "succeeded",
+                "activity": {
+                  "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                  "type": "action",
+                  "provider": {
+                    "func": "get_metric_statistics",
+                    "type": "python",
+                    "module": "chaosaws.cloudwatch.probes",
+                    "arguments": {
+                      "duration": 300,
+                      "namespace": "AWS/ApplicationELB",
+                      "statistic": "Sum",
+                      "metric_name": "HTTPCode_ELB_503_Count",
+                      "dimension_name": "LoadBalancer",
+                      "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                    }
+                  },
+                  "tolerance": 0
+                },
+                "duration": 0.718899,
+                "tolerance_met": true
+              }
+            ],
+            "steady_state_met": true
+          },
+          "during": []
+        },
+        "chaoslib-version": "1.28.0"
+      },
+      "id": "e0c1d774-55a8-4615-9a30-95413ba77b25",
+      "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc",
+      "experiment_id": "5653c16d-1e17-44b4-9f12-2fea9b246749",
+      "plan_id": null,
+      "created_date": "2022-09-22T09:44:32.363331+00:00"
+    },
+    {
+      "result": {
+        "end": "2022-09-22T09:33:15.398158",
+        "run": [
+          {
+            "end": "2022-09-22T09:33:14.056370",
+            "start": "2022-09-22T09:27:43.940306",
+            "output": {
+              "status": 0,
+              "stderr": "",
+              "stdout": "{\"success_perc\":100,\"fail_perc\":0,\"success_count\":150,\"fail_count\":0,\"avg_duration\":0.104,\"steps\":{\"1\":{\"name\":\"\",\"status_code_dist\":{\"200\":150},\"error_dist\":{},\"durations\":{\"connection\":0.001,\"dns\":0,\"request_write\":0,\"response_read\":0,\"server_processing\":0.103,\"total\":0.104},\"success_count\":150,\"fail_count\":0,\"success_perc\":100,\"fail_perc\":0}}}\n"
+            },
+            "status": "succeeded",
+            "activity": {
+              "name": "Inject mild load into our application",
+              "type": "action",
+              "provider": {
+                "path": "ddosify",
+                "type": "process",
+                "arguments": "-d 330 -n 150 -o stdout-json -t http://k8s-default-lbdemo-b42659e47c-1929532341.eu-central-1.elb.amazonaws.com/consumer/data"
+              },
+              "background": true
+            },
+            "duration": 330.116064
+          },
+          {
+            "end": "2022-09-22T09:27:45.248567",
+            "start": "2022-09-22T09:27:43.941441",
+            "output": {
+              "DryRun": false,
+              "LoadBalancers": [
+                {
+                  "Type": "application",
+                  "After": {
+                    "SubnetIds": [
+                      "subnet-0bd6f13bfb8796911",
+                      "subnet-0ecab61e56b44f87e"
+                    ]
+                  },
+                  "Before": {
+                    "SubnetIds": [
+                      "subnet-0bd6f13bfb8796911",
+                      "subnet-0ecab61e56b44f87e",
+                      "subnet-0be71b8bcc1a209c7"
+                    ]
+                  },
+                  "LoadBalancerName": "k8s-default-lbdemo-b42659e47c"
+                }
+              ],
+              "AvailabilityZone": "eu-central-1c"
+            },
+            "status": "succeeded",
+            "activity": {
+              "name": "Simulate AZ Failure for ALB",
+              "type": "action",
+              "pauses": {
+                "after": 300
+              },
+              "provider": {
+                "func": "fail_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions",
+                "arguments": {
+                  "az": "eu-central-1c",
+                  "tags": [
+                    {
+                      "Key": "ingress.k8s.aws/stack",
+                      "Value": "default/lb-demo"
+                    }
+                  ],
+                  "dry_run": false
+                }
+              }
+            },
+            "duration": 1.307126
+          }
+        ],
+        "node": "fv-az182-106",
+        "start": "2022-09-22T09:27:43.305127",
+        "status": "completed",
+        "deviated": false,
+        "duration": 332.0947194099426,
+        "platform": "Linux-5.15.0-1019-azure-x86_64-with-glibc2.31",
+        "rollbacks": [
+          {
+            "end": "2022-09-22T09:33:15.397164",
+            "start": "2022-09-22T09:33:14.466938",
+            "output": true,
+            "status": "succeeded",
+            "activity": {
+              "name": "Recover AZ Failure for ALB",
+              "type": "action",
+              "provider": {
+                "func": "recover_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions"
+              }
+            },
+            "duration": 0.930226
+          }
+        ],
+        "experiment": {
+          "dry": null,
+          "tags": ["aws", "az", "kubernetes"],
+          "title": "Losing an AZ should not impact availability",
+          "method": [
+            {
+              "name": "Inject mild load into our application",
+              "type": "action",
+              "provider": {
+                "path": "ddosify",
+                "type": "process",
+                "arguments": "-d 330 -n 150 -o stdout-json -t http://k8s-default-lbdemo-b42659e47c-1929532341.eu-central-1.elb.amazonaws.com/consumer/data"
+              },
+              "background": true
+            },
+            {
+              "name": "Simulate AZ Failure for ALB",
+              "type": "action",
+              "pauses": {
+                "after": 300
+              },
+              "provider": {
+                "func": "fail_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions",
+                "arguments": {
+                  "az": "eu-central-1c",
+                  "tags": [
+                    {
+                      "Key": "ingress.k8s.aws/stack",
+                      "Value": "default/lb-demo"
+                    }
+                  ],
+                  "dry_run": false
+                }
+              }
+            }
+          ],
+          "controls": [
+            {
+              "name": "opentracing",
+              "provider": {
+                "type": "python",
+                "module": "chaostracing.control"
+              }
+            },
+            {
+              "name": "reliably",
+              "provider": {
+                "type": "python",
+                "module": "chaosreliably.controls.experiment",
+                "arguments": {
+                  "exp_id": "4e6f6a1f-ebac-41c0-be7b-ac79803d896a",
+                  "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc"
+                }
+              }
+            }
+          ],
+          "rollbacks": [
+            {
+              "name": "Recover AZ Failure for ALB",
+              "type": "action",
+              "provider": {
+                "func": "recover_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions"
+              }
+            }
+          ],
+          "description": "Remove all subnets of a zone from the load balancer so that zone cannot be accessed anymore from the internet",
+          "configuration": {
+            "aws_region": "eu-central-1",
+            "tracing_provider": "opentelemetry",
+            "tracing_opentelemetry_exporter": "oltp-http",
+            "tracing_opentelemetry_baggage_prefix": "b3",
+            "tracing_opentelemetry_collector_endpoint": "https://api.honeycomb.io/v1/traces"
+          },
+          "contributions": {
+            "latency": "low",
+            "availability": "high"
+          },
+          "steady-state-hypothesis": {
+            "title": "Users should always see the service available",
+            "probes": [
+              {
+                "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                "type": "action",
+                "provider": {
+                  "func": "get_metric_statistics",
+                  "type": "python",
+                  "module": "chaosaws.cloudwatch.probes",
+                  "arguments": {
+                    "duration": 300,
+                    "namespace": "AWS/ApplicationELB",
+                    "statistic": "Sum",
+                    "metric_name": "HTTPCode_ELB_503_Count",
+                    "dimension_name": "LoadBalancer",
+                    "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                  }
+                },
+                "tolerance": 0
+              }
+            ]
+          }
+        },
+        "steady_states": {
+          "after": {
+            "probes": [
+              {
+                "end": "2022-09-22T09:33:14.464501",
+                "start": "2022-09-22T09:33:14.059231",
+                "output": 0,
+                "status": "succeeded",
+                "activity": {
+                  "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                  "type": "action",
+                  "provider": {
+                    "func": "get_metric_statistics",
+                    "type": "python",
+                    "module": "chaosaws.cloudwatch.probes",
+                    "arguments": {
+                      "duration": 300,
+                      "namespace": "AWS/ApplicationELB",
+                      "statistic": "Sum",
+                      "metric_name": "HTTPCode_ELB_503_Count",
+                      "dimension_name": "LoadBalancer",
+                      "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                    }
+                  },
+                  "tolerance": 0
+                },
+                "duration": 0.40527,
+                "tolerance_met": true
+              }
+            ],
+            "steady_state_met": true
+          },
+          "before": {
+            "probes": [
+              {
+                "end": "2022-09-22T09:27:43.935212",
+                "start": "2022-09-22T09:27:43.485883",
+                "output": 0,
+                "status": "succeeded",
+                "activity": {
+                  "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                  "type": "action",
+                  "provider": {
+                    "func": "get_metric_statistics",
+                    "type": "python",
+                    "module": "chaosaws.cloudwatch.probes",
+                    "arguments": {
+                      "duration": 300,
+                      "namespace": "AWS/ApplicationELB",
+                      "statistic": "Sum",
+                      "metric_name": "HTTPCode_ELB_503_Count",
+                      "dimension_name": "LoadBalancer",
+                      "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                    }
+                  },
+                  "tolerance": 0
+                },
+                "duration": 0.449329,
+                "tolerance_met": true
+              }
+            ],
+            "steady_state_met": true
+          },
+          "during": []
+        },
+        "chaoslib-version": "1.28.0"
+      },
+      "id": "bb5e7f87-de1a-4fd2-9894-4a3c986b8f95",
+      "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc",
+      "experiment_id": "4e6f6a1f-ebac-41c0-be7b-ac79803d896a",
+      "plan_id": null,
+      "created_date": "2022-09-22T09:33:15.530511+00:00"
+    },
+    {
+      "result": {
+        "end": "2022-09-22T09:19:56.423236",
+        "run": [],
+        "node": "fv-az505-350",
+        "start": "2022-09-22T09:19:55.477485",
+        "status": "failed",
+        "deviated": false,
+        "duration": 0.94852614402771,
+        "platform": "Linux-5.15.0-1019-azure-x86_64-with-glibc2.31",
+        "rollbacks": [
+          {
+            "end": "2022-09-22T09:19:56.422289",
+            "start": "2022-09-22T09:19:56.420829",
+            "output": null,
+            "status": "failed",
+            "activity": {
+              "name": "Recover AZ Failure for ALB",
+              "type": "action",
+              "provider": {
+                "func": "recover_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions"
+              }
+            },
+            "duration": 0.00146,
+            "exception": [
+              "Traceback (most recent call last):\n",
+              "  File \"/opt/hostedtoolcache/Python/3.10.6/x64/lib/python3.10/site-packages/chaoslib/provider/python.py\", line 56, in run_python_activity\n    return func(**arguments)\n",
+              "  File \"/opt/hostedtoolcache/Python/3.10.6/x64/lib/python3.10/site-packages/azchaosaws/elbv2/actions.py\", line 173, in recover_az\n    state_path = validate_fail_az_path(\n",
+              "  File \"/opt/hostedtoolcache/Python/3.10.6/x64/lib/python3.10/site-packages/azchaosaws/helpers.py\", line 42, in validate_fail_az_path\n    raise FailedActivity(\n",
+              "chaoslib.exceptions.ActivityFailed: [ELBV2] To rollback AZ failure, you must specify the path to the file generated from fail_az (fail_az.elbv2.json)\n",
+              "\nDuring handling of the above exception, another exception occurred:\n\n",
+              "chaoslib.exceptions.ActivityFailed: chaoslib.exceptions.ActivityFailed: [ELBV2] To rollback AZ failure, you must specify the path to the file generated from fail_az (fail_az.elbv2.json)\n"
+            ]
+          }
+        ],
+        "experiment": {
+          "dry": null,
+          "tags": ["aws", "az", "kubernetes"],
+          "title": "Losing an AZ should not impact availability",
+          "method": [
+            {
+              "name": "Inject mild load into our application",
+              "type": "action",
+              "provider": {
+                "path": "ddosify",
+                "type": "process",
+                "arguments": "-d 330 -n 150 -o stdout-json -t http://k8s-default-lbdemo-b42659e47c-1929532341.eu-central-1.elb.amazonaws.com/consumer/data"
+              },
+              "background": true
+            },
+            {
+              "name": "Simulate AZ Failure for ALB",
+              "type": "action",
+              "pauses": {
+                "after": 300
+              },
+              "provider": {
+                "func": "fail_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions",
+                "arguments": {
+                  "az": "eu-central-1c",
+                  "tags": [
+                    {
+                      "Key": "ingress.k8s.aws/stack",
+                      "Value": "default/lb-demo"
+                    }
+                  ],
+                  "dry_run": false
+                }
+              }
+            }
+          ],
+          "controls": [
+            {
+              "name": "opentracing",
+              "provider": {
+                "type": "python",
+                "module": "chaostracing.control"
+              }
+            },
+            {
+              "name": "reliably",
+              "provider": {
+                "type": "python",
+                "module": "chaosreliably.controls.experiment",
+                "arguments": {
+                  "exp_id": "4e6f6a1f-ebac-41c0-be7b-ac79803d896a",
+                  "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc"
+                }
+              }
+            }
+          ],
+          "rollbacks": [
+            {
+              "name": "Recover AZ Failure for ALB",
+              "type": "action",
+              "provider": {
+                "func": "recover_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions"
+              }
+            }
+          ],
+          "description": "Remove all subnets of a zone from the load balancer so that zone cannot be accessed anymore from the internet",
+          "configuration": {
+            "aws_region": "eu-central-1",
+            "tracing_provider": "opentelemetry",
+            "tracing_opentelemetry_exporter": "oltp-http",
+            "tracing_opentelemetry_baggage_prefix": "b3",
+            "tracing_opentelemetry_collector_endpoint": "https://api.honeycomb.io/v1/traces"
+          },
+          "contributions": {
+            "latency": "low",
+            "availability": "high"
+          },
+          "steady-state-hypothesis": {
+            "title": "Users should always see the service available",
+            "probes": [
+              {
+                "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                "type": "action",
+                "provider": {
+                  "func": "get_metric_statistics",
+                  "type": "python",
+                  "module": "chaosaws.cloudwatch.probes",
+                  "arguments": {
+                    "duration": 300,
+                    "namespace": "AWS/ApplicationELB",
+                    "statistic": "Sum",
+                    "metric_name": "HTTPCode_ELB_503_Count",
+                    "dimension_name": "LoadBalancer",
+                    "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                  }
+                },
+                "tolerance": 0
+              }
+            ]
+          }
+        },
+        "steady_states": {
+          "after": null,
+          "before": {
+            "probes": [
+              {
+                "end": "2022-09-22T09:19:56.416356",
+                "start": "2022-09-22T09:19:55.684626",
+                "output": 42,
+                "status": "succeeded",
+                "activity": {
+                  "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                  "type": "action",
+                  "provider": {
+                    "func": "get_metric_statistics",
+                    "type": "python",
+                    "module": "chaosaws.cloudwatch.probes",
+                    "arguments": {
+                      "duration": 300,
+                      "namespace": "AWS/ApplicationELB",
+                      "statistic": "Sum",
+                      "metric_name": "HTTPCode_ELB_503_Count",
+                      "dimension_name": "LoadBalancer",
+                      "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                    }
+                  },
+                  "tolerance": 0
+                },
+                "duration": 0.73173,
+                "tolerance_met": false
+              }
+            ],
+            "steady_state_met": false
+          },
+          "during": []
+        },
+        "chaoslib-version": "1.28.0"
+      },
+      "id": "134523b8-6d51-4a30-b509-273b5da02749",
+      "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc",
+      "experiment_id": "4e6f6a1f-ebac-41c0-be7b-ac79803d896a",
+      "plan_id": null,
+      "created_date": "2022-09-22T09:19:56.745796+00:00"
+    },
+    {
+      "result": {
+        "end": "2022-09-22T09:17:47.521710",
+        "run": [
+          {
+            "end": "2022-09-22T09:17:42.455712",
+            "start": "2022-09-22T09:12:12.337126",
+            "output": {
+              "status": 0,
+              "stderr": "",
+              "stdout": "{\"success_perc\":100,\"fail_perc\":0,\"success_count\":150,\"fail_count\":0,\"avg_duration\":0.022,\"steps\":{\"1\":{\"name\":\"\",\"status_code_dist\":{\"200\":4,\"503\":146},\"error_dist\":{},\"durations\":{\"connection\":0,\"dns\":0,\"request_write\":0,\"response_read\":0,\"server_processing\":0.021,\"total\":0.022},\"success_count\":150,\"fail_count\":0,\"success_perc\":100,\"fail_perc\":0}}}\n"
+            },
+            "status": "succeeded",
+            "activity": {
+              "name": "Inject mild load into our application",
+              "type": "action",
+              "provider": {
+                "path": "ddosify",
+                "type": "process",
+                "arguments": "-d 330 -n 150 -o stdout-json -t http://k8s-default-lbdemo-b42659e47c-1929532341.eu-central-1.elb.amazonaws.com/consumer/data"
+              },
+              "background": true
+            },
+            "duration": 330.118586
+          },
+          {
+            "end": "2022-09-22T09:12:13.290139",
+            "start": "2022-09-22T09:12:12.343437",
+            "output": {
+              "DryRun": false,
+              "LoadBalancers": [
+                {
+                  "Type": "application",
+                  "After": {
+                    "SubnetIds": [
+                      "subnet-0be71b8bcc1a209c7",
+                      "subnet-0ecab61e56b44f87e"
+                    ]
+                  },
+                  "Before": {
+                    "SubnetIds": [
+                      "subnet-0be71b8bcc1a209c7",
+                      "subnet-0bd6f13bfb8796911",
+                      "subnet-0ecab61e56b44f87e"
+                    ]
+                  },
+                  "LoadBalancerName": "k8s-default-lbdemo-b42659e47c"
+                }
+              ],
+              "AvailabilityZone": "eu-central-1b"
+            },
+            "status": "succeeded",
+            "activity": {
+              "name": "Simulate AZ Failure for ALB",
+              "type": "action",
+              "pauses": {
+                "after": 300
+              },
+              "provider": {
+                "func": "fail_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions",
+                "arguments": {
+                  "az": "eu-central-1b",
+                  "tags": [
+                    {
+                      "Key": "ingress.k8s.aws/stack",
+                      "Value": "default/lb-demo"
+                    }
+                  ],
+                  "dry_run": false
+                }
+              }
+            },
+            "duration": 0.946702
+          }
+        ],
+        "node": "sylvain-work",
+        "start": "2022-09-22T09:12:09.709166",
+        "status": "failed",
+        "deviated": true,
+        "duration": 337.8154790401459,
+        "platform": "Linux-5.15.0-47-generic-x86_64-with-glibc2.35",
+        "rollbacks": [
+          {
+            "end": "2022-09-22T09:17:46.502669",
+            "start": "2022-09-22T09:17:45.591452",
+            "output": true,
+            "status": "succeeded",
+            "activity": {
+              "name": "Recover AZ Failure for ALB",
+              "type": "action",
+              "provider": {
+                "func": "recover_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions"
+              }
+            },
+            "duration": 0.911217
+          }
+        ],
+        "experiment": {
+          "dry": null,
+          "tags": ["aws", "az", "kubernetes"],
+          "title": "Losing an AZ should not impact availability",
+          "method": [
+            {
+              "name": "Inject mild load into our application",
+              "type": "action",
+              "provider": {
+                "path": "ddosify",
+                "type": "process",
+                "arguments": "-d 330 -n 150 -o stdout-json -t http://k8s-default-lbdemo-b42659e47c-1929532341.eu-central-1.elb.amazonaws.com/consumer/data"
+              },
+              "background": true
+            },
+            {
+              "name": "Simulate AZ Failure for ALB",
+              "type": "action",
+              "pauses": {
+                "after": 300
+              },
+              "provider": {
+                "func": "fail_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions",
+                "arguments": {
+                  "az": "eu-central-1b",
+                  "tags": [
+                    {
+                      "Key": "ingress.k8s.aws/stack",
+                      "Value": "default/lb-demo"
+                    }
+                  ],
+                  "dry_run": false
+                }
+              }
+            }
+          ],
+          "secrets": {
+            "slack": {
+              "token": {
+                "key": "SLACK_TOKEN",
+                "type": "env"
+              }
+            }
+          },
+          "controls": [
+            {
+              "name": "reliably",
+              "provider": {
+                "type": "python",
+                "module": "chaosreliably.controls.experiment",
+                "arguments": {
+                  "exp_id": "4e6f6a1f-ebac-41c0-be7b-ac79803d896a",
+                  "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc"
+                }
+              }
+            },
+            {
+              "name": "slack",
+              "provider": {
+                "type": "python",
+                "module": "chaosslack.control",
+                "secrets": ["slack"],
+                "arguments": {
+                  "channel": "chaosdemo"
+                }
+              }
+            },
+            {
+              "name": "opentracing",
+              "provider": {
+                "type": "python",
+                "module": "chaostracing.control"
+              }
+            }
+          ],
+          "rollbacks": [
+            {
+              "name": "Recover AZ Failure for ALB",
+              "type": "action",
+              "provider": {
+                "func": "recover_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions"
+              }
+            }
+          ],
+          "description": "Remove all subnets of a zone from the load balancer so that zone cannot be accessed anymore from the internet",
+          "configuration": {
+            "aws_region": "eu-central-1",
+            "tracing_provider": "opentelemetry",
+            "tracing_opentelemetry_exporter": "oltp-http",
+            "tracing_opentelemetry_baggage_prefix": "b3",
+            "tracing_opentelemetry_collector_endpoint": "https://api.honeycomb.io/v1/traces"
+          },
+          "contributions": {
+            "latency": "low",
+            "security": "none",
+            "availability": "high"
+          },
+          "steady-state-hypothesis": {
+            "title": "Users should always see the service available",
+            "probes": [
+              {
+                "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                "type": "action",
+                "provider": {
+                  "func": "get_metric_statistics",
+                  "type": "python",
+                  "module": "chaosaws.cloudwatch.probes",
+                  "arguments": {
+                    "duration": 300,
+                    "namespace": "AWS/ApplicationELB",
+                    "statistic": "Sum",
+                    "metric_name": "HTTPCode_ELB_503_Count",
+                    "dimension_name": "LoadBalancer",
+                    "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                  }
+                },
+                "tolerance": 0
+              }
+            ]
+          }
+        },
+        "steady_states": {
+          "after": {
+            "probes": [
+              {
+                "end": "2022-09-22T09:17:44.141877",
+                "start": "2022-09-22T09:17:43.804092",
+                "output": 146,
+                "status": "succeeded",
+                "activity": {
+                  "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                  "type": "action",
+                  "provider": {
+                    "func": "get_metric_statistics",
+                    "type": "python",
+                    "module": "chaosaws.cloudwatch.probes",
+                    "arguments": {
+                      "duration": 300,
+                      "namespace": "AWS/ApplicationELB",
+                      "statistic": "Sum",
+                      "metric_name": "HTTPCode_ELB_503_Count",
+                      "dimension_name": "LoadBalancer",
+                      "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                    }
+                  },
+                  "tolerance": 0
+                },
+                "duration": 0.337785,
+                "tolerance_met": false
+              }
+            ],
+            "steady_state_met": false
+          },
+          "before": {
+            "probes": [
+              {
+                "end": "2022-09-22T09:12:11.016772",
+                "start": "2022-09-22T09:12:10.626839",
+                "output": 0,
+                "status": "succeeded",
+                "activity": {
+                  "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                  "type": "action",
+                  "provider": {
+                    "func": "get_metric_statistics",
+                    "type": "python",
+                    "module": "chaosaws.cloudwatch.probes",
+                    "arguments": {
+                      "duration": 300,
+                      "namespace": "AWS/ApplicationELB",
+                      "statistic": "Sum",
+                      "metric_name": "HTTPCode_ELB_503_Count",
+                      "dimension_name": "LoadBalancer",
+                      "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                    }
+                  },
+                  "tolerance": 0
+                },
+                "duration": 0.389933,
+                "tolerance_met": true
+              }
+            ],
+            "steady_state_met": true
+          },
+          "during": []
+        },
+        "chaoslib-version": "1.28.0"
+      },
+      "id": "5430937e-34c1-48e8-ad83-7d821da85867",
+      "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc",
+      "experiment_id": "4e6f6a1f-ebac-41c0-be7b-ac79803d896a",
+      "plan_id": null,
+      "created_date": "2022-09-22T09:17:47.979231+00:00"
+    },
+    {
+      "result": {
+        "end": "2022-09-22T09:02:15.425681",
+        "run": [
+          {
+            "end": "2022-09-22T09:02:09.222431",
+            "start": "2022-09-22T08:56:39.098463",
+            "output": {
+              "status": 0,
+              "stderr": "",
+              "stdout": "{\"success_perc\":100,\"fail_perc\":0,\"success_count\":150,\"fail_count\":0,\"avg_duration\":0.038,\"steps\":{\"1\":{\"name\":\"\",\"status_code_dist\":{\"200\":150},\"error_dist\":{},\"durations\":{\"connection\":0,\"dns\":0.001,\"request_write\":0,\"response_read\":0,\"server_processing\":0.037,\"total\":0.038},\"success_count\":150,\"fail_count\":0,\"success_perc\":100,\"fail_perc\":0}}}\n"
+            },
+            "status": "succeeded",
+            "activity": {
+              "name": "Inject mild load into our application",
+              "type": "action",
+              "provider": {
+                "path": "ddosify",
+                "type": "process",
+                "arguments": "-d 330 -n 150 -o stdout-json -t http://k8s-default-lbdemo-b42659e47c-1929532341.eu-central-1.elb.amazonaws.com/consumer/data"
+              },
+              "background": true
+            },
+            "duration": 330.123968
+          },
+          {
+            "end": "2022-09-22T08:56:40.217205",
+            "start": "2022-09-22T08:56:39.256669",
+            "output": {
+              "DryRun": false,
+              "LoadBalancers": [
+                {
+                  "Type": "application",
+                  "After": {
+                    "SubnetIds": [
+                      "subnet-0bd6f13bfb8796911",
+                      "subnet-0ecab61e56b44f87e"
+                    ]
+                  },
+                  "Before": {
+                    "SubnetIds": [
+                      "subnet-0bd6f13bfb8796911",
+                      "subnet-0ecab61e56b44f87e",
+                      "subnet-0be71b8bcc1a209c7"
+                    ]
+                  },
+                  "LoadBalancerName": "k8s-default-lbdemo-b42659e47c"
+                }
+              ],
+              "AvailabilityZone": "eu-central-1c"
+            },
+            "status": "succeeded",
+            "activity": {
+              "name": "Simulate AZ Failure for ALB",
+              "type": "action",
+              "pauses": {
+                "after": 300
+              },
+              "provider": {
+                "func": "fail_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions",
+                "arguments": {
+                  "az": "eu-central-1c",
+                  "tags": [
+                    {
+                      "Key": "ingress.k8s.aws/stack",
+                      "Value": "default/lb-demo"
+                    }
+                  ],
+                  "dry_run": false
+                }
+              }
+            },
+            "duration": 0.960536
+          }
+        ],
+        "node": "sylvain-work",
+        "start": "2022-09-22T08:56:36.022819",
+        "status": "completed",
+        "deviated": false,
+        "duration": 339.40581607818604,
+        "platform": "Linux-5.15.0-47-generic-x86_64-with-glibc2.35",
+        "rollbacks": [
+          {
+            "end": "2022-09-22T09:02:14.355079",
+            "start": "2022-09-22T09:02:13.526536",
+            "output": true,
+            "status": "succeeded",
+            "activity": {
+              "name": "Recover AZ Failure for ALB",
+              "type": "action",
+              "provider": {
+                "func": "recover_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions"
+              }
+            },
+            "duration": 0.828543
+          }
+        ],
+        "experiment": {
+          "dry": null,
+          "tags": ["aws", "az", "kubernetes"],
+          "title": "Losing an AZ should not impact availability",
+          "method": [
+            {
+              "name": "Inject mild load into our application",
+              "type": "action",
+              "provider": {
+                "path": "ddosify",
+                "type": "process",
+                "arguments": "-d 330 -n 150 -o stdout-json -t http://k8s-default-lbdemo-b42659e47c-1929532341.eu-central-1.elb.amazonaws.com/consumer/data"
+              },
+              "background": true
+            },
+            {
+              "name": "Simulate AZ Failure for ALB",
+              "type": "action",
+              "pauses": {
+                "after": 300
+              },
+              "provider": {
+                "func": "fail_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions",
+                "arguments": {
+                  "az": "eu-central-1c",
+                  "tags": [
+                    {
+                      "Key": "ingress.k8s.aws/stack",
+                      "Value": "default/lb-demo"
+                    }
+                  ],
+                  "dry_run": false
+                }
+              }
+            }
+          ],
+          "secrets": {
+            "slack": {
+              "token": {
+                "key": "SLACK_TOKEN",
+                "type": "env"
+              }
+            }
+          },
+          "controls": [
+            {
+              "name": "reliably",
+              "provider": {
+                "type": "python",
+                "module": "chaosreliably.controls.experiment",
+                "arguments": {
+                  "exp_id": "4e6f6a1f-ebac-41c0-be7b-ac79803d896a",
+                  "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc"
+                }
+              }
+            },
+            {
+              "name": "slack",
+              "provider": {
+                "type": "python",
+                "module": "chaosslack.control",
+                "secrets": ["slack"],
+                "arguments": {
+                  "channel": "chaosdemo"
+                }
+              }
+            },
+            {
+              "name": "opentracing",
+              "provider": {
+                "type": "python",
+                "module": "chaostracing.control"
+              }
+            }
+          ],
+          "rollbacks": [
+            {
+              "name": "Recover AZ Failure for ALB",
+              "type": "action",
+              "provider": {
+                "func": "recover_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions"
+              }
+            }
+          ],
+          "description": "Remove all subnets of a zone from the load balancer so that zone cannot be accessed anymore from the internet",
+          "configuration": {
+            "aws_region": "eu-central-1",
+            "tracing_provider": "opentelemetry",
+            "tracing_opentelemetry_exporter": "oltp-http",
+            "tracing_opentelemetry_baggage_prefix": "b3",
+            "tracing_opentelemetry_collector_endpoint": "https://api.honeycomb.io/v1/traces"
+          },
+          "contributions": {
+            "latency": "low",
+            "security": "none",
+            "availability": "high"
+          },
+          "steady-state-hypothesis": {
+            "title": "Users should always see the service available",
+            "probes": [
+              {
+                "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                "type": "action",
+                "provider": {
+                  "func": "get_metric_statistics",
+                  "type": "python",
+                  "module": "chaosaws.cloudwatch.probes",
+                  "arguments": {
+                    "duration": 300,
+                    "namespace": "AWS/ApplicationELB",
+                    "statistic": "Sum",
+                    "metric_name": "HTTPCode_ELB_503_Count",
+                    "dimension_name": "LoadBalancer",
+                    "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                  }
+                },
+                "tolerance": 0
+              }
+            ]
+          }
+        },
+        "steady_states": {
+          "after": {
+            "probes": [
+              {
+                "end": "2022-09-22T09:02:11.365224",
+                "start": "2022-09-22T09:02:11.034207",
+                "output": 0,
+                "status": "succeeded",
+                "activity": {
+                  "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                  "type": "action",
+                  "provider": {
+                    "func": "get_metric_statistics",
+                    "type": "python",
+                    "module": "chaosaws.cloudwatch.probes",
+                    "arguments": {
+                      "duration": 300,
+                      "namespace": "AWS/ApplicationELB",
+                      "statistic": "Sum",
+                      "metric_name": "HTTPCode_ELB_503_Count",
+                      "dimension_name": "LoadBalancer",
+                      "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                    }
+                  },
+                  "tolerance": 0
+                },
+                "duration": 0.331017,
+                "tolerance_met": true
+              }
+            ],
+            "steady_state_met": true
+          },
+          "before": {
+            "probes": [
+              {
+                "end": "2022-09-22T08:56:37.436477",
+                "start": "2022-09-22T08:56:37.011580",
+                "output": 0,
+                "status": "succeeded",
+                "activity": {
+                  "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                  "type": "action",
+                  "provider": {
+                    "func": "get_metric_statistics",
+                    "type": "python",
+                    "module": "chaosaws.cloudwatch.probes",
+                    "arguments": {
+                      "duration": 300,
+                      "namespace": "AWS/ApplicationELB",
+                      "statistic": "Sum",
+                      "metric_name": "HTTPCode_ELB_503_Count",
+                      "dimension_name": "LoadBalancer",
+                      "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                    }
+                  },
+                  "tolerance": 0
+                },
+                "duration": 0.424897,
+                "tolerance_met": true
+              }
+            ],
+            "steady_state_met": true
+          },
+          "during": []
+        },
+        "chaoslib-version": "1.28.0"
+      },
+      "id": "22235ff5-5e63-452f-bbba-3d883a6c164a",
+      "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc",
+      "experiment_id": "4e6f6a1f-ebac-41c0-be7b-ac79803d896a",
+      "plan_id": null,
+      "created_date": "2022-09-22T09:02:15.802303+00:00"
+    },
+    {
+      "result": {
+        "end": "2022-09-22T08:51:53.513864",
+        "run": [
+          {
+            "end": "2022-09-22T08:51:47.486763",
+            "start": "2022-09-22T08:46:17.336138",
+            "output": {
+              "status": 0,
+              "stderr": "",
+              "stdout": "{\"success_perc\":100,\"fail_perc\":0,\"success_count\":150,\"fail_count\":0,\"avg_duration\":0.036,\"steps\":{\"1\":{\"name\":\"\",\"status_code_dist\":{\"200\":150},\"error_dist\":{},\"durations\":{\"connection\":0,\"dns\":0,\"request_write\":0,\"response_read\":0,\"server_processing\":0.036,\"total\":0.036},\"success_count\":150,\"fail_count\":0,\"success_perc\":100,\"fail_perc\":0}}}\n"
+            },
+            "status": "succeeded",
+            "activity": {
+              "name": "Inject mild load into our application",
+              "type": "action",
+              "provider": {
+                "path": "ddosify",
+                "type": "process",
+                "arguments": "-d 330 -n 150 -o stdout-json -t http://k8s-default-lbdemo-b42659e47c-1929532341.eu-central-1.elb.amazonaws.com/consumer/data"
+              },
+              "background": true
+            },
+            "duration": 330.150625
+          },
+          {
+            "end": "2022-09-22T08:46:18.307060",
+            "start": "2022-09-22T08:46:17.331935",
+            "output": {
+              "DryRun": false,
+              "LoadBalancers": [
+                {
+                  "Type": "application",
+                  "After": {
+                    "SubnetIds": [
+                      "subnet-0bd6f13bfb8796911",
+                      "subnet-0ecab61e56b44f87e"
+                    ]
+                  },
+                  "Before": {
+                    "SubnetIds": [
+                      "subnet-0be71b8bcc1a209c7",
+                      "subnet-0ecab61e56b44f87e",
+                      "subnet-0bd6f13bfb8796911"
+                    ]
+                  },
+                  "LoadBalancerName": "k8s-default-lbdemo-b42659e47c"
+                }
+              ],
+              "AvailabilityZone": "eu-central-1c"
+            },
+            "status": "succeeded",
+            "activity": {
+              "name": "Simulate AZ Failure for ALB",
+              "type": "action",
+              "pauses": {
+                "after": 300
+              },
+              "provider": {
+                "func": "fail_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions",
+                "arguments": {
+                  "az": "eu-central-1c",
+                  "tags": [
+                    {
+                      "Key": "ingress.k8s.aws/stack",
+                      "Value": "default/lb-demo"
+                    }
+                  ],
+                  "dry_run": false
+                }
+              }
+            },
+            "duration": 0.975125
+          }
+        ],
+        "node": "sylvain-work",
+        "start": "2022-09-22T08:46:14.253373",
+        "status": "completed",
+        "deviated": false,
+        "duration": 339.26353549957275,
+        "platform": "Linux-5.15.0-47-generic-x86_64-with-glibc2.35",
+        "rollbacks": [
+          {
+            "end": "2022-09-22T08:51:52.585705",
+            "start": "2022-09-22T08:51:51.686429",
+            "output": true,
+            "status": "succeeded",
+            "activity": {
+              "name": "Recover AZ Failure for ALB",
+              "type": "action",
+              "provider": {
+                "func": "recover_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions"
+              }
+            },
+            "duration": 0.899276
+          }
+        ],
+        "experiment": {
+          "dry": null,
+          "tags": ["aws", "az", "kubernetes"],
+          "title": "Losing an AZ should not impact availability",
+          "method": [
+            {
+              "name": "Inject mild load into our application",
+              "type": "action",
+              "provider": {
+                "path": "ddosify",
+                "type": "process",
+                "arguments": "-d 330 -n 150 -o stdout-json -t http://k8s-default-lbdemo-b42659e47c-1929532341.eu-central-1.elb.amazonaws.com/consumer/data"
+              },
+              "background": true
+            },
+            {
+              "name": "Simulate AZ Failure for ALB",
+              "type": "action",
+              "pauses": {
+                "after": 300
+              },
+              "provider": {
+                "func": "fail_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions",
+                "arguments": {
+                  "az": "eu-central-1c",
+                  "tags": [
+                    {
+                      "Key": "ingress.k8s.aws/stack",
+                      "Value": "default/lb-demo"
+                    }
+                  ],
+                  "dry_run": false
+                }
+              }
+            }
+          ],
+          "secrets": {
+            "slack": {
+              "token": {
+                "key": "SLACK_TOKEN",
+                "type": "env"
+              }
+            }
+          },
+          "controls": [
+            {
+              "name": "reliably",
+              "provider": {
+                "type": "python",
+                "module": "chaosreliably.controls.experiment",
+                "arguments": {
+                  "exp_id": "4e6f6a1f-ebac-41c0-be7b-ac79803d896a",
+                  "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc"
+                }
+              }
+            },
+            {
+              "name": "slack",
+              "provider": {
+                "type": "python",
+                "module": "chaosslack.control",
+                "secrets": ["slack"],
+                "arguments": {
+                  "channel": "chaosdemo"
+                }
+              }
+            },
+            {
+              "name": "opentracing",
+              "provider": {
+                "type": "python",
+                "module": "chaostracing.control"
+              }
+            }
+          ],
+          "rollbacks": [
+            {
+              "name": "Recover AZ Failure for ALB",
+              "type": "action",
+              "provider": {
+                "func": "recover_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions"
+              }
+            }
+          ],
+          "description": "Remove all subnets of a zone from the load balancer so that zone cannot be accessed anymore from the internet",
+          "configuration": {
+            "aws_region": "eu-central-1",
+            "tracing_provider": "opentelemetry",
+            "tracing_opentelemetry_exporter": "oltp-http",
+            "tracing_opentelemetry_baggage_prefix": "b3",
+            "tracing_opentelemetry_collector_endpoint": "https://api.honeycomb.io/v1/traces"
+          },
+          "contributions": {
+            "latency": "low",
+            "security": "none",
+            "availability": "high"
+          },
+          "steady-state-hypothesis": {
+            "title": "Users should always see the service available",
+            "probes": [
+              {
+                "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                "type": "action",
+                "provider": {
+                  "func": "get_metric_statistics",
+                  "type": "python",
+                  "module": "chaosaws.cloudwatch.probes",
+                  "arguments": {
+                    "duration": 300,
+                    "namespace": "AWS/ApplicationELB",
+                    "statistic": "Sum",
+                    "metric_name": "HTTPCode_ELB_503_Count",
+                    "dimension_name": "LoadBalancer",
+                    "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                  }
+                },
+                "tolerance": 0
+              }
+            ]
+          }
+        },
+        "steady_states": {
+          "after": {
+            "probes": [
+              {
+                "end": "2022-09-22T08:51:49.758788",
+                "start": "2022-09-22T08:51:49.424790",
+                "output": 0,
+                "status": "succeeded",
+                "activity": {
+                  "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                  "type": "action",
+                  "provider": {
+                    "func": "get_metric_statistics",
+                    "type": "python",
+                    "module": "chaosaws.cloudwatch.probes",
+                    "arguments": {
+                      "duration": 300,
+                      "namespace": "AWS/ApplicationELB",
+                      "statistic": "Sum",
+                      "metric_name": "HTTPCode_ELB_503_Count",
+                      "dimension_name": "LoadBalancer",
+                      "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                    }
+                  },
+                  "tolerance": 0
+                },
+                "duration": 0.333998,
+                "tolerance_met": true
+              }
+            ],
+            "steady_state_met": true
+          },
+          "before": {
+            "probes": [
+              {
+                "end": "2022-09-22T08:46:15.784394",
+                "start": "2022-09-22T08:46:15.398069",
+                "output": 0,
+                "status": "succeeded",
+                "activity": {
+                  "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                  "type": "action",
+                  "provider": {
+                    "func": "get_metric_statistics",
+                    "type": "python",
+                    "module": "chaosaws.cloudwatch.probes",
+                    "arguments": {
+                      "duration": 300,
+                      "namespace": "AWS/ApplicationELB",
+                      "statistic": "Sum",
+                      "metric_name": "HTTPCode_ELB_503_Count",
+                      "dimension_name": "LoadBalancer",
+                      "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                    }
+                  },
+                  "tolerance": 0
+                },
+                "duration": 0.386325,
+                "tolerance_met": true
+              }
+            ],
+            "steady_state_met": true
+          },
+          "during": []
+        },
+        "chaoslib-version": "1.28.0"
+      },
+      "id": "1a9a796f-e14c-4e46-bbd2-f3d041a2ae41",
+      "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc",
+      "experiment_id": "4e6f6a1f-ebac-41c0-be7b-ac79803d896a",
+      "plan_id": null,
+      "created_date": "2022-09-22T08:52:03.440827+00:00"
+    },
+    {
+      "result": {
+        "end": "2022-09-21T21:13:54.463114",
+        "run": [
+          {
+            "end": "2022-09-21T21:13:49.388160",
+            "start": "2022-09-21T21:08:19.244547",
+            "output": {
+              "status": 0,
+              "stderr": "",
+              "stdout": "{\"success_perc\":100,\"fail_perc\":0,\"success_count\":150,\"fail_count\":0,\"avg_duration\":0.037,\"steps\":{\"1\":{\"name\":\"\",\"status_code_dist\":{\"200\":150},\"error_dist\":{},\"durations\":{\"connection\":0,\"dns\":0,\"request_write\":0,\"response_read\":0,\"server_processing\":0.036,\"total\":0.037},\"success_count\":150,\"fail_count\":0,\"success_perc\":100,\"fail_perc\":0}}}\n"
+            },
+            "status": "succeeded",
+            "activity": {
+              "name": "Inject mild load into our application",
+              "type": "action",
+              "provider": {
+                "path": "ddosify",
+                "type": "process",
+                "arguments": "-d 330 -n 150 -o stdout-json -t http://k8s-default-lbdemo-b42659e47c-1929532341.eu-central-1.elb.amazonaws.com/consumer/data"
+              },
+              "background": true
+            },
+            "duration": 330.143613
+          },
+          {
+            "end": "2022-09-21T21:08:20.272713",
+            "start": "2022-09-21T21:08:19.241018",
+            "output": {
+              "DryRun": false,
+              "LoadBalancers": [
+                {
+                  "Type": "application",
+                  "After": {
+                    "SubnetIds": [
+                      "subnet-0bd6f13bfb8796911",
+                      "subnet-0ecab61e56b44f87e"
+                    ]
+                  },
+                  "Before": {
+                    "SubnetIds": [
+                      "subnet-0bd6f13bfb8796911",
+                      "subnet-0be71b8bcc1a209c7",
+                      "subnet-0ecab61e56b44f87e"
+                    ]
+                  },
+                  "LoadBalancerName": "k8s-default-lbdemo-b42659e47c"
+                }
+              ],
+              "AvailabilityZone": "eu-central-1c"
+            },
+            "status": "succeeded",
+            "activity": {
+              "name": "Simulate AZ Failure for ALB",
+              "type": "action",
+              "pauses": {
+                "after": 300
+              },
+              "provider": {
+                "func": "fail_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions",
+                "arguments": {
+                  "az": "eu-central-1c",
+                  "tags": [
+                    {
+                      "Key": "ingress.k8s.aws/stack",
+                      "Value": "default/lb-demo"
+                    }
+                  ],
+                  "dry_run": false
+                }
+              }
+            },
+            "duration": 1.031695
+          }
+        ],
+        "node": "sylvain-work",
+        "start": "2022-09-21T21:08:16.393030",
+        "status": "completed",
+        "deviated": false,
+        "duration": 338.07309317588806,
+        "platform": "Linux-5.15.0-47-generic-x86_64-with-glibc2.35",
+        "rollbacks": [
+          {
+            "end": "2022-09-21T21:13:53.814798",
+            "start": "2022-09-21T21:13:52.968274",
+            "output": true,
+            "status": "succeeded",
+            "activity": {
+              "name": "Recover AZ Failure for ALB",
+              "type": "action",
+              "provider": {
+                "func": "recover_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions"
+              }
+            },
+            "duration": 0.846524
+          }
+        ],
+        "experiment": {
+          "dry": null,
+          "tags": ["aws", "az", "kubernetes"],
+          "title": "Losing an AZ should not impact availability",
+          "method": [
+            {
+              "name": "Inject mild load into our application",
+              "type": "action",
+              "provider": {
+                "path": "ddosify",
+                "type": "process",
+                "arguments": "-d 330 -n 150 -o stdout-json -t http://k8s-default-lbdemo-b42659e47c-1929532341.eu-central-1.elb.amazonaws.com/consumer/data"
+              },
+              "background": true
+            },
+            {
+              "name": "Simulate AZ Failure for ALB",
+              "type": "action",
+              "pauses": {
+                "after": 300
+              },
+              "provider": {
+                "func": "fail_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions",
+                "arguments": {
+                  "az": "eu-central-1c",
+                  "tags": [
+                    {
+                      "Key": "ingress.k8s.aws/stack",
+                      "Value": "default/lb-demo"
+                    }
+                  ],
+                  "dry_run": false
+                }
+              }
+            }
+          ],
+          "secrets": {
+            "slack": {
+              "token": {
+                "key": "SLACK_TOKEN",
+                "type": "env"
+              }
+            }
+          },
+          "controls": [
+            {
+              "name": "reliably",
+              "provider": {
+                "type": "python",
+                "module": "chaosreliably.controls.experiment",
+                "arguments": {
+                  "exp_id": "4e6f6a1f-ebac-41c0-be7b-ac79803d896a",
+                  "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc"
+                }
+              }
+            },
+            {
+              "name": "slack",
+              "provider": {
+                "type": "python",
+                "module": "chaosslack.control",
+                "secrets": ["slack"],
+                "arguments": {
+                  "channel": "chaosdemo"
+                }
+              }
+            },
+            {
+              "name": "opentracing",
+              "provider": {
+                "type": "python",
+                "module": "chaostracing.control"
+              }
+            }
+          ],
+          "rollbacks": [
+            {
+              "name": "Recover AZ Failure for ALB",
+              "type": "action",
+              "provider": {
+                "func": "recover_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions"
+              }
+            }
+          ],
+          "description": "Remove all subnets of a zone from the load balancer so that zone cannot be accessed anymore from the internet",
+          "configuration": {
+            "aws_region": "eu-central-1",
+            "tracing_provider": "opentelemetry",
+            "tracing_opentelemetry_exporter": "oltp-http",
+            "tracing_opentelemetry_baggage_prefix": "b3",
+            "tracing_opentelemetry_collector_endpoint": "https://api.honeycomb.io/v1/traces"
+          },
+          "contributions": {
+            "latency": "low",
+            "availability": "high"
+          },
+          "steady-state-hypothesis": {
+            "title": "Users should always see the service available",
+            "probes": [
+              {
+                "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                "type": "action",
+                "provider": {
+                  "func": "get_metric_statistics",
+                  "type": "python",
+                  "module": "chaosaws.cloudwatch.probes",
+                  "arguments": {
+                    "duration": 300,
+                    "namespace": "AWS/ApplicationELB",
+                    "statistic": "Sum",
+                    "metric_name": "HTTPCode_ELB_503_Count",
+                    "dimension_name": "LoadBalancer",
+                    "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                  }
+                },
+                "tolerance": 0
+              }
+            ]
+          }
+        },
+        "steady_states": {
+          "after": {
+            "probes": [
+              {
+                "end": "2022-09-21T21:13:51.102361",
+                "start": "2022-09-21T21:13:50.816264",
+                "output": 0,
+                "status": "succeeded",
+                "activity": {
+                  "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                  "type": "action",
+                  "provider": {
+                    "func": "get_metric_statistics",
+                    "type": "python",
+                    "module": "chaosaws.cloudwatch.probes",
+                    "arguments": {
+                      "duration": 300,
+                      "namespace": "AWS/ApplicationELB",
+                      "statistic": "Sum",
+                      "metric_name": "HTTPCode_ELB_503_Count",
+                      "dimension_name": "LoadBalancer",
+                      "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                    }
+                  },
+                  "tolerance": 0
+                },
+                "duration": 0.286097,
+                "tolerance_met": true
+              }
+            ],
+            "steady_state_met": true
+          },
+          "before": {
+            "probes": [
+              {
+                "end": "2022-09-21T21:08:17.782452",
+                "start": "2022-09-21T21:08:17.402591",
+                "output": 0,
+                "status": "succeeded",
+                "activity": {
+                  "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                  "type": "action",
+                  "provider": {
+                    "func": "get_metric_statistics",
+                    "type": "python",
+                    "module": "chaosaws.cloudwatch.probes",
+                    "arguments": {
+                      "duration": 300,
+                      "namespace": "AWS/ApplicationELB",
+                      "statistic": "Sum",
+                      "metric_name": "HTTPCode_ELB_503_Count",
+                      "dimension_name": "LoadBalancer",
+                      "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                    }
+                  },
+                  "tolerance": 0
+                },
+                "duration": 0.379861,
+                "tolerance_met": true
+              }
+            ],
+            "steady_state_met": true
+          },
+          "during": []
+        },
+        "chaoslib-version": "1.28.0"
+      },
+      "id": "0f0ff3fe-04df-4f19-bb09-80822387b521",
+      "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc",
+      "experiment_id": "4e6f6a1f-ebac-41c0-be7b-ac79803d896a",
+      "plan_id": null,
+      "created_date": "2022-09-21T21:14:03.514609+00:00"
+    },
+    {
+      "result": {
+        "end": "2022-09-21T20:55:39.514298",
+        "run": [
+          {
+            "end": "2022-09-21T20:55:38.087941",
+            "start": "2022-09-21T20:50:07.976979",
+            "output": {
+              "status": 0,
+              "stderr": "",
+              "stdout": "{\"success_perc\":100,\"fail_perc\":0,\"success_count\":150,\"fail_count\":0,\"avg_duration\":0.111,\"steps\":{\"1\":{\"name\":\"\",\"status_code_dist\":{\"200\":150},\"error_dist\":{},\"durations\":{\"connection\":0.001,\"dns\":0,\"request_write\":0,\"response_read\":0,\"server_processing\":0.11,\"total\":0.111},\"success_count\":150,\"fail_count\":0,\"success_perc\":100,\"fail_perc\":0}}}\n"
+            },
+            "status": "succeeded",
+            "activity": {
+              "name": "Inject mild load into our application",
+              "type": "action",
+              "provider": {
+                "path": "ddosify",
+                "type": "process",
+                "arguments": "-d 330 -n 150 -o stdout-json -t http://k8s-default-lbdemo-b42659e47c-1929532341.eu-central-1.elb.amazonaws.com/consumer/data"
+              },
+              "background": true
+            },
+            "duration": 330.110962
+          },
+          {
+            "end": "2022-09-21T20:50:09.304626",
+            "start": "2022-09-21T20:50:07.977280",
+            "output": {
+              "DryRun": false,
+              "LoadBalancers": [
+                {
+                  "Type": "application",
+                  "After": {
+                    "SubnetIds": [
+                      "subnet-0bd6f13bfb8796911",
+                      "subnet-0ecab61e56b44f87e"
+                    ]
+                  },
+                  "Before": {
+                    "SubnetIds": [
+                      "subnet-0ecab61e56b44f87e",
+                      "subnet-0be71b8bcc1a209c7",
+                      "subnet-0bd6f13bfb8796911"
+                    ]
+                  },
+                  "LoadBalancerName": "k8s-default-lbdemo-b42659e47c"
+                }
+              ],
+              "AvailabilityZone": "eu-central-1c"
+            },
+            "status": "succeeded",
+            "activity": {
+              "name": "Simulate AZ Failure for ALB",
+              "type": "action",
+              "pauses": {
+                "after": 300
+              },
+              "provider": {
+                "func": "fail_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions",
+                "arguments": {
+                  "az": "eu-central-1c",
+                  "tags": [
+                    {
+                      "Key": "ingress.k8s.aws/stack",
+                      "Value": "default/lb-demo"
+                    }
+                  ],
+                  "dry_run": false
+                }
+              }
+            },
+            "duration": 1.327346
+          }
+        ],
+        "node": "fv-az133-92",
+        "start": "2022-09-21T20:50:07.335890",
+        "status": "completed",
+        "deviated": false,
+        "duration": 332.1799986362457,
+        "platform": "Linux-5.15.0-1019-azure-x86_64-with-glibc2.31",
+        "rollbacks": [
+          {
+            "end": "2022-09-21T20:55:39.513438",
+            "start": "2022-09-21T20:55:38.518040",
+            "output": true,
+            "status": "succeeded",
+            "activity": {
+              "name": "Recover AZ Failure for ALB",
+              "type": "action",
+              "provider": {
+                "func": "recover_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions"
+              }
+            },
+            "duration": 0.995398
+          }
+        ],
+        "experiment": {
+          "dry": null,
+          "tags": ["aws", "az", "kubernetes"],
+          "title": "Losing an AZ should not impact availability",
+          "method": [
+            {
+              "name": "Inject mild load into our application",
+              "type": "action",
+              "provider": {
+                "path": "ddosify",
+                "type": "process",
+                "arguments": "-d 330 -n 150 -o stdout-json -t http://k8s-default-lbdemo-b42659e47c-1929532341.eu-central-1.elb.amazonaws.com/consumer/data"
+              },
+              "background": true
+            },
+            {
+              "name": "Simulate AZ Failure for ALB",
+              "type": "action",
+              "pauses": {
+                "after": 300
+              },
+              "provider": {
+                "func": "fail_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions",
+                "arguments": {
+                  "az": "eu-central-1c",
+                  "tags": [
+                    {
+                      "Key": "ingress.k8s.aws/stack",
+                      "Value": "default/lb-demo"
+                    }
+                  ],
+                  "dry_run": false
+                }
+              }
+            }
+          ],
+          "controls": [
+            {
+              "name": "opentracing",
+              "provider": {
+                "type": "python",
+                "module": "chaostracing.control"
+              }
+            },
+            {
+              "name": "reliably",
+              "provider": {
+                "type": "python",
+                "module": "chaosreliably.controls.experiment",
+                "arguments": {
+                  "exp_id": "4e6f6a1f-ebac-41c0-be7b-ac79803d896a",
+                  "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc"
+                }
+              }
+            }
+          ],
+          "rollbacks": [
+            {
+              "name": "Recover AZ Failure for ALB",
+              "type": "action",
+              "provider": {
+                "func": "recover_az",
+                "type": "python",
+                "module": "azchaosaws.elbv2.actions"
+              }
+            }
+          ],
+          "description": "Remove all subnets of a zone from the load balancer so that zone cannot be accessed anymore from the internet",
+          "configuration": {
+            "aws_region": "eu-central-1",
+            "tracing_provider": "opentelemetry",
+            "tracing_opentelemetry_exporter": "oltp-http",
+            "tracing_opentelemetry_baggage_prefix": "b3",
+            "tracing_opentelemetry_collector_endpoint": "https://api.honeycomb.io/v1/traces"
+          },
+          "contributions": {
+            "latency": "low",
+            "availability": "high"
+          },
+          "steady-state-hypothesis": {
+            "title": "Users should always see the service available",
+            "probes": [
+              {
+                "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                "type": "action",
+                "provider": {
+                  "func": "get_metric_statistics",
+                  "type": "python",
+                  "module": "chaosaws.cloudwatch.probes",
+                  "arguments": {
+                    "duration": 300,
+                    "namespace": "AWS/ApplicationELB",
+                    "statistic": "Sum",
+                    "metric_name": "HTTPCode_ELB_503_Count",
+                    "dimension_name": "LoadBalancer",
+                    "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                  }
+                },
+                "tolerance": 0
+              }
+            ]
+          }
+        },
+        "steady_states": {
+          "after": {
+            "probes": [
+              {
+                "end": "2022-09-21T20:55:38.515640",
+                "start": "2022-09-21T20:55:38.090748",
+                "output": 0,
+                "status": "succeeded",
+                "activity": {
+                  "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                  "type": "action",
+                  "provider": {
+                    "func": "get_metric_statistics",
+                    "type": "python",
+                    "module": "chaosaws.cloudwatch.probes",
+                    "arguments": {
+                      "duration": 300,
+                      "namespace": "AWS/ApplicationELB",
+                      "statistic": "Sum",
+                      "metric_name": "HTTPCode_ELB_503_Count",
+                      "dimension_name": "LoadBalancer",
+                      "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                    }
+                  },
+                  "tolerance": 0
+                },
+                "duration": 0.424892,
+                "tolerance_met": true
+              }
+            ],
+            "steady_state_met": true
+          },
+          "before": {
+            "probes": [
+              {
+                "end": "2022-09-21T20:50:07.972272",
+                "start": "2022-09-21T20:50:07.513774",
+                "output": 0,
+                "status": "succeeded",
+                "activity": {
+                  "name": "get-lb-unavailable-service-error-count-during-the-last-5m",
+                  "type": "action",
+                  "provider": {
+                    "func": "get_metric_statistics",
+                    "type": "python",
+                    "module": "chaosaws.cloudwatch.probes",
+                    "arguments": {
+                      "duration": 300,
+                      "namespace": "AWS/ApplicationELB",
+                      "statistic": "Sum",
+                      "metric_name": "HTTPCode_ELB_503_Count",
+                      "dimension_name": "LoadBalancer",
+                      "dimension_value": "app/k8s-default-lbdemo-b42659e47c/bcdbe82dbd3b2dea"
+                    }
+                  },
+                  "tolerance": 0
+                },
+                "duration": 0.458498,
+                "tolerance_met": true
+              }
+            ],
+            "steady_state_met": true
+          },
+          "during": []
+        },
+        "chaoslib-version": "1.28.0"
+      },
+      "id": "7886f552-d533-4515-b789-9227f9c20573",
+      "org_id": "8f67bb6a-4944-40af-80b0-921023467cdc",
+      "experiment_id": "4e6f6a1f-ebac-41c0-be7b-ac79803d896a",
+      "plan_id": null,
+      "created_date": "2022-09-21T20:55:39.671291+00:00"
+    }
+  ]
+}

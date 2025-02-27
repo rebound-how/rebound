@@ -1,0 +1,75 @@
+{
+  "metadata": {
+    "name": "create_node",
+    "labels": [
+      "Node",
+      "Kubernetes"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Metadata",
+          "key": "meta",
+          "help": "The metadata payload for the new node",
+          "placeholder": null,
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Specification",
+          "key": "spec",
+          "help": "The specification payload for the new node",
+          "placeholder": null,
+          "default": null,
+          "type": "object",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Create one new node in the cluster",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Node",
+        "Kubernetes"
+      ],
+      "configuration": {
+        "meta": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_META",
+          "env_var_type": "json"
+        },
+        "spec": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_SPEC",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "create-node",
+          "type": "action",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.node.actions",
+            "func": "create_node",
+            "arguments": {
+              "meta": "${meta}",
+              "spec": "${spec}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

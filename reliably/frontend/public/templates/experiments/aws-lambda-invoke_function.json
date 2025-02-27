@@ -1,0 +1,121 @@
+{
+  "metadata": {
+    "name": "invoke_function",
+    "labels": [
+      "AWS",
+      "Lambda"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Function Name",
+          "key": "function_name",
+          "help": "Name of the function",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Arguments",
+          "key": "function_arguments",
+          "help": "Function arguments as an object",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Invocation Type",
+          "key": "invocation_type",
+          "help": "Type of invocation of the function: RequestResponse",
+          "placeholder": "",
+          "default": "RequestResponse",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Client Context",
+          "key": "client_context",
+          "help": "Payload to pass as client context",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Qualifier",
+          "key": "qualifier",
+          "help": "",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Invokes Lambda",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "AWS",
+        "Lambda"
+      ],
+      "configuration": {
+        "function_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FUNCTION_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "function_arguments": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FUNCTION_ARGUMENTS",
+          "env_var_type": "json"
+        },
+        "invocation_type": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_INVOCATION_TYPE",
+          "default": "RequestResponse",
+          "env_var_type": "str"
+        },
+        "client_context": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CLIENT_CONTEXT",
+          "env_var_type": "json"
+        },
+        "qualifier": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_QUALIFIER",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "invoke-function",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.awslambda.actions",
+            "func": "invoke_function",
+            "arguments": {
+              "function_name": "${function_name}",
+              "function_arguments": "${function_arguments}",
+              "invocation_type": "${invocation_type}",
+              "client_context": "${client_context}",
+              "qualifier": "${qualifier}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

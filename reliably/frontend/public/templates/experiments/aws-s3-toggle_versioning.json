@@ -1,0 +1,120 @@
+{
+  "metadata": {
+    "name": "toggle_versioning",
+    "labels": [
+      "AWS",
+      "S3"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Bucket",
+          "key": "bucket_name",
+          "help": "Name of the bucket",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Status",
+          "key": "status",
+          "help": "Bucket status: Enabled, Suspended",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Owner",
+          "key": "owner",
+          "help": "Account ID of the bucket owner",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "MFA Serial",
+          "key": "mfa",
+          "help": "Serial number and value from device in the form \"SN Code",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "MFA Delete Enabled",
+          "key": "mfa_delete",
+          "help": "Whether the MFA deletion is enabled on the bucket",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Toggles versioning on a S3 bucket",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "AWS",
+        "S3"
+      ],
+      "configuration": {
+        "bucket_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_BUCKET_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "status": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_STATUS",
+          "env_var_type": "str"
+        },
+        "owner": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_OWNER",
+          "env_var_type": "str"
+        },
+        "mfa": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_MFA",
+          "env_var_type": "str"
+        },
+        "mfa_delete": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_MFA_DELETE",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "toggle-versioning",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.s3.actions",
+            "func": "toggle_versioning",
+            "arguments": {
+              "bucket_name": "${bucket_name}",
+              "status": "${status}",
+              "owner": "${owner}",
+              "mfa": "${mfa}",
+              "mfa_delete": "${mfa_delete}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

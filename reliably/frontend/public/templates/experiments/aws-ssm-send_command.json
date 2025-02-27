@@ -1,0 +1,164 @@
+{
+  "metadata": {
+    "name": "send_command",
+    "labels": [
+      "AWS",
+      "SSM"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "SSM Document",
+          "key": "document_name",
+          "help": "Name of the SSM document to apply",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Version",
+          "key": "document_version",
+          "help": "Document version",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Targets",
+          "key": "targets",
+          "help": "List of targets for this document",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Parameters",
+          "key": "parameters",
+          "help": "Document parameters to set",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Timeout",
+          "key": "timeout_seconds",
+          "help": "Timeout in seconds for the operation",
+          "placeholder": "",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Concurrency",
+          "key": "max_concurrency",
+          "help": "Maximum concurrency",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Tolerated Errors",
+          "key": "max_errors",
+          "help": "Maximum number of errors",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Region",
+          "key": "region",
+          "help": "Region where to apply this document to",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Runs commands on one or more managed instances",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "AWS",
+        "SSM"
+      ],
+      "configuration": {
+        "document_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DOCUMENT_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "document_version": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DOCUMENT_VERSION",
+          "env_var_type": "str"
+        },
+        "targets": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TARGETS",
+          "env_var_type": "json"
+        },
+        "parameters": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PARAMETERS",
+          "env_var_type": "json"
+        },
+        "timeout_seconds": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TIMEOUT_SECONDS",
+          "env_var_type": "int"
+        },
+        "max_concurrency": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_MAX_CONCURRENCY",
+          "env_var_type": "str"
+        },
+        "max_errors": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_MAX_ERRORS",
+          "env_var_type": "str"
+        },
+        "region": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_REGION",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "send-command",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.ssm.actions",
+            "func": "send_command",
+            "arguments": {
+              "document_name": "${document_name}",
+              "document_version": "${document_version}",
+              "targets": "${targets}",
+              "parameters": "${parameters}",
+              "timeout_seconds": "${timeout_seconds}",
+              "max_concurrency": "${max_concurrency}",
+              "max_errors": "${max_errors}",
+              "region": "${region}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

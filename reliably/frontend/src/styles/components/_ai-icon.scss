@@ -1,0 +1,36 @@
+.AiIcon {
+  flex: 0 0 auto;
+
+  height: 8rem;
+  width: 8rem;
+
+  background: var(--pink-500) url("/images/assistant-button.webp") no-repeat top
+    left / 200% auto;
+  border-radius: 50%;
+  outline: solid 0.4rem rgba(255, 255, 255, 0.5);
+  outline-offset: -0.4rem;
+
+  &--large {
+    height: 12rem;
+    width: 12rem;
+
+    outline: solid 0.6rem rgba(255, 255, 255, 0.5);
+    outline-offset: -0.6rem;
+  }
+
+  &--medium {
+    height: 4rem;
+    width: 4rem;
+
+    outline: solid 0.3rem rgba(255, 255, 255, 0.5);
+    outline-offset: -0.3rem;
+  }
+
+  &--small {
+    height: 3rem;
+    width: 3rem;
+
+    outline: solid 0.2rem rgba(255, 255, 255, 0.5);
+    outline-offset: -0.2rem;
+  }
+}

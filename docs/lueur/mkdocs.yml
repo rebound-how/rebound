@@ -1,0 +1,106 @@
+site_name: ""
+site_description: "Shift resiliency issues discovery left with Lueur"
+site_author: "The Lueur Team"
+site_url: https://docs.lueur.dev
+repo_url: https://github.com/rebound-how/rebound
+copyright: Copyright &copy; 2024 - 2025 Sylvain Hellegouarch
+extra:
+  social:
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/in/sylvainhellegouarch/
+      name: Sylvain Hellegouarch on Linkedin
+    - icon: fontawesome/brands/mastodon
+      link: https://fosstodon.org/@lawouach
+      name: Sylvain Hellegouarch on Fosstodon
+nav:
+  - Home: index.md
+  - Why lueur?: why-lueur.md
+  - Getting Started:
+    - "Install": tutorials/install.md
+    - "Getting Started": tutorials/getting-started.md
+    - "Exploring Network Fault Impact": tutorials/real-impact-use-case.md
+    - "Scenario Walkthrough": tutorials/scenario-walkthrough.md
+  - "How-To Guides":
+    - "Configure Latency": how-to/configure-latency.md
+    - "Run Scenarios": how-to/run-scenarios.md
+    - "Generate Reports": how-to/generate-reports.md
+    - "Integrate with CI": how-to/integrate-with-ci.md
+  - Explanations:
+    - "What Is Lueur?": explanations/what-is-lueur.md
+    - "Fault Injection Basics": explanations/fault-injection-basics.md
+    - "Understanding Proxies and Latency": explanations/understanding-proxies-and-latency.md
+    - "Architecture Overview": explanations/architecture-overview.md
+  - Reference:
+    - "CLI Commands": reference/cli-commands.md
+    - "Scenario File Format": reference/scenario-file-format.md
+    - "Configuration Options": reference/configuration-options.md
+    - "Report File Format": reference/report-file-format.md
+theme:
+  name: material
+  logo: assets/logo-inverted.svg
+  custom_dir: docs/overrides
+  icon:
+    annotation: material/plus-circle
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+
+  features:
+    - navigation.tabs
+    - content.tabs
+    - search.suggest
+    - search.highlight
+    - navigation.tracking
+    - navigation.sections
+    - toc.integrate
+    - content.code.copy
+    - content.code.annotate
+  
+extra_css:
+  - stylesheets/lueur.css
+
+plugins:
+  - search
+  - tags
+  - social:
+      enabled: !ENV [CI, false]
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.mark
+  - pymdownx.highlight:
+      anchor_linenums: true
+      pygments_lang_class: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower

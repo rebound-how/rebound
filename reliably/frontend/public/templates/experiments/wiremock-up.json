@@ -1,0 +1,59 @@
+{
+  "metadata": {
+    "name": "up",
+    "labels": [
+      "WireMock",
+      "Wiremock"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Filter",
+          "key": "filter",
+          "help": "Remove all delays matching the given filters",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Deletes all delays connected with a list of mappings",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "WireMock",
+        "Wiremock"
+      ],
+      "configuration": {
+        "filter": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FILTER",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "up",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaoswm.wiremock.actions",
+            "func": "up",
+            "arguments": {
+              "filter": "${filter}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

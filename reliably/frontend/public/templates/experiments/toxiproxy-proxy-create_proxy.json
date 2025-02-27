@@ -1,0 +1,140 @@
+{
+  "metadata": {
+    "name": "create_proxy",
+    "labels": [
+      "Proxy",
+      "ToxiProxy"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Proxy Name",
+          "key": "proxy_name",
+          "help": "Name of the proxy to create",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Upstream Host",
+          "key": "upstream_host",
+          "help": "Host of the upstream server",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Upstream Port",
+          "key": "upstream_port",
+          "help": "Port of the upstream server",
+          "placeholder": "",
+          "default": "",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "title": "Listening Host",
+          "key": "listen_host",
+          "help": "Host of the listening server",
+          "placeholder": "",
+          "default": "0.0.0.0",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Listening Port",
+          "key": "listen_port",
+          "help": "Port of the listening server",
+          "placeholder": "",
+          "default": 0,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Enabled",
+          "key": "enabled",
+          "help": "Whether this proxy is enabled or not",
+          "placeholder": "",
+          "default": true,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Creates a proxy to which toxics can be added",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Proxy",
+        "ToxiProxy"
+      ],
+      "configuration": {
+        "proxy_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PROXY_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "upstream_host": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_UPSTREAM_HOST",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "upstream_port": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_UPSTREAM_PORT",
+          "default": "",
+          "env_var_type": "int"
+        },
+        "listen_host": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LISTEN_HOST",
+          "default": "0.0.0.0",
+          "env_var_type": "str"
+        },
+        "listen_port": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LISTEN_PORT",
+          "default": 0,
+          "env_var_type": "int"
+        },
+        "enabled": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ENABLED",
+          "default": true,
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "create-proxy",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaostoxi.proxy.actions",
+            "func": "create_proxy",
+            "arguments": {
+              "proxy_name": "${proxy_name}",
+              "upstream_host": "${upstream_host}",
+              "upstream_port": "${upstream_port}",
+              "listen_host": "${listen_host}",
+              "listen_port": "${listen_port}",
+              "enabled": "${enabled}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

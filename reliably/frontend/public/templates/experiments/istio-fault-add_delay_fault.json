@@ -1,0 +1,139 @@
+{
+  "metadata": {
+    "name": "add_delay_fault",
+    "labels": [
+      "fault",
+      "Istio"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Virtual Service Name",
+          "key": "virtual_service_name",
+          "help": "Name of the target virtual service",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Namespace",
+          "key": "ns",
+          "help": "",
+          "placeholder": "",
+          "default": "default",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Version",
+          "key": "version",
+          "help": "Istio fault injection version",
+          "placeholder": "",
+          "default": "networking.istio.io/v1alpha3",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Fixed Delay",
+          "key": "fixed_delay",
+          "help": "Delay to set on each route",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Routes",
+          "key": "routes",
+          "help": "List of impacted routes",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        },
+        {
+          "title": "Volume",
+          "key": "percentage",
+          "help": "Percentage of requests impacted by the fault",
+          "placeholder": "",
+          "default": 30.0,
+          "type": "float",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Add delay to the virtual service identified by name",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "fault",
+        "Istio"
+      ],
+      "configuration": {
+        "virtual_service_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_VIRTUAL_SERVICE_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "ns": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NS",
+          "default": "default",
+          "env_var_type": "str"
+        },
+        "version": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_VERSION",
+          "default": "networking.istio.io/v1alpha3",
+          "env_var_type": "str"
+        },
+        "fixed_delay": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FIXED_DELAY",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "routes": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ROUTES",
+          "env_var_type": "json"
+        },
+        "percentage": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PERCENTAGE",
+          "default": 30.0,
+          "env_var_type": "float"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "add-delay-fault",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosistio.fault.actions",
+            "func": "add_delay_fault",
+            "arguments": {
+              "virtual_service_name": "${virtual_service_name}",
+              "ns": "${ns}",
+              "version": "${version}",
+              "fixed_delay": "${fixed_delay}",
+              "routes": "${routes}",
+              "percentage": "${percentage}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

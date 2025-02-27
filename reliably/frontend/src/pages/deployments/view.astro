@@ -1,0 +1,25 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import DeploymentView from "@/components/deployments/DeploymentView.vue";
+
+const deployments: string[] = import.meta.env.DEPLOYMENTS_TYPES
+  ? import.meta.env.DEPLOYMENTS_TYPES.split(",")
+  : [];
+
+const deploymentType: string = import.meta.env.DEPLOYMENT;
+
+const isReliablyDeployedInK8s: boolean = import.meta.env.KUBERNETES_DEPLOYMENT
+  ? import.meta.env.KUBERNETES_DEPLOYMENT === "true"
+  : false;
+---
+
+<BaseLayout title="Deployment · Reliably" description="A Reliably deployment">
+  <div class="container">
+    <DeploymentView 
+      supported={deployments}
+      reliablyDeploy={deploymentType}
+      kubernetes={isReliablyDeployedInK8s}
+      client:load
+    />
+  </div>
+</BaseLayout>

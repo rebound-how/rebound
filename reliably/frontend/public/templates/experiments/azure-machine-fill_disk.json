@@ -1,0 +1,107 @@
+{
+  "metadata": {
+    "name": "fill_disk",
+    "labels": [
+      "Machine",
+      "Azure"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Filter",
+          "key": "filter",
+          "help": "Target filter selector",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Duration",
+          "key": "duration",
+          "help": "How long to fill the disk for",
+          "placeholder": "",
+          "default": 120,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Size",
+          "key": "size",
+          "help": "File size to create in megabytes",
+          "placeholder": "",
+          "default": 1000,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Timeout",
+          "key": "timeout",
+          "help": "Completion timeout",
+          "placeholder": "",
+          "default": 60,
+          "type": "integer",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Fill the disk with random data",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Machine",
+        "Azure"
+      ],
+      "configuration": {
+        "filter": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FILTER",
+          "env_var_type": "str"
+        },
+        "duration": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DURATION",
+          "default": 120,
+          "env_var_type": "int"
+        },
+        "size": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_SIZE",
+          "default": 1000,
+          "env_var_type": "int"
+        },
+        "timeout": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TIMEOUT",
+          "default": 60,
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "fill-disk",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosazure.machine.actions",
+            "func": "fill_disk",
+            "arguments": {
+              "filter": "${filter}",
+              "duration": "${duration}",
+              "size": "${size}",
+              "timeout": "${timeout}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

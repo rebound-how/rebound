@@ -1,0 +1,19 @@
+{
+  "name": "TestEnv",
+  "envvars": [
+    { "var_name": "DEMO_VAR", "value": "hi" },
+    { "var_name": "GH_REPO", "value": "Lawouach/ctkgh" }
+  ],
+  "secrets": [
+    {
+      "var_name": "GITHUB_TOKEN",
+      "value": "toto",
+      "key": "1548739fe45a76b9812cd453ef769e32"
+    },
+    {
+      "key": "49e59d587b3839c67a34b87f34e963a3",
+      "value": "tutu",
+      "path": "/home/svc/.kube/config"
+    }
+  ]
+}

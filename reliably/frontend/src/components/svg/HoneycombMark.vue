@@ -1,0 +1,27 @@
+<template>
+  <svg
+    version="1.1"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    x="0"
+    y="0"
+    viewBox="0 0 51 48"
+    xml:space="preserve"
+  >
+    <g>
+      <path
+        d="m26.1 32.7 4.4 7.6-4.4 7.7h-8.7L13 40.3l4.4-7.6h8.7z"
+        fill="#ffb000"
+      />
+      <path
+        d="m26.1 14.2 4.4 7.6-4.4 7.7h-8.7L13 21.9l4.4-7.6h8.7z"
+        fill="#64ba00"
+      />
+      <path
+        d="m10.7 24.8 3.6 6.3-3.6 6.3H3.6L0 31.1l3.6-6.3h7.1z"
+        fill="#f96e10"
+      />
+      <path d="m45 0 5.7 10L45 20H33.6L28 10l5.7-10H45z" fill="#0298ec" />
+    </g>
+  </svg>
+</template>

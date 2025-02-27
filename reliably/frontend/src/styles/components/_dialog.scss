@@ -1,0 +1,16 @@
+dialog.reliablyDialog {
+  height: 100vh;
+  max-height: unset;
+  width: 100vw;
+  max-width: unset;
+  margin: 0;
+
+  border: none;
+  opacity: 1;
+
+  transition: opacity 0.3s ease-in-out;
+
+  &--transparent {
+    opacity: 0;
+  }
+}

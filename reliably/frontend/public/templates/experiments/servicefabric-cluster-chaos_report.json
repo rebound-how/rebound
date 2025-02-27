@@ -1,0 +1,84 @@
+{
+  "metadata": {
+    "name": "chaos_report",
+    "labels": ["Cluster", "Service Fabric"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Timeout",
+          "key": "timeout",
+          "help": "Call timeout to get report for the Chaos in the cluster",
+          "placeholder": "",
+          "default": 60,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Period Start",
+          "key": "start_time_utc",
+          "help": "Report period start date (UTC)",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Period Stop",
+          "key": "end_time_utc",
+          "help": "Report period stop date (UTC)",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Get Chaos report using the Service Fabric API",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["Cluster", "Service Fabric"],
+      "configuration": {
+        "timeout": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TIMEOUT",
+          "default": 60,
+          "env_var_type": "int"
+        },
+        "start_time_utc": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_START_TIME_UTC",
+          "env_var_type": "str"
+        },
+        "end_time_utc": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_END_TIME_UTC",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "chaos-report",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosservicefabric.cluster.probes",
+            "func": "chaos_report",
+            "arguments": {
+              "timeout": "${timeout}",
+              "start_time_utc": "${start_time_utc}",
+              "end_time_utc": "${end_time_utc}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

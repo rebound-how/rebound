@@ -1,0 +1,84 @@
+{
+  "metadata": {
+    "name": "chaosmonkey_enabled",
+    "labels": ["Spring"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Base URL",
+          "key": "base_url",
+          "help": "URL of the Chaos Monkery service",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Headers",
+          "key": "headers",
+          "help": "Headers to pass to the call",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Timeout",
+          "key": "timeout",
+          "help": "Call must suceeed within this timeout period",
+          "placeholder": "",
+          "default": null,
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Enquire whether Chaos Monkey is enabled on the specified service",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["Spring"],
+      "configuration": {
+        "base_url": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_BASE_URL",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "headers": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_HEADERS",
+          "env_var_type": "json"
+        },
+        "timeout": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TIMEOUT",
+          "env_var_type": "float"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "chaosmonkey-enabled",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosspring.spring.probes",
+            "func": "chaosmonkey_enabled",
+            "arguments": {
+              "base_url": "${base_url}",
+              "headers": "${headers}",
+              "timeout": "${timeout}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,17 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import PageIntro from "@/components/_ui/PageIntro.astro";
+import SnapshotsList from "@/components/snapshots/SnapshotsList.vue";
+---
+
+<BaseLayout
+  title="Resources · Reliably"
+  description="A list of your resources"
+>
+  <div class="container">
+    <section class="snapshots">
+      <SnapshotsList client:load />
+    </section>
+  </div>
+</BaseLayout>

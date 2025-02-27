@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "name": "reset",
+    "labels": [
+      "WireMock",
+      "Wiremock"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": []
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Resets the WireMock server (deletes all mappings)",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "WireMock",
+        "Wiremock"
+      ],
+      "configuration": {},
+      "extensions": [],
+      "method": [
+        {
+          "name": "reset",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaoswm.wiremock.actions",
+            "func": "reset",
+            "arguments": {}
+          }
+        }
+      ]
+    }
+  }
+}

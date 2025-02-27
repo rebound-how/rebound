@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "name": "recover_az",
+    "labels": [
+      "AWS AZ",
+      "AZ:ELBv2"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": []
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Rolls back the ELB(s) that were affected by the fail_az action",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "AWS AZ",
+        "AZ:ELBv2"
+      ],
+      "configuration": {},
+      "extensions": [],
+      "method": [
+        {
+          "name": "recover-az",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "azchaosaws.elbv2.actions",
+            "func": "recover_az",
+            "arguments": {}
+          }
+        }
+      ]
+    }
+  }
+}

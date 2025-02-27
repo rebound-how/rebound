@@ -1,0 +1,75 @@
+{
+  "metadata": {
+    "name": "failover_db_cluster",
+    "labels": [
+      "AWS",
+      "RDS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "DB Cluster ID",
+          "key": "db_cluster_identifier",
+          "help": "Database cluster identifier",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Target DB Instance ID",
+          "key": "target_db_instance_identifier",
+          "help": "Target database instance identifier",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Forces a failover for a DB cluster",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "AWS",
+        "RDS"
+      ],
+      "configuration": {
+        "db_cluster_identifier": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DB_CLUSTER_IDENTIFIER",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "target_db_instance_identifier": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TARGET_DB_INSTANCE_IDENTIFIER",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "failover-db-cluster",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.rds.actions",
+            "func": "failover_db_cluster",
+            "arguments": {
+              "db_cluster_identifier": "${db_cluster_identifier}",
+              "target_db_instance_identifier": "${target_db_instance_identifier}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

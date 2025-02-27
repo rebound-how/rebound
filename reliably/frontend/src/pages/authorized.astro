@@ -1,0 +1,11 @@
+---
+import LoginPageLayout from "@/layouts/LoginPageLayout.astro";
+import LoginHandler from "@/components/login/LoginHandler.vue";
+---
+
+<LoginPageLayout
+  title="Authorized · Reliably"
+  description="Loging you into Reliably..."
+>
+  <LoginHandler client:load />
+</LoginPageLayout>

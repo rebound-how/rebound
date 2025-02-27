@@ -1,0 +1,121 @@
+---
+// import AppNavLink from "@/components/_ui/AppNavLink.astro";
+import AppNavGroup from "@/components/_ui/AppNavGroup.astro";
+import ProductLink from "@/components/_ui/ProductLink.astro";
+import OrganizationSwitcher from "@/components/_ui/OrganizationSwitcher.vue";
+import type { NavLink } from "@/types/ui-types";
+
+import { Icon } from 'astro-icon/components';
+
+const productLinks: NavLink[] = [
+  { path: "/support/", label: "Support" },
+  { path: "https://reliably.com/docs/", label: "Docs" },
+  { path: "/settings/", label: "Settings" },
+  { path: "/logout/", label: "Logout" },
+];
+
+const appLinks: Array<NavLink[]> = [
+  [
+    { path: "/", label: "Dashboard" },
+  ],
+  [
+    { path: "/experiments/", label: "Experiments" },
+    { path: "/experiments/workflows/", label: "Builder" },
+    { path: "/experiments/custom-templates/", label: "Templates" },
+  ],
+  [
+    { path: "/plans/", label: "Plans" },
+    { path: "/executions/", label: "Executions" },
+  ],
+  [
+    { path: "/deployments/", label: "Deployments" },
+    { path: "/environments/", label: "Environments" },
+    { path: "/resources/", label: "Resources" },
+    { path: "/integrations/", label: "Integrations" },
+  ]
+];
+
+const currentPath = Astro.url.pathname;
+---
+
+<header class="siteHeader">
+  <div class="productHeader">
+    <div class="container productHeader__wrapper">
+      <a href="/" class="productHeader__logo">
+        <Icon name="reliably-logo-pink" />
+        <span class="screen-reader-text">Reliably</span>
+      </a>
+      <OrganizationSwitcher client:load />
+      <nav class="productHeader__nav">
+        {productLinks.map((p) => <ProductLink link={p} />)}
+      </nav>
+    </div>
+  </div>
+  <div class="appHeader">
+    <div class="container">
+      <nav class="appHeader__nav">
+        {appLinks.map((group) => <AppNavGroup group={group} />)}
+      </nav>
+    </div>
+  </div>
+</header>
+
+<style lang="scss" scoped>
+  .siteHeader {
+    .productHeader {
+      padding-top: 1rem;
+      padding-bottom: 0.6rem;
+
+      background-color: var(--grey-100);
+
+      &__wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+      }
+
+      &__logo {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+
+        color: var(--text-color-bright);
+
+        svg {
+          height: 2.8rem;
+        }
+      }
+
+      &__nav {
+        align-self: flex-start;
+        display: flex;
+        gap: var(--space-small);
+        margin-left: auto;
+
+        @media print {
+          display: none;
+        }
+      }
+    }
+
+    .appHeader {
+      padding-top: var(--space-small);
+      padding-bottom: 0.1rem;
+
+      background-color: var(--grey-100);
+
+      @media print {
+        display: none;
+      }
+      &__nav {
+        display: inline-flex;
+        // gap: var(--space-medium);
+        margin-bottom: .8rem;
+        // padding-bottom: .6rem;
+
+        background-color: var(--grey-200);
+        border-radius: var(--border-radius-s);
+      }
+    }
+  }
+</style>

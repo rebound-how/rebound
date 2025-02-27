@@ -1,0 +1,19 @@
+{
+  "id": "44a4b19e-0209-4f87-8778-77d0fcb6b9a2",
+  "created_date": "2022-09-29T10:59:19.528904+00:00",
+  "definition": {
+    "environment": {
+      "provider": "gcp"
+    },
+    "deployment": {
+      "deployment_id": "acee6165-7b88-4d9c-aa85-0c15406be726"
+    },
+    "schedule": {
+      "type": "now"
+    },
+    "experiments": ["5653c16d-1e17-44b4-9f12-2fea9b246749"]
+  },
+  "ref": "5fea8ac986f549b7c68ce1c80cb0c73a",
+  "status": "creating",
+  "error": null
+}

@@ -1,0 +1,34 @@
+<template>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="feather feather-alert-circle"
+  >
+    <circle
+      fill="currentColor"
+      stroke="currentColor"
+      stroke-width="2"
+      cx="12"
+      cy="12"
+      r="10"
+    ></circle>
+    <line
+      stroke="hsl(220, 27.27%, 97.84%)"
+      stroke-width="3"
+      x1="15"
+      y1="9"
+      x2="9"
+      y2="15"
+    ></line>
+    <line
+      stroke="hsl(220, 27.27%, 97.84%)"
+      stroke-width="3"
+      x1="9"
+      y1="9"
+      x2="15"
+      y2="15"
+    ></line>
+  </svg>
+</template>

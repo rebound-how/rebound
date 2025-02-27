@@ -1,0 +1,89 @@
+{
+  "metadata": {
+    "name": "stress_endpoint",
+    "labels": [
+      "k6"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Endpoint",
+          "key": "endpoint",
+          "help": null,
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Vus",
+          "key": "vus",
+          "help": null,
+          "placeholder": "",
+          "default": 1,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Duration",
+          "key": "duration",
+          "help": null,
+          "placeholder": "",
+          "default": "1s",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Stress a single endpoint with a configurable amount of VUs",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "k6"
+      ],
+      "configuration": {
+        "endpoint": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ENDPOINT",
+          "env_var_type": "str"
+        },
+        "vus": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_VUS",
+          "default": 1,
+          "env_var_type": "int"
+        },
+        "duration": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DURATION",
+          "default": "1s",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "stress-endpoint",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosk6.k6.actions",
+            "func": "stress_endpoint",
+            "arguments": {
+              "endpoint": "${endpoint}",
+              "vus": "${vus}",
+              "duration": "${duration}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

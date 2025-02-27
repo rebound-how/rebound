@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "name": "describe_instance",
+    "labels": [
+      "SQL",
+      "Google Cloud"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Instance ID",
+          "key": "instance_id",
+          "help": "Cloud SQL instance identifier",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Displays configuration and metadata about a Cloud SQL instance",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "SQL",
+        "Google Cloud"
+      ],
+      "configuration": {
+        "instance_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_INSTANCE_ID",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "describe-instance",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.sql.probes",
+            "func": "describe_instance",
+            "arguments": {
+              "instance_id": "${instance_id}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

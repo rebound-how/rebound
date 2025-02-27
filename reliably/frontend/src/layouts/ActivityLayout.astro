@@ -1,0 +1,405 @@
+---
+import { breakableName } from "@/utils/strings";
+
+import Head from "@/components/astro/Head.astro";
+import SiteHeader from "@/components/_ui/SiteHeader.astro";
+import ActivityLogo from "@/components/starters/ActivityLogo.astro";
+import ActivityCard from "@/components/starters/ActivityCard.astro";
+
+export interface Props {
+  content: {
+    name: string;
+    target: string;
+    category: string;
+    type: string;
+    module: string;
+    description: string;
+    astro: {
+      headers: string[];
+      source: string;
+      html: string;
+    };
+  };
+}
+
+const { content } = Astro.props as Props;
+const canonical = new URL(Astro.url.href);
+const image = new URL("social.png", Astro.url.origin);
+
+const templateParam = canonical.pathname.split("/")[3];
+
+const bn = breakableName(content.name);
+
+const relatedAll = Object.values(import.meta.glob("../pages/experiments/workflows/*.md", { eager: true }));
+const relatedClose = relatedAll.filter((a) => {
+  return (
+    a.frontmatter.category === content.category &&
+    a.frontmatter.name !== content.name
+  );
+});
+const relatedFar = relatedAll.filter((a) => {
+  return (
+    a.frontmatter.target === content.target &&
+    a.frontmatter.name !== content.name
+  );
+});
+let related: typeof relatedAll = [];
+
+if (relatedClose.length > 3) {
+  for (let index = 0; index < 3; index++) {
+    let rand = relatedClose[Math.floor(Math.random() * relatedClose.length)];
+    related.push(rand);
+  }
+} else {
+  related.push(...relatedClose);
+}
+
+if (related.length < 3) {
+  const missing = 3 - related.length;
+  if (relatedFar.length > missing) {
+    for (let index = 0; index < missing; index++) {
+      let rand = relatedFar[Math.floor(Math.random() * relatedFar.length)];
+      related.push(rand);
+    }
+  } else {
+    related.push(...relatedFar);
+  }
+}
+
+if (related.length < 3) {
+  const missing = 3 - related.length;
+  for (let index = 0; index < missing; index++) {
+    let rand = relatedAll[Math.floor(Math.random() * relatedAll.length)];
+    if (rand.name !== content.name) {
+      related.push(rand);
+    }
+  }
+}
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <Head
+      title={content.name}
+      description={content.description}
+      canonicalURL={canonical}
+      {image}
+    />
+    <style>
+      .page {
+        padding: 0 0;
+        background-color: white;
+      }
+    </style>
+  </head>
+  <body class="activity">
+    <SiteHeader />
+    <main class="page">
+      <header class="activity__header text-center">
+        <div class="container">
+          <ActivityLogo target={content.target} large={true} />
+          <div class="activity__labels">
+            <span class={`activity__type activity__type--${content.type}`}>
+              {content.type}
+            </span>
+            <span class="activity__type">{content.category}</span>
+          </div>
+          <h1 set:html={bn}></h1>
+          <p class="activity__description">{content.description}</p>
+          <div class="activity__try">
+            <button class="button button--light" id="openDetails">
+              View details
+            </button>
+            <a
+              href={`/experiments/workflows/build/?activity=${templateParam}`}
+              class="button button--creative"
+            >
+              Run it now
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <details class="activity__details container" id="details">
+        <summary class="screen-reader-text">View details</summary>
+        <div class="activity__content block-center">
+          <slot />
+        </div>
+      </details>
+
+      <div class="activity__related">
+        <div class="container">
+          <h2 class="text-center">Related starters</h2>
+          <ul class="list-reset">
+            {
+              related.map((activity) => (
+                <li>
+                  <ActivityCard post={activity} />
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+    </main>
+    <script>
+      const cards = document.querySelectorAll(".activityCard");
+      Array.prototype.forEach.call(cards, (card) => {
+        let down,
+          up,
+          link = card.querySelector("h2 a");
+        card.onmousedown = () => (down = +new Date());
+        card.onmouseup = () => {
+          up = +new Date();
+          if (up - down < 200) {
+            link.click();
+          }
+        };
+      });
+
+      const od = document.getElementById("openDetails");
+      const details = document.getElementById("details");
+
+      if (od) {
+        od.addEventListener("click", (event) => {
+          details.open = !details.open;
+        });
+      }
+    </script>
+  </body>
+</html>
+
+<style lang="scss" is:global>
+  .activity {
+    &__header {
+      padding-top: var(--space-large);
+      padding-bottom: var(--space-large);
+
+      // background-color: var(--grey-100);
+
+      h1 {
+        color: var(--text-color-bright);
+        font-family: var(--monospace-font);
+        font-size: clamp(3rem, 8vw, 4.8rem);
+      }
+    }
+
+    &__labels {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-small);
+      margin-top: var(--space-medium);
+    }
+
+    &__type {
+      padding: 0.3rem 0.6rem;
+
+      background-color: var(--grey-200);
+      border-radius: var(--border-radius-s);
+
+      font-size: 2rem;
+      font-weight: 700;
+      text-transform: uppercase;
+
+      &--action {
+        background-color: var(--pink-100);
+
+        color: var(--pink-500);
+      }
+
+      &--probe {
+        background-color: var(--green-100);
+
+        color: var(--green-500);
+      }
+    }
+
+    &__description {
+      font-size: 2.4rem;
+    }
+
+    &__try {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-small);
+      margin-top: var(--space-medium);
+    }
+
+    &__details {
+      margin-bottom: var(--space-large);
+    }
+
+    &__content {
+      max-width: 80rem;
+      padding: var(--space-large) var(--space-small);
+
+      > * + * {
+        margin-top: var(--space-medium);
+      }
+
+      > table:first-child {
+        display: block;
+        overflow-x: auto;
+
+        background-color: var(--grey-100);
+        border-radius: var(--border-radius-m);
+        box-shadow: none;
+
+        thead {
+          display: none;
+        }
+
+        tbody {
+          display: flex;
+          flex-direction: column;
+          padding: var(--space-small);
+
+          // background-color: var(--grey-100);
+          border-radius: var(--border-radius-m);
+
+          @media (min-width: 42rem) {
+            flex-direction: row;
+          }
+
+          tr {
+            display: flex;
+            flex-direction: column;
+            flex: 1 0 auto;
+            // padding: 0;
+
+            background-color: transparent;
+
+            &:not(:first-child) {
+              padding-top: var(--space-small);
+              @media (min-width: 42rem) {
+                padding-top: 0;
+                padding-left: var(--space-small);
+
+                border-left: 0.1rem solid var(--grey-300);
+              }
+            }
+
+            &:not(:last-child) {
+              padding-right: var(--space-small);
+            }
+
+            &:nth-child(3) td:last-child {
+              font-family: var(--monospace-font);
+              font-size: 1.6rem;
+            }
+
+            td {
+              padding: 0;
+
+              border-bottom: 0;
+
+              &:first-child {
+                font-size: 1.4rem;
+                text-transform: uppercase;
+
+                strong {
+                  color: var(--text-color-dim);
+                  font-weight: 400;
+                }
+              }
+
+              &:last-child {
+                color: var(--text-color-bright);
+              }
+            }
+          }
+        }
+      }
+
+      > table:not(:first-child) {
+        overflow-x: auto;
+      }
+
+      table {
+        margin-top: var(--space-small);
+        margin-bottom: var(--space-medium);
+        width: 100%;
+
+        // border: 0.1rem solid var(--grey-700);
+
+        border-collapse: collapse;
+        box-shadow: 0 0.1rem 0.3rem rgba(0, 0, 0, 0.025),
+          0 0.2rem 0.4rem rgba(0, 0, 0, 0.05),
+          0 0.8rem 0.8rem rgba(0, 0, 0, 0.08),
+          0 0.8rem 2.4rem rgba(0, 0, 0, 0.1);
+
+        th,
+        td {
+          padding: 1rem;
+
+          vertical-align: top;
+        }
+
+        th {
+          background-color: var(--grey-300);
+
+          color: var(--text-color-bright);
+          text-align: left;
+          white-space: nowrap;
+
+          &:first-child {
+            border-top-left-radius: var(--border-radius-s);
+          }
+
+          &:last-child {
+            border-top-right-radius: var(--border-radius-s);
+          }
+        }
+
+        td {
+          border-bottom: 0.1rem solid var(--grey-400);
+        }
+
+        tr {
+          background-color: white;
+
+          &:nth-child(2n) {
+            background-color: var(--grey-100);
+          }
+
+          &:hover {
+            background-color: var(--blue-100);
+          }
+        }
+      }
+    }
+
+    &__related {
+      padding-top: var(--space-large);
+      padding-bottom: var(--space-large);
+
+      background-color: var(--grey-100);
+
+      > div > h2 {
+        font-size: 3.2rem;
+      }
+
+      ul {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(32rem, 1fr));
+        gap: var(--space-medium);
+
+        li {
+          align-self: stretch;
+
+          article {
+            background-color: white;
+          }
+        }
+      }
+    }
+
+    .astro-code {
+      padding: var(--space-small);
+
+      background-color: var(--grey-100) !important;
+      border-radius: var(--border-radius-m);
+    }
+  }
+</style>

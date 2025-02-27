@@ -1,0 +1,26 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import TemplatesList from "@/components/custom-templates/TemplatesList.vue";
+
+import type { PageHeaderAction } from "@/types/ui-types";
+
+const actions: PageHeaderAction[] = [
+  {
+    label: "New template",
+    to: "/experiments/custom-templates/new/",
+  },
+];
+---
+
+<BaseLayout
+  title="Custom Templates · Reliably"
+  description="Custom Templates allow you to create editable experiments that be be used by other people in your team."
+>
+  <div class="container">
+    <PageHeader title="Custom Templates" actions={actions} />
+    <section class="customTemplates">
+      <TemplatesList client:load />
+    </section>
+  </div>
+</BaseLayout>

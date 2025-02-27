@@ -1,0 +1,59 @@
+{
+  "metadata": {
+    "name": "check_configuration",
+    "labels": [
+      "WireMock",
+      "Wiremock"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Configuration",
+          "key": "c",
+          "help": "The WireMock server configuration to connect with",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Check configuration contains valid WireMock settings",
+      "contributions": {},
+      "description": null,
+      "tags": [
+        "WireMock",
+        "Wiremock"
+      ],
+      "configuration": {
+        "c": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_C",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "check-configuration",
+          "type": "utils",
+          "provider": {
+            "type": "python",
+            "module": "chaoswm.wiremock.utils",
+            "func": "check_configuration",
+            "arguments": {
+              "c": "${c}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,33 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import PrechecksForm from "@/components/integrations/forms/ReliablyPrechecksForm.vue";
+---
+
+<BaseLayout
+  title="Prechecks Experiment · Reliably"
+  description="Declare an endpoint that is checked for authorization to run an experiment."
+>
+  <div class="container">
+    <PageHeader title="Prechecks experiment" icon="reliably-r" />
+    <section class="newIntegration">
+      <p class="newIntegration__intro">
+        Fill the form with the requested information, to create an integration
+        that you can then use in your plans.
+      </p>
+      <section class="newIntegration__form">
+        <div class="newIntegration__info">
+          <div
+            class="newIntegration__infoWrapper newIntegration__infoWrapper--reliably"
+          >
+            <p>
+              Declare an endpoint that is checked for authorization to run an
+              experiment.
+            </p>
+          </div>
+        </div>
+        <PrechecksForm client:load />
+      </section>
+    </section>
+  </div>
+</BaseLayout>

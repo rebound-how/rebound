@@ -1,0 +1,117 @@
+{
+  "metadata": {
+    "name": "query_interval",
+    "labels": ["Prometheus"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Query",
+          "key": "query",
+          "help": "Range query to run",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Period Start",
+          "key": "start",
+          "help": "When to start the query from. Passed as RFC 3339 or relative such as \"5 minutes ago",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Period End",
+          "key": "end",
+          "help": "When to start the query from. Passed as RFC 3339 or relative such as \"2 minutes ago",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Step",
+          "key": "step",
+          "help": "Ranque query step",
+          "placeholder": "",
+          "default": 1,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Timeout",
+          "key": "timeout",
+          "help": "How long to wait to fetch the results for the query",
+          "placeholder": "",
+          "default": null,
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Run a range query against a Prometheus server and returns its result as-is",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["Prometheus"],
+      "configuration": {
+        "query": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_QUERY",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "start": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_START",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "end": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_END",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "step": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_STEP",
+          "default": 1,
+          "env_var_type": "int"
+        },
+        "timeout": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TIMEOUT",
+          "env_var_type": "float"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "query-interval",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosprometheus.prometheus.probes",
+            "func": "query_interval",
+            "arguments": {
+              "query": "${query}",
+              "start": "${start}",
+              "end": "${end}",
+              "step": "${step}",
+              "timeout": "${timeout}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "metadata": {
+    "name": "all_nodes_must_be_ready_to_schedule",
+    "labels": [
+      "Node",
+      "Kubernetes"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": []
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Verifies that all nodes in the cluster are in Ready condition and can be scheduled.",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Node",
+        "Kubernetes"
+      ],
+      "configuration": {},
+      "extensions": [],
+      "method": [
+        {
+          "name": "all-nodes-must-be-ready-to-schedule",
+          "type": "probe",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.node.probes",
+            "func": "all_nodes_must_be_ready_to_schedule",
+            "arguments": {}
+          }
+        }
+      ]
+    }
+  }
+}

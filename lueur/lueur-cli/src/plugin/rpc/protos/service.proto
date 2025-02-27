@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package service;
+
+service PluginService {
+    // Retrieves metadata about the plugin.
+    rpc GetPluginInfo (GetPluginInfoRequest) returns (GetPluginInfoResponse);
+
+    // Processes an incoming request and returns a modified request.
+    rpc ProcessRequest (ProcessRequestRequest) returns (ProcessRequestResponse);
+    
+    // Processes an outgoing response and returns a modified response.
+    rpc ProcessResponse (ProcessResponseRequest) returns (ProcessResponseResponse);
+}
+
+message GetPluginInfoRequest {}
+
+message GetPluginInfoResponse {
+    // The name of the plugin. This field is required.
+    string name = 1;
+
+    // The version of the plugin. This field is required.
+    string version = 2;
+
+    // The author of the plugin. This field is optional.
+    string author = 3;
+
+    // The URL for the plugin's homepage or repository. This field is optional.
+    string url = 4;
+
+    // The platform the plugin is designed for (e.g., "windows", "linux"). Optional.
+    string platform = 5;
+
+    // Supported direction from this plugin
+    string direction = 6;
+}
+
+message ProcessRequestRequest {
+    bytes request = 1;
+}
+
+message ProcessRequestResponse {
+    bytes modified_request = 1;
+}
+
+message ProcessResponseRequest {
+    bytes response = 1;
+}
+
+message ProcessResponseResponse {
+    bytes modified_response = 1;
+}

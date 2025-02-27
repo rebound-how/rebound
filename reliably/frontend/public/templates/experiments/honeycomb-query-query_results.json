@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "name": "query_results",
+    "labels": [
+      "Query",
+      "Honeycomb"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Dataset",
+          "key": "dataset_slug",
+          "help": "Dataset slug",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Query Result Identifier",
+          "key": "query_result_id",
+          "help": "",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Timeout",
+          "key": "timeout",
+          "help": "Timeout to fetch results when they are not complete yet",
+          "placeholder": null,
+          "default": 30,
+          "type": "integer",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Retrieve the results of a query",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Query",
+        "Honeycomb"
+      ],
+      "configuration": {
+        "dataset_slug": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DATASET_SLUG",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "query_result_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_QUERY_RESULT_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "timeout": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TIMEOUT",
+          "default": 30,
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "query-results",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaoshoneycomb.query.probes",
+            "func": "query_results",
+            "arguments": {
+              "dataset_slug": "${dataset_slug}",
+              "query_result_id": "${query_result_id}",
+              "timeout": "${timeout}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

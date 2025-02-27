@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "name": "get_cache_node_count",
+    "labels": ["ElastiCache", "AWS"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Cluster ID",
+          "key": "cluster_id",
+          "help": "Cluster identifier",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Returns the number of cache nodes associated to the cluster",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["ElastiCache", "AWS"],
+      "configuration": {
+        "cluster_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CLUSTER_ID",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-cache-node-count",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.elasticache.probes",
+            "func": "get_cache_node_count",
+            "arguments": {
+              "cluster_id": "${cluster_id}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

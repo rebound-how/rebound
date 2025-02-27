@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "name": "enable_access_log",
+    "labels": [
+      "AWS",
+      "ELBv2"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Load Balancer ARN",
+          "key": "load_balancer_arn",
+          "help": "",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        },
+        {
+          "title": "Enable",
+          "key": "enable",
+          "help": "",
+          "placeholder": "",
+          "default": false,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Bucket Name",
+          "key": "bucket_name",
+          "help": "Bucket to store the logs to",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Enable or disable access logs of ELB",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "AWS",
+        "ELBv2"
+      ],
+      "configuration": {
+        "load_balancer_arn": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LOAD_BALANCER_ARN",
+          "env_var_type": "json"
+        },
+        "enable": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ENABLE",
+          "default": false,
+          "env_var_type": "bool"
+        },
+        "bucket_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_BUCKET_NAME",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "enable-access-log",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.elbv2.actions",
+            "func": "enable_access_log",
+            "arguments": {
+              "load_balancer_arn": "${load_balancer_arn}",
+              "enable": "${enable}",
+              "bucket_name": "${bucket_name}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

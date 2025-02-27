@@ -1,0 +1,76 @@
+{
+  "metadata": {
+    "name": "object_exists",
+    "labels": [
+      "Storage",
+      "Google Cloud"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Bucket",
+          "key": "bucket_name",
+          "help": "Name of the bucket",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Object",
+          "key": "object_name",
+          "help": "Name of the object to check in the bucket",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Indicates whether a file in Cloud Storage bucket exists",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Storage",
+        "Google Cloud"
+      ],
+      "configuration": {
+        "bucket_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_BUCKET_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "object_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_OBJECT_NAME",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "object-exists",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.sql.probes",
+            "func": "object_exists",
+            "arguments": {
+              "bucket_name": "${bucket_name}",
+              "object_name": "${object_name}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

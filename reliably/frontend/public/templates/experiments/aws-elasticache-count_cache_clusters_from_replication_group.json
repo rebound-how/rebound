@@ -1,0 +1,54 @@
+{
+  "metadata": {
+    "name": "count_cache_clusters_from_replication_group",
+    "labels": ["ElastiCache", "AWS"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Replication Group ID",
+          "key": "replication_group_id",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Returns the number of cache clusters that are part of the given ReplicationGroupId",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["ElastiCache", "AWS"],
+      "configuration": {
+        "replication_group_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_REPLICATION_GROUP_ID",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "count-cache-clusters-from-replication-group",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.elasticache.probes",
+            "func": "count_cache_clusters_from_replication_group",
+            "arguments": {
+              "replication_group_id": "${replication_group_id}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

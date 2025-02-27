@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "name": "list_services",
+    "labels": [
+      "Cloud Run",
+      "Google Cloud"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Project Path",
+          "key": "parent",
+          "help": "Full project path such as projects/PROJECT_ID/locations/LOC",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "List all the Cloud Run services",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Cloud Run",
+        "Google Cloud"
+      ],
+      "configuration": {
+        "parent": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PARENT",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "list-services",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.cloudrun.probes",
+            "func": "list_services",
+            "arguments": {
+              "parent": "${parent}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

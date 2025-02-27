@@ -1,0 +1,111 @@
+{
+  "metadata": {
+    "name": "stop_instances",
+    "labels": [
+      "EC2",
+      "AWS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Instance IDs",
+          "key": "instance_ids",
+          "help": "List of instance identifiers, or filters below",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Instance Filters",
+          "key": "filters",
+          "help": "List of key/value pairs to select instances",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Availability Zone",
+          "key": "az",
+          "help": "Availability zone to target. If the other fields are left empty, all instances in this AZ will be stopped",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Force",
+          "key": "force",
+          "help": "Force the operation",
+          "placeholder": "",
+          "default": false,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Stop the given EC2 instances or, if none is provided, all instances of the given availability zone",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "EC2",
+        "AWS"
+      ],
+      "configuration": {
+        "instance_ids": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_INSTANCE_IDS",
+          "env_var_type": "json"
+        },
+        "filters": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FILTERS",
+          "env_var_type": "json"
+        },
+        "az": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_AZ",
+          "env_var_type": "str"
+        },
+        "force": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FORCE",
+          "default": false,
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "stop-instances",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.ec2.actions",
+            "func": "stop_instances",
+            "arguments": {
+              "instance_ids": "${instance_ids}",
+              "filters": "${filters}",
+              "az": "${az}",
+              "force": "${force}"
+            }
+          }
+        }
+      ]
+    },
+    "related": [
+      {
+        "block": "rollbacks",
+        "name": "aws-ec2-start_instances"
+      }
+    ]
+  }
+}

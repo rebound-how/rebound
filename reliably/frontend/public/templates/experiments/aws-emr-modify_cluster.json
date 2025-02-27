@@ -1,0 +1,76 @@
+{
+  "metadata": {
+    "name": "modify_cluster",
+    "labels": [
+      "EMR",
+      "AWS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Cluster ID",
+          "key": "cluster_id",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Concurrency",
+          "key": "concurrency",
+          "help": "How many steps can be done concurrently (1 - 256)",
+          "placeholder": "",
+          "default": "",
+          "type": "integer",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Set the step concurrency level on the provided cluster",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "EMR",
+        "AWS"
+      ],
+      "configuration": {
+        "cluster_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CLUSTER_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "concurrency": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CONCURRENCY",
+          "default": "",
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "modify-cluster",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.emr.actions",
+            "func": "modify_cluster",
+            "arguments": {
+              "cluster_id": "${cluster_id}",
+              "concurrency": "${concurrency}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

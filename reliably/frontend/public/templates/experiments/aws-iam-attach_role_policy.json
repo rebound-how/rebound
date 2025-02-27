@@ -1,0 +1,86 @@
+{
+  "metadata": {
+    "name": "attach_role_policy",
+    "labels": [
+      "IAM",
+      "AWS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Policy ARN",
+          "key": "arn",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Role Name",
+          "key": "role_name",
+          "help": "Name of the role to attach to the policy",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Attach a role to a policy",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "IAM",
+        "AWS"
+      ],
+      "configuration": {
+        "arn": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ARN",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "role_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ROLE_NAME",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "attach-role-policy",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.iam.actions",
+            "func": "attach_role_policy",
+            "arguments": {
+              "arn": "${arn}",
+              "role_name": "${role_name}"
+            }
+          }
+        }
+      ]
+    },
+    "related": [
+      {
+        "block": "method",
+        "name": "aws-iam-detach_role_policy"
+      },
+      {
+        "block": "method",
+        "name": "aws-iam-get_policy"
+      }
+    ]
+  }
+}

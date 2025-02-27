@@ -1,0 +1,76 @@
+{
+  "metadata": {
+    "name": "get_network_fault",
+    "labels": [
+      "Network",
+      "Kubernetes"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Name",
+          "key": "name",
+          "help": "Name of a particular network fault",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Namespace",
+          "key": "ns",
+          "help": "Namespace where to get the fault from",
+          "placeholder": "",
+          "default": "default",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Get a network fault",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Network",
+        "Kubernetes"
+      ],
+      "configuration": {
+        "name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "ns": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NS",
+          "default": "default",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-network-fault",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.chaosmesh.network.probes",
+            "func": "get_network_fault",
+            "arguments": {
+              "name": "${name}",
+              "ns": "${ns}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

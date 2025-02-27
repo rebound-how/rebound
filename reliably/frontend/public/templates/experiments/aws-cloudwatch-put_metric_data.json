@@ -1,0 +1,75 @@
+{
+  "metadata": {
+    "name": "put_metric_data",
+    "labels": [
+      "CloudWatch",
+      "AWS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Namespace",
+          "key": "namespace",
+          "help": "AWS Cloud Watch namespace",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Metric Data",
+          "key": "metric_data",
+          "help": "A list of metric payloads",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Publish metric data points to CloudWatch",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "CloudWatch",
+        "AWS"
+      ],
+      "configuration": {
+        "namespace": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NAMESPACE",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "metric_data": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_METRIC_DATA",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "put-metric-data",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.cloudwatch.actions",
+            "func": "put_metric_data",
+            "arguments": {
+              "namespace": "${namespace}",
+              "metric_data": "${metric_data}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

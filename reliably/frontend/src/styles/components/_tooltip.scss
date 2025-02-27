@@ -1,0 +1,247 @@
+.hasTooltip {
+  position: relative;
+
+  font-weight: 400;
+
+  &::before,
+  &::after {
+    position: absolute;
+    left: 50%;
+    z-index: 99;
+
+    display: block;
+
+    opacity: 0;
+
+    pointer-events: none;
+    transition: opacity 0.1s ease-in-out 0;
+    transform: translateX(-50%) !important;
+  }
+
+  &::before {
+    content: "";
+
+    top: calc(100% + 0.4rem);
+
+    height: 0;
+    width: 0;
+
+    border: 0.6rem solid transparent;
+    border-top: none;
+    border-bottom-color: var(--grey-900);
+  }
+
+  &::after {
+    content: attr(aria-label);
+    top: calc(100% + 1rem);
+
+    padding: 0.4rem 0.8rem;
+    height: auto;
+    width: max-content;
+    max-width: 20rem;
+
+    background-color: var(--grey-900);
+    border-radius: var(--border-radius-s);
+
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 400;
+    line-height: 1.5;
+    text-transform: none;
+    white-space: pre-wrap;
+    word-wrap: normal;
+  }
+
+  &:hover {
+    &::before,
+    &::after {
+      opacity: 1;
+
+      transition: opacity 0.1s ease-in-out 0.4s;
+    }
+  }
+
+  &--top-left {
+    // Vertically above, horizontally left
+    // The tooltip is above its container
+    // The tooltip and its container are left-aligned
+    &::before {
+      top: -1rem;
+      left: 0.6rem;
+
+      border-top: 0.6rem solid var(--grey-900);
+      border-bottom: none;
+
+      transform: translate(0, 0) !important;
+    }
+
+    &::after {
+      top: -1rem;
+      left: 0;
+
+      transform: translate(0, -100%) !important;
+    }
+  }
+
+  &--top-center {
+    // Vertically above, horizontally centered
+    // The tooltip is above its container
+    // The tooltip is centered relatively to its container
+    &::before {
+      top: -1rem;
+      left: 50%;
+
+      border-top: 0.6rem solid var(--grey-900);
+      border-bottom: none;
+
+      transform: translate(-50%, 0) !important;
+    }
+
+    &::after {
+      top: -1rem;
+      left: 50%;
+
+      transform: translate(-50%, -100%) !important;
+    }
+  }
+
+  &--top-right {
+    // Vertically above, horizontally right
+    // The tooltip is above its container
+    // The tooltip and its container are right-aligned
+    &::before {
+      top: -1rem;
+      right: 0.3rem;
+      left: unset;
+
+      border-top: 0.6rem solid var(--grey-900);
+      border-bottom: none;
+
+      transform: translate(0, 0) !important;
+    }
+
+    &::after {
+      top: -1rem;
+      right: -0.6rem;
+      left: unset;
+
+      transform: translate(0, -100%) !important;
+    }
+  }
+
+  &--center-left {
+    // Vertically centered, horizontally left
+    // The tooltip is at the left-hand side of its container
+    &::before {
+      top: 50%;
+      left: -1rem;
+
+      border-top: 0.6rem solid transparent;
+      border-right: none;
+      border-bottom: 0.6rem solid transparent;
+      border-left: 0.6rem solid var(--grey-900);
+
+      transform: translate(0, -50%) !important;
+    }
+
+    &::after {
+      top: 50%;
+      left: -1rem;
+
+      transform: translate(-100%, -50%) !important;
+    }
+  }
+
+  &--center-right {
+    // Vertically centered, horizontally right
+    // The tooltip is at the right-hand side of its container
+    &::before {
+      top: 50%;
+      right: -1rem;
+      left: unset;
+
+      border-top: 0.6rem solid transparent;
+      border-right: 0.6rem solid var(--grey-900);
+      border-bottom: 0.6rem solid transparent;
+      border-left: none;
+
+      transform: translate(0, -50%) !important;
+    }
+
+    &::after {
+      top: 50%;
+      right: -1rem;
+      left: unset;
+
+      transform: translate(100%, -50%) !important;
+    }
+  }
+
+  &--bottom-left {
+    // Vertically below, horizontally left
+    // The tooltip is below its container
+    // The tooltip and its container are left-aligned
+    &::before {
+      top: calc(100% + 0.4rem);
+      left: 0.6rem;
+
+      border-top: none;
+      border-bottom: 0.6rem solid var(--grey-900);
+
+      transform: translate(0, 0) !important;
+    }
+
+    &::after {
+      top: calc(100% + 1rem);
+      left: 0;
+
+      transform: translate(0, 0) !important;
+    }
+  }
+
+  &--bottom-center {
+    // Vertically below, horizontally left
+    // The tooltip is below its container
+    // The tooltip and its container are centered
+    &::before {
+      top: calc(100% + 0.5rem);
+      left: 50%;
+
+      border-top: none;
+      border-bottom: 0.6rem solid var(--grey-900);
+
+      transform: translate(-50%, 0) !important;
+    }
+
+    &::after {
+      top: calc(100% + 1rem);
+      left: 50%;
+
+      transform: translate(-50%, 0) !important;
+    }
+  }
+
+  &--bottom-right {
+    // Vertically below, horizontally right
+    // The tooltip is below its container
+    // The tooltip and its container are right-aligned
+    &::before {
+      top: calc(100% + 0.4rem);
+      right: 0.3rem;
+      left: unset;
+
+      border-top: none;
+      border-bottom: 0.6rem solid var(--grey-900);
+
+      transform: translate(0, 0) !important;
+    }
+
+    &::after {
+      top: calc(100% + 1rem);
+      right: -0.6rem;
+      left: unset;
+
+      transform: translate(0, 0) !important;
+    }
+  }
+}

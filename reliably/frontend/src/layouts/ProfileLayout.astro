@@ -1,0 +1,74 @@
+---
+import "../styles/main.scss";
+import SiteHeader from "@/components/_ui/SiteHeader.astro";
+import ProfileSidebar from "@/components/profile/ProfileSidebar.astro";
+import LoadingBar from "@/components/_ui/LoadingBar.vue";
+import NotificationsList from "@/components/_ui/NotificationsList.vue";
+
+export interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props as Props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <script>
+      if (!localStorage.getItem("reliably:context")) {
+        document.location.replace("/login");
+      } else {
+        document.querySelector("body")!.classList.remove("loggedOut");
+      }
+    </script>
+  </head>
+  <body class="loggedOut">
+    <LoadingBar client:load />
+    <SiteHeader />
+    <div class="profileLayout container">
+      <main class="appMain">
+        <slot />
+      </main>
+      <aside>
+        <ProfileSidebar />
+      </aside>
+    </div>
+    <NotificationsList client:load />
+    <style lang="scss" scoped>
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+
+        &.loggedOut {
+          visibility: hidden;
+        }
+      }
+
+      .profileLayout {
+        display: grid;
+        grid-template-columns: 22rem 1fr;
+        gap: var(--space-medium);
+
+        aside {
+          grid-column: 1 / span 1;
+          grid-row-start: 1;
+        }
+      }
+
+      .appMain {
+        grid-column: 2 / span 1;
+        padding: var(--space-medium) 0;
+      }
+    </style>
+  </body>
+</html>

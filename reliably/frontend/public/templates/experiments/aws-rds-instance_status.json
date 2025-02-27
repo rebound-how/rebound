@@ -1,0 +1,68 @@
+{
+  "metadata": {
+    "name": "instance_status",
+    "labels": ["AWS", "RDS"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Instance ID",
+          "key": "instance_id",
+          "help": "Instance identifier",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Filters",
+          "key": "filters",
+          "help": "List of filters to use instead of a single instance id",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Returns the selected instance's status",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["AWS", "RDS"],
+      "configuration": {
+        "instance_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_INSTANCE_ID",
+          "env_var_type": "str"
+        },
+        "filters": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FILTERS",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "instance-status",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.rds.probes",
+            "func": "instance_status",
+            "arguments": {
+              "instance_id": "${instance_id}",
+              "filters": "${filters}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

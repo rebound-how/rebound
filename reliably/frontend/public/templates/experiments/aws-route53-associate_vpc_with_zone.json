@@ -1,0 +1,107 @@
+{
+  "metadata": {
+    "name": "associate_vpc_with_zone",
+    "labels": [
+      "AWS",
+      "Route 53"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Zone ID",
+          "key": "zone_id",
+          "help": "Route53 zone",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "VPC ID",
+          "key": "vpc_id",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Region",
+          "key": "vpc_region",
+          "help": "VPC region",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Comment",
+          "key": "comment",
+          "help": "A comment for the operation's audit",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Associate a VPC with a private hosted zone",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "AWS",
+        "Route 53"
+      ],
+      "configuration": {
+        "zone_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ZONE_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "vpc_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_VPC_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "vpc_region": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_VPC_REGION",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "comment": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_COMMENT",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "associate-vpc-with-zone",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.route53.actions",
+            "func": "associate_vpc_with_zone",
+            "arguments": {
+              "zone_id": "${zone_id}",
+              "vpc_id": "${vpc_id}",
+              "vpc_region": "${vpc_region}",
+              "comment": "${comment}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

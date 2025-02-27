@@ -1,0 +1,13 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import CreateExperiment from "@/components/custom-templates/CreateExperiment.vue";
+---
+
+<BaseLayout
+  title="Create an experiment from template · Reliably"
+  description="Quickly create experiments from a custom template"
+>
+  <div class="container">
+    <CreateExperiment client:load />
+  </div>
+</BaseLayout>

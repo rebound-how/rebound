@@ -1,0 +1,181 @@
+{
+  "metadata": {
+    "name": "http",
+    "labels": ["k6"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Endpoint",
+          "key": "endpoint",
+          "help": "Target endpoint",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Method",
+          "key": "method",
+          "help": "HTTP method to apply",
+          "placeholder": "",
+          "default": "GET",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Status",
+          "key": "status",
+          "help": "Expected HTTP status code",
+          "placeholder": "",
+          "default": 200,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Body",
+          "key": "body",
+          "help": "HTTP request body to send",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Headers",
+          "key": "headers",
+          "help": "HTTP request headers",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "VUs",
+          "key": "vus",
+          "help": "Number of virtual users",
+          "placeholder": "",
+          "default": 1,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Duration",
+          "key": "duration",
+          "help": "How long to run the test for",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Debug",
+          "key": "debug",
+          "help": "Run the test with the debug flag set",
+          "placeholder": "",
+          "default": false,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Timeout",
+          "key": "timeout",
+          "help": "HTTP requests timeout",
+          "placeholder": "",
+          "default": 1,
+          "type": "integer",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Probe an endpoint to make sure it responds to an http request with the expected HTTP status code",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["k6"],
+      "configuration": {
+        "endpoint": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ENDPOINT",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "method": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_METHOD",
+          "default": "GET",
+          "env_var_type": "str"
+        },
+        "status": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_STATUS",
+          "default": 200,
+          "env_var_type": "int"
+        },
+        "body": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_BODY",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "headers": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_HEADERS",
+          "env_var_type": "json"
+        },
+        "vus": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_VUS",
+          "default": 1,
+          "env_var_type": "int"
+        },
+        "duration": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DURATION",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "debug": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DEBUG",
+          "default": false,
+          "env_var_type": "bool"
+        },
+        "timeout": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TIMEOUT",
+          "default": 1,
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "http",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosk6.k6.probes",
+            "func": "http",
+            "arguments": {
+              "endpoint": "${endpoint}",
+              "method": "${method}",
+              "status": "${status}",
+              "body": "${body}",
+              "headers": "${headers}",
+              "vus": "${vus}",
+              "duration": "${duration}",
+              "debug": "${debug}",
+              "timeout": "${timeout}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

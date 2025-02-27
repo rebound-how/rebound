@@ -1,0 +1,35 @@
+# Feel free to amend this file before enabling it
+
+[Unit]
+Description=Reliably application service
+After=network.target
+StartLimitBurst=5
+StartLimitIntervalSec=10
+
+[Service]
+Type=simple
+WorkingDirectory=<reliably-working-directory>
+ExecStart=<reliably-absolute-path> run --env-file <reliably-env-file> --host <host> --port <port>
+ExecStop=<reliably-absolute-path> stop
+Restart=on-failure
+User=<reliably-user>
+Group=<reliably-group>
+
+# security
+PrivateDevices=true
+ProtectControlGroups=true
+ProtectKernelTunables=true
+ProtectKernelLogs=true
+ProtectSystem=full
+RestrictSUIDSGID=true
+NoNewPrivileges=true
+ProtectClock=true
+RestrictAddressFamilies=~AF_(INET|INET6)
+RestrictNamespaces=~user
+ProtectHostname=true
+CapabilityBoundingSet=~CAP_(DAC_*|FOWNER|IPC_OWNER)
+PrivateUsers=true
+ProtectKernelModules=true
+
+[Install]
+WantedBy=multi-user.target

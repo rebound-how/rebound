@@ -1,0 +1,20 @@
+---
+import ProfileLayout from "@/layouts/ProfileLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+
+import UserProfile from "@/components/profile/UserProfile.vue";
+---
+
+<ProfileLayout
+  title="Your profile · Reliably"
+  description="Your Reliably profile"
+>
+  <div class="profile">
+    <PageHeader title="Your profile" />
+    <UserProfile client:load />
+  </div>
+</ProfileLayout>
+
+<style lang="scss" scoped>
+
+</style>

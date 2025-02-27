@@ -1,0 +1,93 @@
+{
+  "metadata": {
+    "name": "verify_nodes_condition",
+    "labels": [
+      "Node",
+      "Kubernetes"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Label Selector",
+          "key": "condition_type",
+          "help": "Condition type to verify",
+          "placeholder": "PIDPressure",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Label Selector",
+          "key": "condition_value",
+          "help": "Condition value to expect",
+          "placeholder": "False",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Label Selector",
+          "key": "label_selector",
+          "help": "Target a subset of all the nodes only",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Verify the condition value for a set of nodes",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Node",
+        "Kubernetes"
+      ],
+      "configuration": {
+        "condition_type": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CONDITION_TYPE",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "condition_value": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CONDITION_VALUE",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "label_selector": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LABEL_SELECTOR",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "verify-nodes-condition",
+          "type": "probe",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.node.probes",
+            "func": "verify_nodes_condition",
+            "arguments": {
+              "condition_type": "${condition_type}",
+              "condition_value": "${condition_value}",
+              "label_selector": "${label_selector}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

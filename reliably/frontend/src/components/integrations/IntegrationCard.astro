@@ -1,0 +1,142 @@
+---
+import { Icon } from 'astro-icon/components';
+import type { IntegrationDescription } from "@/types/ui-types";
+
+interface Props {
+  integration: IntegrationDescription;
+}
+
+const { integration } = Astro.props;
+
+let icon: string = integration.icon !== undefined ? integration.icon : "box";
+let displayAlpha: boolean =
+  integration.alpha !== undefined && integration.alpha === true;
+---
+
+<article class="integrationCard">
+  <h3 class="integrationCard__title">
+    <Icon class="integrationCard__icon" name={icon} />
+    <a href={integration.url}>
+      {integration.title}
+      {displayAlpha && <span class="integrationCard__alpha">alpha</span>}
+    </a>
+  </h3>
+  <div
+    class={`integrationCard__type integrationCard__type--${integration.type}`}
+  >
+    {integration.type}
+  </div>
+</article>
+
+<style lang="scss">
+  @use "../../styles/abstracts/mixins" as *;
+
+  .integrationCard {
+    position: relative;
+
+    display: flex;
+    flex-direction: column-reverse;
+    height: 100%;
+
+    background-color: var(--grey-100);
+    border-radius: var(--border-radius-s);
+    cursor: pointer;
+
+    &__title {
+      position: relative;
+
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-small);
+      justify-content: flex-start;
+      // height: 100%;
+      margin-bottom: 0;
+      padding: var(--space-large) var(--space-small) var(--space-medium);
+
+      background-color: var(--starterBackgroundColor);
+
+      color: var(--starterHeadingColor);
+
+      transition: all 0.3s ease-in-out;
+
+      a {
+        font-size: 1.6rem;
+        font-weight: 400;
+        text-align: center;
+        text-decoration: none;
+        // text-transform: uppercase;
+
+        transition: font-size 0.3s ease-in-out;
+
+        &,
+        &:visited {
+          color: inherit;
+        }
+      }
+    }
+
+    &__alpha {
+      padding: 0.2rem 0.4rem;
+      background-color: var(--red-100);
+      border-radius: var(--border-radius-s);
+
+      color: var(--red-700);
+      font-size: 1.2rem;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    &__icon {
+      height: 6rem;
+      max-width: 14rem;
+      margin: 0 auto var(--space-medium);
+
+      transition: transform 0.3s ease-in-out;
+    }
+
+    &__type {
+      display: inline-block;
+      padding: 0.3rem 0.6rem;
+
+      border-radius: var(--border-radius-s) var(--border-radius-s) 0 0;
+
+      color: white;
+      font-size: 1.4rem;
+
+      &--Communication {
+        background-color: var(--green-500);
+      }
+
+      &--OpenTelemetry {
+        background-color: #4f62ad;
+      }
+
+      &--Reliably {
+        background-color: var(--pink-500);
+      }
+
+      &--Assistant {
+        background-color: rgb(0, 84, 84);
+      }
+    }
+
+    &::after {
+      @include shadow;
+
+      border-radius: var(--border-radius-s);
+      opacity: 0;
+
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    &:hover {
+      &::after {
+        opacity: 1;
+      }
+
+      .integrationCard__icon {
+        transform: scale(1.1);
+      }
+    }
+  }
+</style>

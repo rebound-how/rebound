@@ -1,0 +1,18 @@
+[project]
+name = "lueur-cli-doc"
+dynamic = ["version"]
+description = "Default template for PDM package"
+authors = [
+    {name = "Sylvain Hellegouarch", email = "sylvain@lueur.dev"},
+]
+dependencies = ["mkdocs>=1.6.1", "mkdocs-material[imaging]>=9.5.49", "termynal>=0.12.2"]
+requires-python = "==3.12.*"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+
+[tool.pdm]
+distribution = false
+version = { source = "scm" }
+
+[tool.pdm.scripts]
+deploy-docs = {cmd = "mkdocs gh-deploy --force"}

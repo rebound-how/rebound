@@ -1,0 +1,26 @@
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-small);
+}
+
+.pill {
+  display: inline-block;
+  padding: 0.4rem 0.6rem;
+  background-color: var(--pill-background);
+  border: none;
+  border-radius: var(--border-radius-s);
+
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 1.6rem;
+
+  &:hover,
+  &--active {
+    background-color: var(--pill-background-hover);
+  }
+
+  &--active {
+    color: var(--text-color-bright);
+  }
+}

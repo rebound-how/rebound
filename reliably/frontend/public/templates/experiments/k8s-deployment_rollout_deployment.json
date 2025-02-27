@@ -1,0 +1,76 @@
+{
+  "metadata": {
+    "name": "rollout_deployment",
+    "labels": [
+      "Deployment",
+      "Kubernetes"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Name",
+          "key": "name",
+          "help": "Name of the deployment",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Namespace",
+          "key": "ns",
+          "help": "",
+          "placeholder": "",
+          "default": "default",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Rollout a deployment.",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Deployment",
+        "Kubernetes"
+      ],
+      "configuration": {
+        "name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "ns": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NS",
+          "default": "default",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "rollout-deployment",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.deployment.probes",
+            "func": "rollout_deployment",
+            "arguments": {
+              "name": "${name}",
+              "ns": "${ns}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

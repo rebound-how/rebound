@@ -1,0 +1,91 @@
+{
+  "metadata": {
+    "name": "update_container_instances_state",
+    "labels": [
+      "ECS",
+      "AWS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Cluster",
+          "key": "cluster",
+          "help": "Name of the target ECS cluster",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Instances",
+          "key": "container_instances",
+          "help": "List of container instance ID or ARN",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        },
+        {
+          "title": "Status",
+          "key": "status",
+          "help": "Desired instances state: ACTIVE, RUNNING",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Modify the status of an ACTIVE ECS container instance",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "ECS",
+        "AWS"
+      ],
+      "configuration": {
+        "cluster": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CLUSTER",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "container_instances": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CONTAINER_INSTANCES",
+          "env_var_type": "json"
+        },
+        "status": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_STATUS",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "update-container-instances-state",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.ecs.actions",
+            "func": "update_container_instances_state",
+            "arguments": {
+              "cluster": "${cluster}",
+              "container_instances": "${container_instances}",
+              "status": "${status}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

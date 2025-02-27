@@ -1,0 +1,84 @@
+{
+  "metadata": {
+    "name": "query",
+    "labels": ["Prometheus"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Query",
+          "key": "query",
+          "help": "Instant query to run",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Period Start",
+          "key": "when",
+          "help": "When to start the query from. Passed as RFC 3339 or relative such as \"5 minutes ago",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Timeout",
+          "key": "timeout",
+          "help": "How long to wait to fetch the results for the query",
+          "placeholder": "",
+          "default": null,
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Run an instant query against a Prometheus server and returns its result as-is",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["Prometheus"],
+      "configuration": {
+        "query": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_QUERY",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "when": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_WHEN",
+          "env_var_type": "str"
+        },
+        "timeout": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TIMEOUT",
+          "env_var_type": "float"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "query",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosprometheus.prometheus.probes",
+            "func": "query",
+            "arguments": {
+              "query": "${query}",
+              "when": "${when}",
+              "timeout": "${timeout}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

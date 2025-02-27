@@ -1,0 +1,51 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import OpenAIGPTIntegrationForm from "@/components/integrations/forms/OpenAIGPTIntegrationForm.vue";
+---
+
+<BaseLayout
+  title="OpenAI GPT integration · Reliably"
+  description="Get tips and advice on your reliability and experiments"
+>
+  <div class="container">
+    <PageHeader
+      title="OpenAI GPT integration"
+      icon="openai-mark"
+      alpha={true}
+    />
+    <section class="newIntegration">
+      <p class="newIntegration__intro">
+        Fill the form with the requested information, to create an integration
+        that you can then use in your plans.
+      </p>
+      <section class="newIntegration__form">
+        <div class="newIntegration__info">
+          <div
+            class="newIntegration__infoWrapper newIntegration__infoWrapper--assistant"
+          >
+            <p>
+              Get tips and advice from OpenAI GPT related to your current
+              experiment.
+            </p>
+            <p>
+              Please note that as everything related to GPT and language models
+              in general, all answers from GPT should be taken with caution.
+            </p>
+            <p>
+              <a
+                href="https://reliably.com/docs/features/assistant/"
+                target="_blank"
+                rel="noopener noreferer"
+              >
+                Read the documentation about this integration's requirements and
+                limitations
+              </a>
+            </p>
+          </div>
+        </div>
+        <OpenAIGPTIntegrationForm client:load />
+      </section>
+    </section>
+  </div>
+</BaseLayout>

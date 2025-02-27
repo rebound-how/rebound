@@ -1,0 +1,77 @@
+{
+  "metadata": {
+    "name": "run_mql_query",
+    "labels": [
+      "Monitoring",
+      "Google Cloud"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Project Name",
+          "key": "project",
+          "help": "The project name or identifier",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Query",
+          "key": "mql",
+          "help": "The MQL query to execute",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Execute a MQL query",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Monitoring",
+        "Google Cloud"
+      ],
+      "configuration": {
+        "project": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PROJECT",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "mql": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_MQL",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "run-mql-query",
+          "type": "probe",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.monitoring.probes",
+            "func": "run_mql_query",
+            "arguments": {
+              "project": "${project}",
+              "mql": "${mql}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

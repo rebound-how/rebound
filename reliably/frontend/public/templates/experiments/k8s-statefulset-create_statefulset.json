@@ -1,0 +1,76 @@
+{
+  "metadata": {
+    "name": "create_statefulset",
+    "labels": [
+      "Kubernetes",
+      "Statefulset"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Namespace",
+          "key": "ns",
+          "help": "",
+          "placeholder": "",
+          "default": "default",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Specification",
+          "key": "spec_path",
+          "help": "Local path to a Statefulset JSON/YAML manifest",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Create a statefulset",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Kubernetes",
+        "Statefulset"
+      ],
+      "configuration": {
+        "ns": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NS",
+          "default": "default",
+          "env_var_type": "str"
+        },
+        "spec_path": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_SPEC_PATH",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "create-statefulset",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.statefulset.actions",
+            "func": "create_statefulset",
+            "arguments": {
+              "ns": "${ns}",
+              "spec_path": "${spec_path}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

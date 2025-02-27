@@ -1,0 +1,345 @@
+{
+  "metadata": {
+    "name": "add_latency",
+    "labels": [
+      "Network",
+      "Kubernetes"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Name",
+          "key": "name",
+          "help": "A unique name to identify this particular fault",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Direction",
+          "key": "direction",
+          "help": "Which direction to apply the latency:  from, to or both",
+          "placeholder": null,
+          "default": "to",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Latency",
+          "key": "latency",
+          "help": "Latency to add to the network, e.g. 20ms",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Jitter",
+          "key": "jitter",
+          "help": "How much jitter to set, for instance 1ms",
+          "placeholder": null,
+          "default": "20ms",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Correlation",
+          "key": "correlation",
+          "help": "How much correlation between two pass of latency injection. Between 0 and 100",
+          "placeholder": null,
+          "default": "50",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Namespace",
+          "key": "ns",
+          "help": "Namespace where to apply the fault",
+          "placeholder": null,
+          "default": "default",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Source Namespaces Selectors",
+          "key": "namespaces_selectors",
+          "help": "Comma-separated list of namespaces to scope the pod which is submitted to latency",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Source Label Selectors",
+          "key": "label_selectors",
+          "help": "Comma-separated list of key=value pairs to scope the pod which is submitted to latency",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Source Annotation Selectors",
+          "key": "annotations_selectors",
+          "help": "Comma-separated list of key=value pairs to scope the  pod which is submitted to latency",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Mode",
+          "key": "mode",
+          "help": "Mode of fault injection: one, all, fixed, fixed-percent, random-max-percent",
+          "placeholder": null,
+          "default": "all",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Mode Value",
+          "key": "mode_value",
+          "help": "Value depending on the mode above. It must be set when mode is fixed, fixed-percent or random-max-percent",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "External Targets",
+          "key": "external_targets",
+          "help": "IPv4 or domain targetted by the fault when direction is set to \"to",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Target Namespaces Selectors",
+          "key": "target_namespaces_selectors",
+          "help": "Comma-separated list of namespaces to limit the latency on the link with that specific pod. Only required when direction is set to both or from",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Target Label Selectors",
+          "key": "target_label_selectors",
+          "help": "Comma-separated list of key=value pairs to limit the latency on the link with that specific pod. Only required when direction is set to both or from",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Target Annotation Selectors",
+          "key": "target_annotations_selectors",
+          "help": "Comma-separated list of key=value pairs to limit the latency on the link with that specific pod. Only required when direction is set to both or from",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Target Mode",
+          "key": "target_mode",
+          "help": "Target Mode of fault injection: one, all, fixed, fixed-percent, random-max-percent",
+          "placeholder": null,
+          "default": "all",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Target Mode Value",
+          "key": "target_mode_value",
+          "help": "Value depending on the mode above",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Add latency to a network link of a Pod",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Network",
+        "Kubernetes"
+      ],
+      "configuration": {
+        "name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "direction": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DIRECTION",
+          "default": "to",
+          "env_var_type": "str"
+        },
+        "latency": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LATENCY",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "jitter": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_JITTER",
+          "default": "20ms",
+          "env_var_type": "str"
+        },
+        "correlation": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CORRELATION",
+          "default": "50",
+          "env_var_type": "str"
+        },
+        "ns": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NS",
+          "default": "default",
+          "env_var_type": "str"
+        },
+        "namespaces_selectors": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NAMESPACES_SELECTORS",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "label_selectors": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LABEL_SELECTORS",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "annotations_selectors": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ANNOTATIONS_SELECTORS",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "mode": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_MODE",
+          "default": "all",
+          "env_var_type": "str"
+        },
+        "mode_value": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_MODE_VALUE",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "external_targets": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_EXTERNAL_TARGETS",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "target_namespaces_selectors": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TARGET_NAMESPACES_SELECTORS",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "target_label_selectors": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TARGET_LABEL_SELECTORS",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "target_annotations_selectors": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TARGET_ANNOTATIONS_SELECTORS",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "target_mode": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TARGET_MODE",
+          "default": "all",
+          "env_var_type": "str"
+        },
+        "target_mode_value": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TARGET_MODE_VALUE",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [
+        {
+          "name": "chatgpt",
+          "messages": [
+            {
+              "role": "user",
+              "content": "How does latency increasing impact an application designed a microservices architecture?"
+            },
+            {
+              "role": "user",
+              "content": "At the code level, is there anything to implement to cope with a sudeen latency increase?"
+            },
+            {
+              "role": "user",
+              "content": "Explain impacts on timeouts, back pressure, etc."
+            }
+          ]
+        }
+      ],
+      "method": [
+        {
+          "name": "add-latency",
+          "type": "action",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.chaosmesh.network.actions",
+            "func": "add_latency",
+            "arguments": {
+              "name": "${name}",
+              "direction": "${direction}",
+              "latency": "${latency}",
+              "jitter": "${jitter}",
+              "correlation": "${correlation}",
+              "ns": "${ns}",
+              "namespaces_selectors": "${namespaces_selectors}",
+              "label_selectors": "${label_selectors}",
+              "annotations_selectors": "${annotations_selectors}",
+              "mode": "${mode}",
+              "mode_value": "${mode_value}",
+              "external_targets": "${external_targets}",
+              "target_namespaces_selectors": "${target_namespaces_selectors}",
+              "target_label_selectors": "${target_label_selectors}",
+              "target_annotations_selectors": "${target_annotations_selectors}",
+              "target_mode": "${target_mode}",
+              "target_mode_value": "${target_mode_value}"
+            }
+          }
+        }
+      ]
+    },
+    "related": [
+      {
+        "block": "method",
+        "name": "reliably-pauses-pause_execution"
+      },
+      {
+        "block": "rollbacks",
+        "name": "k8s-chaosmesh-delete_network_fault"
+      }
+    ]
+  }
+}

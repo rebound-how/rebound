@@ -1,0 +1,155 @@
+{
+  "metadata": {
+    "name": "list_workflow_runs",
+    "labels": [
+      "reliability",
+      "gh"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Repository",
+          "key": "repo",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Branch",
+          "key": "branch",
+          "help": "",
+          "placeholder": "",
+          "default": "main",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Triggered Event",
+          "key": "event",
+          "help": "Select run that were triggered by this specific event",
+          "placeholder": "",
+          "default": "push",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Run Status",
+          "key": "status",
+          "help": "Select run that have this status",
+          "placeholder": "",
+          "default": "in_progress",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Window",
+          "key": "window",
+          "help": "Select runs within the given time window only",
+          "placeholder": "",
+          "default": "5d",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Actor",
+          "key": "actor",
+          "help": "Select runs triggered by this actor",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Exclude PR Runs",
+          "key": "exclude_pull_requests",
+          "help": "Exclude PR runs",
+          "placeholder": "",
+          "default": false,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "List GitHub Workflow runs",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "reliability",
+        "gh"
+      ],
+      "configuration": {
+        "repo": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_REPO",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "branch": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_BRANCH",
+          "default": "main",
+          "env_var_type": "str"
+        },
+        "event": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_EVENT",
+          "default": "push",
+          "env_var_type": "str"
+        },
+        "status": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_STATUS",
+          "default": "in_progress",
+          "env_var_type": "str"
+        },
+        "window": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_WINDOW",
+          "default": "5d",
+          "env_var_type": "str"
+        },
+        "actor": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ACTOR",
+          "env_var_type": "str"
+        },
+        "exclude_pull_requests": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_EXCLUDE_PULL_REQUESTS",
+          "default": false,
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "list-workflow-runs",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosreliably.activities.gh.probes",
+            "func": "list_workflow_runs",
+            "arguments": {
+              "repo": "${repo}",
+              "branch": "${branch}",
+              "event": "${event}",
+              "status": "${status}",
+              "window": "${window}",
+              "actor": "${actor}",
+              "exclude_pull_requests": "${exclude_pull_requests}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

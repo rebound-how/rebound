@@ -1,0 +1,68 @@
+{
+  "metadata": {
+    "name": "list_domains",
+    "labels": ["Gandi", "Domains"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "FQDN Filter",
+          "key": "fqdn_filter",
+          "help": "",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "TLD Filter",
+          "key": "tld_filter",
+          "help": "",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "List all domains or those matching the given TLD or FQDN filters and return the list as-is",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["Gandi", "Domains"],
+      "configuration": {
+        "fqdn_filter": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FQDN_FILTER",
+          "env_var_type": "str"
+        },
+        "tld_filter": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TLD_FILTER",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "list-domains",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosgandi.domains.probes",
+            "func": "list_domains",
+            "arguments": {
+              "fqdn_filter": "${fqdn_filter}",
+              "tld_filter": "${tld_filter}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

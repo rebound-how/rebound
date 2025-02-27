@@ -1,0 +1,49 @@
+---
+export interface Props {
+  title: string;
+  description: string;
+  canonicalURL: URL | string;
+  image?: URL | string;
+}
+
+import "../../styles/main.scss";
+
+const { title, description, canonicalURL, image } = Astro.props;
+---
+<head>
+  <meta charset="utf-8" />
+  <meta
+    name="viewport"
+    content="width=width=device-width, initial-scale=1, viewport-fit=cover"
+  />
+  {title ? <title>{title} · Reliably</title> : null}
+  {description ? <meta name="description" content={description} /> : null}
+  <link rel="canonical" href={canonicalURL} />
+  <link rel="sitemap" href="/sitemap.xml" />
+
+  <!-- Google Tag Manager -->
+  <!-- <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-5ZPPFZZ');</script> -->
+  <!-- End Google Tag Manager -->
+
+  <meta name="theme-color" content="#efdf0b" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="mask-icon" href="/favicon.svg" color="#efdf0b" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={canonicalURL} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content={image} />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content={canonicalURL} />
+  <meta property="twitter:title" content={title} />
+  <meta property="twitter:description" content={description} />
+  <meta property="twitter:image" content={image} />
+</head>

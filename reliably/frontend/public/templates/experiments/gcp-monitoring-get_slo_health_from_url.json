@@ -1,0 +1,173 @@
+{
+  "metadata": {
+    "name": "get_slo_health_from_url",
+    "labels": [
+      "Google Cloud",
+      "Monitoring"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Project",
+          "key": "project_id",
+          "help": "Name of the GCP project holding the SLO",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "URL",
+          "key": "url",
+          "help": "Full URL managed by a GCP load balancer",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "End Window",
+          "key": "end_time",
+          "help": "",
+          "placeholder": null,
+          "default": "now",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Window Length",
+          "key": "window",
+          "help": "",
+          "placeholder": null,
+          "default": "5 minutes",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Alignment Period",
+          "key": "alignment_period",
+          "help": "Interval, in seconds, that is used to divide the data into consistent blocks of time",
+          "placeholder": null,
+          "default": 60,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Per Series Aligner",
+          "key": "per_series_aligner",
+          "help": "Describes how to bring the data points in a single time series into temporal alignment",
+          "placeholder": null,
+          "default": "ALIGN_MEAN",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Cross Series Reducer",
+          "key": "cross_series_reducer",
+          "help": "Reduction operation to be used to combine time series into a single time series",
+          "placeholder": null,
+          "default": "REDUCE_MEAN",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Group By Fields",
+          "key": "group_by_fields",
+          "help": "Comma-separated set of fields to preserve when Cross Series Reducer is specified",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Retrieves SLO for services served by a GCP load balancer",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Google Cloud",
+        "Monitoring"
+      ],
+      "configuration": {
+        "project_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PROJECT_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "url": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_URL",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "end_time": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_END_TIME",
+          "default": "now",
+          "env_var_type": "str"
+        },
+        "window": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_WINDOW",
+          "default": "5 minutes",
+          "env_var_type": "str"
+        },
+        "alignment_period": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ALIGNMENT_PERIOD",
+          "default": 60,
+          "env_var_type": "int"
+        },
+        "per_series_aligner": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PER_SERIES_ALIGNER",
+          "default": "ALIGN_MEAN",
+          "env_var_type": "str"
+        },
+        "cross_series_reducer": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CROSS_SERIES_REDUCER",
+          "default": "REDUCE_MEAN",
+          "env_var_type": "str"
+        },
+        "group_by_fields": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_GROUP_BY_FIELDS",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-slo-health-from-url",
+          "type": "probe",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.monitoring.probes",
+            "func": "get_slo_health_from_url",
+            "arguments": {
+              "project_id": "${project_id}",
+              "url": "${url}",
+              "end_time": "${end_time}",
+              "window": "${window}",
+              "alignment_period": "${alignment_period}",
+              "per_series_aligner": "${per_series_aligner}",
+              "cross_series_reducer": "${cross_series_reducer}",
+              "group_by_fields": "${group_by_fields}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

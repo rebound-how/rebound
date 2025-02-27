@@ -1,0 +1,138 @@
+{
+  "metadata": {
+    "name": "create_custom_object",
+    "labels": [
+      "Kubernetes",
+      "CRD"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Namespace",
+          "key": "ns",
+          "help": "",
+          "placeholder": "",
+          "default": "default",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Group",
+          "key": "group",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Version",
+          "key": "version",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Plural",
+          "key": "plural",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Resource",
+          "key": "resource",
+          "help": "Definition of the custom object, or the the resource as file below",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Resource as YAML",
+          "key": "resource_as_yaml_file",
+          "help": "Definition of the custom object as a YAML file, or the the resource above",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Create a namespaced custom object",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Kubernetes",
+        "CRD"
+      ],
+      "configuration": {
+        "ns": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NS",
+          "default": "default",
+          "env_var_type": "str"
+        },
+        "group": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_GROUP",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "version": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_VERSION",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "plural": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PLURAL",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "resource": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_RESOURCE",
+          "env_var_type": "json"
+        },
+        "resource_as_yaml_file": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_RESOURCE_AS_YAML_FILE",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "create-custom-object",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.crd.actions",
+            "func": "create_custom_object",
+            "arguments": {
+              "ns": "${ns}",
+              "group": "${group}",
+              "version": "${version}",
+              "plural": "${plural}",
+              "resource": "${resource}",
+              "resource_as_yaml_file": "${resource_as_yaml_file}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

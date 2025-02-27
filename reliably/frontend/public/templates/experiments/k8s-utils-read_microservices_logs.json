@@ -1,0 +1,131 @@
+{
+  "metadata": {
+    "name": "read_microservices_logs",
+    "labels": ["Utils", "Kubernetes"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Name",
+          "key": "name",
+          "help": null,
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Last",
+          "key": "last",
+          "help": null,
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Ns",
+          "key": "ns",
+          "help": null,
+          "placeholder": "",
+          "default": "default",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "From Previous",
+          "key": "from_previous",
+          "help": null,
+          "placeholder": "",
+          "default": false,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Label Selector",
+          "key": "label_selector",
+          "help": null,
+          "placeholder": "",
+          "default": "name in ({name})",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Container Name",
+          "key": "container_name",
+          "help": null,
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Fetch logs for the selected pods",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["Utils", "Kubernetes"],
+      "configuration": {
+        "name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NAME",
+          "env_var_type": "str"
+        },
+        "last": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LAST",
+          "env_var_type": "json"
+        },
+        "ns": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NS",
+          "default": "default",
+          "env_var_type": "str"
+        },
+        "from_previous": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FROM_PREVIOUS",
+          "default": false,
+          "env_var_type": "bool"
+        },
+        "label_selector": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LABEL_SELECTOR",
+          "default": "name in ({name})",
+          "env_var_type": "str"
+        },
+        "container_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CONTAINER_NAME",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "read-microservices-logs",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.utils.probes",
+            "func": "read_microservices_logs",
+            "arguments": {
+              "name": "${name}",
+              "last": "${last}",
+              "ns": "${ns}",
+              "from_previous": "${from_previous}",
+              "label_selector": "${label_selector}",
+              "container_name": "${container_name}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,201 @@
+{
+  "metadata": {
+    "name": "cancel_workflow_run",
+    "labels": [
+      "reliability",
+      "gh"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Repository",
+          "key": "repo",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Branch",
+          "key": "branch",
+          "help": "",
+          "placeholder": "",
+          "default": "main",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Pick a Build at Random",
+          "key": "at_random",
+          "help": "Pick any run matching the criteria",
+          "placeholder": "",
+          "default": false,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Triggered Event",
+          "key": "event",
+          "help": "Select a run that was triggered by this specific event",
+          "placeholder": "",
+          "default": "push",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Run Status",
+          "key": "status",
+          "help": "Select a run that has this status",
+          "placeholder": "",
+          "default": "in_progress",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Window",
+          "key": "window",
+          "help": "Select a run within the given time window only",
+          "placeholder": "",
+          "default": "5d",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Actor",
+          "key": "actor",
+          "help": "Select a run triggered by this actor",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Worfklow Identifier",
+          "key": "workflow_id",
+          "help": "Select a run of this workflow only",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Worfklow Run Identifier",
+          "key": "workflow_run_id",
+          "help": "Select a specific run",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Exclude PR Runs",
+          "key": "exclude_pull_requests",
+          "help": "Exclude PR runs",
+          "placeholder": "",
+          "default": false,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Cancels a GitHub Workflow run",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "reliability",
+        "gh"
+      ],
+      "configuration": {
+        "repo": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_REPO",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "branch": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_BRANCH",
+          "default": "main",
+          "env_var_type": "str"
+        },
+        "at_random": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_AT_RANDOM",
+          "default": false,
+          "env_var_type": "bool"
+        },
+        "event": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_EVENT",
+          "default": "push",
+          "env_var_type": "str"
+        },
+        "status": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_STATUS",
+          "default": "in_progress",
+          "env_var_type": "str"
+        },
+        "window": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_WINDOW",
+          "default": "5d",
+          "env_var_type": "str"
+        },
+        "actor": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ACTOR",
+          "env_var_type": "str"
+        },
+        "workflow_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_WORKFLOW_ID",
+          "env_var_type": "str"
+        },
+        "workflow_run_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_WORKFLOW_RUN_ID",
+          "env_var_type": "str"
+        },
+        "exclude_pull_requests": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_EXCLUDE_PULL_REQUESTS",
+          "default": false,
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "cancel-workflow-run",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosreliably.activities.gh.actions",
+            "func": "cancel_workflow_run",
+            "arguments": {
+              "repo": "${repo}",
+              "branch": "${branch}",
+              "at_random": "${at_random}",
+              "event": "${event}",
+              "status": "${status}",
+              "window": "${window}",
+              "actor": "${actor}",
+              "workflow_id": "${workflow_id}",
+              "workflow_run_id": "${workflow_run_id}",
+              "exclude_pull_requests": "${exclude_pull_requests}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "name": "get_service",
+    "labels": [
+      "Cloud Run",
+      "Google Cloud"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Service Path",
+          "key": "name",
+          "help": "Full service path",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Get a Cloud Run service",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Cloud Run",
+        "Google Cloud"
+      ],
+      "configuration": {
+        "name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NAME",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-service",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.cloudrun.probes",
+            "func": "get_service",
+            "arguments": {
+              "name": "${name}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

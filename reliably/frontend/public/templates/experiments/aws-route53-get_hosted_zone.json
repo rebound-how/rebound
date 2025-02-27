@@ -1,0 +1,54 @@
+{
+  "metadata": {
+    "name": "get_hosted_zone",
+    "labels": ["AWS", "Route 53"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Zone ID",
+          "key": "zone_id",
+          "help": "Route53 zone",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Pull information regarding a specific zone id",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["AWS", "Route 53"],
+      "configuration": {
+        "zone_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ZONE_ID",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-hosted-zone",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.route53.probes",
+            "func": "get_hosted_zone",
+            "arguments": {
+              "zone_id": "${zone_id}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

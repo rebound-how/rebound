@@ -1,0 +1,25 @@
+[package]
+name = "lueur-ebpf-programs"
+version = "0.1.0"
+edition = "2024"
+authors = ["Sylvain Hellegouarch <sylvain@lueur.dev>"]
+description = "Lueur CLI" 
+keywords = ["lueur", "ebpf"]
+license-file = "LICENSE" 
+readme = "README.md"
+repository = "https://github.com/lueurdev/lueur" 
+documentation = "https://github.com/lueurdev/lueur/blob/master/README.md" 
+homepage = "https://lueur.dev" 
+
+[dependencies]
+aya-ebpf = "0.1.1"
+aya-log-ebpf = "0.1.1"
+memoffset = "0.9.1"
+network-types = "0.0.7"
+
+[build-dependencies]
+which = { workspace = true }
+
+[[bin]]
+name = "lueur-ebpf"
+path = "src/main.rs"

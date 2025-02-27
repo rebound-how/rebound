@@ -1,0 +1,30 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import PageIntro from "@/components/_ui/PageIntro.astro";
+import DeploymentsList from "@/components/deployments/DeploymentsList.vue";
+
+import type { PageHeaderAction } from "@/types/ui-types";
+
+const actions: PageHeaderAction[] = [
+  {
+    label: "New deployment",
+    to: "/deployments/new/",
+  },
+];
+---
+
+<BaseLayout
+  title="Deployments · Reliably"
+  description="A list of your Deployments"
+>
+  <div class="container">
+    <PageHeader title="Deployments" actions={actions} />
+    <PageIntro>
+      A deployment is an environment that can run your Reliably plans.
+    </PageIntro>
+    <section class="deployments">
+      <DeploymentsList client:load />
+    </section>
+  </div>
+</BaseLayout>

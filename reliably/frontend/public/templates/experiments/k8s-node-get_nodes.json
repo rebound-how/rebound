@@ -1,0 +1,61 @@
+{
+  "metadata": {
+    "name": "get_nodes",
+    "labels": [
+      "Node",
+      "Kubernetes"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Label Selector",
+          "key": "label_selector",
+          "help": "Selectors to target the appropriate nodes",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "List Kubernetes worker nodes in your cluster",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Node",
+        "Kubernetes"
+      ],
+      "configuration": {
+        "label_selector": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LABEL_SELECTOR",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-nodes",
+          "type": "probe",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.node.probes",
+            "func": "get_nodes",
+            "arguments": {
+              "label_selector": "${label_selector}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

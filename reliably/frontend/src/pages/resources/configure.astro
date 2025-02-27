@@ -1,0 +1,22 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import PageIntro from "@/components/_ui/PageIntro.astro";
+import SnapshotForm from "@/components/snapshots/SnapshotForm.vue";
+---
+
+<BaseLayout
+  title="Configure Resources Discovery · Reliably"
+  description="Configure your system's discovery."
+>
+  <div class="container">
+    <PageHeader title="Configure Resources Discovery" />
+    <PageIntro>
+      Resources will help you quickly fill your experiments and analyse where
+      efforts are carried.
+    </PageIntro>
+    <section>
+      <SnapshotForm client:load />
+    </section>
+  </div>
+</BaseLayout>

@@ -1,0 +1,74 @@
+{
+  "metadata": {
+    "name": "random_delay",
+    "labels": [
+      "WireMock",
+      "Wiremock"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Filter",
+          "key": "filter",
+          "help": "Filter to add random delay to",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        },
+        {
+          "title": "Delay Distribution",
+          "key": "delayDistribution",
+          "help": "How to distribute the delays across the filter results",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Adds a random delay to a list of mapppings",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "WireMock",
+        "Wiremock"
+      ],
+      "configuration": {
+        "filter": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FILTER",
+          "env_var_type": "json"
+        },
+        "delayDistribution": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DELAYDISTRIBUTION",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "random-delay",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaoswm.wiremock.actions",
+            "func": "random_delay",
+            "arguments": {
+              "filter": "${filter}",
+              "delayDistribution": "${delayDistribution}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

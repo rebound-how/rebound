@@ -1,0 +1,38 @@
+{
+    "version": "1.0.0",
+    "title": "Login Page Is Available",
+    "description": "Check our users can reach Reliably application's login page.",
+    "contributions": {
+        "availability": "high",
+        "errors": "high",
+        "latency": "none",
+        "security": "none"
+    },
+    "tags": [
+        "login"
+    ],
+    "configuration": {
+        "base_url": {
+            "type": "env",
+            "key": "BASE_URL",
+            "default": "http://localhost:8090"
+        }
+    },
+    "steady-state-hypothesis": {
+        "title": "Login page is healthy",
+        "probes": [
+            {
+                "type": "probe",
+                "name": "Login page returns 200 OK",
+                "tolerance": 200,
+                "provider": {
+                    "type": "http",
+                    "url": "${base_url}/login/"
+                }
+            }
+
+        ]
+    },
+    "method": [],
+    "rollbacks": []
+}

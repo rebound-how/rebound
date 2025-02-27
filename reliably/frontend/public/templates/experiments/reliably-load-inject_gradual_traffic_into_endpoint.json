@@ -1,0 +1,157 @@
+{
+  "metadata": {
+    "name": "inject_gradual_traffic_into_endpoint",
+    "labels": [
+      "reliability",
+      "load"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Endpoint",
+          "key": "endpoint",
+          "help": "URL to target the traffic to",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Step Duration",
+          "key": "step_duration",
+          "help": "Duration of each step of the load test",
+          "placeholder": null,
+          "default": 5,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Additional Virtual User Per Step",
+          "key": "step_additional_vu",
+          "help": "How many new virtual users to add at each step",
+          "placeholder": null,
+          "default": 1,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Virtual User Per Second",
+          "key": "vu_per_second_rate",
+          "help": "Rate of virtual user per second",
+          "placeholder": null,
+          "default": 1,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Load Test Duration",
+          "key": "test_duration",
+          "help": "Total duration of the load test",
+          "placeholder": null,
+          "default": 30,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Local Path of Load Test Results",
+          "key": "results_json_filepath",
+          "help": "Path to a local file where results will be written to",
+          "placeholder": null,
+          "default": "/tmp/results.json",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Enable Open Telemetry Traces",
+          "key": "enable_opentracing",
+          "help": "Enable Open Telemetry traces for load tests requests. Requires that the Open Telemetry environment variables are properly populated during the execution",
+          "placeholder": null,
+          "default": false,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Load traffic into the given endpoint.",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "reliability",
+        "load"
+      ],
+      "configuration": {
+        "endpoint": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ENDPOINT",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "step_duration": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_STEP_DURATION",
+          "default": 5,
+          "env_var_type": "int"
+        },
+        "step_additional_vu": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_STEP_ADDITIONAL_VU",
+          "default": 1,
+          "env_var_type": "int"
+        },
+        "vu_per_second_rate": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_VU_PER_SECOND_RATE",
+          "default": 1,
+          "env_var_type": "int"
+        },
+        "test_duration": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TEST_DURATION",
+          "default": 30,
+          "env_var_type": "int"
+        },
+        "results_json_filepath": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_RESULTS_JSON_FILEPATH",
+          "default": "/tmp/results.json",
+          "env_var_type": "str"
+        },
+        "enable_opentracing": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ENABLE_OPENTRACING",
+          "default": false,
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "inject-gradual-traffic-into-endpoint",
+          "type": "action",
+          "background": true,
+          "provider": {
+            "type": "python",
+            "module": "chaosreliably.activities.load.actions",
+            "func": "inject_gradual_traffic_into_endpoint",
+            "arguments": {
+              "endpoint": "${endpoint}",
+              "step_duration": "${step_duration}",
+              "step_additional_vu": "${step_additional_vu}",
+              "vu_per_second_rate": "${vu_per_second_rate}",
+              "test_duration": "${test_duration}",
+              "results_json_filepath": "${results_json_filepath}",
+              "enable_opentracing": "${enable_opentracing}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

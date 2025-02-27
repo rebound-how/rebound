@@ -1,0 +1,108 @@
+---
+name: fail_az
+target: AWS AZ
+category: AZ:ASG
+type: action
+module: azchaosaws.asg.actions
+description: Simulates the loss of an AZ in an AWS Region for AutoScalingGroups
+layout: src/layouts/ActivityLayout.astro
+setup: |
+    
+---
+export const default_tags = '{"Key": "AZ_FAILURE", "Value": "True"}';
+
+|            |                        |
+| ---------- | ---------------------- |
+| **Type**   | action                 |
+| **Module** | azchaosaws.asg.actions |
+| **Name**   | fail_az                |
+| **Return** | mapping                |
+
+This function simulates the loss of an AZ in an AWS Region for AutoScalingGroups by removing subnets of the AZ in the ASGs or update its min, max and desired capacity to 0 if it's only configured for scaling in a single AZ. It also suspends the process of AZ Rebalancing of the ASG.
+
+Conflicts with `eks.fail_az`: ensure that ASGs that belong to EKS clusters are not be tagged as they will be captured by this action, which will cause eks fail_az to not be able to identify the worker nodes.
+
+**Usage**
+
+JSON
+
+```json
+{
+  "name": "fail_az",
+  "type": "action",
+  "provider": {
+    "type": "python",
+    "module": "azchaosaws.asg.actions",
+    "func": "fail_az",
+    "arguments": {
+      "az": "",
+      "dry_run": true
+    }
+  }
+}
+```
+
+YAML
+
+```yaml
+name: fail_az
+provider:
+  arguments:
+    az: ""
+    dry_run: true
+  func: fail_az
+  module: azchaosaws.asg.actions
+  type: python
+type: action
+```
+
+**Arguments**
+
+| Name | Type | Default | Required | Title | Description |
+| --------------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
+| **az**      | string |  | Yes | Availability Zone | AZ to target |
+| **tags**      | List[Dict[str, str]] | [{default_tags}] | No | Tags | Match only resources with these tags |
+| **dry_run**      | bool | false | No | Dry Run | Only perform a dry run for it |
+
+**Return structure**
+
+```json
+{
+  "AvailabilityZone": str,
+  "DryRun": bool,
+  "AutoScalingGroups": [
+    {
+      "AutoScalingGroupName": str,
+      "Before": {
+        "SubnetIds": List[str],
+        "AZRebalance": bool,
+        "MinSize": int,
+        "MaxSize": int,
+        "DesiredCapacity": int
+      },
+      "After": {
+        "SubnetIds": List[str],
+        "AZRebalance": bool,
+        "MinSize": int,
+        "MaxSize": int,
+        "DesiredCapacity": int
+      }
+    }
+    ...
+  ]
+}
+```
+
+**Signature**
+
+```python
+def fail_az(
+    az: str = None,
+    dry_run: bool = None,
+    tags: List[Dict[str, str]] = [{"Key": "AZ_FAILURE", "Value": "True"}],
+    state_path: str = "fail_az.{}.json".format(__package__.split(".", 1)[1]),
+    configuration: Configuration = None,
+) -> Dict[str, Any]:
+    pass
+
+```

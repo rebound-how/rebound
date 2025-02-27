@@ -1,0 +1,16 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import PageIntro from "@/components/_ui/PageIntro.astro";
+import PlanForm from "@/components/plans/PlanForm.vue";
+---
+
+<BaseLayout title="New Plan · Reliably" description="Create a new plan">
+  <div class="container">
+    <PageHeader title="New Plan" />
+    <PageIntro>A plan allows you to run your Reliably experiments.</PageIntro>
+    <section class="newDeployment">
+      <PlanForm client:load />
+    </section>
+  </div>
+</BaseLayout>

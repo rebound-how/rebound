@@ -1,0 +1,160 @@
+{
+    "metadata": {
+        "name": "Application must have enough distributed capacity",
+        "labels": [
+            "policy",
+            "kubernetes",
+            "capacity",
+            "availability"
+        ]
+    },
+    "spec": {
+        "provider": "chaostoolkit",
+        "type": "experiment",
+        "schema": {
+            "configuration": [
+                {
+                    "title": "Namespace",
+                    "help": "",
+                    "placeholder": "default",
+                    "default": "default",
+                    "type": "string",
+                    "required": true,
+                    "key": "ns"
+                },
+                {
+                    "title": "Pod Label Selector",
+                    "help": "Comma-separated list of key=value pairs identifying a particular set of pods",
+                    "placeholder": "",
+                    "default": "",
+                    "type": "string",
+                    "required": true,
+                    "key": "pod_label_selector"
+                },
+                {
+                    "title": "Deployment Name",
+                    "help": "Name of the deployment with ownership over the pods",
+                    "placeholder": "",
+                    "default": "",
+                    "type": "string",
+                    "required": true,
+                    "key": "deployment_name"
+                },
+                {
+                    "title": "Self-heal Window",
+                    "help": "How long to rest before verifying the deployment's status once a pod has been deleted",
+                    "placeholder": "",
+                    "default": 5,
+                    "type": "integer",
+                    "required": false,
+                    "key": "pause_duration"
+                }
+            ]
+        },
+        "template": {
+            "tags": [
+                "Policy",
+                "Kubernetes",
+                "Capacity"
+            ],
+            "title": "Application must have enough distributed capacity",
+            "method": [
+                {
+                    "name": "Delete a pod",
+                    "type": "action",
+                    "provider": {
+                        "func": "terminate_pods",
+                        "type": "python",
+                        "module": "chaosk8s.pod.actions",
+                        "arguments": {
+                            "ns": "${ns}",
+                            "all": false,
+                            "qty": 1,
+                            "mode": "fixed",
+                            "rand": true,
+                            "order": "alphabetic",
+                            "grace_period": -1,
+                            "label_selector": "${pod_label_selector}"
+                        }
+                    },
+                    "background": false
+                },
+                {
+                    "name": "Allow time to self-heal",
+                    "type": "probe",
+                    "provider": {
+                        "func": "pause_execution",
+                        "type": "python",
+                        "module": "chaosreliably.activities.pauses",
+                        "arguments": {
+                            "duration": "${pause_duration}"
+                        }
+                    }
+                }
+            ],
+            "steady-state-hypothesis": {
+                "title": "Deployment has reached its desired state",
+                "probes": [
+                    {
+                        "name": "Capacity is at the desired state",
+                        "type": "probe",
+                        "tolerance": true,
+                        "provider": {
+                            "type": "python",
+                            "module": "chaosk8s.deployment.probes",
+                            "func": "deployment_available_and_healthy",
+                            "arguments": {
+                                "ns": "${ns}",
+                                "name": "${deployment_name}",
+                                "raise_on_unavailable": false
+                            }
+                        }
+                    }
+                ]
+            },
+            "runtime": {
+                "rollbacks": {
+                    "strategy": "default"
+                },
+                "hypothesis": {
+                    "strategy": "after-method-only",
+                    "fail_fast": false,
+                    "frequency": 1
+                }
+            },
+            "version": "1.0.0",
+            "rollbacks": [],
+            "description": "Evaluate the resilience of our application by introducing the termination of a random pod. The failure mimics a minor outage, allowing us to observe how our recovery, auto-scaling, and health-check mechanisms respond. We expect to measure recovery times, verify the effectiveness of self-healing strategies, and identify any configuration or resource issues that could hinder system reliability in production.",
+            "configuration": {
+                "ns": {
+                    "key": "RELIABLY_PARAM_NS",
+                    "type": "env",
+                    "default": "default",
+                    "env_var_type": "str"
+                },
+                "deployment_name": {
+                    "key": "RELIABLY_PARAM_DEPLOYMENT_NAME",
+                    "type": "env",
+                    "env_var_type": "str"
+                },
+                "pause_duration": {
+                    "key": "RELIABLY_PARAM_PAUSE_DURATION",
+                    "type": "env",
+                    "default": 5,
+                    "env_var_type": "int"
+                },
+                "pod_label_selector": {
+                    "key": "RELIABLY_PARAM_POD_LABEL_SELECTOR",
+                    "type": "env",
+                    "env_var_type": "str"
+                }
+            },
+            "contributions": {
+                "errors": "none",
+                "latency": "none",
+                "security": "none",
+                "availability": "high"
+            }
+        }
+    }
+}

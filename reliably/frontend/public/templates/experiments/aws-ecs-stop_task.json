@@ -1,0 +1,106 @@
+{
+  "metadata": {
+    "name": "stop_task",
+    "labels": [
+      "ECS",
+      "AWS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Cluster",
+          "key": "cluster",
+          "help": "Name of the target ECS cluster",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Service",
+          "key": "service",
+          "help": "Name of the target service",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Task ID",
+          "key": "task_id",
+          "help": "Task identifier to stop",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Reason",
+          "key": "reason",
+          "help": "Reason why stopping the task",
+          "placeholder": "",
+          "default": "Reliably Planned Experiment",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Stop a given ECS task instance. If no task_id is provided, a random task of the given service is stopped",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "ECS",
+        "AWS"
+      ],
+      "configuration": {
+        "cluster": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CLUSTER",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "service": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_SERVICE",
+          "env_var_type": "str"
+        },
+        "task_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TASK_ID",
+          "env_var_type": "str"
+        },
+        "reason": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_REASON",
+          "default": "Reliably Planned Experiment",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "stop-task",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.ecs.actions",
+            "func": "stop_task",
+            "arguments": {
+              "cluster": "${cluster}",
+              "service": "${service}",
+              "task_id": "${task_id}",
+              "reason": "${reason}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

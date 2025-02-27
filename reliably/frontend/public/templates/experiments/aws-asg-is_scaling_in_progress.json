@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "name": "is_scaling_in_progress",
+    "labels": ["AWS", "ASG"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "ASG Tags",
+          "key": "tags",
+          "help": "List of AWS tags for to identify ASG by tags instead of by names",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Check if there is any scaling activity in progress for ASG matching tags",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["AWS", "ASG"],
+      "configuration": {
+        "tags": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TAGS",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "is-scaling-in-progress",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.asg.probes",
+            "func": "is_scaling_in_progress",
+            "arguments": {
+              "tags": "${tags}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

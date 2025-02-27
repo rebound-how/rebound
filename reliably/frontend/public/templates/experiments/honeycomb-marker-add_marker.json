@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "name": "add_marker",
+    "labels": [
+      "Marker",
+      "Honeycomb"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Dataset",
+          "key": "dataset_slug",
+          "help": "Dataset slug, use __all__ for an environment level marker",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Message",
+          "key": "message",
+          "help": "",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Marker Type",
+          "key": "marker_type",
+          "help": "",
+          "placeholder": null,
+          "default": "reliably-experiment",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Add a marker",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Marker",
+        "Honeycomb"
+      ],
+      "configuration": {
+        "dataset_slug": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DATASET_SLUG",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "message": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_MESSAGE",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "marker_type": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_MARKER_TYPE",
+          "default": "reliably-experiment",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "add-marker",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaoshoneycomb.marker.actions",
+            "func": "add_marker",
+            "arguments": {
+              "dataset_slug": "${dataset_slug}",
+              "message": "${message}",
+              "marker_type": "${marker_type}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

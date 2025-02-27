@@ -1,0 +1,295 @@
+@use "../abstracts/mixins" as *;
+
+.button {
+  position: relative;
+  z-index: 1;
+
+  display: inline-block;
+  padding: 0.8rem 1.6rem;
+
+  border: none;
+  border-radius: var(--border-radius-s);
+  cursor: pointer;
+
+  // color: var(--button-color);
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 1.5;
+  text-decoration: none;
+  white-space: nowrap;
+
+  transition: all 0.3s ease-in-out;
+
+  &::after {
+    @include shadow;
+
+    border-radius: var(--border-radius-s);
+  }
+
+  &:hover {
+    outline: none;
+
+    text-decoration: none;
+
+    &::after {
+      opacity: 1;
+    }
+  }
+
+  &:focus-visible {
+    outline: 0.2rem solid var(--pink-500);
+    outline-offset: 0.1rem;
+  }
+
+  &__loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+
+    display: block;
+
+    opacity: 0;
+
+    transform: translate(-50%, -50%);
+
+    svg {
+      height: 3.6rem;
+    }
+  }
+
+  &--large {
+    font-size: 1.8rem;
+  }
+
+  &--primary {
+    &,
+    &:visited {
+      background-color: var(--button-primary-background);
+
+      color: var(--button-primary-text);
+    }
+
+    &:hover {
+      background-color: var(--button-primary-background-hover);
+    }
+  }
+
+  &--secondary {
+    &,
+    &:visited {
+      background-color: var(--button-secondary-background);
+
+      color: var(--button-secondary-text);
+    }
+
+    &:hover {
+      background-color: var(--button-secondary-background-hover);
+    }
+  }
+
+  &--tertiary {
+    &,
+    &:visited {
+      background-color: var(--button-tertiary-background);
+
+      color: var(--button-tertiary-text);
+    }
+
+    &:hover {
+      background-color: var(--button-tertiary-background-hover);
+    }
+  }
+
+  &--destructive {
+    &,
+    &:visited {
+      background-color: var(--button-destructive-background);
+
+      color: var(--button-destructive-text);
+    }
+
+    &:hover {
+      background-color: var(--button-destructive-background-hover);
+    }
+  }
+
+  &--destructiveLight {
+    &,
+    &:visited {
+      background-color: var(--button-destructive-light-background);
+
+      color: var(--button-destructive-light-text);
+    }
+
+    &:hover {
+      background-color: var(--button-destructive-background-hover);
+
+      color: var(--button-destructive-text);
+    }
+  }
+
+  &--creative {
+    &,
+    &:visited {
+      background-color: var(--button-creative-background);
+
+      color: var(--button-creative-text);
+    }
+
+    &:hover {
+      background-color: var(--button-creative-background-hover);
+    }
+  }
+
+  &--ghost {
+    &,
+    &:visited {
+      background-color: var(--button-ghost-background);
+
+      color: var(--button-ghost-text);
+
+      &::after {
+        box-shadow: none;
+      }
+    }
+
+    &:hover {
+      background-color: var(--button-ghost-background-hover);
+    }
+  }
+
+  &--light {
+    &,
+    &:visited {
+      background-color: var(--button-light-background);
+
+      color: var(--button-light-text);
+    }
+
+    &:hover {
+      background-color: var(--button-light-background-hover);
+    }
+  }
+
+  &--small {
+    padding: 0.4rem 0.8rem;
+  }
+
+  &--icon,
+  &--iconDanger {
+    // A button that is just an SVG icon. Should come with a tooltip.
+    position: relative;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 3.6rem;
+    width: 3.6rem;
+    padding: 0;
+
+    border: none;
+    border-radius: 50%;
+    box-shadow: none;
+
+    &:after {
+      box-shadow: none;
+    }
+
+    svg {
+      height: 2rem;
+      width: 2rem;
+    }
+  }
+
+  &--icon {
+    background-color: var(--button-icon-background);
+
+    color: var(--text-color-dim);
+
+    &:visited {
+      color: var(--text-color-dim);
+    }
+
+    &:hover {
+      background-color: var(--button-icon-background-hover);
+
+      color: var(--text-color);
+    }
+  }
+
+  &--iconDanger {
+    background-color: transparent;
+
+    &:hover {
+      background-color: var(--red-100);
+
+      color: var(--statusColor-ko);
+    }
+  }
+
+  &--github {
+    display: flex;
+    align-items: center;
+    padding: 0.4rem 0.8rem;
+
+    background-color: var(--github-background);
+
+    color: var(--github-color);
+    font-size: 1.2rem;
+
+    &:visited {
+      color: var(--github-color);
+    }
+
+    svg {
+      height: 1.8rem;
+      margin-right: 0.6rem;
+    }
+  }
+
+  &.disabled,
+  &:disabled {
+    background-color: var(--grey-200) !important;
+    cursor: not-allowed;
+    opacity: 0.8;
+
+    color: var(--grey-700);
+
+    &:hover {
+      &::after {
+        opacity: 0;
+      }
+    }
+  }
+
+  &--waiting {
+    color: transparent !important;
+
+    .button__loader {
+      opacity: 1;
+    }
+  }
+
+  &--inline {
+    display: inline;
+    margin: 0;
+    padding: 0;
+
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+
+    color: var(--pink-500);
+    font-size: 1.6rem;
+    font-weight: 400;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &::after {
+      box-shadow: none;
+    }
+  }
+}

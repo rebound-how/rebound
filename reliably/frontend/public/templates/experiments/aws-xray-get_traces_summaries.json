@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "name": "get_traces_summaries",
+    "labels": [
+      "XRay",
+      "AWS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Period Start",
+          "key": "start_time",
+          "help": "Get traces issued within a given window. For instance: 3 minutes. Supported time units are seconds, minutes, hours and days",
+          "placeholder": "",
+          "default": "2 minutes",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Period End",
+          "key": "end_time",
+          "help": "Get traces issued within a given window",
+          "placeholder": "",
+          "default": "now",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Filter Expression",
+          "key": "filter_expression",
+          "help": "Filter Expression to select traces",
+          "placeholder": "",
+          "default": "groupname = \"Default\" ",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Return XRay trace summaries",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "XRay",
+        "AWS"
+      ],
+      "configuration": {
+        "start_time": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_START_TIME",
+          "default": "2 minutes",
+          "env_var_type": "str"
+        },
+        "end_time": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_END_TIME",
+          "default": "now",
+          "env_var_type": "str"
+        },
+        "filter_expression": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FILTER_EXPRESSION",
+          "default": "groupname = \"Default\" ",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-traces-summaries",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.xray.probes",
+            "func": "get_traces_summaries",
+            "arguments": {
+              "start_time": "${start_time}",
+              "end_time": "${end_time}",
+              "filter_expression": "${filter_expression}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

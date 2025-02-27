@@ -1,0 +1,93 @@
+{
+  "metadata": {
+    "name": "remove_fault_injection_traffic_policy",
+    "labels": [
+      "Load Balancer",
+      "Google Cloud"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "URL Map Name",
+          "key": "url_map",
+          "help": "Name of the URL map to remove the fault from",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Path Matcher Name",
+          "key": "target_name",
+          "help": "Name of the patch matcher to remove the fault from",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Path",
+          "key": "target_path",
+          "help": "Path impacted with the fault",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Remove any fault injection policy from url map on a given path",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Load Balancer",
+        "Google Cloud"
+      ],
+      "configuration": {
+        "url_map": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_URL_MAP",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "target_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TARGET_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "target_path": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TARGET_PATH",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "remove-fault-injection-traffic-policy",
+          "type": "action",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.lb.actions",
+            "func": "remove_fault_injection_traffic_policy",
+            "arguments": {
+              "url_map": "${url_map}",
+              "target_name": "${target_name}",
+              "target_path": "${target_path}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

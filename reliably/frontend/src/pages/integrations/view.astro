@@ -1,0 +1,13 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import IntegrationView from "@/components/integrations/IntegrationView.vue";
+---
+
+<BaseLayout
+  title="Integration · Reliably"
+  description="View your Reliably integration details"
+>
+  <div class="container">
+    <IntegrationView client:load />
+  </div>
+</BaseLayout>

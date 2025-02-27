@@ -1,0 +1,144 @@
+{
+  "metadata": {
+    "name": "result_data_must_be_greater_than",
+    "labels": [
+      "Query",
+      "Honeycomb"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Dataset",
+          "key": "dataset_slug",
+          "help": "Dataset slug",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Query Result Identifier",
+          "key": "query_result_id",
+          "help": "",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Property Name",
+          "key": "property_name",
+          "help": "Property to look for and evaluate against the treshold",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Treshold",
+          "key": "min_value",
+          "help": "Minimum value the property can take",
+          "placeholder": null,
+          "default": "",
+          "type": "float",
+          "required": true
+        },
+        {
+          "title": "Extra Properties",
+          "key": "other_properties",
+          "help": "Extra properties to select the right result data. Must be a JSON encoded object of property names and values",
+          "placeholder": null,
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Timeout",
+          "key": "timeout",
+          "help": "Timeout to fetch results when they are not complete yet",
+          "placeholder": null,
+          "default": 30,
+          "type": "integer",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Check query result to be lower than treshold",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Query",
+        "Honeycomb"
+      ],
+      "configuration": {
+        "dataset_slug": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DATASET_SLUG",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "query_result_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_QUERY_RESULT_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "property_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PROPERTY_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "min_value": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_MIN_VALUE",
+          "default": "",
+          "env_var_type": "float"
+        },
+        "other_properties": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_OTHER_PROPERTIES",
+          "env_var_type": "json"
+        },
+        "timeout": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TIMEOUT",
+          "default": 30,
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [],
+      "steady-state-hypothesis": {
+        "title": "Verify the conditions of your system",
+        "probes": [
+          {
+            "name": "result-data-must-be-greater-than",
+            "type": "probe",
+            "tolerance": null,
+            "provider": {
+              "type": "python",
+              "module": "chaoshoneycomb.query.probes",
+              "func": "result_data_must_be_greater_than",
+              "arguments": {
+                "dataset_slug": "${dataset_slug}",
+                "query_result_id": "${query_result_id}",
+                "property_name": "${property_name}",
+                "min_value": "${min_value}",
+                "other_properties": "${other_properties}",
+                "timeout": "${timeout}"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

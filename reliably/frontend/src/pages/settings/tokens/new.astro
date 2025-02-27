@@ -1,0 +1,21 @@
+---
+import ProfileLayout from "@/layouts/ProfileLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import TokenForm from "@/components/profile/TokenForm.vue";
+---
+
+<ProfileLayout
+  title="Create a new token · Reliably"
+  description="Tokens allow you Reliably to communicate with external services on your behalf"
+>
+  <div class="profile">
+    <PageHeader title="Create a token" />
+    <section class="newDeployment">
+      <TokenForm client:load />
+    </section>
+  </div>
+</ProfileLayout>
+
+<style lang="scss" scoped>
+
+</style>

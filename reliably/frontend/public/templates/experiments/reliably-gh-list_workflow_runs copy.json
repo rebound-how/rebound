@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "name": "pr_duration",
+    "labels": [
+      "reliability",
+      "gh"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Repository",
+          "key": "repo",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Branch",
+          "key": "base",
+          "help": "",
+          "placeholder": "",
+          "default": "main",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Window",
+          "key": "window",
+          "help": "Select PRs within the given time window only",
+          "placeholder": "",
+          "default": "5d",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Get a list of opened pull-requests durations",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "reliability",
+        "gh"
+      ],
+      "configuration": {
+        "repo": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_REPO",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "base": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_BASE",
+          "default": "main",
+          "env_var_type": "str"
+        },
+        "window": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_WINDOW",
+          "default": "5d",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "pr-duration",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosreliably.activities.gh.probes",
+            "func": "pr_duration",
+            "arguments": {
+              "repo": "${repo}",
+              "base": "${base}",
+              "window": "${window}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

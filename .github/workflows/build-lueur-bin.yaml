@@ -1,0 +1,44 @@
+name: Build Lueur
+
+on: 
+  push:
+    branches:
+      - main
+    paths: 
+      - 'lueur/**'
+
+jobs:
+  workspaces:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04] #, macos-latest, windows-latest]
+
+    name: Build workspace on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    env:
+      CARGO_TERM_COLOR: always
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: rustup toolchain install nightly --component rust-src
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install gRPC build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt install -y protobuf-compiler
+
+      - name: Install bpf-linker
+        run: cargo install bpf-linker --git https://github.com/aya-rs/bpf-linker.git
+
+      - name: Check
+        run: cargo check
+        working-directory: ./lueur-cli
+
+      - name: Build
+        run: cargo build --verbose
+        working-directory: ./lueur-cli

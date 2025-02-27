@@ -1,0 +1,157 @@
+{
+  "metadata": {
+    "name": "delete_nodes",
+    "labels": [
+      "Node",
+      "Kubernetes"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Label Selector",
+          "key": "label_selector",
+          "help": "Selectors to target the appropriate nodes",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "All Nodes",
+          "key": "all",
+          "help": "Delete all nodes matching the selector",
+          "placeholder": null,
+          "default": false,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Random Selection",
+          "key": "rand",
+          "help": "Delete only a random selection matching the selector",
+          "placeholder": null,
+          "default": false,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Deletion Amount",
+          "key": "count",
+          "help": "Amount of nodes to delete",
+          "placeholder": null,
+          "default": 1,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Grace Period",
+          "key": "grace_period_seconds",
+          "help": "Grace period for node termination",
+          "placeholder": null,
+          "default": "",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Per Pod Selection",
+          "key": "pod_label_selector",
+          "help": "Select nodes running the matching pods selection",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Pod Namespace",
+          "key": "pod_namespace",
+          "help": "Pods selection namespace",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Delete nodes gracefully",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Node",
+        "Kubernetes"
+      ],
+      "configuration": {
+        "label_selector": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LABEL_SELECTOR",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "all": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ALL",
+          "default": false,
+          "env_var_type": "bool"
+        },
+        "rand": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_RAND",
+          "default": false,
+          "env_var_type": "bool"
+        },
+        "count": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_COUNT",
+          "default": 1,
+          "env_var_type": "int"
+        },
+        "grace_period_seconds": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_GRACE_PERIOD_SECONDS",
+          "default": "",
+          "env_var_type": "int"
+        },
+        "pod_label_selector": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_POD_LABEL_SELECTOR",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "pod_namespace": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_POD_NAMESPACE",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "delete-nodes",
+          "type": "action",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.node.actions",
+            "func": "delete_nodes",
+            "arguments": {
+              "label_selector": "${label_selector}",
+              "all": "${all}",
+              "rand": "${rand}",
+              "count": "${count}",
+              "grace_period_seconds": "${grace_period_seconds}",
+              "pod_label_selector": "${pod_label_selector}",
+              "pod_namespace": "${pod_namespace}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

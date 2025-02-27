@@ -1,0 +1,118 @@
+{
+  "metadata": {
+    "name": "detach_random_instances",
+    "labels": [
+      "AWS",
+      "ASG"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "ASG Names",
+          "key": "asg_names",
+          "help": "One or many ASG names as a JSON encoded list",
+          "placeholder": null,
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "ASG Tags",
+          "key": "tags",
+          "help": "List of AWS tags for to identify ASG by tags instead of by names",
+          "placeholder": null,
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Number of Instances to Detach",
+          "key": "instance_count",
+          "help": "The amount of instances to detach, or set the percentage below",
+          "placeholder": null,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Percentage of Instances to Detach",
+          "key": "instance_percent",
+          "help": "The percentage of instances to detach, or set the number above",
+          "placeholder": null,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Decrease Capacity",
+          "key": "decrement_capacity",
+          "help": "Whether to decrease the capacity of the ASG by the amount that was detached",
+          "placeholder": null,
+          "default": false,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Detaches one or more random instances from an autoscaling group",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "AWS",
+        "ASG"
+      ],
+      "configuration": {
+        "asg_names": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ASG_NAMES",
+          "env_var_type": "json"
+        },
+        "tags": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TAGS",
+          "env_var_type": "json"
+        },
+        "instance_count": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_INSTANCE_COUNT",
+          "env_var_type": "int"
+        },
+        "instance_percent": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_INSTANCE_PERCENT",
+          "env_var_type": "int"
+        },
+        "decrement_capacity": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DECREMENT_CAPACITY",
+          "default": false,
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "detach-random-instances",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.asg.actions",
+            "func": "detach_random_instances",
+            "arguments": {
+              "asg_names": "${asg_names}",
+              "tags": "${tags}",
+              "instance_count": "${instance_count}",
+              "instance_percent": "${instance_percent}",
+              "decrement_capacity": "${decrement_capacity}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

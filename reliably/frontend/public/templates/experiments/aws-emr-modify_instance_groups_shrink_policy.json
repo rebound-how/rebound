@@ -1,0 +1,134 @@
+{
+  "metadata": {
+    "name": "modify_instance_groups_shrink_policy",
+    "labels": [
+      "EMR",
+      "AWS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Cluster ID",
+          "key": "cluster_id",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Group ID",
+          "key": "group_id",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Decomission Timeout",
+          "key": "decommission_timeout",
+          "help": "",
+          "placeholder": "",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Instances to Terminate",
+          "key": "terminate_instances",
+          "help": "",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Instances to Protect",
+          "key": "protect_instances",
+          "help": "",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Termination Timeout",
+          "key": "termination_timeout",
+          "help": "",
+          "placeholder": "",
+          "type": "integer",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Modify an instance groups shrink operations",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "EMR",
+        "AWS"
+      ],
+      "configuration": {
+        "cluster_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CLUSTER_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "group_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_GROUP_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "decommission_timeout": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DECOMMISSION_TIMEOUT",
+          "env_var_type": "int"
+        },
+        "terminate_instances": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TERMINATE_INSTANCES",
+          "env_var_type": "json"
+        },
+        "protect_instances": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PROTECT_INSTANCES",
+          "env_var_type": "json"
+        },
+        "termination_timeout": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TERMINATION_TIMEOUT",
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "modify-instance-groups-shrink-policy",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.emr.actions",
+            "func": "modify_instance_groups_shrink_policy",
+            "arguments": {
+              "cluster_id": "${cluster_id}",
+              "group_id": "${group_id}",
+              "decommission_timeout": "${decommission_timeout}",
+              "terminate_instances": "${terminate_instances}",
+              "protect_instances": "${protect_instances}",
+              "termination_timeout": "${termination_timeout}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

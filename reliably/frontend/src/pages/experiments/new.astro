@@ -1,0 +1,70 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import ExperimentImportPaste from "@/components/experiments/ExperimentImportPaste.vue";
+import ExperimentImportUpload from "@/components/experiments/ExperimentImportUpload.vue";
+---
+
+<BaseLayout
+  title="New Experiment · Reliably"
+  description="Create a new Reliably experiment"
+>
+  <div class="container">
+    <PageHeader title="New Experiment" />
+    <section class="experimentImport">
+      <section
+        class="experimentImport__option experimentImport__option--browse"
+      >
+        <h2>Experiments Builder</h2>
+        <p>
+          Use Reliably's extensive collection of over 250 probes and actions to create experiments from within the web app. It's faster, easier, and as powerful as ever.
+        </p>
+        <p class="text-center">
+          <a href="/experiments/workflows/" class="button button--primary">
+            Start building
+          </a>
+        </p>
+      </section>
+      <section
+        class="experimentImport__option experimentImport__option--upload"
+      >
+        <h2>Upload</h2>
+        <ExperimentImportUpload client:load />
+      </section>
+      <section class="experimentImport__option experimentImport__option--paste">
+        <h2>Paste as JSON or YAML</h2>
+        <ExperimentImportPaste client:load />
+      </section>
+    </section>
+  </div>
+  <style lang="scss">
+    .experimentImport {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-medium);
+
+      &__option {
+        min-width: 0;
+        padding: var(--space-small);
+
+        background-color: var(--section-background);
+        border-radius: var(--border-radius-s);
+
+        &--upload,
+        &--browse {
+          grid-column-start: 1;
+        }
+
+        &--paste {
+          grid-column-start: 2;
+          grid-row: 1 / span 2;
+        }
+
+        &--upload {
+          display: flex;
+          flex-direction: column;
+        }
+      }
+    }
+  </style>
+</BaseLayout>

@@ -1,0 +1,98 @@
+---
+import { removeTrailingSlash } from "@/utils/strings";
+
+const currentPath = Astro.url.pathname;
+---
+
+<div class="profileSidebar">
+  <nav class="profileNav">
+    <ul class="list-reset">
+      <li>
+        <a
+          href="/settings/profile/"
+          data-truc={currentPath}
+          aria-current={removeTrailingSlash(currentPath) === "/settings/profile"
+            ? "page"
+            : false}
+        >
+          Profile
+        </a>
+      </li>
+      <li>
+        <a
+          href="/settings/tokens/"
+          data-truc={currentPath}
+          aria-current={currentPath.startsWith("/settings/tokens")
+            ? "page"
+            : false}
+        >
+          Tokens
+        </a>
+      </li>
+      <li>
+        <a
+          href="/settings/organization/"
+          data-truc={currentPath}
+          aria-current={removeTrailingSlash(currentPath) ===
+          "/settings/organization"
+            ? "page"
+            : false}
+        >
+          Organization
+        </a>
+      </li>
+    </ul>
+  </nav>
+</div>
+
+<style lang="scss" scoped>
+  .profileSidebar {
+    padding: var(--space-medium) 0;
+
+    .profileNav {
+      margin-top: 0.7rem;
+
+      a {
+        position: relative;
+
+        display: block;
+        padding: 0.6rem;
+
+        border-radius: var(--border-radius-s);
+
+        color: var(--text-color);
+        text-decoration: none;
+
+        &::before {
+          content: "";
+
+          position: absolute;
+          top: 0.4rem;
+          left: -0.8rem;
+
+          display: block;
+          height: calc(100% - 0.8rem);
+          width: 0.4rem;
+
+          background-color: transparent;
+          border-radius: 0.2rem;
+        }
+
+        &[aria-current="page"] {
+          background-color: var(--sidebar-link-active);
+
+          color: var(--page-nav-link-active);
+          font-weight: 500;
+
+          &::before {
+            background-color: var(--sidebar-link-active-pill);
+          }
+        }
+
+        &:hover {
+          background-color: var(--sidebar-link-hover);
+        }
+      }
+    }
+  }
+</style>

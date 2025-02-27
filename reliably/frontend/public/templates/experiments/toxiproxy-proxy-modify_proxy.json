@@ -1,0 +1,105 @@
+{
+  "metadata": {
+    "name": "modify_proxy",
+    "labels": [
+      "Proxy",
+      "ToxiProxy"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Proxy Name",
+          "key": "proxy_name",
+          "help": "Name of the proxy",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Listening Address",
+          "key": "listen_address",
+          "help": "Listening address of the proxy",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Upstream Address",
+          "key": "upstream_address",
+          "help": "Upstream address",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Enabled",
+          "key": "enabled",
+          "help": "Whether this proxy is enabled or not",
+          "placeholder": "",
+          "default": null,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Modify the configuration of a given proxy",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Proxy",
+        "ToxiProxy"
+      ],
+      "configuration": {
+        "proxy_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PROXY_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "listen_address": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LISTEN_ADDRESS",
+          "env_var_type": "str"
+        },
+        "upstream_address": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_UPSTREAM_ADDRESS",
+          "env_var_type": "str"
+        },
+        "enabled": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ENABLED",
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "modify-proxy",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaostoxi.proxy.actions",
+            "func": "modify_proxy",
+            "arguments": {
+              "proxy_name": "${proxy_name}",
+              "listen_address": "${listen_address}",
+              "upstream_address": "${upstream_address}",
+              "enabled": "${enabled}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

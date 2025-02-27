@@ -1,0 +1,31 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import PageIntro from "@/components/_ui/PageIntro.astro";
+import EnvironmentsList from "@/components/environments/EnvironmentsList.vue";
+
+import type { PageHeaderAction } from "@/types/ui-types";
+
+const actions: PageHeaderAction[] = [
+  {
+    label: "New environment",
+    to: "/environments/new/",
+  },
+];
+---
+
+<BaseLayout
+  title="Environments · Reliably"
+  description="A list of your Environments"
+>
+  <div class="container">
+    <PageHeader title="Environments" actions={actions} />
+    <PageIntro>
+      Environments are used to store variables and secrets that will be used by
+      your experiments and deployments.
+    </PageIntro>
+    <section class="environments">
+      <EnvironmentsList client:load />
+    </section>
+  </div>
+</BaseLayout>

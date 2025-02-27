@@ -1,0 +1,10 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ExperimentView from "@/components/experiments/ExperimentView.vue";
+---
+
+<BaseLayout title="Experiment · Reliably" description="A Reliably experiment">
+  <div class="container">
+    <ExperimentView client:load />
+  </div>
+</BaseLayout>

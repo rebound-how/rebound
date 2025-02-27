@@ -1,0 +1,193 @@
+{
+  "metadata": {
+    "name": "get_metric_data",
+    "labels": ["CloudWatch", "AWS"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Namespace",
+          "key": "namespace",
+          "help": "AWS Cloud Watch namespace",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Metric Name",
+          "key": "metric_name",
+          "help": "Name of the metric to fetch data for",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Dimension Name",
+          "key": "dimension_name",
+          "help": "Name of a dimension of the metric, or use dimensions below",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Dimension Value",
+          "key": "dimension_value",
+          "help": "Value for the dimension name above when set",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Dimensions",
+          "key": "dimensions",
+          "help": "List of dimension objects to fetch data for, when not using a single dimension above",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Statistics",
+          "key": "statistic",
+          "help": "Type of data to return: Average, Sum, Minimum, Maximum, SampleCount",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Unit Type",
+          "key": "unit",
+          "help": "The unit type of the data to collect",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Duration",
+          "key": "duration",
+          "help": "How far back should we start from the offset in seconds",
+          "placeholder": "",
+          "default": 300,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Offset",
+          "key": "offset",
+          "help": "When do we start looking back in seconds from now",
+          "placeholder": "",
+          "default": 0,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Period",
+          "key": "period",
+          "help": "The window for which pull data points",
+          "placeholder": "",
+          "default": 60,
+          "type": "integer",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Gets metric data for a given metric in a given time period. This method allows for more data to be retrieved than get_metric_statistics",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["CloudWatch", "AWS"],
+      "configuration": {
+        "namespace": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NAMESPACE",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "metric_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_METRIC_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "dimension_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DIMENSION_NAME",
+          "env_var_type": "str"
+        },
+        "dimension_value": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DIMENSION_VALUE",
+          "env_var_type": "str"
+        },
+        "dimensions": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DIMENSIONS",
+          "env_var_type": "json"
+        },
+        "statistic": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_STATISTIC",
+          "env_var_type": "str"
+        },
+        "unit": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_UNIT",
+          "env_var_type": "str"
+        },
+        "duration": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DURATION",
+          "default": 300,
+          "env_var_type": "int"
+        },
+        "offset": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_OFFSET",
+          "default": 0,
+          "env_var_type": "int"
+        },
+        "period": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PERIOD",
+          "default": 60,
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-metric-data",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.cloudwatch.probes",
+            "func": "get_metric_data",
+            "arguments": {
+              "namespace": "${namespace}",
+              "metric_name": "${metric_name}",
+              "dimension_name": "${dimension_name}",
+              "dimension_value": "${dimension_value}",
+              "dimensions": "${dimensions}",
+              "statistic": "${statistic}",
+              "unit": "${unit}",
+              "duration": "${duration}",
+              "offset": "${offset}",
+              "period": "${period}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

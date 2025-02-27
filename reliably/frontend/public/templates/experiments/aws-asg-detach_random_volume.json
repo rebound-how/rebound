@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "name": "detach_random_volume",
+    "labels": [
+      "AWS",
+      "ASG"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "ASG Names",
+          "key": "asg_names",
+          "help": "One or many ASG names as a JSON encoded list",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "ASG Tags",
+          "key": "tags",
+          "help": "List of AWS tags for to identify ASG by tags instead of by names",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Force",
+          "key": "force",
+          "help": "Force the operation",
+          "placeholder": "",
+          "default": true,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Detaches a random (non root) ebs volume from ec2 instances associated to an ASG",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "AWS",
+        "ASG"
+      ],
+      "configuration": {
+        "asg_names": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ASG_NAMES",
+          "env_var_type": "json"
+        },
+        "tags": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TAGS",
+          "env_var_type": "json"
+        },
+        "force": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FORCE",
+          "default": true,
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "detach-random-volume",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.asg.actions",
+            "func": "detach_random_volume",
+            "arguments": {
+              "asg_names": "${asg_names}",
+              "tags": "${tags}",
+              "force": "${force}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

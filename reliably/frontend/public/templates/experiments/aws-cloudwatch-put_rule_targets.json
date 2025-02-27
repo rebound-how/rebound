@@ -1,0 +1,75 @@
+{
+  "metadata": {
+    "name": "put_rule_targets",
+    "labels": [
+      "CloudWatch",
+      "AWS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Rule Name",
+          "key": "rule_name",
+          "help": "Name of the rule to remove",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Targets",
+          "key": "targets",
+          "help": "List of Clkoud Watch targets",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Creates or updates CloudWatch event rule targets",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "CloudWatch",
+        "AWS"
+      ],
+      "configuration": {
+        "rule_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_RULE_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "targets": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TARGETS",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "put-rule-targets",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.cloudwatch.actions",
+            "func": "put_rule_targets",
+            "arguments": {
+              "rule_name": "${rule_name}",
+              "targets": "${targets}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

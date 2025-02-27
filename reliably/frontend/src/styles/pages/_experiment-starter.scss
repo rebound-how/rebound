@@ -1,0 +1,124 @@
+.experimentStarter,
+.newIntegration,
+.experimentFromTemplate {
+  &__intro {
+    max-width: 70ch;
+
+    color: var(--text-color-dim);
+    font-size: 2rem;
+  }
+
+  &__form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-medium);
+    margin-top: var(--space-medium);
+
+    @media (min-width: 48rem) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .starterForm,
+    .integrationForm {
+      position: relative;
+
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-medium);
+      margin-right: auto;
+      margin-left: auto;
+      padding: var(--space-medium);
+      width: 50rem;
+      max-width: 100%;
+
+      background-color: var(--section-background);
+      border-radius: var(--border-radius-m);
+
+      color: var(--text-color-bright);
+    }
+  }
+
+  &__info {
+    justify-self: end;
+    width: 100%;
+  }
+
+  &__infoWrapper {
+    padding: var(--space-small);
+
+    background-color: var(--starterBackgroundColor);
+    border-radius: var(--border-radius-s);
+
+    color: var(--starterTextColor);
+    font-size: 2rem;
+
+    h2 {
+      color: var(--starterHeadingColor);
+      font-size: 1.6rem;
+      text-transform: uppercase;
+    }
+
+    a {
+      color: var(--starterTextColor);
+      text-decoration: underline;
+    }
+
+    &--pink {
+      --starterBackgroundColor: var(--pink-500);
+      --tagBackgroundColor: var(--pink-600);
+      --starterHeadingColor: white;
+      --starterTextColor: white;
+    }
+
+    &--yellow {
+      --starterBackgroundColor: var(--yellow-500);
+      --tagBackgroundColor: var(--yellow-600);
+      --starterHeadingColor: var(--text-color-bright);
+      --starterTextColor: var(--text-color-bright);
+    }
+
+    &--blue {
+      --starterBackgroundColor: var(--blue-900);
+      --tagBackgroundColor: var(--blue-800);
+      --starterHeadingColor: var(--blue-100);
+      --starterTextColor: var(--blue-200);
+    }
+
+    &--k8sBlue {
+      --starterBackgroundColor: #2e6de7;
+      --tagBackgroundColor: #104dc8;
+      --starterHeadingColor: white;
+      --starterTextColor: var(--blue-100);
+    }
+
+    &--communication {
+      --starterBackgroundColor: var(--green-500);
+      --starterHeadingColor: white;
+      --starterTextColor: white;
+    }
+
+    &--opentelemetry {
+      --starterBackgroundColor: #4f62ad;
+      --starterHeadingColor: white;
+      --starterTextColor: white;
+    }
+
+    &--reliably {
+      --starterBackgroundColor: var(--pink-500);
+      --starterHeadingColor: white;
+      --starterTextColor: white;
+    }
+
+    &--assistant {
+      --starterBackgroundColor: rgb(0, 84, 84);
+      --starterHeadingColor: white;
+      --starterTextColor: white;
+    }
+
+    &--template {
+      --starterBackgroundColor: var(--pink-100);
+      --starterHeadingColor: var(--pink-900);
+      --starterTextColor: var(--pink-800);
+    }
+  }
+}

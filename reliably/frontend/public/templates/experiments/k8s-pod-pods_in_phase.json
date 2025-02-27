@@ -1,0 +1,91 @@
+{
+  "metadata": {
+    "name": "pods_in_phase",
+    "labels": [
+      "Kubernetes",
+      "Pod"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Namespace",
+          "key": "ns",
+          "help": "",
+          "placeholder": "",
+          "default": "default",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Label Selector",
+          "key": "label_selector",
+          "help": "Selectors to target the appropriate pods",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Pod Phase",
+          "key": "phase",
+          "help": "Pod phase as defined by Kubernetes",
+          "placeholder": "",
+          "default": "Running",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Lookup a pod by label_selector in the namespace ns",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Kubernetes",
+        "Pod"
+      ],
+      "configuration": {
+        "ns": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NS",
+          "default": "default",
+          "env_var_type": "str"
+        },
+        "label_selector": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LABEL_SELECTOR",
+          "env_var_type": "str"
+        },
+        "phase": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PHASE",
+          "default": "Running",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "pods-in-phase",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.pod.probes",
+            "func": "pods_in_phase",
+            "arguments": {
+              "ns": "${ns}",
+              "label_selector": "${label_selector}",
+              "phase": "${phase}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

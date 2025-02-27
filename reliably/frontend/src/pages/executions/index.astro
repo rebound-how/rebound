@@ -1,0 +1,17 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import ExecutionsList from "@/components/executions/ExecutionsList.vue";
+---
+
+<BaseLayout
+  title="Executions · Reliably"
+  description="A list of your Reliably experiments runs"
+>
+  <div class="container">
+    <PageHeader title="Executions" />
+    <section class="executions">
+      <ExecutionsList client:load />
+    </section>
+  </div>
+</BaseLayout>

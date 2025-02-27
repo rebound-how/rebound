@@ -1,0 +1,93 @@
+{
+  "metadata": {
+    "name": "restore_availability_zone_power_after_interruption",
+    "labels": [
+      "AWS",
+      "Fault Injection Simulator"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Tags",
+          "key": "tags",
+          "help": "Comma-separated list of tags that will be used to help you identify this particular experiment",
+          "placeholder": null,
+          "default": "reliably=true,chaoseengineering=true",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Delete Roles & Policies",
+          "key": "delete_roles_and_policies",
+          "help": "Unset this if you want to keep the roles and policies for that experiment",
+          "placeholder": null,
+          "default": true,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Delete Template",
+          "key": "delete_templates",
+          "help": "Delete the FIS experiment template for this experiment",
+          "placeholder": null,
+          "default": true,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Undo the 'AZ Availability - Power Interruption' scenario",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "AWS",
+        "Fault Injection Simulator"
+      ],
+      "configuration": {
+        "tags": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TAGS",
+          "default": "reliably=true,chaoseengineering=true",
+          "env_var_type": "str"
+        },
+        "delete_roles_and_policies": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DELETE_ROLES_AND_POLICIES",
+          "default": true,
+          "env_var_type": "bool"
+        },
+        "delete_templates": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DELETE_TEMPLATES",
+          "default": true,
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "restore-availability-zone-power-after-interruption",
+          "type": "action",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.fis.actions",
+            "func": "restore_availability_zone_power_after_interruption",
+            "arguments": {
+              "tags": "${tags}",
+              "delete_roles_and_policies": "${delete_roles_and_policies}",
+              "delete_templates": "${delete_templates}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,322 @@
+{
+  "metadata": {
+    "name": "start_availability_zone_power_interruption_scenario",
+    "labels": [
+      "AWS",
+      "Fault Injection Simulator"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Target Availability-Zone",
+          "key": "az",
+          "help": "Availability zone to disrupt with a simulation of a complet power loss",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Tags",
+          "key": "tags",
+          "help": "Comma-separated list of tags that will be used to help you identify this particular experiment",
+          "placeholder": null,
+          "default": "reliably=true,chaoseengineering=true",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Create Necessary Role & Policies",
+          "key": "autocreate_necessary_role",
+          "help": "Let Reliably create the role and policies required for the experiment. If checked, leave the Role ARN field empty",
+          "placeholder": null,
+          "default": true,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Role ARN",
+          "key": "role_arn",
+          "help": "Role used to trigger the experiment, with sufficient permissions for all the enabled disruptions",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Power loss duration",
+          "key": "duration",
+          "help": "Duration of the disruption, using an ISO 8601 format",
+          "placeholder": null,
+          "default": "PT30M",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Enable IAM Roles Disruption",
+          "key": "target_iam_roles",
+          "help": "Disrupt IAM Roles. If this is enabled, the next field must also be set",
+          "placeholder": null,
+          "default": false,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "IAM Roles to Disrupt",
+          "key": "iam_roles",
+          "help": "Comma separated list of role ARNs to impact",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Enable EBS Volumes Disruption",
+          "key": "target_ebs_volumes",
+          "help": "",
+          "placeholder": null,
+          "default": true,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Enable EC2 Instances Disruption",
+          "key": "target_ec2_instances",
+          "help": "",
+          "placeholder": null,
+          "default": true,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Enable ASG Disruption",
+          "key": "target_asg",
+          "help": "",
+          "placeholder": null,
+          "default": true,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Enable ASG EC2 Instances Disruption",
+          "key": "target_asg_ec2_instances",
+          "help": "",
+          "placeholder": null,
+          "default": true,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Enable Subnets Disruption",
+          "key": "target_subnet",
+          "help": "",
+          "placeholder": null,
+          "default": true,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Enable RDS Cluster Disruption",
+          "key": "target_rds_cluster",
+          "help": "",
+          "placeholder": null,
+          "default": true,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Enable Elasticache Disruption",
+          "key": "target_easticache_cluster",
+          "help": "",
+          "placeholder": null,
+          "default": true,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Cloud Watch Role ARN",
+          "key": "log_group_arn",
+          "help": "Cloud Watch role used to log the experiment",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Description",
+          "key": "description",
+          "help": "",
+          "placeholder": null,
+          "default": "Affect multiple resource types in a single AZ to approximate power interruption",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Client Token",
+          "key": "client_token",
+          "help": "",
+          "placeholder": null,
+          "default": null,
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Run the 'AZ Availability - Power Interruption' scenario",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "AWS",
+        "Fault Injection Simulator"
+      ],
+      "configuration": {
+        "az": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_AZ",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "tags": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TAGS",
+          "default": "reliably=true,chaoseengineering=true",
+          "env_var_type": "str"
+        },
+        "autocreate_necessary_role": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_AUTOCREATE_NECESSARY_ROLE",
+          "default": true,
+          "env_var_type": "bool"
+        },
+        "role_arn": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ROLE_ARN",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "duration": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DURATION",
+          "default": "PT30M",
+          "env_var_type": "str"
+        },
+        "target_iam_roles": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TARGET_IAM_ROLES",
+          "default": false,
+          "env_var_type": "bool"
+        },
+        "iam_roles": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_IAM_ROLES",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "target_ebs_volumes": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TARGET_EBS_VOLUMES",
+          "default": true,
+          "env_var_type": "bool"
+        },
+        "target_ec2_instances": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TARGET_EC2_INSTANCES",
+          "default": true,
+          "env_var_type": "bool"
+        },
+        "target_asg": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TARGET_ASG",
+          "default": true,
+          "env_var_type": "bool"
+        },
+        "target_asg_ec2_instances": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TARGET_ASG_EC2_INSTANCES",
+          "default": true,
+          "env_var_type": "bool"
+        },
+        "target_subnet": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TARGET_SUBNET",
+          "default": true,
+          "env_var_type": "bool"
+        },
+        "target_rds_cluster": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TARGET_RDS_CLUSTER",
+          "default": true,
+          "env_var_type": "bool"
+        },
+        "target_easticache_cluster": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TARGET_EASTICACHE_CLUSTER",
+          "default": true,
+          "env_var_type": "bool"
+        },
+        "log_group_arn": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LOG_GROUP_ARN",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "description": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DESCRIPTION",
+          "default": "Affect multiple resource types in a single AZ to approximate power interruption",
+          "env_var_type": "str"
+        },
+        "client_token": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CLIENT_TOKEN",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "start-availability-zone-power-interruption-scenario",
+          "type": "action",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.fis.actions",
+            "func": "start_availability_zone_power_interruption_scenario",
+            "arguments": {
+              "az": "${az}",
+              "tags": "${tags}",
+              "autocreate_necessary_role": "${autocreate_necessary_role}",
+              "role_arn": "${role_arn}",
+              "duration": "${duration}",
+              "target_iam_roles": "${target_iam_roles}",
+              "iam_roles": "${iam_roles}",
+              "target_ebs_volumes": "${target_ebs_volumes}",
+              "target_ec2_instances": "${target_ec2_instances}",
+              "target_asg": "${target_asg}",
+              "target_asg_ec2_instances": "${target_asg_ec2_instances}",
+              "target_subnet": "${target_subnet}",
+              "target_rds_cluster": "${target_rds_cluster}",
+              "target_easticache_cluster": "${target_easticache_cluster}",
+              "log_group_arn": "${log_group_arn}",
+              "description": "${description}",
+              "client_token": "${client_token}"
+            }
+          }
+        }
+      ]
+    },
+    "related": [
+      {
+        "block": "rollbacks",
+        "name": "aws-fis-restore_availability_zone_power_after_interruption"
+      }
+    ]
+  }
+}

@@ -1,0 +1,214 @@
+.form {
+  fieldset {
+    position: relative;
+
+    margin: 0;
+    padding: 0;
+
+    border: none;
+
+    & + fieldset {
+      padding-top: var(--space-large);
+
+      border-top: 0.1rem solid var(--form-input-border);
+
+      &.noLegend {
+        padding-top: var(--space-medium);
+      }
+
+      legend {
+        position: absolute;
+        top: var(--space-small);
+      }
+    }
+
+    legend {
+      margin-bottom: var(--space-small);
+      padding: 0;
+
+      color: var(--form-legend-color);
+      // color: var(--text-color-dim);
+      // font-size: 1.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+  }
+
+  .inputWrapper {
+    box-sizing: border-box;
+    max-width: 40rem;
+
+    &__help {
+      margin-top: 0;
+      margin-bottom: 0;
+
+      color: var(--text-color-dim);
+      font-size: 1.4rem;
+    }
+
+    + .inputWrapper {
+      margin-top: 2.4rem;
+    }
+
+    &--disabled {
+      pointer-events: none;
+
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &--wide {
+      max-width: unset;
+    }
+
+    &--tick {
+      > div {
+        display: flex;
+        justify-content: flex-start;
+      }
+
+      label {
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      + .inputWrapper--tick {
+        margin-top: 0.4rem;
+      }
+    }
+
+    &--details {
+      summary {
+        display: flex;
+        align-items: center;
+
+        cursor: pointer;
+        list-style: none;
+
+        &::after {
+          content: "";
+
+          display: inline-block;
+          height: 1.6rem;
+          width: 1.6rem;
+          margin-left: 0.2rem;
+
+          background-image: url("data:image/svg+xml,%0A%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-chevron-down' %3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+
+          transform: rotate(-90deg);
+        }
+      }
+
+      &[open] {
+        summary {
+          &::after {
+            transform: rotate(0);
+          }
+        }
+      }
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.6rem;
+
+      &.flex {
+        display: flex;
+        flex-direction: row;
+        gap: 0.6rem;
+
+        .flex-right {
+          margin-left: auto;
+        }
+      }
+
+      .required {
+        color: var(--text-color-dim);
+        font-size: 1.4rem;
+      }
+
+      .secret,
+      .envvar {
+        display: inline-block;
+        padding: 0.1rem 0.6rem;
+
+        border-radius: 1rem;
+
+        font-size: 1.2rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .secret {
+        background-color: var(--red-100);
+
+        color: var(--red-900);
+      }
+
+      .envvar {
+        background-color: var(--green-200);
+
+        color: var(--green-900);
+      }
+    }
+
+    input,
+    textarea,
+    select {
+      display: block;
+      width: 100%;
+      padding: 0.5em;
+
+      background-color: var(--form-input-background);
+      border: 0.1rem solid var(--form-input-border);
+      border-radius: var(--border-radius-m);
+
+      color: var(--text-color);
+      font-family: var(--body-font);
+      font-size: 1.6rem;
+
+      &:focus {
+        outline: 2px solid var(--form-input-focus);
+      }
+
+      &[readonly] {
+        background-color: var(--form-input-background-disabled);
+        cursor: not-allowed;
+
+        &:focus {
+          outline: none;
+        }
+      }
+    }
+
+    input {
+      height: 3.6rem;
+    }
+
+    input[type="checkbox"],
+    input[type="radio"] {
+      height: 1.4rem;
+      width: 1.4rem;
+      margin-top: 0.5rem;
+    }
+
+    button + button {
+      margin-left: var(--space-small);
+    }
+
+    &--error {
+      label,
+      .inputWrapper__help {
+        color: var(--statusColor-ko);
+      }
+
+      input,
+      textarea,
+      select {
+        border: 0.2rem solid var(--statusColor-ko);
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import PageIntro from "@/components/_ui/PageIntro.astro";
+import EnvironmentForm from "@/components/environments/EnvironmentForm.vue";
+---
+
+<BaseLayout
+  title="New Environment · Reliably"
+  description="Create a new environment"
+>
+  <div class="container">
+    <PageHeader title="New Environment" />
+    <PageIntro>
+      Environments are used to store variables and secrets that will be used by
+      your experiments and deployments.
+    </PageIntro>
+    <section>
+      <EnvironmentForm client:load />
+    </section>
+  </div>
+</BaseLayout>

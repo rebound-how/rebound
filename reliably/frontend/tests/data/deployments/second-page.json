@@ -1,0 +1,103 @@
+{
+  "items": [
+    {
+      "name": "Salvatore",
+      "definition": {
+        "type": "github",
+        "repo": "https://github.com/repository/directory",
+        "name": "Gutkowski",
+        "username": "Keeley",
+        "token": "**********"
+      },
+      "id": "11",
+      "org_id": "acbae832-114e-453b-b506-60b3fff90f9e",
+      "created_date": "2022-09-15T10:30:40.993Z",
+      "organizationId": "1"
+    },
+    {
+      "name": "Regan",
+      "definition": {
+        "type": "github",
+        "repo": "https://github.com/repository/directory",
+        "name": "Kilback",
+        "username": "Alayna",
+        "token": "**********"
+      },
+      "id": "12",
+      "org_id": "4657db96-2df6-49a6-99b4-db3825b9f55a",
+      "created_date": "2022-09-14T14:33:49.605Z",
+      "organizationId": "1"
+    },
+    {
+      "name": "Flo",
+      "definition": {
+        "type": "github",
+        "repo": "https://github.com/repository/directory",
+        "name": "Bauch",
+        "username": "Addison",
+        "token": "**********"
+      },
+      "id": "13",
+      "org_id": "a46c98d4-6142-4692-b3a9-0adb5ec0f7a6",
+      "created_date": "2022-09-14T19:52:14.962Z",
+      "organizationId": "1"
+    },
+    {
+      "name": "Kavon",
+      "definition": {
+        "type": "github",
+        "repo": "https://github.com/repository/directory",
+        "name": "Gulgowski",
+        "username": "Leo",
+        "token": "**********"
+      },
+      "id": "14",
+      "org_id": "50e7ae29-a3dc-433d-a2b8-8888c1123c8c",
+      "created_date": "2022-09-15T04:33:33.679Z",
+      "organizationId": "1"
+    },
+    {
+      "name": "Vern",
+      "definition": {
+        "type": "github",
+        "repo": "https://github.com/repository/directory",
+        "name": "MacGyver",
+        "username": "Gus",
+        "token": "**********"
+      },
+      "id": "15",
+      "org_id": "376d26fa-e8e6-42d5-80f2-7933e90dc3ed",
+      "created_date": "2022-09-14T22:43:08.100Z",
+      "organizationId": "1"
+    },
+    {
+      "name": "Maia",
+      "definition": {
+        "type": "github",
+        "repo": "https://github.com/repository/directory",
+        "name": "Stanton",
+        "username": "Brionna",
+        "token": "**********"
+      },
+      "id": "16",
+      "org_id": "d9028cb1-f33e-4cb2-99c6-284d9fe8e668",
+      "created_date": "2022-09-15T01:05:52.227Z",
+      "organizationId": "1"
+    },
+    {
+      "name": "Karianne",
+      "definition": {
+        "type": "github",
+        "repo": "https://github.com/repository/directory",
+        "name": "Reinger",
+        "username": "Jarod",
+        "token": "**********"
+      },
+      "id": "17",
+      "org_id": "9cfca0a3-7dd7-485e-ada3-b47662248cac",
+      "created_date": "2022-09-15T07:03:34.066Z",
+      "organizationId": "1"
+    }
+  ],
+  "count": 17
+}

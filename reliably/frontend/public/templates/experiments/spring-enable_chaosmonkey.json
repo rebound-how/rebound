@@ -1,0 +1,88 @@
+{
+  "metadata": {
+    "name": "enable_chaosmonkey",
+    "labels": [
+      "Spring"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Base URL",
+          "key": "base_url",
+          "help": "URL of the Chaos Monkery service",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Headers",
+          "key": "headers",
+          "help": "Headers to pass to the call",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Timeout",
+          "key": "timeout",
+          "help": "Call must suceeed within this timeout period",
+          "placeholder": "",
+          "default": null,
+          "type": "number",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Enable Chaos Monkey on a specific service",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Spring"
+      ],
+      "configuration": {
+        "base_url": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_BASE_URL",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "headers": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_HEADERS",
+          "env_var_type": "json"
+        },
+        "timeout": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TIMEOUT",
+          "env_var_type": "float"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "enable-chaosmonkey",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosspring.spring.actions",
+            "func": "enable_chaosmonkey",
+            "arguments": {
+              "base_url": "${base_url}",
+              "headers": "${headers}",
+              "timeout": "${timeout}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

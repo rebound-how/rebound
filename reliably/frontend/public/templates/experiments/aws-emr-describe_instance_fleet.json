@@ -1,0 +1,70 @@
+{
+  "metadata": {
+    "name": "describe_instance_fleet",
+    "labels": ["EMR", "AWS"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Cluster ID",
+          "key": "cluster_id",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Fleet ID",
+          "key": "fleet_id",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Describe a single EMR instance fleet",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["EMR", "AWS"],
+      "configuration": {
+        "cluster_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CLUSTER_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "fleet_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FLEET_ID",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "describe-instance-fleet",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.emr.probes",
+            "func": "describe_instance_fleet",
+            "arguments": {
+              "cluster_id": "${cluster_id}",
+              "fleet_id": "${fleet_id}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

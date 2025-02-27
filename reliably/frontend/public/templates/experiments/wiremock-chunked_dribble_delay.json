@@ -1,0 +1,75 @@
+{
+  "metadata": {
+    "name": "chunked_dribble_delay",
+    "labels": [
+      "WireMock",
+      "Wiremock"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Filter",
+          "key": "filter",
+          "help": "Filter to add fixed delay to",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        },
+        {
+          "title": "Chunked Dribble Delay",
+          "key": "chunkedDribbleDelay",
+          "help": "Delay to apply to the matching filter",
+          "placeholder": "",
+          "default": 0,
+          "type": "integer",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Adds a chunked dribble delay to a list of mappings",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "WireMock",
+        "Wiremock"
+      ],
+      "configuration": {
+        "filter": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FILTER",
+          "env_var_type": "json"
+        },
+        "chunkedDribbleDelay": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CHUNKEDDRIBBLEDELAY",
+          "default": 0,
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "chunked-dribble-delay",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaoswm.wiremock.actions",
+            "func": "chunked_dribble_delay",
+            "arguments": {
+              "filter": "${filter}",
+              "chunkedDribbleDelay": "${chunkedDribbleDelay}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

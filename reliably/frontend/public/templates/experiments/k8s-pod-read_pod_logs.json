@@ -1,0 +1,123 @@
+{
+  "metadata": {
+    "name": "read_pod_logs",
+    "labels": [
+      "Kubernetes",
+      "Pod"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Namespace",
+          "key": "ns",
+          "help": "",
+          "placeholder": null,
+          "default": "default",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Label selector",
+          "key": "label_selector",
+          "help": "Selectors to target the appropriate pods",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Period",
+          "key": "last",
+          "help": "Either a number of seconds to read back or a string representing a period such 10 minutes",
+          "placeholder": null,
+          "default": "30 seconds",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Read from Previous Pod",
+          "key": "from_previous",
+          "help": "Read the logs from the previous incarnation of the pod",
+          "placeholder": null,
+          "default": false,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Name of the Container",
+          "key": "container_name",
+          "help": "When a pod is made of several containers, specify the name of the container to read from",
+          "placeholder": null,
+          "default": null,
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Fetch logs for all the pods matching a name or label selector",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Kubernetes",
+        "Pod"
+      ],
+      "configuration": {
+        "ns": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NS",
+          "default": "default",
+          "env_var_type": "str"
+        },
+        "label_selector": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LABEL_SELECTOR",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "last": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LAST",
+          "default": "30 seconds",
+          "env_var_type": "str"
+        },
+        "from_previous": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FROM_PREVIOUS",
+          "default": false,
+          "env_var_type": "bool"
+        },
+        "container_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CONTAINER_NAME",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "read-pod-logs",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.pod.probes",
+            "func": "read_pod_logs",
+            "arguments": {
+              "ns": "${ns}",
+              "label_selector": "${label_selector}",
+              "last": "${last}",
+              "from_previous": "${from_previous}",
+              "container_name": "${container_name}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

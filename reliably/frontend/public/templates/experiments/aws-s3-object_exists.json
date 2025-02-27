@@ -1,0 +1,91 @@
+{
+  "metadata": {
+    "name": "object_exists",
+    "labels": [
+      "AWS",
+      "S3"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Bucket",
+          "key": "bucket_name",
+          "help": "Name of the bucket",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Object Key",
+          "key": "object_key",
+          "help": "Key of the object to lookup in the bucket",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Version",
+          "key": "version_id",
+          "help": "Version identifier of the object",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Validate that an object exists in a S3 bucket",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "AWS",
+        "S3"
+      ],
+      "configuration": {
+        "bucket_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_BUCKET_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "object_key": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_OBJECT_KEY",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "version_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_VERSION_ID",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "object-exists",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.s3.actions",
+            "func": "object_exists",
+            "arguments": {
+              "bucket_name": "${bucket_name}",
+              "object_key": "${object_key}",
+              "version_id": "${version_id}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

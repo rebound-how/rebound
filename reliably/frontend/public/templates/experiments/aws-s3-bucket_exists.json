@@ -1,0 +1,54 @@
+{
+  "metadata": {
+    "name": "bucket_exists",
+    "labels": ["AWS", "S3"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Bucket",
+          "key": "bucket_name",
+          "help": "Name of the bucket",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Validate that a bucket exists",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["AWS", "S3"],
+      "configuration": {
+        "bucket_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_BUCKET_NAME",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "bucket-exists",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.s3.probes",
+            "func": "bucket_exists",
+            "arguments": {
+              "bucket_name": "${bucket_name}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

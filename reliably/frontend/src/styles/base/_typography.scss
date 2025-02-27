@@ -1,0 +1,102 @@
+html {
+  // 1rem = 10px
+  font-size: 62.5%;
+}
+
+// Font size scale
+//
+// 1.2rem
+// 1.4rem
+// 1.6rem
+// 1.8rem
+// 2rem
+// 2.4rem
+// 3rem
+// 3.6rem
+// 4.8rem
+// 6rem
+// 7.2rem
+
+body {
+  color: var(--text-color);
+  font-family: var(--body-font);
+  font-size: var(--base-font-size); // 1.6rem = 16px
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+p + p {
+  margin-top: var(--space-small);
+}
+
+dd {
+  margin-left: 0;
+}
+
+:not(pre) > code {
+  display: inline-block;
+
+  padding: 0.2rem 0.3rem;
+
+  background-color: var(--inline-code-background);
+  border: 0.1rem solid var(--inline-code-border);
+  border-radius: var(--border-radius-s);
+
+  color: var(--inline-code-color);
+  font-size: 0.9em;
+  line-height: 1;
+}
+
+a {
+  color: var(--link-color);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:visited {
+    color: var(--link-color-visited);
+  }
+}
+
+.jsonString {
+  font-family: var(--monospace-font);
+  font-size: 1.4rem;
+
+  &--envvar {
+    color: var(--green-500);
+  }
+
+  &--boolean {
+    color: var(--red-500);
+  }
+
+  &--number {
+    color: var(--blue-500);
+  }
+
+  &--path {
+    color: var(--text-color);
+  }
+}

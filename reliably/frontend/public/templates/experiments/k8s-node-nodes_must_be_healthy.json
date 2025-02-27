@@ -1,0 +1,61 @@
+{
+  "metadata": {
+    "name": "nodes_must_be_healthy",
+    "labels": [
+      "Node",
+      "Kubernetes"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Label Selector",
+          "key": "label_selector",
+          "help": "Target a subset of all the nodes only",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "* Ready must be True",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Node",
+        "Kubernetes"
+      ],
+      "configuration": {
+        "label_selector": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LABEL_SELECTOR",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "nodes-must-be-healthy",
+          "type": "probe",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.node.probes",
+            "func": "nodes_must_be_healthy",
+            "arguments": {
+              "label_selector": "${label_selector}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

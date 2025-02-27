@@ -1,0 +1,93 @@
+{
+  "metadata": {
+    "name": "resize_nodepool",
+    "labels": [
+      "Google Cloud",
+      "GKE"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Node Pool Identifier",
+          "key": "node_pool_id",
+          "help": "Name of the nodepool to resize",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "New Size",
+          "key": "pool_size",
+          "help": "New nodepool size",
+          "placeholder": null,
+          "default": 1,
+          "type": "integer",
+          "required": true
+        },
+        {
+          "title": "Wait Until Complete",
+          "key": "wait_until_complete",
+          "help": "Wait until operation has completed",
+          "placeholder": null,
+          "default": true,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Resize a node pool",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Google Cloud",
+        "GKE"
+      ],
+      "configuration": {
+        "node_pool_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NODE_POOL_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "pool_size": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_POOL_SIZE",
+          "default": 1,
+          "env_var_type": "int"
+        },
+        "wait_until_complete": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_WAIT_UNTIL_COMPLETE",
+          "default": true,
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "resize-nodepool",
+          "type": "action",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.gke.nodepool.actions",
+            "func": "resize_nodepool",
+            "arguments": {
+              "node_pool_id": "${node_pool_id}",
+              "pool_size": "${pool_size}",
+              "wait_until_complete": "${wait_until_complete}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

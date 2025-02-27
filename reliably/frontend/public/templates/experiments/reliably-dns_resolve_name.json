@@ -1,0 +1,96 @@
+{
+  "metadata": {
+    "name": "resolve_name",
+    "labels": ["dns", "reliability"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Domain",
+          "key": "domain",
+          "help": "FQDN to read information from",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Nameservers",
+          "key": "nameservers",
+          "help": "List of nameservers to query for this domain",
+          "placeholder": "",
+          "default": "[“8.8.8.8”]",
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Resolve Type",
+          "key": "resolve_type",
+          "help": "Type to resolve for this domain",
+          "placeholder": "",
+          "default": "A",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Resolve a domain for a specific type from the given nameservers",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["dns", "reliability"],
+      "configuration": {
+        "domain": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DOMAIN",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "nameservers": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NAMESERVERS",
+          "default": "[“8.8.8.8”]",
+          "env_var_type": "json"
+        },
+        "resolve_type": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_RESOLVE_TYPE",
+          "default": "A",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [
+        {
+          "name": "chatgpt",
+          "messages": [
+            {
+              "role": "user",
+              "content": "What are the reliability risks of DNS not resolving a domain?"
+            }
+          ]
+        }
+      ],
+      "method": [
+        {
+          "name": "resolve-name",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosreliably.dns.probes",
+            "func": "resolve_name",
+            "arguments": {
+              "domain": "${domain}",
+              "nameservers": "${nameservers}",
+              "resolve_type": "${resolve_type}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

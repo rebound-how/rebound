@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "name": "stop_experiment",
+    "labels": [
+      "AWS",
+      "Fault Injection Simulator"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Experiment ID",
+          "key": "experiment_id",
+          "help": "FIS experiment identifier",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Stops the specified experiment",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "AWS",
+        "Fault Injection Simulator"
+      ],
+      "configuration": {
+        "experiment_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_EXPERIMENT_ID",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "stop-experiment",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.fis.actions",
+            "func": "stop_experiment",
+            "arguments": {
+              "experiment_id": "${experiment_id}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

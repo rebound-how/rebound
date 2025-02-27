@@ -1,0 +1,70 @@
+---
+import "../styles/main.scss";
+
+export interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props as Props;
+
+const url = new URL(Astro.request.url);
+const currentPath = url.pathname;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+  </head>
+  <body>
+    <script>
+      import type JsonViewer from "@/components/_ui/JsonViewer.vue";
+
+      let location = window.location;
+      if (location.pathname.startsWith("/login")) {
+        if (localStorage.getItem("reliably:context")) {
+          let params = new URLSearchParams(location.search);
+          if (params.has("redirect_to")) {
+            const redirect = params.get("redirect_to")!;
+            if (redirect === "subscribe") {
+              const plan = params.get("plan");
+              location.replace(`/settings/organization/?plan=${plan}`);
+            }
+          } else {
+            location.replace("/");
+          }
+        }
+      }
+    </script>
+    <main class="loginMain">
+      <section class="container loginPage">
+        <slot />
+      </section>
+    </main>
+    <style lang="scss" scoped>
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+      }
+    </style>
+  </body>
+</html>
+
+<style lang="scss" scoped>
+  .loginPage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: var(--space-medium) 0;
+  }
+</style>

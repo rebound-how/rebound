@@ -1,0 +1,86 @@
+{
+  "metadata": {
+    "name": "microservice_is_not_available",
+    "labels": ["Utils", "Kubernetes"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Name",
+          "key": "name",
+          "help": null,
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Ns",
+          "key": "ns",
+          "help": null,
+          "placeholder": "",
+          "default": "default",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Label Selector",
+          "key": "label_selector",
+          "help": null,
+          "placeholder": "",
+          "default": "name in ({name})",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Lookup pods in the specified namespace",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["Utils", "Kubernetes"],
+      "configuration": {
+        "name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "ns": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NS",
+          "default": "default",
+          "env_var_type": "str"
+        },
+        "label_selector": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LABEL_SELECTOR",
+          "default": "name in ({name})",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "microservice-is-not-available",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.utils.probes",
+            "func": "microservice_is_not_available",
+            "arguments": {
+              "name": "${name}",
+              "ns": "${ns}",
+              "label_selector": "${label_selector}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

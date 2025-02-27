@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "name": "targets_health_count",
+    "labels": ["AWS", "ELBv2"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Target Group Names",
+          "key": "tg_names",
+          "help": "List of target group names",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Count of healthy/unhealthy targets per targetgroup",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["AWS", "ELBv2"],
+      "configuration": {
+        "tg_names": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TG_NAMES",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "targets-health-count",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.elbv2.probes",
+            "func": "targets_health_count",
+            "arguments": {
+              "tg_names": "${tg_names}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

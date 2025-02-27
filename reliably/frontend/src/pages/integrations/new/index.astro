@@ -1,0 +1,220 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import IntegrationCard from "@/components/integrations/IntegrationCard.astro";
+
+import type { IntegrationDescription } from "@/types/ui-types";
+
+const integrations: IntegrationDescription[] = [
+  {
+    title: "Reliably Assistant",
+    description: "",
+    type: "Assistant",
+    url: "/integrations/new/reliably-assistant/",
+    icon: "reliably-assistant",
+  },
+  {
+    title: "OpenAI GPT",
+    description: "",
+    type: "Assistant",
+    url: "/integrations/new/openai-gpt/",
+    icon: "openai-logo",
+    alpha: true,
+  },
+  {
+    title: "Slack",
+    description: "",
+    type: "Communication",
+    url: "/integrations/new/slack/",
+    icon: "slack-logo",
+  },
+  {
+    title: "Honeycomb",
+    description: "",
+    type: "OpenTelemetry",
+    url: "/integrations/new/honeycomb/",
+    icon: "honeycomb-logo",
+  },
+  {
+    title: "Dynatrace",
+    description: "",
+    type: "OpenTelemetry",
+    url: "/integrations/new/dynatrace/",
+    icon: "dynatrace-logo",
+  },
+  {
+    title: "GCP",
+    description: "",
+    type: "OpenTelemetry",
+    url: "/integrations/new/gcp-opentelemetry/",
+    icon: "google-cloud-logo",
+  },
+  {
+    title: "Grafana",
+    description: "",
+    type: "OpenTelemetry",
+    url: "/integrations/new/grafana-opentelemetry/",
+    icon: "grafana-tempo-logo",
+  },
+  {
+    title: "Auto Pause",
+    description: "",
+    type: "Reliably",
+    url: "/integrations/new/auto-pause/",
+    icon: "reliably-logo-pink",
+  },
+  {
+    title: "Pre-Checks",
+    description: "",
+    type: "Reliably",
+    url: "/integrations/new/prechecks/",
+    icon: "reliably-logo-pink",
+  },
+  {
+    title: "Safeguards",
+    description: "",
+    type: "Reliably",
+    url: "/integrations/new/safeguards/",
+    icon: "reliably-logo-pink",
+  },
+  {
+    title: "GCP Snapshot",
+    description: "",
+    type: "Reliably",
+    url: "/integrations/new/reliably-snapshot-gcp/",
+    icon: "google-cloud-logo",
+  },
+  {
+    title: "Notification",
+    description: "",
+    type: "Reliably",
+    url: "/integrations/new/reliably-notification/",
+    icon: "reliably-logo-pink",
+  },
+];
+---
+
+<BaseLayout
+  title="Integrations · Reliably"
+  description="Add integrations to your experiments plans"
+>
+  <div class="container">
+    <PageHeader title="Add Integration" />
+    <section class="addIntegrations">
+      <p class="addIntegrations__intro">
+        Add integrations to your plans to send your executions data to your
+        communication platform or observability stack.
+      </p>
+      <ul class="addIntegrations__list" id="addIntegrationsList">
+        {
+          integrations.map((integration: IntegrationDescription) => (
+            <li>
+              <IntegrationCard integration={integration} />
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </div>
+  <style lang="scss">
+    .addIntegrations {
+      &__intro {
+        max-width: 70ch;
+
+        color: var(--text-color-dim);
+        font-size: 2rem;
+      }
+
+      &__list {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--space-medium);
+        margin: var(--space-medium) 0 0;
+        padding: 0;
+
+        list-style-type: none;
+
+        @media (min-width: 48rem) {
+          grid-template-columns: repeat(3, 1fr);
+        }
+
+        @media (min-width: 54rem) {
+          grid-template-columns: repeat(4, 1fr);
+        }
+
+        li {
+          align-self: stretch;
+
+          &.hidden {
+            opacity: 0.2;
+
+            pointer-events: none;
+
+            transition: opacity 0.3s ease-in-out;
+          }
+        }
+      }
+    }
+  </style>
+</BaseLayout>
+
+<script lang="ts">
+  const cards = document.querySelectorAll(".integrationCard");
+  Array.prototype.forEach.call(cards, (card) => {
+    let down,
+      up,
+      link = card.querySelector("h3 a");
+    card.onmousedown = () => (down = +new Date());
+    card.onmouseup = () => {
+      up = +new Date();
+      if (up - down < 200) {
+        link.click();
+      }
+    };
+  });
+
+  // let activeFilters = [];
+  // const filters = document.querySelectorAll("#startersFilters button");
+  // const starters = document.querySelectorAll("#startersList li");
+  // Array.prototype.forEach.call(filters, (filter) => {
+  //   filter.onclick = (event) => {
+  //     const set = event.target.dataset;
+  //     if (set.filter === "clear") {
+  //       activeFilters = [];
+  //       for (let i = 1; i < filters.length; i++) {
+  //         filters[i].dataset.active = "false";
+  //       }
+  //       Array.prototype.forEach.call(starters, (starter) => {
+  //         starter.classList.remove("hidden");
+  //       });
+  //     }
+  //     if (set.active === "false") {
+  //       set.active = "true";
+  //       activeFilters.push(set.filter);
+  //     } else if (set.active === "true") {
+  //       set.active = "false";
+  //       const index = activeFilters.indexOf(set.filter);
+  //       if (index > -1) {
+  //         activeFilters.splice(index, 1);
+  //       }
+  //     }
+  //     if (activeFilters.length) {
+  //       Array.prototype.forEach.call(starters, (starter) => {
+  //         starter.classList.remove("hidden");
+  //         const tags = JSON.parse(starter.dataset.tags);
+  //         activeFilters.every((filter) => {
+  //           if (tags.includes(filter)) {
+  //             return true;
+  //           } else {
+  //             starter.classList.add("hidden");
+  //           }
+  //         });
+  //       });
+  //     } else {
+  //       Array.prototype.forEach.call(starters, (starter) => {
+  //         starter.classList.remove("hidden");
+  //       });
+  //     }
+  //   };
+  // });
+</script>

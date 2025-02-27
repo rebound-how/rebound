@@ -1,0 +1,68 @@
+{
+  "metadata": {
+    "name": "compute_slo",
+    "labels": [
+      "reliability",
+      "slo"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "SLO Configuration",
+          "key": "slo",
+          "help": "SLO configuration as per https://github.com/google/slo-generator#slo-configuration",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        },
+        {
+          "title": "SLI Backend Configuration",
+          "key": "slo",
+          "help": "Backend configuration to read SLI from as per https://github.com/google/slo-generator#shared-configuration",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Computes the given SLO and return a list of outcomes for each error budget given policies.",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "reliability",
+        "slo"
+      ],
+      "configuration": {
+        "slo": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_SLO",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "compute-slo",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosreliably.activities.slo.probes",
+            "func": "compute_slo",
+            "arguments": {
+              "slo": "${slo}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

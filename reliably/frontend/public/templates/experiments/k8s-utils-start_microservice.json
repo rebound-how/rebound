@@ -1,0 +1,76 @@
+{
+  "metadata": {
+    "name": "start_microservice",
+    "labels": [
+      "Utils",
+      "Kubernetes"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Spec Path",
+          "key": "spec_path",
+          "help": null,
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Ns",
+          "key": "ns",
+          "help": null,
+          "placeholder": "",
+          "default": "default",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Start a microservice",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Utils",
+        "Kubernetes"
+      ],
+      "configuration": {
+        "spec_path": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_SPEC_PATH",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "ns": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NS",
+          "default": "default",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "start-microservice",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.utils.actions",
+            "func": "start_microservice",
+            "arguments": {
+              "spec_path": "${spec_path}",
+              "ns": "${ns}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

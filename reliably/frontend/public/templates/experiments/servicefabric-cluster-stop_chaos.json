@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "name": "stop_chaos",
+    "labels": [
+      "Cluster",
+      "Service Fabric"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Timeout",
+          "key": "timeout",
+          "help": "Call timeout to stop the Chaos running in the cluster",
+          "placeholder": "",
+          "default": 60,
+          "type": "integer",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Stop Chaos in your cluster",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Cluster",
+        "Service Fabric"
+      ],
+      "configuration": {
+        "timeout": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TIMEOUT",
+          "default": 60,
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "stop-chaos",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosservicefabric.cluster.actions",
+            "func": "stop_chaos",
+            "arguments": {
+              "timeout": "${timeout}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

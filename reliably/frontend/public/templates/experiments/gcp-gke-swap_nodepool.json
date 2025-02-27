@@ -1,0 +1,124 @@
+{
+  "metadata": {
+    "name": "swap_nodepool",
+    "labels": [
+      "Google Cloud",
+      "GKE"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Current Node Pool Identifier",
+          "key": "old_node_pool_id",
+          "help": "Name of the current nodepool to swap from",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "New Node Pool Identifier",
+          "key": "new_nodepool_body",
+          "help": "Name of the new nodepool",
+          "placeholder": null,
+          "default": null,
+          "type": "object",
+          "required": true
+        },
+        {
+          "title": "Delete Current Node Pool",
+          "key": "delete_old_node_pool",
+          "help": "Whether to also delete the current nodepool",
+          "placeholder": null,
+          "default": false,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Drain Timeout",
+          "key": "drain_timeout",
+          "help": "Time allowed to drain the nodes",
+          "placeholder": null,
+          "default": 120,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Wait Until Complete",
+          "key": "wait_until_complete",
+          "help": "Wait until operation has completed",
+          "placeholder": null,
+          "default": true,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Create a new nodepool, drain the old one so pods can be rescheduled on the new pool",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Google Cloud",
+        "GKE"
+      ],
+      "configuration": {
+        "old_node_pool_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_OLD_NODE_POOL_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "new_nodepool_body": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NEW_NODEPOOL_BODY",
+          "env_var_type": "json"
+        },
+        "delete_old_node_pool": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DELETE_OLD_NODE_POOL",
+          "default": false,
+          "env_var_type": "bool"
+        },
+        "drain_timeout": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DRAIN_TIMEOUT",
+          "default": 120,
+          "env_var_type": "int"
+        },
+        "wait_until_complete": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_WAIT_UNTIL_COMPLETE",
+          "default": true,
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "swap-nodepool",
+          "type": "action",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.gke.nodepool.actions",
+            "func": "swap_nodepool",
+            "arguments": {
+              "old_node_pool_id": "${old_node_pool_id}",
+              "new_nodepool_body": "${new_nodepool_body}",
+              "delete_old_node_pool": "${delete_old_node_pool}",
+              "drain_timeout": "${drain_timeout}",
+              "wait_until_complete": "${wait_until_complete}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

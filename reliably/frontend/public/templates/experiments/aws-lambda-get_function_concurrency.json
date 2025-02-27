@@ -1,0 +1,54 @@
+{
+  "metadata": {
+    "name": "get_function_concurrency",
+    "labels": ["AWS", "Lambda"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Function Name",
+          "key": "function_name",
+          "help": "Name of the function",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Get configuration information of lambda by its function name",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["AWS", "Lambda"],
+      "configuration": {
+        "function_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FUNCTION_NAME",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-function-concurrency",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.awslambda.probes",
+            "func": "get_function_concurrency",
+            "arguments": {
+              "function_name": "${function_name}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "metadata": {
+    "name": "failure_rate",
+    "labels": ["Dynatrace"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Service",
+          "key": "entity",
+          "help": "Name of the service",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Relative Time",
+          "key": "relative_time",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Expected Failed Percentage",
+          "key": "failed_percentage",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "integer",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Validates the failure rate of a specific service",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["Dynatrace"],
+      "configuration": {
+        "entity": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ENTITY",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "relative_time": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_RELATIVE_TIME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "failed_percentage": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FAILED_PERCENTAGE",
+          "default": "",
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "failure-rate",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosdynatrace.dynatrace.probes",
+            "func": "failure_rate",
+            "arguments": {
+              "entity": "${entity}",
+              "relative_time": "${relative_time}",
+              "failed_percentage": "${failed_percentage}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "metadata": {
+    "name": "get_alarm_state_value",
+    "labels": ["CloudWatch", "AWS"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Alarma Name",
+          "key": "alarm_name",
+          "help": "Name of the alarm to retrieve the state for",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Return the state value of an alarm",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["CloudWatch", "AWS"],
+      "configuration": {
+        "alarm_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ALARM_NAME",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-alarm-state-value",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.cloudwatch.probes",
+            "func": "get_alarm_state_value",
+            "arguments": {
+              "alarm_name": "${alarm_name}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

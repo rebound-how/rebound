@@ -1,0 +1,578 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ActivityCard from "@/components/starters/ActivityCard.astro";
+import AiBuilder from "@/components/scenarios/AiBuilder.vue";
+
+const activities = Object.values(
+    import.meta.glob("./*.md", { eager: true })
+  );
+
+// Order activities by activity name
+activities.sort((a, b) => {
+  return a.frontmatter.name.localeCompare(b.frontmatter.name);
+});
+---
+
+<BaseLayout
+  title="Experiment Builder · Reliably"
+  description="Reliably offers more than 200 actions and probes to create chaos engineering experiments in a large array of systems."
+>
+  <div class="container">
+    <header class="pageHeader">
+      <div>
+        <h1 class="pageHeader__title">Experiments Builder</h1>
+      </div>
+      <div class="pageHeader__actions"></div>
+    </header>
+
+    <section class="activities">
+      <div class="activitiesIntroduction">
+        <p>
+          This page lists all the activities available for your chaos
+          engineering experiments in Reliably. There are two main types of
+          activities: actions and probes.
+        </p>
+        <p>
+          Whether you call them attacks or turbulences, <strong
+            >actions are used to introduce specific conditions to your system</strong
+          >, in order to observe how it behaves. <strong
+            >Probes are used to retrieve information from your system</strong
+          >, allowing you to compare its state before, during, and after the
+          conditions induced by your actions.
+        </p>
+      </div>
+
+      <form class="activitiesFilters form">
+        <div class="inputWrapper">
+          <label for="afTarget">Target</label>
+          <select
+            id="afTarget"
+            name="afTarget"
+            onchange="handleTargetChange(this.value);"
+          >
+            <option value="all">All</option>
+            <option value="chaosaws">AWS</option>
+            <option value="azchaosaws">AWS AZ</option>
+            <option value="chaosazure">Azure</option>
+            <option value="chaosdynatrace">Dynatrace</option>
+            <option value="chaosgandi">Gandi</option>
+            <option value="chaosgcp">Google Cloud</option>
+            <option value="chaosk6">Grafana k6</option>
+            <option value="chaoshoneycomb">Honeycomb</option>
+            <option value="chaosistio">Istio</option>
+            <option value="chaosk8s">Kubernetes</option>
+            <option value="chaosprometheus">Prometheus</option>
+            <option value="chaosreliably">Reliably</option>
+            <option value="chaosservicefabric">Service Fabric</option>
+            <option value="chaosspring">Spring</option>
+            <option value="chaostoxi">ToxiProxy</option>
+            <option value="chaoswm">WireMock</option>
+          </select>
+        </div>
+        <div class="inputWrapper">
+          <label for="afCategory">Service</label>
+          <select
+            id="afCategory"
+            name="afCategory"
+            onchange="handleCategoryChange(this.value);"
+          >
+            <option value="">Select a target provider first</option>
+          </select>
+        </div>
+        <div class="inputWrapper">
+          <label for="afType">Type</label>
+          <select
+            id="afType"
+            name="afType"
+            onchange="handleTypeChange(this.value);"
+          >
+            <option value="all">All</option>
+            <option value="actions">Actions</option>
+            <option value="probes">Probes</option>
+            <option value="tolerances">Tolerances</option>
+            <option value="utils">Utils</option>
+          </select>
+        </div>
+      </form>
+      <ul class="list-reset" id="activitiesList">
+        <li>
+          <AiBuilder client:load />
+        </li>
+        {
+          activities.map((activity) => (
+            <li>
+              <ActivityCard post={activity} />
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </div>
+</BaseLayout>
+
+<script is:inline>
+  const cards = document.querySelectorAll(".activityCard");
+  Array.prototype.forEach.call(cards, (card) => {
+    let down,
+      up,
+      link = card.querySelector("h2 a");
+    card.onmousedown = () => (down = +new Date());
+    card.onmouseup = () => {
+      up = +new Date();
+      if (up - down < 200) {
+        link.click();
+      }
+    };
+  });
+
+  const GANDICATEGORIES = [
+    {
+      name: "domains",
+      displayName: "Domains",
+    },
+  ];
+
+  const AWSCATEGORIES = [
+    {
+      name: "asg",
+      displayName: "ASG",
+    },
+    {
+      name: "cloudwatch",
+      displayName: "CloudWatch",
+    },
+    {
+      name: "ec2",
+      displayName: "EC2",
+    },
+    {
+      name: "ecs",
+      displayName: "ECS",
+    },
+    {
+      name: "eks",
+      displayName: "EKS",
+    },
+    {
+      name: "elasticache",
+      displayName: "ElastiCache",
+    },
+    {
+      name: "elbv2",
+      displayName: "ELBv2",
+    },
+    {
+      name: "emr",
+      displayName: "EMR",
+    },
+    {
+      name: "fis",
+      displayName: "FIS",
+    },
+    {
+      name: "iam",
+      displayName: "IAM",
+    },
+    {
+      name: "incidents",
+      displayName: "Incidents",
+    },
+    {
+      name: "awslambda",
+      displayName: "Lambda",
+    },
+    {
+      name: "rds",
+      displayName: "RDS",
+    },
+    {
+      name: "route53",
+      displayName: "Route 53",
+    },
+    {
+      name: "s3",
+      displayName: "S3",
+    },
+    {
+      name: "ssm",
+      displayName: "SSM",
+    },
+    {
+      name: "xray",
+      displayName: "XRay",
+    },
+  ];
+
+  const AWSAZCATEGORIES = [
+    {
+      name: "asg",
+      displayName: "ASG",
+    },
+    {
+      name: "ec2",
+      displayName: "EC2",
+    },
+    {
+      name: "eks",
+      displayName: "EKS",
+    },
+    {
+      name: "elasticache",
+      displayName: "ElastiCache",
+    },
+    {
+      name: "elb",
+      displayName: "ELB",
+    },
+    {
+      name: "elbv2",
+      displayName: "ELBv2",
+    },
+    {
+      name: "mq",
+      displayName: "Amazon MQ",
+    },
+  ];
+
+  const AZURECATEGORIES = [
+    {
+      name: "aks",
+      displayName: "AKS",
+    },
+    {
+      name: "machine",
+      displayName: "Machine",
+    },
+    {
+      name: "vmss",
+      displayName: "VMSS",
+    },
+    {
+      name: "webapp",
+      displayName: "WebApp",
+    },
+  ];
+
+  const GCPCATEGORIES = [
+    {
+      name: "artifact",
+      displayName: "Artifact",
+    },
+    {
+      name: "cloudrun",
+      displayName: "Cloud Run",
+    },
+    {
+      name: "gke",
+      displayName: "GKE",
+    },
+    {
+      name: "lb",
+      displayName: "Load Balancer",
+    },
+    {
+      name: "monitoring",
+      displayName: "Monitoring",
+    },
+    {
+      name: "sql",
+      displayName: "SQL",
+    },
+    {
+      name: "storage",
+      displayName: "Storage",
+    },
+  ];
+
+  const K8SCATEGORIES = [
+    {
+      name: "crd",
+      displayName: "CRD",
+    },
+    {
+      name: "deployment",
+      displayName: "Deployment",
+    },
+    {
+      name: "event",
+      displayName: "Event",
+    },
+    {
+      name: "networking",
+      displayName: "Networking",
+    },
+    {
+      name: "node",
+      displayName: "Node",
+    },
+    {
+      name: "pod",
+      displayName: "Pod",
+    },
+    {
+      name: "service",
+      displayName: "Service",
+    },
+    {
+      name: "statefulset",
+      displayName: "Statefulset",
+    },
+    {
+      name: "chaosmesh",
+      displayName: "Stress",
+    },
+  ];
+
+  const TOXIPROXYCATEGORIES = [
+    {
+      name: "proxy",
+      displayName: "Proxy",
+    },
+    {
+      name: "toxic",
+      displayName: "Toxic",
+    },
+  ];
+
+  const HONEYCOMBCATEGORIES = [
+    {
+      name: "SLO",
+      displayName: "SLO",
+    },
+    {
+      name: "marker",
+      displayName: "Marker",
+    },
+    {
+      name: "query",
+      displayName: "Query",
+    },
+    {
+      name: "trigger",
+      displayName: "Trigger",
+    },
+  ];
+
+  function handleTargetChange(target) {
+    let catSelect = document.getElementById("afCategory");
+
+    // First clear all options
+    for (let i = catSelect.options.length; i >= 0; i--) {
+      catSelect.remove(i);
+    }
+
+    handleCategoryChange("all");
+
+    let cats = [];
+    if (target === "all") {
+      cats.push({ name: "", displayName: "Select a target provider first" });
+    } else {
+      cats = [{ name: "all", displayName: "All" }];
+
+      if (target === "chaosaws") {
+        cats.push(...AWSCATEGORIES);
+      } else if (target === "azchaosaws") {
+        cats.push(...AWSAZCATEGORIES);
+      } else if (target === "chaosazure") {
+        cats.push(...AZURECATEGORIES);
+      } else if (target === "chaosgcp") {
+        cats.push(...GCPCATEGORIES);
+      } else if (target === "chaosk8s") {
+        cats.push(...K8SCATEGORIES);
+      } else if (target === "chaostoxi") {
+        cats.push(...TOXIPROXYCATEGORIES);
+      } else if (target === "chaoshoneycomb") {
+        cats.push(...HONEYCOMBCATEGORIES);
+      }
+    }
+
+    cats.forEach((cat) => {
+      let opt = new Option(cat.displayName, cat.name);
+      catSelect.add(opt);
+    });
+
+    let activities = document.querySelectorAll("#activitiesList > li");
+    activities.forEach((act) => {
+      if (target === "all") {
+        act.classList.remove("hidden");
+      } else {
+        let card = act.querySelector(".activityCard");
+        if (card && card.dataset.target !== target) {
+          act.classList.add("hidden");
+        } else {
+          act.classList.remove("hidden");
+        }
+      }
+    });
+
+    // URL Params
+    const initialUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
+    let urlWithTarget = "";
+    let y = "";
+    let params = new URLSearchParams(location.search);
+    if (params.has("y")) {
+      y = params.get("y");
+    }
+    if (target === "all") {
+      if (y === "") {
+        urlWithTarget = initialUrl;
+      } else {
+        urlWithTarget = `${initialUrl}?y=${y}`;
+      }
+    } else {
+      if (y === "") {
+        urlWithTarget = `${initialUrl}?t=${target}`;
+      } else {
+        urlWithTarget = `${initialUrl}?t=${target}&y=${y}`;
+      }
+    }
+    window.history.pushState({ path: urlWithTarget }, "", urlWithTarget);
+  }
+
+  function handleCategoryChange(category) {
+    let activities = document.querySelectorAll("#activitiesList > li");
+    activities.forEach((act) => {
+      if (category === "all") {
+        act.classList.remove("hiddenCategory");
+      } else {
+        let card = act.querySelector(".activityCard");
+        if (card && card.dataset.category !== category) {
+          act.classList.add("hiddenCategory");
+        } else {
+          act.classList.remove("hiddenCategory");
+        }
+      }
+    });
+
+    // URL Params
+    let params = new URLSearchParams(location.search);
+    if (params.has("t")) {
+      const t = params.get("t");
+      const initialUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?t=${t}`;
+      let urlWithCategory =
+        category === "all" ? initialUrl : `${initialUrl}&s=${category}`;
+      if (params.has("y")) {
+        const y = params.get("y");
+        urlWithCategory = `${urlWithCategory}&y=${y}`;
+      }
+      window.history.pushState({ path: urlWithCategory }, "", urlWithCategory);
+    }
+  }
+
+  function handleTypeChange(type) {
+    let activities = document.querySelectorAll("#activitiesList > li");
+    activities.forEach((act) => {
+      if (type === "all") {
+        act.classList.remove("hiddenType");
+      } else {
+        let card = act.querySelector(".activityCard");
+        if (card && card.dataset.type !== type) {
+          act.classList.add("hiddenType");
+        } else {
+          act.classList.remove("hiddenType");
+        }
+      }
+    });
+
+    // URL Params
+    let initialUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
+    let params = new URLSearchParams(location.search);
+    let t = "";
+    if (params.has("t")) {
+      t = params.get("t");
+      initialUrl = `${initialUrl}?t=${t}`;
+      if (params.has("s")) {
+        const s = params.get("s");
+        initialUrl = `${initialUrl}&s=${s}`;
+      }
+    }
+    let urlWithType = initialUrl;
+    if (type !== "all") {
+      if (t === "") {
+        urlWithType = `${initialUrl}?y=${type}`;
+      } else {
+        urlWithType = `${initialUrl}&y=${type}`;
+      }
+    }
+    window.history.pushState({ path: urlWithType }, "", urlWithType);
+  }
+
+  function onMounted() {
+    let tarSelect = document.getElementById("afTarget");
+    let catSelect = document.getElementById("afCategory");
+    let typSelect = document.getElementById("afType");
+    let params = new URLSearchParams(location.search);
+    if (params.has("t")) {
+      const t = params.get("t");
+      tarSelect.value = t;
+      handleTargetChange(t);
+      if (params.has("s")) {
+        const s = params.get("s");
+        catSelect.value = s;
+        handleCategoryChange(s);
+      }
+    }
+    if (params.has("y")) {
+      const y = params.get("y");
+      typSelect.value = y;
+      handleTypeChange(y);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", onMounted(), false);
+</script>
+
+<style lang="scss">
+  .activities {
+    .activitiesIntroduction {
+      margin-bottom: var(--space-large);
+      max-width: 90rem;
+
+      // color: var(--text-color-dim);
+      font-size: 1.6rem;
+    }
+
+    .activitiesFilters {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-medium);
+      margin-bottom: var(--space-medium);
+      padding: var(--space-small);
+
+      background-color: var(--grey-100);
+      border-radius: var(--border-radius-m);
+
+      @media (min-width: 38rem) {
+        flex-direction: row;
+      }
+
+      .inputWrapper {
+        min-width: 12rem;
+        margin-top: 0 !important;
+      }
+    }
+    ul {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-medium);
+
+      @media (min-width: 38rem) {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      @media (min-width: 54rem) {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      li {
+        align-self: stretch;
+
+        &.hidden,
+        &.hiddenCategory,
+        &.hiddenType {
+          display: none;
+        }
+      }
+    }
+  }
+</style>

@@ -1,0 +1,35 @@
+---
+import type { PageHeaderAction } from "@/types/ui-types";
+import { Icon } from 'astro-icon/components';
+
+export interface Props {
+  title: string;
+  icon?: string;
+  alpha?: boolean;
+  actions?: PageHeaderAction[];
+}
+
+const { title, actions, icon, alpha } = Astro.props;
+
+let displayAlpha: boolean = alpha !== undefined && alpha === true;
+---
+
+<header class="pageHeader">
+  <h1 class="pageHeader__title">
+    {icon !== undefined && <icon name={icon} />}
+    {title}
+    {displayAlpha && <span class="pageHeader__alpha">alpha</span>}
+  </h1>
+
+  {
+    actions !== undefined && actions.length > 0 && (
+      <div class="pageHeader__actions">
+        {actions.map((action: PageHeaderAction) => (
+          <a href={action.to} class="button button--primary">
+            {action.label}
+          </a>
+        ))}
+      </div>
+    )
+  }
+</header>

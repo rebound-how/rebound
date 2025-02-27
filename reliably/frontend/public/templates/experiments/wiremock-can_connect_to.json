@@ -1,0 +1,76 @@
+{
+  "metadata": {
+    "name": "can_connect_to",
+    "labels": [
+      "WireMock",
+      "Wiremock"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Hostname",
+          "key": "host",
+          "help": "WireMock hostname",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Port",
+          "key": "port",
+          "help": "WireMock port",
+          "placeholder": "",
+          "default": "",
+          "type": "integer",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Test a connection to a host/port",
+      "contributions": {},
+      "description": null,
+      "tags": [
+        "WireMock",
+        "Wiremock"
+      ],
+      "configuration": {
+        "host": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_HOST",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "port": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PORT",
+          "default": "",
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "can-connect-to",
+          "type": "utils",
+          "provider": {
+            "type": "python",
+            "module": "chaoswm.wiremock.utils",
+            "func": "can_connect_to",
+            "arguments": {
+              "host": "${host}",
+              "port": "${port}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

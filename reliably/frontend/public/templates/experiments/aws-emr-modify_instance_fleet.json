@@ -1,0 +1,104 @@
+{
+  "metadata": {
+    "name": "modify_instance_fleet",
+    "labels": [
+      "EMR",
+      "AWS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Cluster ID",
+          "key": "cluster_id",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Fleet ID",
+          "key": "fleet_id",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "On-Demand capacity",
+          "key": "on_demand_capacity",
+          "help": "",
+          "placeholder": "",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Shot Capacity",
+          "key": "spot_capacity",
+          "help": "",
+          "placeholder": "",
+          "type": "integer",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Modify the on-demand and spot capacities for an instance fleet",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "EMR",
+        "AWS"
+      ],
+      "configuration": {
+        "cluster_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CLUSTER_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "fleet_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FLEET_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "on_demand_capacity": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ON_DEMAND_CAPACITY",
+          "env_var_type": "int"
+        },
+        "spot_capacity": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_SPOT_CAPACITY",
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "modify-instance-fleet",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.emr.actions",
+            "func": "modify_instance_fleet",
+            "arguments": {
+              "cluster_id": "${cluster_id}",
+              "fleet_id": "${fleet_id}",
+              "on_demand_capacity": "${on_demand_capacity}",
+              "spot_capacity": "${spot_capacity}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "metadata": {
+    "name": "get_health_check_status",
+    "labels": ["AWS", "Route 53"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Health Check ID",
+          "key": "check_id",
+          "help": "Identifier of a health check",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Get the status of the specified health check",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["AWS", "Route 53"],
+      "configuration": {
+        "check_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CHECK_ID",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-health-check-status",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.route53.probes",
+            "func": "get_health_check_status",
+            "arguments": {
+              "check_id": "${check_id}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

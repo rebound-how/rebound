@@ -1,0 +1,89 @@
+{
+  "metadata": {
+    "name": "run_script",
+    "labels": [
+      "k6"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Script",
+          "key": "scriptPath",
+          "help": "Local path to the k6 script to run",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "VUs",
+          "key": "vus",
+          "help": "Number of virtual users to run",
+          "placeholder": "",
+          "default": 1,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Script",
+          "key": "duration",
+          "help": "How long to run the script for",
+          "placeholder": "",
+          "default": "1s",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Runs an arbitrary k6 script",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "k6"
+      ],
+      "configuration": {
+        "scriptPath": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_SCRIPTPATH",
+          "env_var_type": "str"
+        },
+        "vus": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_VUS",
+          "default": 1,
+          "env_var_type": "int"
+        },
+        "duration": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DURATION",
+          "default": "1s",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "run-script",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosk6.k6.actions",
+            "func": "run_script",
+            "arguments": {
+              "scriptPath": "${scriptPath}",
+              "vus": "${vus}",
+              "duration": "${duration}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "metadata": {
+    "name": "describe_auto_scaling_groups",
+    "labels": ["AWS", "ASG"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "ASG Names",
+          "key": "asg_names",
+          "help": "One or many ASG names as a JSON encoded list",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "ASG Tags",
+          "key": "tags",
+          "help": "List of AWS tags for to identify ASG by tags instead of by names",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Returns AWS descriptions for provided ASG(s)",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["AWS", "ASG"],
+      "configuration": {
+        "asg_names": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ASG_NAMES",
+          "env_var_type": "json"
+        },
+        "tags": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TAGS",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "describe-auto-scaling-groups",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.asg.probes",
+            "func": "describe_auto_scaling_groups",
+            "arguments": {
+              "asg_names": "${asg_names}",
+              "tags": "${tags}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

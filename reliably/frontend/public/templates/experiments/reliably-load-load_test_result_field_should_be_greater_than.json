@@ -1,0 +1,125 @@
+{
+  "metadata": {
+    "name": "load_test_result_field_should_be_greater_than",
+    "labels": [
+      "reliability",
+      "load"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Field",
+          "key": "field",
+          "help": "Fiel name, of the result file, to read a value from",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Expected Value",
+          "key": "expect",
+          "help": "Value expected in the results",
+          "placeholder": null,
+          "default": 0,
+          "type": "integer",
+          "required": true
+        },
+        {
+          "title": "Endpoint Path",
+          "key": "result_item_name",
+          "help": "When several path were recorded during the load tests, use the field to select the path you want to verify",
+          "placeholder": null,
+          "default": "/",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Result File Path",
+          "key": "result_filepath",
+          "help": "Path to a local file that was created via the inject_gradual_traffic_into_endpoint action",
+          "placeholder": null,
+          "default": "/tmp/results.json",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Allow Missing Result File",
+          "key": "pass_if_file_is_missing",
+          "help": "Act as if succeeded when file is missing",
+          "placeholder": null,
+          "default": true,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Reads a load test result and compares the field’s value to be greater than the expected given value.",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "reliability",
+        "load"
+      ],
+      "configuration": {
+        "field": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FIELD",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "expect": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_EXPECT",
+          "default": 0,
+          "env_var_type": "int"
+        },
+        "result_item_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_RESULT_ITEM_NAME",
+          "default": "/",
+          "env_var_type": "str"
+        },
+        "result_filepath": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_RESULT_FILEPATH",
+          "default": "/tmp/results.json",
+          "env_var_type": "str"
+        },
+        "pass_if_file_is_missing": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PASS_IF_FILE_IS_MISSING",
+          "default": true,
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "load-test-result-field-should-be-greater-than",
+          "type": "probe",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosreliably.activities.load.probes",
+            "func": "load_test_result_field_should_be_greater_than",
+            "arguments": {
+              "field": "${field}",
+              "expect": "${expect}",
+              "result_item_name": "${result_item_name}",
+              "result_filepath": "${result_filepath}",
+              "pass_if_file_is_missing": "${pass_if_file_is_missing}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

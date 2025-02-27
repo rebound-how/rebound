@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "name": "count_instances",
+    "labels": ["AWS", "EC2"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Instance Filters",
+          "key": "filters",
+          "help": "List of key/value pairs to select instances",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Return count of instances matching the specified filters",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["AWS", "EC2"],
+      "configuration": {
+        "filters": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FILTERS",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "count-instances",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.ec2.probes",
+            "func": "count_instances",
+            "arguments": {
+              "filters": "${filters}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

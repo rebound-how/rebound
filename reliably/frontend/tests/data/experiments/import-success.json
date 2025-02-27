@@ -1,0 +1,62 @@
+{
+  "definition": {
+    "version": "1.0.0",
+    "title": "My first experiment",
+    "description": "We find the expected token in the file",
+    "tags": ["dummy"],
+    "contributions": {},
+    "steady-state-hypothesis": {
+      "title": "Our hypothesis is our token is part of the file",
+      "probes": [
+        {
+          "type": "probe",
+          "name": "grep-file",
+          "tolerance": 0,
+          "provider": {
+            "type": "process",
+            "path": "grep",
+            "arguments": "burp test.txt"
+          }
+        }
+      ]
+    },
+    "method": [
+      {
+        "type": "action",
+        "name": "remove-token",
+        "provider": {
+          "type": "process",
+          "path": "sed",
+          "arguments": "-i s/blah/blah/ test.txt"
+        }
+      }
+    ],
+    "rollbacks": [
+      {
+        "type": "action",
+        "name": "remove-token",
+        "provider": {
+          "type": "process",
+          "path": "sed",
+          "arguments": "-i s/blah/burp/ test.txt"
+        }
+      }
+    ],
+    "controls": [
+      {
+        "name": "reliably",
+        "provider": {
+          "type": "python",
+          "module": "chaosreliably.controls.experiment",
+          "arguments": {
+            "org_id": "fe9637b2-1507-4543-b662-fea252d1ccb5",
+            "exp_id": "f9d4cf86-c36c-48a0-9614-94af887204bd"
+          }
+        }
+      }
+    ]
+  },
+  "id": "f9d4cf86-c36c-48a0-9614-94af887204bd",
+  "org_id": "fe9637b2-1507-4543-b662-fea252d1ccb5",
+  "created_date": "2022-11-22T16:20:24.124699+00:00"
+}

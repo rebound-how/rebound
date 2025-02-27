@@ -1,0 +1,107 @@
+{
+  "metadata": {
+    "name": "set_service_placement_strategy",
+    "labels": [
+      "ECS",
+      "AWS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Cluster",
+          "key": "cluster",
+          "help": "Name of the target ECS cluster",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Service",
+          "key": "service",
+          "help": "Name of the target service",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Placement Strategy",
+          "key": "placement_type",
+          "help": "Type of placement to employ: random, spread or binpack",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Placement Field",
+          "key": "placement_field",
+          "help": "Field to apply the placement strategy to",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Sets the service's instance placement strategy",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "ECS",
+        "AWS"
+      ],
+      "configuration": {
+        "cluster": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CLUSTER",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "service": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_SERVICE",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "placement_type": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PLACEMENT_TYPE",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "placement_field": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PLACEMENT_FIELD",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "set-service-placement-strategy",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.ecs.actions",
+            "func": "set_service_placement_strategy",
+            "arguments": {
+              "cluster": "${cluster}",
+              "service": "${service}",
+              "placement_type": "${placement_type}",
+              "placement_field": "${placement_field}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,56 @@
+services:
+  app:
+    hostname: reliably-app
+    build:
+      context: ../../reliably
+      dockerfile: ../deploy/docker/full/Dockerfile
+    networks:
+      - reliably
+    ports:
+      - "8090:8090"
+    depends_on:
+      - db
+    links:
+      - db
+    environment:
+      SENSITIVE_SETTINGS_PROVIDER: "docker-compose"
+      SENSITIVE_SETTINGS_DOCKER_COMPOSE_SECRETS_FILENAME: /home/svc/.config/rebound/extra/extra.env
+    volumes:
+      - type: bind
+        source: ./secrets.env
+        target: /home/svc/.config/rebound/extra
+        volume:
+          nocopy: true
+          subpath: extra.env
+      # Uncomment this if you want to mount your own copy of the entire
+      # Reliably configuration file
+      #- type: bind
+      #  source: ./reliably.env
+      #  target: /home/svc/.config/rebound/reliably.env
+
+  db:
+    hostname: reliably-db
+    image: postgres:17
+    restart: always
+    shm_size: 256mb
+    networks:
+      - reliably
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: reliably
+      POSTGRES_USER: demo
+      POSTGRES_PASSWORD: demo
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+networks:
+  reliably: {}
+
+volumes:
+  pgdata:
+    driver: local
+
+secrets:
+   db_password:
+     file: db_password.txt

@@ -1,0 +1,108 @@
+{
+  "metadata": {
+    "name": "verify_latency_percentile_from_load_test",
+    "labels": [
+      "reliability",
+      "load"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Lower Than",
+          "key": "lower_than",
+          "help": "Latency must be lower than this value for the percentile below",
+          "placeholder": null,
+          "default": 0.2,
+          "type": "float",
+          "required": true
+        },
+        {
+          "title": "Percentile",
+          "key": "percentile",
+          "help": "Percentile to verify",
+          "placeholder": null,
+          "default": "p99",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Test Name",
+          "key": "test_name",
+          "help": "Name of the test that generated the result to verify",
+          "placeholder": null,
+          "default": "load test",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Verify the latency of responses during a load test for a given percentile",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "reliability",
+        "load"
+      ],
+      "configuration": {
+        "lower_than": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LOWER_THAN",
+          "default": 0.2,
+          "env_var_type": "float"
+        },
+        "percentile": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PERCENTILE",
+          "default": "p99",
+          "env_var_type": "str"
+        },
+        "test_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TEST_NAME",
+          "default": "load test",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [],
+      "steady-state-hypothesis": {
+        "title": "Verify the conditions of your system",
+        "probes": [
+          {
+            "name": "verify-latency-percentile-from-load-test",
+            "type": "probe",
+            "background": false,
+            "tolerance": true,
+            "provider": {
+              "type": "python",
+              "module": "chaosreliably.activities.load.probes",
+              "func": "verify_latency_percentile_from_load_test",
+              "arguments": {
+                "lower_than": "${lower_than}",
+                "percentile": "${percentile}",
+                "test_name": "${test_name}"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "related": [
+      {
+        "block": "method",
+        "name": "reliably-load-run_load_test"
+      },
+      {
+        "block": "method",
+        "name": "reliably-pauses-pause_execution"
+      }
+    ]
+  }
+}

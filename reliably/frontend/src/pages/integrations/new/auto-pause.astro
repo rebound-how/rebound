@@ -1,0 +1,33 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import AutoPauseForm from "@/components/integrations/forms/ReliablyAutoPauseForm.vue";
+---
+
+<BaseLayout
+  title="Auto Pause Experiment · Reliably"
+  description="Insert automatic pauses in your experiment, giving you time to investigate at each stage of its execution."
+>
+  <div class="container">
+    <PageHeader title="Auto Pause experiment" icon="reliably-r" />
+    <section class="newIntegration">
+      <p class="newIntegration__intro">
+        Fill the form with the requested information, to create an integration
+        that you can then use in your plans.
+      </p>
+      <section class="newIntegration__form">
+        <div class="newIntegration__info">
+          <div
+            class="newIntegration__infoWrapper newIntegration__infoWrapper--reliably"
+          >
+            <p>
+              Insert automatic pauses in your experiment, giving you time to
+              investigate at each stage of its execution.
+            </p>
+          </div>
+        </div>
+        <AutoPauseForm client:load />
+      </section>
+    </section>
+  </div>
+</BaseLayout>

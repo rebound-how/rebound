@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "name": "list_clusters",
+    "labels": ["AWS", "EKS"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": []
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "List EKS clusters available to the authenticated account",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["AWS", "EKS"],
+      "configuration": {},
+      "extensions": [],
+      "method": [
+        {
+          "name": "list-clusters",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.eks.probes",
+            "func": "list_clusters",
+            "arguments": {}
+          }
+        }
+      ]
+    }
+  }
+}

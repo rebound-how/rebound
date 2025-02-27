@@ -1,0 +1,75 @@
+{
+  "metadata": {
+    "name": "start_chaos",
+    "labels": [
+      "Cluster",
+      "Service Fabric"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Parameters",
+          "key": "parameters",
+          "help": "Parameters to start the Chaos with",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        },
+        {
+          "title": "Timeout",
+          "key": "timeout",
+          "help": "Call timeout to start the Chaos in the cluster",
+          "placeholder": "",
+          "default": 60,
+          "type": "integer",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Start Chaos in your cluster",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Cluster",
+        "Service Fabric"
+      ],
+      "configuration": {
+        "parameters": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PARAMETERS",
+          "env_var_type": "json"
+        },
+        "timeout": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TIMEOUT",
+          "default": 60,
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "start-chaos",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosservicefabric.cluster.actions",
+            "func": "start_chaos",
+            "arguments": {
+              "parameters": "${parameters}",
+              "timeout": "${timeout}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

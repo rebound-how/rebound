@@ -1,0 +1,122 @@
+{
+  "metadata": {
+    "name": "verify_certificate",
+    "labels": [
+      "reliability",
+      "tls"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Host",
+          "key": "host",
+          "help": "A reachable host presenting a certificate",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Port",
+          "key": "port",
+          "help": "Port to connect to be served the certificate on the host",
+          "placeholder": "",
+          "default": 443,
+          "type": "integer",
+          "required": true
+        },
+        {
+          "title": "Expires After",
+          "key": "expire_after",
+          "help": "Threshold below which the verification should fail because it's close to the expiry date of the certificate",
+          "placeholder": "",
+          "default": "7d",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Alternative Names",
+          "key": "alt_names",
+          "help": "List of alternative names supported by this certificate",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Performs a range of checks on the certificate of a remote endpoint",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "reliability",
+        "tls"
+      ],
+      "configuration": {
+        "host": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_HOST",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "port": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PORT",
+          "default": 443,
+          "env_var_type": "int"
+        },
+        "expire_after": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_EXPIRE_AFTER",
+          "default": "7d",
+          "env_var_type": "str"
+        },
+        "alt_names": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ALT_NAMES",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [
+        {
+          "name": "chatgpt",
+          "messages": [
+            {
+              "role": "user",
+              "content": "What are the reliability risks of an expired TLS certificate?"
+            }
+          ]
+        }
+      ],
+      "method": [],
+      "steady-state-hypothesis": {
+        "title": "Verify the conditions of your system",
+        "probes": [
+          {
+            "name": "verify-certificate",
+            "type": "probe",
+            "tolerance": true,
+            "provider": {
+              "type": "python",
+              "module": "chaosreliably.activities.tls.probes",
+              "func": "verify_certificate",
+              "arguments": {
+                "host": "${host}",
+                "port": "${port}",
+                "expire_after": "${expire_after}",
+                "alt_names": "${alt_names}"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

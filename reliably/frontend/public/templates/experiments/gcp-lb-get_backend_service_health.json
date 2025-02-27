@@ -1,0 +1,77 @@
+{
+  "metadata": {
+    "name": "get_backend_service_health",
+    "labels": [
+      "Load Balancer",
+      "Google Cloud"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Backend Service",
+          "key": "backend_service",
+          "help": "The name of the backend service",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Project",
+          "key": "project_id",
+          "help": "Name of the GCP project in which the backend service is running",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Fetch the health of backend services",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Load Balancer",
+        "Google Cloud"
+      ],
+      "configuration": {
+        "backend_service": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_BACKEND_SERVICE",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "project_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PROJECT_ID",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-backend-service-health",
+          "type": "probe",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.lb.probes",
+            "func": "get_backend_service_health",
+            "arguments": {
+              "backend_service": "${backend_service}",
+              "project_id": "${project_id}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

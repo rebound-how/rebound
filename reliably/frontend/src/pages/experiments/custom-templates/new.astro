@@ -1,0 +1,45 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import TemplateCreate from "@/components/custom-templates/TemplateCreate.vue";
+---
+
+<BaseLayout
+  title="New Template · Reliably"
+  description="Create a new Reliably Custom Template"
+>
+  <div class="createTemplate container">
+    <header class="pageHeader">
+      <h1 class="pageHeader__title" id="pageTitle">New Template</h1>
+    </header>
+    <TemplateCreate client:load />
+  </div>
+  <script>
+    let location = window.location;
+    let params = new URLSearchParams(location.search);
+    if (params.has("duplicate")) {
+      const id = params.get("duplicate");
+      if (id !== null) {
+        let title = document.getElementById("pageTitle");
+        title.innerHTML = "Duplicate Template";
+      }
+    }
+  </script>
+</BaseLayout>
+
+<style lang="scss" scoped>
+  .createTemplate {
+    .importExperiment {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-medium);
+
+      &__option {
+        min-width: 0;
+        padding: var(--space-small);
+
+        background-color: var(--section-background);
+        border-radius: var(--border-radius-s);
+      }
+    }
+  }
+</style>

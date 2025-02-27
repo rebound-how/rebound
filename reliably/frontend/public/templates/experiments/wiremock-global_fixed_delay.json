@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "name": "global_fixed_delay",
+    "labels": [
+      "WireMock",
+      "Wiremock"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Fixed Delay",
+          "key": "fixedDelay",
+          "help": "Delay to apply globally",
+          "placeholder": "",
+          "default": 0,
+          "type": "integer",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Adds a fixed delay to all mappings",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "WireMock",
+        "Wiremock"
+      ],
+      "configuration": {
+        "fixedDelay": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FIXEDDELAY",
+          "default": 0,
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "global-fixed-delay",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaoswm.wiremock.actions",
+            "func": "global_fixed_delay",
+            "arguments": {
+              "fixedDelay": "${fixedDelay}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

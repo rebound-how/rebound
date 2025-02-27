@@ -1,0 +1,14 @@
+{
+  "name": "Dorris",
+  "definition": {
+    "type": "github",
+    "repo": "https://github.com/repository/directory",
+    "name": "Rowe",
+    "username": "Naomie",
+    "token": "**********"
+  },
+  "id": "2",
+  "org_id": "c56a4191-6423-4448-ba53-9dba50fcbdef",
+  "created_date": "2022-09-14T13:28:49.713Z",
+  "organizationId": "1"
+}

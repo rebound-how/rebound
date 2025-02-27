@@ -1,0 +1,193 @@
+{
+  "metadata": {
+    "name": "valid_slo_ratio_during_window",
+    "labels": [
+      "Google Cloud",
+      "Monitoring"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Name",
+          "key": "name",
+          "help": "The full path to the SLO name such as projects/PROJECT_ID/services/SVC_NAME/serviceLevelObjectives/SLO_ID",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Successful Intervals Ratio",
+          "key": "expected_ratio",
+          "help": "Ratio of intervals in that window which have successfully reached at least the minimal level. For instance, 0.5 means 50% have reached the level",
+          "placeholder": "",
+          "default": 0.5,
+          "type": "float",
+          "required": false
+        },
+        {
+          "title": "Minimal Level",
+          "key": "min_level",
+          "help": "SLO value to be reached by each interval to be considered successful",
+          "placeholder": "",
+          "default": 0.9,
+          "type": "float",
+          "required": false
+        },
+        {
+          "title": "End Window",
+          "key": "end_time",
+          "help": "",
+          "placeholder": "",
+          "default": "now",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Window Length",
+          "key": "window",
+          "help": "",
+          "placeholder": "",
+          "default": "5 minutes",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Alignment Period",
+          "key": "alignment_period",
+          "help": "Interval, in seconds, that is used to divide the data into consistent blocks of time",
+          "placeholder": "",
+          "default": 60,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Per Series Aligner",
+          "key": "per_series_aligner",
+          "help": "Describes how to bring the data points in a single time series into temporal alignment",
+          "placeholder": "",
+          "default": "ALIGN_MEAN",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Cross Series Reducer",
+          "key": "cross_series_reducer",
+          "help": "Reduction operation to be used to combine time series into a single time series",
+          "placeholder": "",
+          "default": "REDUCE_MEAN",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Group By Fields",
+          "key": "group_by_fields",
+          "help": "Comma-separated set of fields to preserve when Cross Series Reducer is specified",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Verifies that SLO is matching expectation over a period of time",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Google Cloud",
+        "Monitoring"
+      ],
+      "configuration": {
+        "name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "expected_ratio": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_EXPECTED_RATIO",
+          "default": 0.5,
+          "env_var_type": "float"
+        },
+        "min_level": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_MIN_LEVEL",
+          "default": 0.9,
+          "env_var_type": "float"
+        },
+        "end_time": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_END_TIME",
+          "default": "now",
+          "env_var_type": "str"
+        },
+        "window": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_WINDOW",
+          "default": "5 minutes",
+          "env_var_type": "str"
+        },
+        "alignment_period": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ALIGNMENT_PERIOD",
+          "default": 60,
+          "env_var_type": "int"
+        },
+        "per_series_aligner": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PER_SERIES_ALIGNER",
+          "default": "ALIGN_MEAN",
+          "env_var_type": "str"
+        },
+        "cross_series_reducer": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CROSS_SERIES_REDUCER",
+          "default": "REDUCE_MEAN",
+          "env_var_type": "str"
+        },
+        "group_by_fields": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_GROUP_BY_FIELDS",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [],
+      "steady-state-hypothesis": {
+        "title": "Verify the conditions of your system",
+        "probes": [
+          {
+            "name": "valid-slo-ratio-during-window",
+            "type": "probe",
+            "tolerance": null,
+            "provider": {
+              "type": "python",
+              "module": "chaosgcp.monitoring.probes",
+              "func": "valid_slo_ratio_during_window",
+              "arguments": {
+                "name": "${name}",
+                "expected_ratio": "${expected_ratio}",
+                "min_level": "${min_level}",
+                "end_time": "${end_time}",
+                "window": "${window}",
+                "alignment_period": "${alignment_period}",
+                "per_series_aligner": "${per_series_aligner}",
+                "cross_series_reducer": "${cross_series_reducer}",
+                "group_by_fields": "${group_by_fields}"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

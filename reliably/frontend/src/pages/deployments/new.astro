@@ -1,0 +1,36 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import PageIntro from "@/components/_ui/PageIntro.astro";
+import DeploymentForm from "@/components/deployments/DeploymentForm.vue";
+
+const deployments: string[] = import.meta.env.DEPLOYMENTS_TYPES
+  ? import.meta.env.DEPLOYMENTS_TYPES.split(",")
+  : [];
+
+const deploymentType: string = import.meta.env.DEPLOYMENT;
+
+const isReliablyDeployedInK8s: boolean = import.meta.env.KUBERNETES_DEPLOYMENT
+  ? import.meta.env.KUBERNETES_DEPLOYMENT === "true"
+  : false;
+---
+
+<BaseLayout
+  title="New Deployment · Reliably"
+  description="Create a new deployment"
+>
+  <div class="container">
+    <PageHeader title="New Deployment" />
+    <PageIntro>
+      A deployment is an environment that can run your Reliably plans.
+    </PageIntro>
+    <section class="newDeployment">
+      <DeploymentForm
+        supported={deployments}
+        deployment={deploymentType}
+        kubernetes={isReliablyDeployedInK8s}
+        client:load
+      />
+    </section>
+  </div>
+</BaseLayout>

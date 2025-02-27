@@ -1,0 +1,106 @@
+{
+  "metadata": {
+    "name": "service_is_initialized",
+    "labels": [
+      "Service",
+      "Kubernetes"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Namespace",
+          "key": "ns",
+          "help": "",
+          "placeholder": "",
+          "default": "default",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Service Name",
+          "key": "name",
+          "help": "Name of a service or use the label selector below",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Service Label Selector",
+          "key": "label_selector",
+          "help": "Label selector or use the service name above",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Fail Action if Service Not Initialized",
+          "key": "raise_if_service_not_initialized",
+          "help": "Should we raise an error or return a boolean when not initialized?",
+          "placeholder": "",
+          "default": false,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Check if a service is initialized",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Service",
+        "Kubernetes"
+      ],
+      "configuration": {
+        "ns": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NS",
+          "default": "default",
+          "env_var_type": "str"
+        },
+        "name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NAME",
+          "env_var_type": "str"
+        },
+        "label_selector": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LABEL_SELECTOR",
+          "env_var_type": "str"
+        },
+        "raise_if_service_not_initialized": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_RAISE_IF_SERVICE_NOT_INITIALIZED",
+          "default": false,
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "service-is-initialized",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.service.probes",
+            "func": "service_is_initialized",
+            "arguments": {
+              "ns": "${ns}",
+              "name": "${name}",
+              "label_selector": "${label_selector}",
+              "raise_if_service_not_initialized": "${raise_if_service_not_initialized}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

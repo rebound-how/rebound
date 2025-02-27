@@ -1,0 +1,131 @@
+{
+  "metadata": {
+    "name": "add_latency_to_endpoint",
+    "labels": [
+      "Google Cloud",
+      "Load Balancer"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Project",
+          "key": "project_id",
+          "help": "Name of the GCP project in which the resource is running",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Regional",
+          "key": "region",
+          "help": "Set this to the correct region if it is regional",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Full Target URL",
+          "key": "url",
+          "help": "Full target URL including the path",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Latency",
+          "key": "latency",
+          "help": "Latency to inject in seconds",
+          "placeholder": null,
+          "default": 0.3,
+          "type": "float",
+          "required": true
+        },
+        {
+          "title": "Percentage",
+          "key": "percentage",
+          "help": "Volume of requests impacted by the latency",
+          "placeholder": null,
+          "default": 90.0,
+          "type": "float",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Add latency to a particular URL served by your load balancer",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Google Cloud",
+        "Load Balancer"
+      ],
+      "configuration": {
+        "project_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PROJECT_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "region": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_REGION",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "url": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_URL",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "latency": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LATENCY",
+          "default": 0.3,
+          "env_var_type": "float"
+        },
+        "percentage": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PERCENTAGE",
+          "default": 90.0,
+          "env_var_type": "float"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "add-latency-to-endpoint",
+          "type": "action",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.lb.actions",
+            "func": "add_latency_to_endpoint",
+            "arguments": {
+              "project_id": "${project_id}",
+              "region": "${region}",
+              "url": "${url}",
+              "latency": "${latency}",
+              "percentage": "${percentage}"
+            }
+          }
+        }
+      ]
+    },
+    "related": [
+      {
+        "block": "rollbacks",
+        "name": "gcp-lb-remove_latency_from_endpoint"
+      }
+    ]
+  }
+}

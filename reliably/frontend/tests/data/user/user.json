@@ -1,0 +1,28 @@
+{
+  "profile": {
+    "username": "mperrien",
+    "email": "marc.perrien@gmail.com",
+    "id": "4323a371-68e7-4ea8-8716-ed3acfa0205d",
+    "openid_profile": {
+      "sub": "348229",
+      "name": "Marc Perrien",
+      "email": "marc.perrien@gmail.com",
+      "picture": "https://avatars.githubusercontent.com/u/348229?v=4",
+      "profile": "https://github.com/mperrien",
+      "website": "http://perrien.fr",
+      "preferred_username": "mperrien"
+    }
+  },
+  "orgs": [
+    {
+      "id": "8f67bb6a-4944-40af-80b0-921023467cdc",
+      "name": "Lawouach",
+      "created_date": "2022-09-17T21:23:18.529425+00:00"
+    },
+    {
+      "id": "fe9637b2-1507-4543-b662-fea252d1ccb5",
+      "name": "mperrien",
+      "created_date": "2022-09-19T08:40:12.206298+00:00"
+    }
+  ]
+}

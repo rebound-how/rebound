@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "name": "list_cluster_fleet_instances",
+    "labels": ["EMR", "AWS"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Cluster ID",
+          "key": "cluster_id",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Fleet ID",
+          "key": "fleet_id",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Fleet Type",
+          "key": "fleet_type",
+          "help": "",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Instance States",
+          "key": "instance_states",
+          "help": "List of instance states to retrieve",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Get a list of instance fleet instances associated with the EMR cluster",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["EMR", "AWS"],
+      "configuration": {
+        "cluster_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CLUSTER_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "fleet_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FLEET_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "fleet_type": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FLEET_TYPE",
+          "env_var_type": "str"
+        },
+        "instance_states": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_INSTANCE_STATES",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "list-cluster-fleet-instances",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.emr.probes",
+            "func": "list_cluster_fleet_instances",
+            "arguments": {
+              "cluster_id": "${cluster_id}",
+              "fleet_id": "${fleet_id}",
+              "fleet_type": "${fleet_type}",
+              "instance_states": "${instance_states}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

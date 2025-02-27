@@ -1,0 +1,33 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import GcpOpenTelemetryForm from "@/components/integrations/forms/GcpOpenTelemetryForm.vue";
+---
+
+<BaseLayout
+  title="GCP OpenTelemetry integration · Reliably"
+  description="Send your executions OpenTelemetry traces to Google Cloud"
+>
+  <div class="container">
+    <PageHeader
+      title="GCP OpenTelemetry integration"
+      icon="google-cloud-logo"
+    />
+    <section class="newIntegration">
+      <p class="newIntegration__intro">
+        Fill the form with the requested information, to create an integration
+        that you can then use in your plans.
+      </p>
+      <section class="newIntegration__form">
+        <div class="newIntegration__info">
+          <div
+            class="newIntegration__infoWrapper newIntegration__infoWrapper--opentelemetry"
+          >
+            <p>Send executions traces to Google Cloud.</p>
+          </div>
+        </div>
+        <GcpOpenTelemetryForm client:load />
+      </section>
+    </section>
+  </div>
+</BaseLayout>

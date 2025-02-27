@@ -1,0 +1,10 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import EnvironmentView from "@/components/environments/EnvironmentView.vue";
+---
+
+<BaseLayout title="Environment · Reliably" description="A Reliably environment">
+  <div class="container">
+    <EnvironmentView client:load />
+  </div>
+</BaseLayout>

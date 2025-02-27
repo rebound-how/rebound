@@ -1,0 +1,49 @@
+{
+  "count": 2,
+  "items": [
+    {
+      "org_id": "1",
+      "id": "c4c0e3d5-445e-48de-b727-950c6b605336",
+      "name": "myenv94",
+      "created_date": "2023-01-09T16:01:40.282192+00:00",
+      "envvars": [
+        { "var_name": "DEMO_VAR", "value": "hi" },
+        { "var_name": "GH_REPO", "value": "Lawouach/ctkgh" }
+      ],
+      "secrets": [
+        {
+          "var_name": "GITHUB_TOKEN",
+          "value": "**********",
+          "key": "gh_token"
+        },
+        {
+          "key": "kubeconfig",
+          "value": "**********",
+          "path": "/home/svc/.kube/config"
+        }
+      ]
+    },
+    {
+      "org_id": "1",
+      "id": "c4c0e3d5-445e-48de-b727-950c6b605339",
+      "name": "myenv95",
+      "created_date": "2023-01-09T16:02:40.282192+00:00",
+      "envvars": [
+        { "var_name": "DEMO_VAR2", "value": "hello" },
+        { "var_name": "GH_REPO", "value": "reliablyhq/reliably" }
+      ],
+      "secrets": [
+        {
+          "var_name": "GITHUB_TOKEN",
+          "value": "**********",
+          "key": "gh_token"
+        },
+        {
+          "key": "kubeconfig",
+          "value": "**********",
+          "path": "/home/svc/.kube/config"
+        }
+      ]
+    }
+  ]
+}

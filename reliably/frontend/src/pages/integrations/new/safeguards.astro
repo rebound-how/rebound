@@ -1,0 +1,34 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageHeader from "@/components/_ui/PageHeader.astro";
+import SafeguardsForm from "@/components/integrations/forms/ReliablySafeguardsForm.vue";
+---
+
+<BaseLayout
+  title="Safegaurds · Reliably"
+  description="Insert automatic pauses in your experiment, giving you time to investigate at each stage of its execution."
+>
+  <div class="container">
+    <PageHeader title="Safeguards" icon="reliably-r" />
+    <section class="newIntegration">
+      <p class="newIntegration__intro">
+        Declare an endpoint that will be regularly checked for a notification to
+        stop the experiment after the current action.
+      </p>
+      <section class="newIntegration__form">
+        <div class="newIntegration__info">
+          <div
+            class="newIntegration__infoWrapper newIntegration__infoWrapper--reliably"
+          >
+            <p>
+              Declare an endpoint that will be regularly checked for a
+              notification to stop the experiment after the current action. Use
+              it as a way to stop all current executions on demand.
+            </p>
+          </div>
+        </div>
+        <SafeguardsForm client:load />
+      </section>
+    </section>
+  </div>
+</BaseLayout>

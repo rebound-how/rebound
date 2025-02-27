@@ -1,0 +1,69 @@
+{
+  "metadata": {
+    "name": "count_min_instances",
+    "labels": ["AWS", "EC2"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Instance Filters",
+          "key": "filters",
+          "help": "List of key/value pairs to select instances",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Minimal Amount of Instances",
+          "key": "min_count",
+          "help": "Determine if the there are at least that amount of instances",
+          "placeholder": "",
+          "default": 0,
+          "type": "integer",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Returns whether the number of instances matching the filters is superior to the min_count parameter",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["AWS", "EC2"],
+      "configuration": {
+        "filters": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FILTERS",
+          "env_var_type": "json"
+        },
+        "min_count": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_MIN_COUNT",
+          "default": 0,
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "count-min-instances",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.ec2.probes",
+            "func": "count_min_instances",
+            "arguments": {
+              "filters": "${filters}",
+              "min_count": "${min_count}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

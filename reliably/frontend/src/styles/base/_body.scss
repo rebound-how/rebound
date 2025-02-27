@@ -1,0 +1,7 @@
+body {
+  // contain: paint;
+
+  &.no-scroll {
+    overflow: hidden;
+  }
+}

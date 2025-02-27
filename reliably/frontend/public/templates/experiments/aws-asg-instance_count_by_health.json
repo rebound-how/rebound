@@ -1,0 +1,84 @@
+{
+  "metadata": {
+    "name": "instance_count_by_health",
+    "labels": ["AWS", "ASG"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "ASG Names",
+          "key": "asg_names",
+          "help": "One or many ASG names as a JSON encoded list",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "ASG Tags",
+          "key": "tags",
+          "help": "List of AWS tags for to identify ASG by tags instead of by names",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Count Only Healthy",
+          "key": "count_healthy",
+          "help": "Count only healthy ASG",
+          "placeholder": "",
+          "default": true,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Reports the number of instances currently in the ASG by their health status",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["AWS", "ASG"],
+      "configuration": {
+        "asg_names": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ASG_NAMES",
+          "env_var_type": "json"
+        },
+        "tags": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TAGS",
+          "env_var_type": "json"
+        },
+        "count_healthy": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_COUNT_HEALTHY",
+          "default": true,
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "instance-count-by-health",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.asg.probes",
+            "func": "instance_count_by_health",
+            "arguments": {
+              "asg_names": "${asg_names}",
+              "tags": "${tags}",
+              "count_healthy": "${count_healthy}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

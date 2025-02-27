@@ -1,0 +1,76 @@
+{
+  "metadata": {
+    "name": "get_most_recent_docker_image",
+    "labels": [
+      "Cloud Run",
+      "Google Cloud"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Repository",
+          "key": "repository",
+          "help": "Name of the repository",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Container Name",
+          "key": "package_name",
+          "help": "Name of the container in the repository",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Get the most recent image information for a container.",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Cloud Run",
+        "Google Cloud"
+      ],
+      "configuration": {
+        "repository": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_REPOSITORY",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "package_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PACKAGE_NAME",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-most-recent-docker-image",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.artifact.probes",
+            "func": "get_most_recent_docker_image",
+            "arguments": {
+              "repository": "${repository}",
+              "package_name": "${package_name}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

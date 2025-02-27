@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "name": "create_timeout_toxic",
+    "labels": [
+      "Proxy",
+      "ToxiProxy"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Target Proxy",
+          "key": "for_proxy",
+          "help": "Proxy to add toxic to",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Toxic Name",
+          "key": "toxic_name",
+          "help": "Name of the toxic to add",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Timeout",
+          "key": "timeout",
+          "help": "Toxic timeout value",
+          "placeholder": "",
+          "default": "",
+          "type": "integer",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Generate as downstream delayed TCP close with a toxicity of 100%",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Proxy",
+        "ToxiProxy"
+      ],
+      "configuration": {
+        "for_proxy": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FOR_PROXY",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "toxic_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TOXIC_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "timeout": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TIMEOUT",
+          "default": "",
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "create-timeout-toxic",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaostoxi.toxic.actions",
+            "func": "create_timeout_toxic",
+            "arguments": {
+              "for_proxy": "${for_proxy}",
+              "toxic_name": "${toxic_name}",
+              "timeout": "${timeout}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

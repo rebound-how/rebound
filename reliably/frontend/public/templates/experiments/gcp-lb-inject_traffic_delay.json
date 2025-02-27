@@ -1,0 +1,195 @@
+{
+  "metadata": {
+    "name": "inject_traffic_delay",
+    "labels": [
+      "Google Cloud",
+      "Load Balancer"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "URL Map Name",
+          "key": "url_map",
+          "help": "Name of the URL map to add the fault to",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Path Matcher Name",
+          "key": "target_name",
+          "help": "Name of the patch matcher to add the fault to",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Path",
+          "key": "target_path",
+          "help": "Path to impact with the fault. Must already exist in the path matcher definition",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Percentage of Impacted Requests",
+          "key": "impacted_percentage",
+          "help": "Volume of requests to impact with the delay",
+          "placeholder": null,
+          "default": 50.0,
+          "type": "float",
+          "required": false
+        },
+        {
+          "title": "Delay in Seconds",
+          "key": "delay_in_seconds",
+          "help": "Delay to add in seconds",
+          "placeholder": null,
+          "default": 1,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Delay in Nanoseconds",
+          "key": "delay_in_nanos",
+          "help": "Delay to add in nanoseconds",
+          "placeholder": null,
+          "default": 0,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Project",
+          "key": "project_id",
+          "help": "Name of the GCP project in which the resource is running",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Regional",
+          "key": "regional",
+          "help": "Set this if the project is regional",
+          "placeholder": null,
+          "default": false,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Regional",
+          "key": "region",
+          "help": "Set this to the correct region if it is regional",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Add/set delay for a percentage of requests going through a url map on a given path",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Google Cloud",
+        "Load Balancer"
+      ],
+      "configuration": {
+        "url_map": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_URL_MAP",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "target_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TARGET_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "target_path": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TARGET_PATH",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "impacted_percentage": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_IMPACTED_PERCENTAGE",
+          "default": 50.0,
+          "env_var_type": "float"
+        },
+        "delay_in_seconds": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DELAY_IN_SECONDS",
+          "default": 1,
+          "env_var_type": "int"
+        },
+        "delay_in_nanos": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DELAY_IN_NANOS",
+          "default": 0,
+          "env_var_type": "int"
+        },
+        "project_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PROJECT_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "regional": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_REGIONAL",
+          "default": false,
+          "env_var_type": "bool"
+        },
+        "region": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_REGION",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "inject-traffic-delay",
+          "type": "action",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.lb.actions",
+            "func": "inject_traffic_delay",
+            "arguments": {
+              "url_map": "${url_map}",
+              "target_name": "${target_name}",
+              "target_path": "${target_path}",
+              "impacted_percentage": "${impacted_percentage}",
+              "delay_in_seconds": "${delay_in_seconds}",
+              "delay_in_nanos": "${delay_in_nanos}",
+              "project_id": "${project_id}",
+              "regional": "${regional}",
+              "region": "${region}"
+            }
+          }
+        }
+      ]
+    },
+    "related": [
+      {
+        "block": "rollbacks",
+        "name": "gcp-lb-remove_fault_injection_traffic_policy"
+      }
+    ]
+  }
+}

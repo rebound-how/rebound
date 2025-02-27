@@ -1,0 +1,202 @@
+{
+  "metadata": {
+    "name": "exec_in_pods",
+    "labels": [
+      "Kubernetes",
+      "Pod"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Namespace",
+          "key": "ns",
+          "help": "",
+          "placeholder": "",
+          "default": "default",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Label Selector",
+          "key": "label_selector",
+          "help": "Selectors to target the appropriate pods",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Command",
+          "key": "cmd",
+          "help": "Command to execute in the containers of the targeted pods",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Number of Pods to Terminate",
+          "key": "qty",
+          "help": "The number of pods to terminate",
+          "placeholder": "",
+          "default": 1,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Quantity Selection Mode",
+          "key": "mode",
+          "help": "Either fixed or percentage. With fixed, the quantity is used as the number of pods. With percentage terminates a volume of pods between 1 and 100.",
+          "placeholder": "",
+          "default": "fixed",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Select All Pods",
+          "key": "all",
+          "help": "Terminate all pods matching the selector",
+          "placeholder": "",
+          "default": false,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Random Selection",
+          "key": "rand",
+          "help": "Terminate the number of pods defined by quantity at random within the selected pool of pods",
+          "placeholder": "",
+          "default": false,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Label Selector",
+          "key": "order",
+          "help": "How candidate pods are selected: alphabetic or oldest",
+          "placeholder": "",
+          "default": "alphabetic",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Name of the Container",
+          "key": "container_name",
+          "help": "When a pod is made of several containers, specify the name of the container to exec from",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Timeout",
+          "key": "request_timeout",
+          "help": "Timeout for the command to complete",
+          "placeholder": "",
+          "default": 60,
+          "type": "integer",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Execute a command in the specified pod's container",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Kubernetes",
+        "Pod"
+      ],
+      "configuration": {
+        "ns": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_NS",
+          "default": "default",
+          "env_var_type": "str"
+        },
+        "label_selector": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LABEL_SELECTOR",
+          "env_var_type": "str"
+        },
+        "cmd": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CMD",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "qty": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_QTY",
+          "default": 1,
+          "env_var_type": "int"
+        },
+        "mode": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_MODE",
+          "default": "fixed",
+          "env_var_type": "str"
+        },
+        "all": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ALL",
+          "default": false,
+          "env_var_type": "bool"
+        },
+        "rand": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_RAND",
+          "default": false,
+          "env_var_type": "bool"
+        },
+        "order": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ORDER",
+          "default": "alphabetic",
+          "env_var_type": "str"
+        },
+        "container_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CONTAINER_NAME",
+          "env_var_type": "str"
+        },
+        "request_timeout": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_REQUEST_TIMEOUT",
+          "default": 60,
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "exec-in-pods",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.pod.actions",
+            "func": "exec_in_pods",
+            "arguments": {
+              "ns": "${ns}",
+              "label_selector": "${label_selector}",
+              "cmd": "${cmd}",
+              "qty": "${qty}",
+              "mode": "${mode}",
+              "all": "${all}",
+              "rand": "${rand}",
+              "order": "${order}",
+              "container_name": "${container_name}",
+              "request_timeout": "${request_timeout}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

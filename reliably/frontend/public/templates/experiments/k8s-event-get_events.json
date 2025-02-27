@@ -1,0 +1,93 @@
+{
+  "metadata": {
+    "name": "get_events",
+    "labels": [
+      "Event",
+      "Kubernetes"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Label Selector",
+          "key": "label_selector",
+          "help": "Reduce the returned list of events to the matching selector",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Field Selector",
+          "key": "field_selector",
+          "help": "Reduce the returned list of events to the matching selector",
+          "placeholder": "regarding.kind=Pod,regarding.name=my-pod",
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Limit",
+          "key": "limit",
+          "help": "Limit to that number of events",
+          "placeholder": "",
+          "default": 100,
+          "type": "integer",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Retrieve Kubernetes events across all namespaces",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Event",
+        "Kubernetes"
+      ],
+      "configuration": {
+        "label_selector": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LABEL_SELECTOR",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "field_selector": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FIELD_SELECTOR",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "limit": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LIMIT",
+          "default": 100,
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-events",
+          "type": "probe",
+          "background": false,
+          "provider": {
+            "type": "python",
+            "module": "chaosk8s.event.probes",
+            "func": "get_events",
+            "arguments": {
+              "label_selector": "${label_selector}",
+              "field_selector": "${field_selector}",
+              "limit": "${limit}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

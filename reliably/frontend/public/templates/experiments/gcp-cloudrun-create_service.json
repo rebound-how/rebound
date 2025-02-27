@@ -1,0 +1,200 @@
+{
+  "metadata": {
+    "name": "create_service",
+    "labels": [
+      "Cloud Run",
+      "Google Cloud"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Project Path",
+          "key": "parent",
+          "help": "Full project path",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Service Name",
+          "key": "service_id",
+          "help": "Name used to identify the service",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Description",
+          "key": "description",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Container Definition",
+          "key": "container",
+          "help": "JSON encoded description of the container",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": true
+        },
+        {
+          "title": "Request Concurrency",
+          "key": "max_instance_request_concurrency",
+          "help": "Maximum requests concurrency per instance",
+          "placeholder": "",
+          "default": 30,
+          "type": "integer",
+          "required": false
+        },
+        {
+          "title": "Service Account",
+          "key": "service_account",
+          "help": "Name of the service account to attach to the service",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Encryption Key",
+          "key": "encryption_key",
+          "help": "Name of the encryption key to associate with the service",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": false
+        },
+        {
+          "title": "Traffic Target",
+          "key": "traffic",
+          "help": "JSON encoded sequence of of tarffic target objects",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Labels",
+          "key": "labels",
+          "help": "JSON encoded set of labels",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        },
+        {
+          "title": "Annotations",
+          "key": "annotations",
+          "help": "JSON encoded set of annotations",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Creates a Cloud Run service",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "Cloud Run",
+        "Google Cloud"
+      ],
+      "configuration": {
+        "parent": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PARENT",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "service_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_SERVICE_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "description": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DESCRIPTION",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "container": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CONTAINER",
+          "env_var_type": "json"
+        },
+        "max_instance_request_concurrency": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_MAX_INSTANCE_REQUEST_CONCURRENCY",
+          "default": 30,
+          "env_var_type": "int"
+        },
+        "service_account": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_SERVICE_ACCOUNT",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "encryption_key": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ENCRYPTION_KEY",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "traffic": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_TRAFFIC",
+          "env_var_type": "json"
+        },
+        "labels": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_LABELS",
+          "env_var_type": "json"
+        },
+        "annotations": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ANNOTATIONS",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "create-service",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosgcp.cloudrun.actions",
+            "func": "create_service",
+            "arguments": {
+              "parent": "${parent}",
+              "service_id": "${service_id}",
+              "description": "${description}",
+              "container": "${container}",
+              "max_instance_request_concurrency": "${max_instance_request_concurrency}",
+              "service_account": "${service_account}",
+              "encryption_key": "${encryption_key}",
+              "traffic": "${traffic}",
+              "labels": "${labels}",
+              "annotations": "${annotations}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

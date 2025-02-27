@@ -1,0 +1,50 @@
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-medium);
+
+  .dashboardItem {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: var(--space-small);
+
+    background-color: var(--section-background);
+    border-radius: var(--border-radius-s);
+
+    &--medium {
+      grid-column-end: span 2;
+    }
+    &--wide {
+      grid-column: 1 / span 3;
+    }
+    &--full {
+      grid-column: 1 / span 4;
+    }
+
+    h2 {
+      position: relative;
+
+      flex: 0 1 auto;
+      margin-top: 0;
+      margin-bottom: 0;
+      padding-right: 2.4rem;
+
+      font-size: 1.8rem;
+
+      span {
+        position: absolute;
+        top: 0.2rem;
+        right: 0;
+
+        height: 1.8rem;
+      }
+
+      svg {
+        height: 1.8rem;
+
+        color: var(--text-color-dim);
+      }
+    }
+  }
+}

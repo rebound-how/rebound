@@ -1,0 +1,76 @@
+---
+name: read_pod_logs
+target: Kubernetes
+category: Pod
+type: probe
+module: chaosk8s.pod.probes
+description: Fetch logs for all the pods matching a name or label selector
+layout: src/layouts/ActivityLayout.astro
+---
+
+export const name = '{name}';
+
+|            |                     |
+| ---------- | ------------------- |
+| **Type**   | probe               |
+| **Module** | chaosk8s.pod.probes |
+| **Name**   | read_pod_logs       |
+| **Return** | mapping             |
+
+**Usage**
+
+JSON
+
+```json
+{
+  "name": "read-pod-logs",
+  "type": "probe",
+  "provider": {
+    "type": "python",
+    "module": "chaosk8s.pod.probes",
+    "func": "read_pod_logs"
+  }
+}
+```
+
+YAML
+
+```yaml
+name: read-pod-logs
+provider:
+  func: read_pod_logs
+  module: chaosk8s.pod.probes
+  type: python
+type: probe
+```
+
+**Arguments**
+
+| Name               | Type    | Default   | Required | Title                  | Description                                                                                 |
+| ------------------ | ------- | --------- | -------- | ---------------------- | ------------------------------------------------------------------------------------------- |
+| **ns**             | string  | "default" | Yes      | Namespace              |                                                                                             |
+| **label_selector** | string  |           | Yes      | Label selector         | Selectors to target the appropriate pods                                                    |
+| **last**           | string  | 30 seconds      | No       | Period                 | Either a number of seconds to read back or a string representing a period such `10 minutes` |
+| **from_previous**  | boolean | false     | No       | Read from Previous Pod | Read the logs from the previous incarnation of the pod                                      |
+| **container_name** | string  | null      | No       | Name of the Container  | When a pod is made of several containers, specify the name of the container to read from    |
+
+Fetch logs for all the pods with the label `"name"` set to `name` and return a dictionary with the keys being the pod's name and the values the logs of said pod. If `name` is not provided, use only the `label_selector` instead.
+
+When your pod has several containers, you should also set `container_name` to clarify which container you want to read logs from.
+
+If you provide `last`, this returns the logs of the last N seconds until now. This can be set to a fluent delta such as `10 minutes`.
+
+You may also set `from_previous` to `True` to capture the logs of a previous pod's incarnation, if any.
+
+**Signature**
+
+```python
+def read_pod_logs(name: str = None,
+                  last: Union[str, NoneType] = None,
+                  ns: str = 'default',
+                  from_previous: bool = False,
+                  label_selector: str = 'name in ({name})',
+                  container_name: str = None,
+                  secrets: Dict[str, Dict[str, str]] = None) -> Dict[str, str]:
+    pass
+```

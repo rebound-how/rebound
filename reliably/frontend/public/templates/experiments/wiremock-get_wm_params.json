@@ -1,0 +1,59 @@
+{
+  "metadata": {
+    "name": "get_wm_params",
+    "labels": [
+      "WireMock",
+      "Wiremock"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Configuration",
+          "key": "c",
+          "help": "Server configuration",
+          "placeholder": "",
+          "default": null,
+          "type": "object",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Calculate WireMock parameters",
+      "contributions": {},
+      "description": null,
+      "tags": [
+        "WireMock",
+        "Wiremock"
+      ],
+      "configuration": {
+        "c": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_C",
+          "env_var_type": "json"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-wm-params",
+          "type": "utils",
+          "provider": {
+            "type": "python",
+            "module": "chaoswm.wiremock.utils",
+            "func": "get_wm_params",
+            "arguments": {
+              "c": "${c}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

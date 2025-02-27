@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "name": "count_machines",
+    "labels": ["Machine", "Azure"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Filter",
+          "key": "filter",
+          "help": "Target filter selector",
+          "placeholder": "",
+          "default": null,
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Return count of Azure virtual machines",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["Machine", "Azure"],
+      "configuration": {
+        "filter": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FILTER",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "count-machines",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosazure.machine.probes",
+            "func": "count_machines",
+            "arguments": {
+              "filter": "${filter}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

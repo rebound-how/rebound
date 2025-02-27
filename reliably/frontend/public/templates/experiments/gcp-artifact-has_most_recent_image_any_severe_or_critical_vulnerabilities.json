@@ -1,0 +1,81 @@
+{
+  "metadata": {
+    "name": "has_most_recent_image_any_severe_or_critical_vulnerabilities",
+    "labels": [
+      "Cloud Run",
+      "Google Cloud"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Repository",
+          "key": "repository",
+          "help": "Name of the repository",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Container Name",
+          "key": "package_name",
+          "help": "Name of the container in the repository",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Does the most recent tag have any severe or critical vulnerabilities.",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": [
+        "Cloud Run",
+        "Google Cloud"
+      ],
+      "configuration": {
+        "repository": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_REPOSITORY",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "package_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PACKAGE_NAME",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [],
+      "steady-state-hypothesis": {
+        "title": "Verify the conditions of your system",
+        "probes": [
+          {
+            "name": "has-most-recent-image-any-severe-or-critical-vulnerabilities",
+            "type": "probe",
+            "tolerance": null,
+            "provider": {
+              "type": "python",
+              "module": "chaosgcp.artifact.probes",
+              "func": "has_most_recent_image_any_severe_or_critical_vulnerabilities",
+              "arguments": {
+                "repository": "${repository}",
+                "package_name": "${package_name}"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

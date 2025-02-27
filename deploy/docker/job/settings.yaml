@@ -1,0 +1,4 @@
+# default strategy for rollbacks is to run it all the time
+runtime:
+  rollbacks:
+    strategy: always

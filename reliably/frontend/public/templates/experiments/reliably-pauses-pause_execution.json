@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "name": "pause_execution",
+    "labels": [
+      "pauses",
+      "reliability"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Duration",
+          "key": "duration",
+          "help": "",
+          "placeholder": "",
+          "default": 0,
+          "type": "integer",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Pause the execution of the experiment until the resume state has been received.",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "pauses",
+        "reliability"
+      ],
+      "configuration": {
+        "duration": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DURATION",
+          "default": 0,
+          "env_var_type": "int"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "pause-execution",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosreliably.activities.pauses",
+            "func": "pause_execution",
+            "arguments": {
+              "duration": "${duration}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

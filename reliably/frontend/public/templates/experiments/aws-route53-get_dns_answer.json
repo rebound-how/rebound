@@ -1,0 +1,86 @@
+{
+  "metadata": {
+    "name": "get_dns_answer",
+    "labels": ["AWS", "Route 53"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Zone ID",
+          "key": "zone_id",
+          "help": "Route53 zone",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Record Name",
+          "key": "record_name",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Record Type",
+          "key": "record_type",
+          "help": "",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Get the DNS response for the specified record name & type",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["AWS", "Route 53"],
+      "configuration": {
+        "zone_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_ZONE_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "record_name": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_RECORD_NAME",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "record_type": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_RECORD_TYPE",
+          "default": "",
+          "env_var_type": "str"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "get-dns-answer",
+          "type": "probe",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.route53.probes",
+            "func": "get_dns_answer",
+            "arguments": {
+              "zone_id": "${zone_id}",
+              "record_name": "${record_name}",
+              "record_type": "${record_type}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

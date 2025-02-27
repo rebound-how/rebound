@@ -1,0 +1,92 @@
+{
+  "metadata": {
+    "name": "deregister_container_instance",
+    "labels": [
+      "ECS",
+      "AWS"
+    ],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Cluster",
+          "key": "cluster",
+          "help": "Name of the target ECS cluster or ARN",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Instance ID / ARN",
+          "key": "instance_id",
+          "help": "Instance identifier or ARN",
+          "placeholder": "",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Force",
+          "key": "force",
+          "help": "Force unregistering the container instance",
+          "placeholder": "",
+          "default": false,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Deregister an ECS container",
+      "contributions": {},
+      "description": "This experiment will perform an operation against your system. As this action may cause issues, we suggest you play it against a non-production environment first. These kind of experiments allow you to learn how your system reacts to a given change in its state.",
+      "tags": [
+        "ECS",
+        "AWS"
+      ],
+      "configuration": {
+        "cluster": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_CLUSTER",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "instance_id": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_INSTANCE_ID",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "force": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_FORCE",
+          "default": false,
+          "env_var_type": "bool"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "deregister-container-instance",
+          "type": "action",
+          "provider": {
+            "type": "python",
+            "module": "chaosaws.ecs.actions",
+            "func": "deregister_container_instance",
+            "arguments": {
+              "cluster": "${cluster}",
+              "instance_id": "${instance_id}",
+              "force": "${force}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
