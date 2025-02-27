@@ -2,7 +2,9 @@
 
 ### Changed
 
+- Adjust release title
 - Update CHANGELOG.md for 0.1.24
+- Update CHANGELOG.md for 0.1.25
 
 ## [0.1.24] - 2025-02-27
 
