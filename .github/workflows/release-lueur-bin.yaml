@@ -28,7 +28,15 @@ jobs:
           nex_ver=$(git cliff --bumped-version -c lueur/cliff.toml)
           commit_msg="chore(release): update CHANGELOG.md for ${nex_ver}"
 
-          git-cliff --with-commit "$commit_msg" --strip all -o lueur/CHANGELOG.md -c lueur/cliff.toml --include-path "lueur/**/*" --exclude-path ".github/*" --bump
+          git-cliff \
+            --with-commit "$commit_msg" \
+            --strip all \
+            -o lueur/CHANGELOG.md \
+            -c lueur/cliff.toml \
+            --include-path "lueur/**/*" \
+            --exclude-path ".github/*" \
+            --unreleased \
+            --bump
     
           git checkout main
           git config user.name 'github-actions[bot]'
