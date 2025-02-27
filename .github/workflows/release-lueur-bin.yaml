@@ -24,9 +24,20 @@ jobs:
         id: git-cliff
         with:
           config: cliff.toml
+          args: -w lueur -o ./lueur/CHANGELOG.md --strip header
         env:
           OUTPUT: ./lueur/CHANGELOG.md
-  
+      
+      - name: Commit lueur changelog
+        run: |
+          git checkout main
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          set +e
+          git add lueur/CHANGELOG.md
+          git commit -m "[no ci] Update lueur changelog"
+          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git main
+
       - uses: taiki-e/create-gh-release-action@v1
         if: github.repository_owner == 'rebound-how'
         with:
