@@ -24,10 +24,14 @@ jobs:
         id: git-cliff
         with:
           config: cliff.toml
-          args: -w lueur -o ./lueur/CHANGELOG.md --strip header
+          args: -w lueur --strip header
         env:
           OUTPUT: ./lueur/CHANGELOG.md
+          GITHUB_REPO: ${{ github.repository }}
       
+      - name: Print the changelog
+        run: cat "${{ steps.git-cliff.outputs.changelog }}"
+
       - name: Commit lueur changelog
         run: |
           git checkout main
