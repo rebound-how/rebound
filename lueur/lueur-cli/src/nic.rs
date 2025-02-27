@@ -1,3 +1,5 @@
+#![cfg(target_os = "linux")]
+
 use std::net::IpAddr;
 use std::net::Ipv4Addr;
 use std::net::SocketAddr;

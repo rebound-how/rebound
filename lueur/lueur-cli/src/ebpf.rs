@@ -1,3 +1,5 @@
+#![cfg(target_os = "linux")]
+
 use aya::Pod;
 use aya::maps::Array;
 use aya::maps::HashMap;
