@@ -29,6 +29,7 @@ use std::time::Duration;
 use std::time::Instant;
 
 use anyhow::Result;
+#[cfg(target_os = "linux")]
 use aya::Ebpf;
 use chrono::{DateTime, Utc};
 use clap::Parser;

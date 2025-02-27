@@ -57,8 +57,6 @@ colorful = "0.3.2"
 walkdir = "2.5.0"
 async-stream = "0.3.6"
 dashmap = "6.1.0"
-aya = "0.13.1"
-aya-log = "0.2.1"
 prettytable = "0.10.0"
 tera = "1.20.0"
 governor = "0.8.0"
@@ -84,6 +82,8 @@ tonic-build = "0.12"
 [target.'cfg(target_os = "linux")'.build-dependencies]
 lueur-ebpf-programs = { path = "../lueur-ebpf-programs" }
 aya-build = "0.1.2"
+aya = "0.13.1"
+aya-log = "0.2.1"
 
 
 [[bin]]
