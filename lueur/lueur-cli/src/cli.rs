@@ -48,6 +48,7 @@ pub struct ProxyAwareCommandCommon {
     )]
     pub proxy_address: Option<String>,
 
+    #[cfg(target_os = "linux")]
     /// Enable stealth mode (using ebpf)
     #[arg(
         help_heading = "Stealth Options",
@@ -58,6 +59,7 @@ pub struct ProxyAwareCommandCommon {
     )]
     pub ebpf: bool,
 
+    #[cfg(target_os = "linux")]
     /// Enable ebpf interface
     #[arg(
         help_heading = "Stealth Options",

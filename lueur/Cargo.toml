@@ -4,7 +4,6 @@ members = ["lueur-cli", "lueur-ebpf-programs"]
 default-members = ["lueur-cli"]
 
 [workspace.dependencies]
-aya-build = "0.1.2"
 which = { version = "7.0.0", default-features = false }
 anyhow = { version = "1", default-features = false }
 

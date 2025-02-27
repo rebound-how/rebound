@@ -1,5 +1,7 @@
 use anyhow::Context as _;
 use anyhow::anyhow;
+
+#[cfg(target_os = "linux")]
 use aya_build::cargo_metadata;
 
 fn main() -> anyhow::Result<()> {
@@ -16,11 +18,17 @@ fn main() -> anyhow::Result<()> {
             .exec()
             .context("MetadataCommand::exec")?;
 
-    let ebpf_package = packages
-        .into_iter()
-        .find(|cargo_metadata::Package { name, .. }| {
-            name == "lueur-ebpf-programs"
-        })
-        .ok_or_else(|| anyhow!("lueur-ebpf-programs package not found"))?;
-    aya_build::build_ebpf([ebpf_package])
+    // Only build the eBPF package if we're on Linux.
+    #[cfg(target_os = "linux")]
+    {
+        let ebpf_package = packages
+            .into_iter()
+            .find(|cargo_metadata::Package { name, .. }| {
+                name == "lueur-ebpf-programs"
+            })
+            .ok_or_else(|| anyhow!("lueur-ebpf-programs package not found"))?;
+       let _ = aya_build::build_ebpf([ebpf_package]);
+    }
+
+    Ok(())
 }

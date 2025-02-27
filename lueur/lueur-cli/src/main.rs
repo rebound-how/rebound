@@ -4,6 +4,7 @@
 mod cli;
 mod config;
 mod demo;
+#[cfg(target_os = "linux")]
 mod ebpf;
 mod errors;
 mod event;
@@ -479,6 +480,7 @@ fn demo_prelude(demo_address: String) {
     );
 }
 
+#[cfg(target_os = "linux")]
 fn initialize_stealth(
     cli: &ProxyAwareCommandCommon,
     proxy_nic_config: ProxyEbpfConfig,
