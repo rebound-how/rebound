@@ -38,8 +38,8 @@ jobs:
 
       - name: Check
         run: cargo check
-        working-directory: ./lueur-cli
+        working-directory: ./lueur/lueur-cli
 
       - name: Build
         run: cargo build --verbose
-        working-directory: ./lueur-cli
+        working-directory: ./lueur/lueur-cli
