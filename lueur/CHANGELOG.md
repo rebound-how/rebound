@@ -1,4 +1,14 @@
+## [0.1.29] - 2025-02-27
+
+### Changed
+
+- Update CHANGELOG.md for 0.1.28
+
 ## [0.1.28] - 2025-02-27
+
+### Added
+
+- Add readmes
 
 ### Changed
 
