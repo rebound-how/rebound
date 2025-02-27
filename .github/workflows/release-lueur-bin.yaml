@@ -24,10 +24,10 @@ jobs:
         id: git-cliff
         with:
           version: v2.8.0
-          config: ./lueur/cliff.toml
+          config: cliff.toml
           args: -w lueur --strip header
         env:
-          OUTPUT: ./lueur/CHANGELOG.md
+          OUTPUT: CHANGELOG.md
           GITHUB_REPO: ${{ github.repository }}
       
       - name: Print the changelog
