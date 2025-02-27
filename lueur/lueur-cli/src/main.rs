@@ -380,8 +380,13 @@ async fn initialize_proxy(
     shutdown_rx: broadcast::Receiver<()>,
     task_manager: Arc<TaskManager>,
 ) -> AppState {
+    let mut stealth_mode = false;
+    if cfg!(target_os = "linux") {
+        stealth_mode = cli.ebpf;
+    }
+
     // Initialize shared state with empty configuration
-    let state = Arc::new(ProxyState::new(cli.ebpf));
+    let state = Arc::new(ProxyState::new(stealth_mode));
 
     // Create a watch channel for configuration updates
     let (config_tx, config_rx) = watch::channel(ProxyConfig::default());
