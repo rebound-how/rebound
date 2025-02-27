@@ -38,13 +38,16 @@ jobs:
         if: matrix.os == 'ubuntu-24.04'
         run: cargo install bpf-linker --git https://github.com/aya-rs/bpf-linker.git
 
+      
       - name: Install gRPC build dependencies (Windows)
         if: matrix.os == 'windows-latest'
-        uses: arduino/setup-protoc@v3
+        run: |
+          choco install protoc --pre -y
 
       - name: Install gRPC build dependencies (MacOSX)
         if: matrix.os == 'macos-latest'
-        uses: arduino/setup-protoc@v3
+        run: |
+          brew install protobuf
 
       - name: Check
         run: cargo check
