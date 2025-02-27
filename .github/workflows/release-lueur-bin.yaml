@@ -6,7 +6,8 @@ permissions:
 on:
   push:
     tags:
-      - [0-9]+.*
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
     paths: 
       - 'lueur/**'
       - '.github/workflows/release-lueur-bin.yaml'
