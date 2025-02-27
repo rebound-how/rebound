@@ -26,6 +26,7 @@ jobs:
       - name: Generate and save a changelog
         run: |
           nex_ver=$(git cliff --bumped-version -c lueur/cliff.toml)
+          echo $nex_ver
           commit_msg="chore(release): update CHANGELOG.md for ${nex_ver}"
 
           git-cliff \
@@ -34,7 +35,9 @@ jobs:
             -o lueur/CHANGELOG.md \
             -c lueur/cliff.toml \
             --include-path "lueur/**/*" \
-            --exclude-path ".github/*"
+            --exclude-path ".github/*" \
+            --exclude-path "reliably/*" \
+            --exclude-path "chaostoolkit/*"
     
           git checkout main
           git config user.name 'github-actions[bot]'
