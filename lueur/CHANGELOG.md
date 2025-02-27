@@ -4,6 +4,10 @@
 
 - [no ci] Update lueur changelog
 
+### Fixed
+
+- Fix changelog notes
+
 ## [0.1.13] - 2025-02-27
 
 ### Changed
