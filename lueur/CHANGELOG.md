@@ -1,7 +1,14 @@
+## [0.1.32] - 2025-02-27
+
+### Changed
+
+- Update CHANGELOG.md for 0.1.31
+
 ## [0.1.31] - 2025-02-27
 
 ### Changed
 
+- Switching action to release
 - Update CHANGELOG.md for 0.1.30
 
 ## [0.1.30] - 2025-02-27
