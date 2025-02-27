@@ -101,7 +101,7 @@ jobs:
         if: matrix.os == 'ubuntu-24.04'
         run: |
           sudo apt-get update
-          sudo apt install -y protobuf-compiler
+          sudo apt install -y protobuf-compiler libssl-dev
 
       - name: Install bpf-linker
         if: matrix.os == 'ubuntu-24.04'
@@ -117,20 +117,19 @@ jobs:
         run: |
           brew install protobuf
 
-      - name: Build
-        run: cargo build --verbose
-        working-directory: ./lueur/lueur-cli
-
-      - name: Publish artifacts and release
-        uses: houseabsolute/actions-rust-release@v0
+      - name: Build and Publish assets
+        uses: taiki-e/upload-rust-binary-action@v1
         with:
-          working-directory: ./lueur/lueur-cli
-          executable-name: lueur
+          build-tool: cargo
+          manifest-path: ./lueur/lueur-cli/Cargo.toml
+          bin: lueur
+          include: ./lueur/LICENSE,./lueur/README.md,./lueur/CHANGELOG.md
+          leading-dir: true
+          bin-leading-dir: lueur
           target: ${{ matrix.target }}
-          extra-files: |
-            README.md
-            CHANGELOG.md
-            LICENSE
+          tar: unix
+          zip: windows
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish CLI assets to Cargo Registry
         uses: katyo/publish-crates@v2
