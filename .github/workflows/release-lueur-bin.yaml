@@ -23,6 +23,7 @@ jobs:
         uses: orhun/git-cliff-action@v4
         id: git-cliff
         with:
+          version: v2.8.0
           config: ./lueur/cliff.toml
           args: -w lueur --strip header
         env:
