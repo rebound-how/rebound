@@ -1,10 +1,18 @@
-## [0.1.25] - 2025-02-27
+## [0.1.27] - 2025-02-27
 
 ### Changed
 
+- Update CHANGELOG.md for 0.1.26
+
+## [0.1.26] - 2025-02-27
+
+### Changed
+
+- Required to build openssl
+- Publish to cargo
+- Update CHANGELOG.md for 0.1.25
 - Adjust release title
 - Update CHANGELOG.md for 0.1.24
-- Update CHANGELOG.md for 0.1.25
 
 ## [0.1.24] - 2025-02-27
 
