@@ -1,12 +1,13 @@
-## [Unreleased]
+## [0.1.15] - 2025-02-27
 
 ### Changed
 
+- Update CHANGELOG.md for 0.1.21
 - Update CHANGELOG.md for 0.1.19
 - Update CHANGELOG.md for 0.1.18
 - Update CHANGELOG.md for 0.1.16
 - [no ci] Update lueur changelog
-- Update CHANGELOG.md for 0.1.21
+- Update CHANGELOG.md for 0.1.22
 
 ## [0.1.14] - 2025-02-27
 
