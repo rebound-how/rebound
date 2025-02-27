@@ -19,20 +19,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate a changelog
-        uses: orhun/git-cliff-action@v4
-        id: git-cliff
-        with:
-          version: v2.8.0
-          config: lueur/cliff.toml
-          args: --strip header
-        env:
-          OUTPUT: lueur/CHANGELOG.md
-          GITHUB_REPO: ${{ github.repository }}
-      
-      - name: Print the changelog
-        run: cat "${{ steps.git-cliff.outputs.changelog }}"
+      - name: Install git-cliff
+        uses: taiki-e/install-action@git-cliff
 
+      - name: Generate a changelog
+        run: |
+          git-cliff --strip all -o lueur/CHANGELOG.md -c lueur/cliff.toml
+      
       - name: Commit lueur changelog
         run: |
           git checkout main
