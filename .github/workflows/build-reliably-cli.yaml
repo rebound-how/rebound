@@ -44,7 +44,7 @@ jobs:
       - name: Install dependencies
         working-directory: ./reliably/cli
         run: |
-          pdm sync -d
+          pdm sync -G dev
 
       - name: Run Lint
         working-directory: ./reliably/cli
