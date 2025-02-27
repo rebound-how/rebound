@@ -112,12 +112,7 @@ async fn main() -> Result<()> {
             let _progress_guard =
                 task::spawn(handle_displayable_events(receiver));
 
-            let proxy_address = options.common.proxy_address.clone();
-            let proxy_nic_config = nic::determine_proxy_and_ebpf_config(
-                proxy_address,
-                options.common.iface.clone(),
-            )
-            .unwrap();
+            let proxy_nic_config = get_proxy_address(&options.common);
 
             let app_state = initialize_proxy(
                 &options.common,
@@ -158,39 +153,7 @@ async fn main() -> Result<()> {
             ScenarioCommands::Run(config) => {
                 let start = Instant::now();
 
-                let proxy_address = common.proxy_address.clone();
-                let mut proxy_nic_config = ProxyAddrConfig {
-                    proxy_ip: "127.0.0.1".parse().unwrap(),
-                    proxy_port: 8080 as u16,
-                    proxy_ifindex: 0,
-                    ebpf_ifindex: 0,
-                    ebpf_ifname: "".to_string(),
-                };
-
-                if cfg!(target_os = "linux") {
-                    proxy_nic_config = nic::determine_proxy_and_ebpf_config(
-                        proxy_address,
-                        common.iface.clone(),
-                    )
-                    .unwrap();
-                } else {
-                    let addr = proxy_address.unwrap();
-                    let socket_addr: SocketAddr = addr.parse().map_err(|e| {
-                        format!("Invalid proxy address '{}': {}", addr, e)
-                    }).unwrap();
-                    let sock_proxy_ip = socket_addr.ip();
-                    let proxy_port = socket_addr.port();
-
-                    let proxy_ip = match sock_proxy_ip {
-                        IpAddr::V4(ipv4) => ipv4,
-                        IpAddr::V6(_ipv6) => {
-                            return Err(anyhow!("IPV6 addresses are not supported".to_string()));
-                        }
-                    };
-
-                    proxy_nic_config.proxy_ip = proxy_ip;
-                    proxy_nic_config.proxy_port = proxy_port;
-                }
+                let proxy_nic_config = get_proxy_address(common);
 
                 let m = MultiProgress::new();
 
@@ -561,4 +524,44 @@ fn get_output_format_result(file_path: &str) -> Result<OutputFormat, String> {
             "yaml" | "yml" => Ok(OutputFormat::Yaml),
             other => Err(format!("Unrecognized file extension: '{}'", other)),
         })
+}
+
+
+fn get_proxy_address(common: &ProxyAwareCommandCommon) -> ProxyAddrConfig {
+    let proxy_address = common.proxy_address.clone();
+
+    let mut proxy_nic_config: ProxyAddrConfig = ProxyAddrConfig {
+        proxy_ip: "127.0.0.1".parse().unwrap(),
+        proxy_port: 8080 as u16,
+        proxy_ifindex: 0,
+        ebpf_ifindex: 0,
+        ebpf_ifname: "".to_string(),
+    };
+
+    if cfg!(target_os = "linux") {
+        proxy_nic_config = nic::determine_proxy_and_ebpf_config(
+            proxy_address,
+            common.iface.clone(),
+        )
+        .unwrap();
+    } else {
+        let addr = proxy_address.unwrap();
+        let socket_addr: SocketAddr = addr.parse().map_err(|e| {
+            format!("Invalid proxy address '{}': {}", addr, e)
+        }).unwrap();
+        let sock_proxy_ip = socket_addr.ip();
+        let proxy_port = socket_addr.port();
+
+        let proxy_ip = match sock_proxy_ip {
+            IpAddr::V4(ipv4) => ipv4,
+            IpAddr::V6(_ipv6) => {
+                panic!("IPV6 addresses are not supported for proxy");
+            }
+        };
+
+        proxy_nic_config.proxy_ip = proxy_ip;
+        proxy_nic_config.proxy_port = proxy_port;
+    }
+
+    proxy_nic_config
 }
