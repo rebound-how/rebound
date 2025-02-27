@@ -1,3 +1,10 @@
+## [0.1.10] - 2025-02-27
+
+### Changed
+
+- Update rust
+- [no ci] Update lueur changelog
+
 ## [0.1.9] - 2025-02-27
 
 ### Changed
