@@ -33,20 +33,25 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: true
           prerelease: true
+          cache-dependency-path: 'reliably/cli/pdm.lock'
 
       - name: Ensure lock file is up to date
+        working-directory: ./reliably/cli
         run: |
           pdm lock --check
 
       - name: Install dependencies
+        working-directory: ./reliably/cli
         run: |
           pdm sync -d
 
       - name: Run Lint
+        working-directory: ./reliably/cli
         run: |
           pdm run lint
 
       - name: Run Tests
+        working-directory: ./reliably/cli
         run: |
           pdm run pytest
   
