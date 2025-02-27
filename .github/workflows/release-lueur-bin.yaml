@@ -1,0 +1,97 @@
+name: Release Lueur Binaries
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags:
+      - v[0-9]+.*
+    paths: 
+      - 'lueur/**'
+      - '.github/workflows/release-lueur-bin.yaml'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate a changelog
+        uses: orhun/git-cliff-action@v4
+        id: git-cliff
+        with:
+          config: cliff.toml
+        env:
+          OUTPUT: ./lueur/CHANGELOG.md
+  
+      - uses: taiki-e/create-gh-release-action@v1
+        with:
+          changelog: ./lueur/CHANGELOG.md
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  upload-assets:
+    needs: create-release
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-24.04
+          - target: x86_64-apple-darwin
+            os: macos-latest
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate a changelog
+        uses: orhun/git-cliff-action@v4
+        id: git-cliff
+        with:
+          config: cliff.toml
+        env:
+          OUTPUT: ./lueur/CHANGELOG.md
+  
+      - run: rustup toolchain install nightly --component rust-src
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            lueur
+
+      - name: Install gRPC build dependencies (Linux)
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          sudo apt-get update
+          sudo apt install -y protobuf-compiler
+
+      - name: Install bpf-linker
+        if: matrix.os == 'ubuntu-24.04'
+        run: cargo install bpf-linker --git https://github.com/aya-rs/bpf-linker.git
+
+      - name: Install gRPC build dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install protoc --pre -y
+
+      - name: Install gRPC build dependencies (MacOSX)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install protobuf
+
+      - uses: taiki-e/upload-rust-binary-action@v1
+        with:
+          manifest-path: ./lueur/lueur-cli/Cargo.toml
+          bin: lueur
+          include: ./lueur/LICENSE,./lueur/README.md,./lueur/CHANGELOG.md
+          leading-dir: true
+          bin-leading-dir: lueur
+          target: ${{ matrix.target }}
+          tar: unix
+          zip: windows
+          token: ${{ secrets.GITHUB_TOKEN }}
