@@ -47,29 +47,35 @@ jobs:
   upload-assets:
     needs: create-release
     strategy:
+      fail-fast: false
       matrix:
         include:
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-24.04
+          - target: aarch64-apple-darwin
+            os: macos-latest
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-24.04
           - target: x86_64-apple-darwin
             os: macos-latest
-          - target: x86_64-pc-windows-msvc
-            os: windows-latest
+          # Universal macOS binary is supported as universal-apple-darwin.
+          - target: universal-apple-darwin
+            os: macos-latest
+
+    name: Build workspace on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+
+    env:
+      CARGO_TERM_COLOR: always
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Generate a changelog
-        uses: orhun/git-cliff-action@v4
-        id: git-cliff
-        with:
-          config: cliff.toml
-        env:
-          OUTPUT: ./lueur/CHANGELOG.md
-  
-      - run: rustup toolchain install nightly --component rust-src
+      - run: |
+          rustup toolchain install nightly --component rust-src
+          rustup update stable
 
       - uses: Swatinem/rust-cache@v2
         with:
