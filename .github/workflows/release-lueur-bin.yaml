@@ -24,7 +24,7 @@ jobs:
 
       - name: Generate a changelog
         run: |
-          git-cliff --strip all -o lueur/CHANGELOG.md -c lueur/cliff.toml
+          git-cliff --strip all -o lueur/CHANGELOG.md -c lueur/cliff.toml --include-path "lueur/**/*" --exclude-path ".github/*"  --exclude-path ".reliably/*"
       
       - name: Commit lueur changelog
         run: |
@@ -61,6 +61,7 @@ jobs:
           # Universal macOS binary is supported as universal-apple-darwin.
           - target: universal-apple-darwin
             os: macos-latest
+          - os: windows-latest
 
     name: Build workspace on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
