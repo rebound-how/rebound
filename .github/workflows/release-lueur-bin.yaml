@@ -120,6 +120,7 @@ jobs:
       - name: Build and Publish assets
         uses: taiki-e/upload-rust-binary-action@v1
         with:
+          build-tool: cargo
           manifest-path: ./lueur/lueur-cli/Cargo.toml
           bin: lueur
           include: ./lueur/LICENSE,./lueur/README.md,./lueur/CHANGELOG.md
