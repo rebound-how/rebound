@@ -126,7 +126,6 @@ jobs:
         with:
           working-directory: ./lueur/lueur-cli
           executable-name: lueur
-          release-tag-prefix: ""
           target: ${{ matrix.target }}
           extra-files: |
             README.md
