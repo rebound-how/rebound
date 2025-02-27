@@ -68,6 +68,7 @@ opentelemetry_sdk = { version = "0.27.1", features = ["rt-tokio"] }
 tracing-opentelemetry = "0.28.0"
 axum-tracing-opentelemetry = "0.25.0"
 tracing = { version = "0.1.41", features = ["attributes"] }
+openssl = { version = "0.10.71", features = ["vendored"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 aya-ebpf = "0.1.1"

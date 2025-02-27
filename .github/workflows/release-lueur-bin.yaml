@@ -101,7 +101,7 @@ jobs:
         if: matrix.os == 'ubuntu-24.04'
         run: |
           sudo apt-get update
-          sudo apt install -y protobuf-compiler pkg-config libssl-dev
+          sudo apt install -y protobuf-compiler
 
       - name: Install bpf-linker
         if: matrix.os == 'ubuntu-24.04'
