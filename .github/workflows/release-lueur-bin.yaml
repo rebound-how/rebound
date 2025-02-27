@@ -37,6 +37,7 @@ jobs:
             -o lueur/CHANGELOG.md \
             -c lueur/cliff.toml \
             --include-path "lueur/**/*" \
+            --include-path ".github/workflows/release-lueur-bin.yaml" \
             --exclude-path ".github/*" \
             --exclude-path "reliably/*" \
             --exclude-path "chaostoolkit/*" \
@@ -71,7 +72,6 @@ jobs:
             os: ubuntu-24.04
           - target: x86_64-apple-darwin
             os: macos-latest
-          # Universal macOS binary is supported as universal-apple-darwin.
           - target: universal-apple-darwin
             os: macos-latest
           - os: windows-latest
