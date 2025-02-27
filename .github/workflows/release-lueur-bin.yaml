@@ -39,7 +39,8 @@ jobs:
             --include-path "lueur/**/*" \
             --exclude-path ".github/*" \
             --exclude-path "reliably/*" \
-            --exclude-path "chaostoolkit/*"
+            --exclude-path "chaostoolkit/*" \
+            --bump
     
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
