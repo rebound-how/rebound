@@ -27,8 +27,7 @@ jobs:
         with:
           python-version: 3.12
           cache: true
-          cache-dependency-path: |
-            ./pdm.lock
+          cache-dependency-path: 'docs/lueur/pdm.lock'
 
       - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV 
 
@@ -40,7 +39,9 @@ jobs:
             lueur-
   
       - name: Install dependendencies
+        working-directory: ./docs/lueur
         run: pdm install --no-self
         
       - name: Build and deploy Documentation
+        working-directory: ./docs/lueur
         run: pdm run deploy-docs
