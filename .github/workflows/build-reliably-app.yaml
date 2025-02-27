@@ -42,30 +42,30 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: true
           prerelease: true
-          cache-dependency-path: 'backend/pdm.lock'
+          cache-dependency-path: 'reliably/backend/pdm.lock'
 
       - name: Configure pdm to use uv
         run: |
           pdm config use_uv true
 
       - name: Ensure lock file is up to date
-        working-directory: ./backend
+        working-directory: ./reliably/backend
         run: |
           pdm lock --check
 
       - name: Install dependencies
-        working-directory: ./backend
+        working-directory: ./reliably/backend
         run: |
           pdm sync -d -G gcp
 
       - name: Run Lint
-        working-directory: ./backend
+        working-directory: ./reliably/backend
         run: |
           pdm run lint
 
       - name: Run Tests
         if: runner.os == 'Linux'
-        working-directory: ./backend
+        working-directory: ./reliably/backend
         run: |
           pdm run test
   
@@ -83,14 +83,14 @@ jobs:
         with:
           node-version: 23
           cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: reliably/frontend/package-lock.json
 
       - name: Install dependencies
-        working-directory: ./frontend
+        working-directory: ./reliably/frontend
         run: npm ci
 
       - name: Run Tests
-        working-directory: ./frontend
+        working-directory: ./reliably/frontend
         run: |
           npm run test:coverage
   
@@ -117,12 +117,12 @@ jobs:
           python-version: "3.12"
           cache: true
           prerelease: true
-          cache-dependency-path: 'backend/pdm.lock'
+          cache-dependency-path: 'reliably/backend/pdm.lock'
 
       - name: Install dependencies
-        working-directory: ./backend
+        working-directory: ./reliably/backend
         run: |
-          pdm sync --prod -G gcp
+          pdm sync --prod -G gcp -G kubernetes
 
       - name: Build frontend
         uses: withastro/action@v2
@@ -132,7 +132,7 @@ jobs:
 
       - name: Build backend
         if: runner.os == 'Linux'
-        working-directory: ./backend
+        working-directory: ./reliably/backend
         run: |
           cp -r ../frontend/dist/* reliably_app/www
           pdm build

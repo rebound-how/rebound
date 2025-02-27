@@ -1,4 +1,4 @@
-name: Build Lueur
+name: Build Lueur Binaries
 
 on: 
   push:

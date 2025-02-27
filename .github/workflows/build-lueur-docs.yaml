@@ -1,4 +1,4 @@
-name: Lueur Documentation
+name: Build Lueur Documentation
 
 on:
   push:
