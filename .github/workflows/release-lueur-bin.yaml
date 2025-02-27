@@ -23,7 +23,7 @@ jobs:
         uses: orhun/git-cliff-action@v4
         id: git-cliff
         with:
-          config: cliff.toml
+          config: ./lueur/cliff.toml
           args: -w lueur --strip header
         env:
           OUTPUT: ./lueur/CHANGELOG.md
