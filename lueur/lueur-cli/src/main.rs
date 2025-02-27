@@ -31,7 +31,6 @@ use std::time::Duration;
 use std::time::Instant;
 
 use anyhow::Result;
-use anyhow::anyhow;
 #[cfg(target_os = "linux")]
 use aya::Ebpf;
 use clap::Parser;
@@ -364,16 +363,23 @@ struct AppState {
     pub proxy_address: String,
 }
 
+#[cfg(target_os = "linux")]
+fn is_stealth(cli: &ProxyAwareCommandCommon) -> bool {
+    cli.ebpf
+}
+
+#[cfg(not(target_os = "linux"))]
+fn is_stealth(cli: &ProxyAwareCommandCommon) -> bool {
+    false
+}
+
 async fn initialize_proxy(
     cli: &ProxyAwareCommandCommon,
     proxy_nic_config: &ProxyAddrConfig,
     shutdown_rx: broadcast::Receiver<()>,
     task_manager: Arc<TaskManager>,
 ) -> AppState {
-    let mut stealth_mode = false;
-    if cfg!(target_os = "linux") {
-        stealth_mode = cli.ebpf;
-    }
+    let stealth_mode = is_stealth(&cli);
 
     // Initialize shared state with empty configuration
     let state = Arc::new(ProxyState::new(stealth_mode));
@@ -526,42 +532,41 @@ fn get_output_format_result(file_path: &str) -> Result<OutputFormat, String> {
         })
 }
 
-
+#[cfg(target_os = "linux")]
 fn get_proxy_address(common: &ProxyAwareCommandCommon) -> ProxyAddrConfig {
     let proxy_address = common.proxy_address.clone();
 
-    let mut proxy_nic_config: ProxyAddrConfig = ProxyAddrConfig {
-        proxy_ip: "127.0.0.1".parse().unwrap(),
-        proxy_port: 8080 as u16,
+    nic::determine_proxy_and_ebpf_config(
+        proxy_address,
+        common.iface.clone(),
+    )
+    .unwrap()
+}
+
+#[cfg(not(target_os = "linux"))]
+fn get_proxy_address(common: &ProxyAwareCommandCommon) -> ProxyAddrConfig {
+    let proxy_address = common.proxy_address.clone();
+
+    let addr = proxy_address.unwrap();
+    let socket_addr: SocketAddr = addr.parse().map_err(|e| {
+        format!("Invalid proxy address '{}': {}", addr, e)
+    }).unwrap();
+    let sock_proxy_ip = socket_addr.ip();
+    let proxy_port = socket_addr.port();
+
+    let proxy_ip = match sock_proxy_ip {
+        IpAddr::V4(ipv4) => ipv4,
+        IpAddr::V6(_ipv6) => {
+            panic!("IPV6 addresses are not supported for proxy");
+        }
+    };
+
+    ProxyAddrConfig {
+        proxy_ip: proxy_ip,
+        proxy_port: proxy_port,
         proxy_ifindex: 0,
         ebpf_ifindex: 0,
         ebpf_ifname: "".to_string(),
-    };
-
-    if cfg!(target_os = "linux") {
-        proxy_nic_config = nic::determine_proxy_and_ebpf_config(
-            proxy_address,
-            common.iface.clone(),
-        )
-        .unwrap();
-    } else {
-        let addr = proxy_address.unwrap();
-        let socket_addr: SocketAddr = addr.parse().map_err(|e| {
-            format!("Invalid proxy address '{}': {}", addr, e)
-        }).unwrap();
-        let sock_proxy_ip = socket_addr.ip();
-        let proxy_port = socket_addr.port();
-
-        let proxy_ip = match sock_proxy_ip {
-            IpAddr::V4(ipv4) => ipv4,
-            IpAddr::V6(_ipv6) => {
-                panic!("IPV6 addresses are not supported for proxy");
-            }
-        };
-
-        proxy_nic_config.proxy_ip = proxy_ip;
-        proxy_nic_config.proxy_port = proxy_port;
     }
-
-    proxy_nic_config
 }
+
