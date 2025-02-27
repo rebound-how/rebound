@@ -117,19 +117,21 @@ jobs:
         run: |
           brew install protobuf
 
-      - name: Build and Publish assets
-        uses: taiki-e/upload-rust-binary-action@v1
+      - name: Build
+        run: cargo build --verbose
+        working-directory: ./lueur/lueur-cli
+
+      - name: Publish artifacts and release
+        uses: houseabsolute/actions-rust-release@v0
         with:
-          build-tool: cargo
-          manifest-path: ./lueur/lueur-cli/Cargo.toml
-          bin: lueur
-          include: ./lueur/LICENSE,./lueur/README.md,./lueur/CHANGELOG.md
-          leading-dir: true
-          bin-leading-dir: lueur
+          working-directory: ./lueur/lueur-cli
+          executable-name: lueur
+          release-tag-prefix: ""
           target: ${{ matrix.target }}
-          tar: unix
-          zip: windows
-          token: ${{ secrets.GITHUB_TOKEN }}
+          extra-files: |
+            README.md
+            CHANGELOG.md
+            LICENSE
 
       - name: Publish CLI assets to Cargo Registry
         uses: katyo/publish-crates@v2
