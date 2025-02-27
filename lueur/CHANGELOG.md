@@ -1,7 +1,14 @@
+## [0.1.31] - 2025-02-27
+
+### Changed
+
+- Update CHANGELOG.md for 0.1.30
+
 ## [0.1.30] - 2025-02-27
 
 ### Changed
 
+- Build using cargo
 - Update CHANGELOG.md for 0.1.29
 
 ## [0.1.29] - 2025-02-27
