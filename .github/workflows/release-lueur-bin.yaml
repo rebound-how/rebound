@@ -34,9 +34,7 @@ jobs:
             -o lueur/CHANGELOG.md \
             -c lueur/cliff.toml \
             --include-path "lueur/**/*" \
-            --exclude-path ".github/*" \
-            --unreleased \
-            --bump
+            --exclude-path ".github/*"
     
           git checkout main
           git config user.name 'github-actions[bot]'
