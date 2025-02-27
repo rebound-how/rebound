@@ -24,8 +24,8 @@ jobs:
         id: git-cliff
         with:
           version: v2.8.0
-          config: cliff.toml
-          args: -w lueur -o lueur/CHANGELOG.md --strip header
+          config: lueur/cliff.toml
+          args: --strip header
         env:
           OUTPUT: lueur/CHANGELOG.md
           GITHUB_REPO: ${{ github.repository }}
