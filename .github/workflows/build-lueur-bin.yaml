@@ -6,6 +6,7 @@ on:
       - main
     paths: 
       - 'lueur/**'
+      - '.github/workflows/build-lueur-bin.yaml'
 
 jobs:
   workspaces:
