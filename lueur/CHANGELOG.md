@@ -1,7 +1,14 @@
+## [0.1.28] - 2025-02-27
+
+### Changed
+
+- Update CHANGELOG.md for 0.1.27
+
 ## [0.1.27] - 2025-02-27
 
 ### Changed
 
+- Required to build openssl
 - Update CHANGELOG.md for 0.1.26
 
 ## [0.1.26] - 2025-02-27
