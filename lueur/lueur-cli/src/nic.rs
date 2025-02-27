@@ -1,4 +1,3 @@
-use std::fmt;
 use std::net::IpAddr;
 use std::net::Ipv4Addr;
 use std::net::SocketAddr;
@@ -6,41 +5,7 @@ use std::net::SocketAddr;
 use local_ip_address::list_afinet_netifas;
 use nix::net::if_::if_nametoindex;
 
-/// Structure to hold the final configuration.
-#[derive(Debug)]
-pub struct ProxyEbpfConfig {
-    pub proxy_ip: Ipv4Addr,
-    pub proxy_port: u16,
-    pub proxy_ifindex: u32,
-    pub ebpf_ifindex: u32,
-    pub ebpf_ifname: String,
-}
-
-impl ProxyEbpfConfig {
-    pub fn proxy_address(&self) -> String {
-        format!("{}:{}", self.proxy_ip, self.proxy_port)
-    }
-}
-
-impl fmt::Display for ProxyEbpfConfig {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "Proxy Configuration:\n\
-             ---------------------\n\
-             Proxy IP          : {}\n\
-             Proxy Port        : {}\n\
-             Proxy Ifindex     : {}\n\
-             eBPF Ifindex      : {}\n\
-             eBPF Interface Name: {}",
-            self.proxy_ip,
-            self.proxy_port,
-            self.proxy_ifindex,
-            self.ebpf_ifindex,
-            self.ebpf_ifname
-        )
-    }
-}
+use crate::types::ProxyAddrConfig;
 
 /// Determines the proxy address, port, and eBPF interface index based on CLI
 /// arguments.
@@ -52,12 +17,12 @@ impl fmt::Display for ProxyEbpfConfig {
 ///
 /// # Returns
 ///
-/// * `Ok(ProxyEbpfConfig)` on success.
+/// * `Ok(ProxyAddrConfig)` on success.
 /// * `Err(String)` with an error message on failure.
 pub fn determine_proxy_and_ebpf_config(
     proxy_address: Option<String>,
     ebpf_interface: Option<String>,
-) -> Result<ProxyEbpfConfig, String> {
+) -> Result<ProxyAddrConfig, String> {
     let proxy_address = proxy_address.as_deref();
     let ebpf_interface = ebpf_interface.as_deref();
 
@@ -209,7 +174,7 @@ pub fn determine_proxy_and_ebpf_config(
             }
         }*/
 
-        return Ok(ProxyEbpfConfig {
+        return Ok(ProxyAddrConfig {
             proxy_ip,
             proxy_port,
             proxy_ifindex: proxy_idx,
@@ -264,7 +229,7 @@ pub fn determine_proxy_and_ebpf_config(
                 // Get proxy interface index.
                 let proxy_idx = get_ifindex(proxy_iface_name)?;
 
-                return Ok(ProxyEbpfConfig {
+                return Ok(ProxyAddrConfig {
                     proxy_ip,
                     proxy_port,
                     proxy_ifindex: proxy_idx,
@@ -304,7 +269,7 @@ pub fn determine_proxy_and_ebpf_config(
                     ));
                 }
 
-                return Ok(ProxyEbpfConfig {
+                return Ok(ProxyAddrConfig {
                     proxy_ip,
                     proxy_port,
                     proxy_ifindex: proxy_idx,
@@ -351,7 +316,7 @@ pub fn determine_proxy_and_ebpf_config(
             // Get proxy interface index.
             let proxy_idx = get_ifindex(proxy_iface_name)?;
 
-            return Ok(ProxyEbpfConfig {
+            return Ok(ProxyAddrConfig {
                 proxy_ip,
                 proxy_port,
                 proxy_ifindex: proxy_idx,
@@ -406,7 +371,7 @@ pub fn determine_proxy_and_ebpf_config(
                 // Get proxy interface index.
                 let proxy_idx = get_ifindex(proxy_iface_name)?;
 
-                return Ok(ProxyEbpfConfig {
+                return Ok(ProxyAddrConfig {
                     proxy_ip,
                     proxy_port,
                     proxy_ifindex: proxy_idx,
@@ -446,7 +411,7 @@ pub fn determine_proxy_and_ebpf_config(
                     ));
                 }
 
-                return Ok(ProxyEbpfConfig {
+                return Ok(ProxyAddrConfig {
                     proxy_ip,
                     proxy_port,
                     proxy_ifindex: proxy_idx,
@@ -487,7 +452,7 @@ pub fn determine_proxy_and_ebpf_config(
         // Get proxy interface index.
         let proxy_idx = get_ifindex(proxy_iface_name)?;
 
-        return Ok(ProxyEbpfConfig {
+        return Ok(ProxyAddrConfig {
             proxy_ip,
             proxy_port,
             proxy_ifindex: proxy_idx,

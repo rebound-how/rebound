@@ -6,7 +6,7 @@ use aya::programs::TcAttachType;
 use aya::programs::tc;
 use reqwest::Url;
 
-use crate::nic::ProxyEbpfConfig;
+use crate::types::ProxyAddrConfig;
 
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -20,7 +20,7 @@ unsafe impl Pod for EbpfConfig {}
 
 pub fn install_and_run(
     ebpf: &mut aya::Ebpf,
-    proxy_nic_config: &ProxyEbpfConfig,
+    proxy_nic_config: &ProxyAddrConfig,
     upstream_ports: Vec<String>,
 ) -> anyhow::Result<()> {
     // Bump the memlock rlimit. This is needed for older kernels that don't use

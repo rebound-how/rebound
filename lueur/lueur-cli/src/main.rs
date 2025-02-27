@@ -22,6 +22,8 @@ mod types;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
+use std::net::IpAddr;
+use std::net::SocketAddr;
 use std::path::Path;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -29,9 +31,9 @@ use std::time::Duration;
 use std::time::Instant;
 
 use anyhow::Result;
+use anyhow::anyhow;
 #[cfg(target_os = "linux")]
 use aya::Ebpf;
-use chrono::{DateTime, Utc};
 use clap::Parser;
 use cli::Cli;
 use cli::Commands;
@@ -50,11 +52,9 @@ use indicatif::ProgressBar;
 use indicatif::ProgressStyle;
 use logging::init_meter_provider;
 use logging::init_subscriber;
-use logging::init_subscriber_without_opentelemetry;
 use logging::init_tracer_provider;
 use logging::setup_logging;
 use logging::shutdown_tracer;
-use nic::ProxyEbpfConfig;
 use opentelemetry_sdk::metrics::SdkMeterProvider;
 use opentelemetry_sdk::trace::TracerProvider;
 use proxy::ProxyState;
@@ -66,7 +66,6 @@ use reporting::ReportItemExpectation;
 use reporting::ReportItemExpectationDecision;
 use reporting::ReportItemMetrics;
 use reporting::ReportItemMetricsFaults;
-use reporting::ReportItemResult;
 use reporting::build_report_output;
 use reporting::pretty_report;
 use scenario::ScenarioEventManager;
@@ -83,6 +82,7 @@ use tokio::sync::watch;
 use tokio::task;
 use tokio_stream::StreamExt;
 use tracing::error;
+use types::ProxyAddrConfig;
 use url::Url;
 
 #[tokio::main]
@@ -140,7 +140,7 @@ async fn main() -> Result<()> {
                     "Failed to listen for shutdown signal: {}",
                     e
                 ))
-            })?;
+            }).unwrap();
 
             tracing::info!("Shutdown signal received. Initiating shutdown.");
         }
@@ -159,11 +159,38 @@ async fn main() -> Result<()> {
                 let start = Instant::now();
 
                 let proxy_address = common.proxy_address.clone();
-                let proxy_nic_config = nic::determine_proxy_and_ebpf_config(
-                    proxy_address,
-                    common.iface.clone(),
-                )
-                .unwrap();
+                let mut proxy_nic_config = ProxyAddrConfig {
+                    proxy_ip: "127.0.0.1".parse().unwrap(),
+                    proxy_port: 8080 as u16,
+                    proxy_ifindex: 0,
+                    ebpf_ifindex: 0,
+                    ebpf_ifname: "".to_string(),
+                };
+
+                if cfg!(target_os = "linux") {
+                    proxy_nic_config = nic::determine_proxy_and_ebpf_config(
+                        proxy_address,
+                        common.iface.clone(),
+                    )
+                    .unwrap();
+                } else {
+                    let addr = proxy_address.unwrap();
+                    let socket_addr: SocketAddr = addr.parse().map_err(|e| {
+                        format!("Invalid proxy address '{}': {}", addr, e)
+                    }).unwrap();
+                    let sock_proxy_ip = socket_addr.ip();
+                    let proxy_port = socket_addr.port();
+
+                    let proxy_ip = match sock_proxy_ip {
+                        IpAddr::V4(ipv4) => ipv4,
+                        IpAddr::V6(_ipv6) => {
+                            return Err(anyhow!("IPV6 addresses are not supported".to_string()));
+                        }
+                    };
+
+                    proxy_nic_config.proxy_ip = proxy_ip;
+                    proxy_nic_config.proxy_port = proxy_port;
+                }
 
                 let m = MultiProgress::new();
 
@@ -376,7 +403,7 @@ struct AppState {
 
 async fn initialize_proxy(
     cli: &ProxyAwareCommandCommon,
-    proxy_nic_config: &ProxyEbpfConfig,
+    proxy_nic_config: &ProxyAddrConfig,
     shutdown_rx: broadcast::Receiver<()>,
     task_manager: Arc<TaskManager>,
 ) -> AppState {
@@ -489,7 +516,7 @@ fn demo_prelude(demo_address: String) {
 #[cfg(target_os = "linux")]
 fn initialize_stealth(
     cli: &ProxyAwareCommandCommon,
-    proxy_nic_config: ProxyEbpfConfig,
+    proxy_nic_config: ProxyAddrConfig,
 ) -> Option<Ebpf> {
     let upstream_hosts = cli.upstream_hosts.clone();
 

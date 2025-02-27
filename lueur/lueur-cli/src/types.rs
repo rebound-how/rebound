@@ -1,4 +1,5 @@
 use std::fmt;
+use std::net::Ipv4Addr;
 
 use clap::ValueEnum;
 use serde::Deserialize;
@@ -7,6 +8,43 @@ use serde::Serialize;
 use crate::config;
 use crate::config::FaultConfig;
 use crate::errors::ScenarioError;
+
+/// Structure to hold the final configuration.
+#[derive(Debug)]
+pub struct ProxyAddrConfig {
+    pub proxy_ip: Ipv4Addr,
+    pub proxy_port: u16,
+    pub proxy_ifindex: u32,
+    pub ebpf_ifindex: u32,
+    pub ebpf_ifname: String,
+}
+
+impl ProxyAddrConfig {
+    pub fn proxy_address(&self) -> String {
+        format!("{}:{}", self.proxy_ip, self.proxy_port)
+    }
+}
+
+impl fmt::Display for ProxyAddrConfig {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Proxy Configuration:\n\
+             ---------------------\n\
+             Proxy IP          : {}\n\
+             Proxy Port        : {}\n\
+             Proxy Ifindex     : {}\n\
+             eBPF Ifindex      : {}\n\
+             eBPF Interface Name: {}",
+            self.proxy_ip,
+            self.proxy_port,
+            self.proxy_ifindex,
+            self.ebpf_ifindex,
+            self.ebpf_ifname
+        )
+    }
+}
+
 
 #[derive(clap::ValueEnum, Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub enum LatencyDistribution {
