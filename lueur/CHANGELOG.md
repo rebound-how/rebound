@@ -1,3 +1,9 @@
+## [0.1.14] - 2025-02-27
+
+### Changed
+
+- [no ci] Update lueur changelog
+
 ## [0.1.13] - 2025-02-27
 
 ### Changed
