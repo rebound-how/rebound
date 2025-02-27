@@ -117,7 +117,8 @@ jobs:
         run: |
           brew install protobuf
 
-      - uses: taiki-e/upload-rust-binary-action@v1
+      - name: Build and Publish assets
+        uses: taiki-e/upload-rust-binary-action@v1
         with:
           manifest-path: ./lueur/lueur-cli/Cargo.toml
           bin: lueur
@@ -128,3 +129,10 @@ jobs:
           tar: unix
           zip: windows
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish assets to Cargo Registry
+        uses: katyo/publish-crates@v2
+        with:
+          path: './lueur'
+          registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          ignore-unpublished-changes: true
