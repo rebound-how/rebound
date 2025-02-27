@@ -130,9 +130,17 @@ jobs:
           zip: windows
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish assets to Cargo Registry
+      - name: Publish CLI assets to Cargo Registry
         uses: katyo/publish-crates@v2
         with:
-          path: './lueur'
+          path: './lueur/lueur-cli'
+          registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          ignore-unpublished-changes: true
+
+      - name: Publish ebpf assets to Cargo Registry
+        if: matrix.os == 'ubuntu-24.04'
+        uses: katyo/publish-crates@v2
+        with:
+          path: './lueur/lueur-ebpf-programs'
           registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
           ignore-unpublished-changes: true
