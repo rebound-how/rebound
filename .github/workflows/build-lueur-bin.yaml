@@ -26,7 +26,8 @@ jobs:
 
       - run: |
           rustup toolchain install nightly --component rust-src
-          rustup update stable
+          rustup update nightly
+          rustup override set nightly
 
       - uses: Swatinem/rust-cache@v2
         with:
