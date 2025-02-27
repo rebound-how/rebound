@@ -1,5 +1,4 @@
 use anyhow::Context as _;
-use anyhow::anyhow;
 
 #[cfg(target_os = "linux")]
 use aya_build::cargo_metadata;
