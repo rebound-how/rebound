@@ -1,7 +1,14 @@
+## [0.1.33] - 2025-02-27
+
+### Changed
+
+- Update CHANGELOG.md for 0.1.32
+
 ## [0.1.32] - 2025-02-27
 
 ### Changed
 
+- Cannot be empty for some odd reason
 - Update CHANGELOG.md for 0.1.31
 
 ## [0.1.31] - 2025-02-27
