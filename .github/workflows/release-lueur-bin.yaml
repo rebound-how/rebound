@@ -28,8 +28,11 @@ jobs:
           OUTPUT: ./lueur/CHANGELOG.md
   
       - uses: taiki-e/create-gh-release-action@v1
+        if: github.repository_owner == 'rebound-how'
         with:
           changelog: ./lueur/CHANGELOG.md
+          title: Rebound - lueur $tag
+          branch: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
   upload-assets:
