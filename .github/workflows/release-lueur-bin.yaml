@@ -38,7 +38,6 @@ jobs:
             -c lueur/cliff.toml \
             --include-path "lueur/**/*" \
             --include-path ".github/workflows/release-lueur-bin.yaml" \
-            --exclude-path ".github/*" \
             --exclude-path "reliably/*" \
             --exclude-path "chaostoolkit/*" \
             --bump
