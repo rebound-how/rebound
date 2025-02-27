@@ -1,7 +1,14 @@
+## [0.1.34] - 2025-02-27
+
+### Changed
+
+- Update CHANGELOG.md for 0.1.33
+
 ## [0.1.33] - 2025-02-27
 
 ### Changed
 
+- Revert as the other action was even less conclusive
 - Update CHANGELOG.md for 0.1.32
 
 ## [0.1.32] - 2025-02-27
