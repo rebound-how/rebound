@@ -1,8 +1,8 @@
 use anyhow::Context as _;
-#[cfg(all(target_os = "linux", feature = "stealth"))]
+#[cfg(all(target_os = "linux", feature = "stealth_auto_build"))]
 use anyhow::anyhow;
 
-#[cfg(all(target_os = "linux", feature = "stealth"))]
+#[cfg(all(target_os = "linux", feature = "stealth_auto_build"))]
 use aya_build::cargo_metadata;
 
 fn main() -> anyhow::Result<()> {

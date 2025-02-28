@@ -495,6 +495,41 @@ fn demo_prelude(demo_address: String) {
     );
 }
 
+#[cfg(all(target_os = "linux", feature = "stealth_auto_build"))]
+fn initialize_stealth(
+    cli: &ProxyAwareCommandCommon,
+    proxy_nic_config: ProxyAddrConfig,
+) -> Option<Ebpf> {
+    let upstream_hosts = cli.upstream_hosts.clone();
+
+    #[allow(unused_variables)]
+    let ebpf_guard = match cli.ebpf {
+        true => {
+            let mut bpf = aya::Ebpf::load(aya::include_bytes_aligned!(
+                concat!(env!("OUT_DIR"), "/lueur-ebpf")
+            ))
+            .unwrap();
+
+            if let Err(e) = aya_log::EbpfLogger::init(&mut bpf) {
+                tracing::warn!("failed to initialize eBPF logger: {}", e);
+            }
+
+            let _ = ebpf::install_and_run(
+                &mut bpf,
+                &proxy_nic_config,
+                upstream_hosts.clone(),
+            );
+
+            tracing::info!("Ebpf has been loaded");
+
+            Some(bpf)
+        }
+        false => None,
+    };
+
+    ebpf_guard
+}
+
 #[cfg(all(target_os = "linux", feature = "stealth"))]
 fn initialize_stealth(
     cli: &ProxyAwareCommandCommon,
@@ -515,10 +550,7 @@ fn initialize_stealth(
             let bin_dir = cargo_bin_dir.unwrap();
             let programs_path = bin_dir.join("/lueur-ebpf");
             
-            let mut bpf = aya::Ebpf::load(aya::include_bytes_aligned!(
-                programs_path.as_os_str()
-            ))
-            .unwrap();
+            let mut bpf = aya::Ebpf::load_file(programs_path).unwrap();
 
             if let Err(e) = aya_log::EbpfLogger::init(&mut bpf) {
                 tracing::warn!("failed to initialize eBPF logger: {}", e);
