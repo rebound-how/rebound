@@ -495,7 +495,7 @@ fn demo_prelude(demo_address: String) {
     );
 }
 
-#[cfg(all(target_os = "linux", feature = "stealth"))]
+#[cfg(all(target_os = "linux", feature = "stealth_auto_build"))]
 fn initialize_stealth(
     cli: &ProxyAwareCommandCommon,
     proxy_nic_config: ProxyAddrConfig,
@@ -505,8 +505,16 @@ fn initialize_stealth(
     #[allow(unused_variables)]
     let ebpf_guard = match cli.ebpf {
         true => {
+            let cargo_bin_dir = get_cargo_bin_dir();
+            if cargo_bin_dir.is_none() {
+                tracing::warn!(
+                    "No cargo bin directory could be detected, please set CARGO_HOME"
+                );
+                return None;
+            }
+            let bin_dir = cargo_bin_dir.unwrap();
             let mut bpf = aya::Ebpf::load(aya::include_bytes_aligned!(
-                concat!(get_cargo_bin_dir(), "/lueur-ebpf")
+                concat!(bin_dir.to_string(), "/lueur-ebpf")
             ))
             .unwrap();
 
@@ -530,7 +538,7 @@ fn initialize_stealth(
     ebpf_guard
 }
 
-#[cfg(all(target_os = "linux", feature = "stealth"))]
+#[cfg(all(target_os = "linux", feature = "stealth_auto_build"))]
 fn get_cargo_bin_dir() -> Option<PathBuf> {
     // Try to read CARGO_HOME first.
     if let Ok(cargo_home) = env::var("CARGO_HOME") {
