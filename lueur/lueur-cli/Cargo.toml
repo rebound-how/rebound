@@ -80,7 +80,7 @@ aya-log-ebpf = { version = "0.1.1", optional = true }
 aya = { version = "0.13.1", optional = true }
 aya-log = { version = "0.2.1", optional = true }
 nix = { version = "0.29.0", features = ["net"], optional = true }
-lueur-ebpf-program = { version = "0.1.17", optional = true }
+lueur-ebpf-program = { version = "0.1.15", optional = true }
 
 [build-dependencies]
 anyhow = { workspace = true }
