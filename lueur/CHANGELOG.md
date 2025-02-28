@@ -1,7 +1,14 @@
+## [0.1.39] - 2025-02-28
+
+### Changed
+
+- Update CHANGELOG.md for 0.1.38
+
 ## [0.1.38] - 2025-02-28
 
 ### Changed
 
+- Trying a different route to release crates
 - Update CHANGELOG.md for 0.1.37
 
 ## [0.1.37] - 2025-02-28
