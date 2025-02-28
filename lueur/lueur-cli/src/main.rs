@@ -513,8 +513,10 @@ fn initialize_stealth(
                 return None;
             }
             let bin_dir = cargo_bin_dir.unwrap();
+            let programs_path = bin_dir.join("/lueur-ebpf");
+            
             let mut bpf = aya::Ebpf::load(aya::include_bytes_aligned!(
-                concat!(bin_dir.to_string(), "/lueur-ebpf")
+                programs_path.as_os_str()
             ))
             .unwrap();
 
