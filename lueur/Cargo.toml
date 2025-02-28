@@ -33,3 +33,6 @@ panic = "abort"
 [profile.release.package.lueur-ebpf-programs]
 codegen-units = 1
 debug = 2
+
+[patch.crates-io]
+lueur-ebpf-programs = { path = "./lueur-ebpf-programs" }
