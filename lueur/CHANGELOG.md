@@ -1,7 +1,14 @@
+## [0.1.37] - 2025-02-28
+
+### Changed
+
+- Update CHANGELOG.md for 0.1.36
+
 ## [0.1.36] - 2025-02-28
 
 ### Changed
 
+- Don't lock
 - Update CHANGELOG.md for 0.1.35
 
 ## [0.1.35] - 2025-02-28
