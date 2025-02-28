@@ -1,7 +1,20 @@
-## [0.1.34] - 2025-02-27
+## [0.1.36] - 2025-02-28
 
 ### Changed
 
+- Update CHANGELOG.md for 0.1.35
+
+## [0.1.35] - 2025-02-28
+
+### Changed
+
+- Keep it simple
+
+## [0.1.34] - 2025-02-28
+
+### Changed
+
+- Keep it simple
 - Update CHANGELOG.md for 0.1.33
 
 ## [0.1.33] - 2025-02-27
