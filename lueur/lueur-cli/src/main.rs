@@ -115,7 +115,17 @@ async fn main() -> Result<()> {
                 task::spawn(handle_displayable_events(receiver));
 
             let proxy_nic_config = get_proxy_address(&options.common);
+            
+            #[cfg(all(target_os = "linux", feature = "stealth"))]
+            {
+                initialize_stealth(&options.common, &proxy_nic_config);
+            }
 
+            #[cfg(all(target_os = "linux", feature = "stealth_auto_build"))]
+            {
+                initialize_stealth(&options.common, &proxy_nic_config);
+            }
+            
             let app_state = initialize_proxy(
                 &options.common,
                 &proxy_nic_config,
@@ -498,7 +508,7 @@ fn demo_prelude(demo_address: String) {
 #[cfg(all(target_os = "linux", feature = "stealth_auto_build"))]
 fn initialize_stealth(
     cli: &ProxyAwareCommandCommon,
-    proxy_nic_config: ProxyAddrConfig,
+    proxy_nic_config: &ProxyAddrConfig,
 ) -> Option<Ebpf> {
     let upstream_hosts = cli.upstream_hosts.clone();
 
@@ -533,22 +543,24 @@ fn initialize_stealth(
 #[cfg(all(target_os = "linux", feature = "stealth"))]
 fn initialize_stealth(
     cli: &ProxyAwareCommandCommon,
-    proxy_nic_config: ProxyAddrConfig,
+    proxy_nic_config: &ProxyAddrConfig,
 ) -> Option<Ebpf> {
     let upstream_hosts = cli.upstream_hosts.clone();
 
     #[allow(unused_variables)]
     let ebpf_guard = match cli.ebpf {
         true => {
-            let cargo_bin_dir = get_cargo_bin_dir();
+            let cargo_bin_dir = get_cargo_bin_dir(&cli);
             if cargo_bin_dir.is_none() {
                 tracing::warn!(
                     "No cargo bin directory could be detected, please set CARGO_HOME"
                 );
                 return None;
             }
+            tracing::info!("Loading ebpf programs from bin directory {:?}", cargo_bin_dir);
+            
             let bin_dir = cargo_bin_dir.unwrap();
-            let programs_path = bin_dir.join("/lueur-ebpf");
+            let programs_path = bin_dir.join("lueur-ebpf");
             if !programs_path.exists() {
                 tracing::error!(
                     "Missing the lueur ebpf programs. Please install them."
@@ -581,9 +593,11 @@ fn initialize_stealth(
 }
 
 #[cfg(all(target_os = "linux", feature = "stealth"))]
-fn get_cargo_bin_dir() -> Option<PathBuf> {
-    // Try to read CARGO_HOME first.
-    if let Ok(cargo_home) = env::var("CARGO_HOME") {
+fn get_cargo_bin_dir(cli: &ProxyAwareCommandCommon) -> Option<PathBuf> {
+    if let Some(programs_dir) = &cli.ebpf_programs_dir {
+        let path = PathBuf::from(programs_dir);
+        return Some(path);
+    } else if let Ok(cargo_home) = env::var("CARGO_HOME") {
         let mut path = PathBuf::from(cargo_home);
         path.push("bin");
         return Some(path);

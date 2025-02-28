@@ -70,6 +70,16 @@ pub struct ProxyAwareCommandCommon {
     )]
     pub iface: Option<String>,
 
+    #[cfg(all(target_os = "linux", feature = "stealth"))]
+    /// EBpf programs directory
+    #[arg(
+        help_heading = "Stealth Options",
+        long = "ebpf-programs-dir",
+        help = "Directory containing the lueur ebpf programs.",
+        value_parser
+    )]
+    pub ebpf_programs_dir: Option<String>,
+
     /// gRPC plugin addresses to apply (can specify multiple)
     #[arg(
         help_heading = "Remote Plugins Options",
