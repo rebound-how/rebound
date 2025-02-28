@@ -56,6 +56,7 @@ jobs:
           title: lueur $tag
           branch: main
           token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
 
   upload-assets:
     needs: create-release
@@ -65,15 +66,27 @@ jobs:
         include:
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-24.04
+            artifact_name: lueur
+            asset_name: lueur-linux-aarch64
           - target: aarch64-apple-darwin
             os: macos-latest
+            artifact_name: lueur
+            asset_name: lueur-macos-aarch64
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-24.04
+            artifact_name: lueur
+            asset_name: lueur-linux-amd64
           - target: x86_64-apple-darwin
             os: macos-latest
+            artifact_name: lueur
+            asset_name: lueur-macos-amd64
           - target: universal-apple-darwin
             os: macos-latest
+            artifact_name: lueur
+            asset_name: lueur-macos-universal
           - os: windows-latest
+            artifact_name: lueur.exe
+            asset_name: lueur-windows-amd64
 
     name: Build workspace on ${{ matrix.os }} / ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
@@ -87,16 +100,16 @@ jobs:
           fetch-depth: 0
 
       - run: |
-          rustup toolchain install nightly --component rust-src
-          rustup update nightly
-          rustup override set nightly
+         rustup toolchain install nightly --component rust-src
+         rustup update nightly
+         rustup override set nightly
 
       - uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ matrix.target }}
-          workspaces: |
-            lueur
-
+         key: ${{ matrix.target }}
+         workspaces: |
+           lueur
+      
       - name: Install gRPC build dependencies (Linux)
         if: matrix.os == 'ubuntu-24.04'
         run: |
@@ -117,19 +130,18 @@ jobs:
         run: |
           brew install protobuf
 
-      - name: Build and Publish assets
-        uses: taiki-e/upload-rust-binary-action@v1
+      - name: Build
+        run: cargo build --release --locked
+        working-directory: ./lueur/lueur-cli
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
         with:
-          build-tool: cargo
-          manifest-path: ./lueur/lueur-cli/Cargo.toml
-          bin: lueur
-          include: ./lueur/LICENSE,./lueur/README.md,./lueur/CHANGELOG.md
-          leading-dir: true
-          bin-leading-dir: lueur
-          target: ${{ matrix.target }}
-          tar: unix
-          zip: windows
-          token: ${{ secrets.GITHUB_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: lueur/lueur-cli/target/release/${{ matrix.artifact_name }}
+          asset_name: ${{ matrix.asset_name }}
+          tag: ${{ github.ref }}
+          promote: true
 
       - name: Publish CLI assets to Cargo Registry
         uses: katyo/publish-crates@v2
