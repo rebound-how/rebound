@@ -549,6 +549,14 @@ fn initialize_stealth(
             }
             let bin_dir = cargo_bin_dir.unwrap();
             let programs_path = bin_dir.join("/lueur-ebpf");
+            if !programs_path.exists() {
+                tracing::error!(
+                    "Missing the lueur ebpf programs. Please install them."
+                );
+                return None;
+            }
+
+            tracing::info!("Loading ebpf programs from {:?}", programs_path);
             
             let mut bpf = aya::Ebpf::load_file(programs_path).unwrap();
 
