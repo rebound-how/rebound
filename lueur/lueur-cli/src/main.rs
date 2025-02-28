@@ -495,7 +495,7 @@ fn demo_prelude(demo_address: String) {
     );
 }
 
-#[cfg(all(target_os = "linux", feature = "stealth_auto_build"))]
+#[cfg(all(target_os = "linux", feature = "stealth"))]
 fn initialize_stealth(
     cli: &ProxyAwareCommandCommon,
     proxy_nic_config: ProxyAddrConfig,
@@ -538,7 +538,7 @@ fn initialize_stealth(
     ebpf_guard
 }
 
-#[cfg(all(target_os = "linux", feature = "stealth_auto_build"))]
+#[cfg(all(target_os = "linux", feature = "stealth"))]
 fn get_cargo_bin_dir() -> Option<PathBuf> {
     // Try to read CARGO_HOME first.
     if let Ok(cargo_home) = env::var("CARGO_HOME") {
