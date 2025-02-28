@@ -7,6 +7,11 @@ default-members = ["lueur-cli"]
 which = { version = "7.0.0", default-features = false }
 anyhow = { version = "1", default-features = false }
 
-[profile.release.package.lueur-ebpf-programs]
-debug = 2
+[profile.release]
+lto = true
 codegen-units = 1
+panic = "abort"
+
+[profile.release.package.lueur-ebpf-programs]
+codegen-units = 1
+debug = 2

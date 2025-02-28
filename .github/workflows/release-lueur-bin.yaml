@@ -139,7 +139,7 @@ jobs:
         with:
           promote: true
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: lueur/lueur-cli/target/release/${{ matrix.artifact_name }}
+          file: lueur/target/release/${{ matrix.artifact_name }}
           asset_name: ${{ matrix.asset_name }}
           tag: ${{ github.ref }}
 
