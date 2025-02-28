@@ -21,11 +21,13 @@ mod termui;
 mod types;
 
 use std::collections::HashMap;
+use std::env;
 use std::fs::File;
 use std::io::Write;
 use std::net::IpAddr;
 use std::net::SocketAddr;
 use std::path::Path;
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::time::Duration;
@@ -504,7 +506,7 @@ fn initialize_stealth(
     let ebpf_guard = match cli.ebpf {
         true => {
             let mut bpf = aya::Ebpf::load(aya::include_bytes_aligned!(
-                concat!(env!("OUT_DIR"), "/lueur-ebpf")
+                concat!(get_cargo_bin_dir(), "/lueur-ebpf")
             ))
             .unwrap();
 
@@ -527,6 +529,27 @@ fn initialize_stealth(
 
     ebpf_guard
 }
+
+#[cfg(all(target_os = "linux", feature = "stealth"))]
+fn get_cargo_bin_dir() -> Option<PathBuf> {
+    // Try to read CARGO_HOME first.
+    if let Ok(cargo_home) = env::var("CARGO_HOME") {
+        let mut path = PathBuf::from(cargo_home);
+        path.push("bin");
+        return Some(path);
+    }
+    // Fallback for Unix-like systems: use HOME/.cargo/bin
+    #[cfg(unix)]
+    {
+        if let Ok(home) = env::var("HOME") {
+            let mut path = PathBuf::from(home);
+            path.push(".cargo/bin");
+            return Some(path);
+        }
+    }
+    None
+}
+
 
 fn get_output_format_result(file_path: &str) -> Result<OutputFormat, String> {
     Path::new(file_path)
