@@ -87,7 +87,7 @@ which = { workspace = true }
 tonic-build = "0.12"
 
 [target.'cfg(target_os = "linux")'.build-dependencies]
-lueur-ebpf-programs = { path = "../lueur-ebpf-programs", version = "0.1.0" }
+lueur-ebpf-programs = { path = "../lueur-ebpf-programs", version = "0.1.1" }
 aya-build = "0.1.2"
 
 
