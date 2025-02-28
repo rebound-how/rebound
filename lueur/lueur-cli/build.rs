@@ -1,8 +1,8 @@
 use anyhow::Context as _;
-#[cfg(target_os = "linux")]
+#[cfg(all(target_os = "linux", feature = "stealth"))]
 use anyhow::anyhow;
 
-#[cfg(target_os = "linux")]
+#[cfg(all(target_os = "linux", feature = "stealth"))]
 use aya_build::cargo_metadata;
 
 fn main() -> anyhow::Result<()> {
@@ -14,7 +14,7 @@ fn main() -> anyhow::Result<()> {
         ])?;
 
     // Only build the eBPF package if we're on Linux.
-    #[cfg(target_os = "linux")]
+    #[cfg(all(target_os = "linux", feature = "stealth_auto_build"))]
     {
         let cargo_metadata::Metadata { packages, .. } =
             cargo_metadata::MetadataCommand::new()

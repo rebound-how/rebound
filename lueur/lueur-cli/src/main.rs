@@ -4,12 +4,13 @@
 mod cli;
 mod config;
 mod demo;
-#[cfg(target_os = "linux")]
+#[cfg(all(target_os = "linux", feature = "stealth"))]
 mod ebpf;
 mod errors;
 mod event;
 mod fault;
 mod logging;
+#[cfg(all(target_os = "linux", feature = "stealth"))]
 mod nic;
 mod plugin;
 mod proxy;
@@ -31,7 +32,7 @@ use std::time::Duration;
 use std::time::Instant;
 
 use anyhow::Result;
-#[cfg(target_os = "linux")]
+#[cfg(all(target_os = "linux", feature = "stealth"))]
 use aya::Ebpf;
 use clap::Parser;
 use cli::Cli;
@@ -363,9 +364,19 @@ struct AppState {
     pub proxy_address: String,
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(all(target_os = "linux", feature = "stealth"))]
 fn is_stealth(cli: &ProxyAwareCommandCommon) -> bool {
     cli.ebpf
+}
+
+#[cfg(all(not(target_os = "linux"), feature = "stealth"))]
+fn is_stealth(cli: &ProxyAwareCommandCommon) -> bool {
+    false
+}
+
+#[cfg(all(target_os = "linux", not(feature = "stealth")))]
+fn is_stealth(cli: &ProxyAwareCommandCommon) -> bool {
+    false
 }
 
 #[cfg(not(target_os = "linux"))]
@@ -482,7 +493,7 @@ fn demo_prelude(demo_address: String) {
     );
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(all(target_os = "linux", feature = "stealth"))]
 fn initialize_stealth(
     cli: &ProxyAwareCommandCommon,
     proxy_nic_config: ProxyAddrConfig,
@@ -532,7 +543,7 @@ fn get_output_format_result(file_path: &str) -> Result<OutputFormat, String> {
         })
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(all(target_os = "linux", feature = "stealth"))]
 fn get_proxy_address(common: &ProxyAwareCommandCommon) -> ProxyAddrConfig {
     let proxy_address = common.proxy_address.clone();
 
@@ -543,7 +554,62 @@ fn get_proxy_address(common: &ProxyAwareCommandCommon) -> ProxyAddrConfig {
     .unwrap()
 }
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(all(target_os = "linux", not(feature = "stealth")))]
+fn get_proxy_address(common: &ProxyAwareCommandCommon) -> ProxyAddrConfig {
+    let proxy_address = common.proxy_address.clone();
+
+    let addr = proxy_address.unwrap();
+    let socket_addr: SocketAddr = addr.parse().map_err(|e| {
+        format!("Invalid proxy address '{}': {}", addr, e)
+    }).unwrap();
+    let sock_proxy_ip = socket_addr.ip();
+    let proxy_port = socket_addr.port();
+
+    let proxy_ip = match sock_proxy_ip {
+        IpAddr::V4(ipv4) => ipv4,
+        IpAddr::V6(_ipv6) => {
+            panic!("IPV6 addresses are not supported for proxy");
+        }
+    };
+
+    ProxyAddrConfig {
+        proxy_ip: proxy_ip,
+        proxy_port: proxy_port,
+        proxy_ifindex: 0,
+        ebpf_ifindex: 0,
+        ebpf_ifname: "".to_string(),
+    }
+}
+
+#[cfg(all(feature = "stealth", not(target_os = "linux")))]
+fn get_proxy_address(common: &ProxyAwareCommandCommon) -> ProxyAddrConfig {
+    let proxy_address = common.proxy_address.clone();
+
+    let addr = proxy_address.unwrap();
+    let socket_addr: SocketAddr = addr.parse().map_err(|e| {
+        format!("Invalid proxy address '{}': {}", addr, e)
+    }).unwrap();
+    let sock_proxy_ip = socket_addr.ip();
+    let proxy_port = socket_addr.port();
+
+    let proxy_ip = match sock_proxy_ip {
+        IpAddr::V4(ipv4) => ipv4,
+        IpAddr::V6(_ipv6) => {
+            panic!("IPV6 addresses are not supported for proxy");
+        }
+    };
+
+    ProxyAddrConfig {
+        proxy_ip: proxy_ip,
+        proxy_port: proxy_port,
+        proxy_ifindex: 0,
+        ebpf_ifindex: 0,
+        ebpf_ifname: "".to_string(),
+    }
+}
+
+
+#[cfg(all(not(feature = "stealth"), not(target_os = "linux")))]
 fn get_proxy_address(common: &ProxyAwareCommandCommon) -> ProxyAddrConfig {
     let proxy_address = common.proxy_address.clone();
 

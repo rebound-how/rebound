@@ -1,4 +1,4 @@
-#![cfg(target_os = "linux")]
+#[cfg(all(target_os = "linux", feature = "stealth"))]
 
 use aya::Pod;
 use aya::maps::Array;

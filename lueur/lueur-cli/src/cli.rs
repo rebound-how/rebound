@@ -48,7 +48,7 @@ pub struct ProxyAwareCommandCommon {
     )]
     pub proxy_address: Option<String>,
 
-    #[cfg(target_os = "linux")]
+    #[cfg(all(target_os = "linux", feature = "stealth"))]
     /// Enable stealth mode (using ebpf)
     #[arg(
         help_heading = "Stealth Options",
@@ -59,7 +59,7 @@ pub struct ProxyAwareCommandCommon {
     )]
     pub ebpf: bool,
 
-    #[cfg(target_os = "linux")]
+    #[cfg(all(target_os = "linux", feature = "stealth"))]
     /// Enable ebpf interface
     #[arg(
         help_heading = "Stealth Options",
@@ -86,7 +86,6 @@ pub struct ProxyAwareCommandCommon {
         short,
         long = "upstream",
         help = "Host to proxy.",
-        requires_if("host", "ebpf"),
         value_parser
     )]
     pub upstream_hosts: Vec<String>,

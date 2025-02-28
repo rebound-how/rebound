@@ -1,4 +1,4 @@
-#![cfg(target_os = "linux")]
+#[cfg(all(target_os = "linux", feature = "stealth"))]
 
 use std::net::IpAddr;
 use std::net::Ipv4Addr;

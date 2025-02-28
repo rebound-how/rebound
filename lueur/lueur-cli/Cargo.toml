@@ -75,11 +75,11 @@ tracing = { version = "0.1.41", features = ["attributes"] }
 openssl = { version = "0.10.71", features = ["vendored"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
-aya-ebpf = "0.1.1"
-aya-log-ebpf = "0.1.1"
-aya = "0.13.1"
-aya-log = "0.2.1"
-nix = { version = "0.29.0", features = ["net"] }
+aya-ebpf = { version = "0.1.1", optional = true }
+aya-log-ebpf = { version = "0.1.1", optional = true }
+aya = { version = "0.13.1", optional = true }
+aya-log = { version = "0.2.1", optional = true }
+nix = { version = "0.29.0", features = ["net"], optional = true }
 
 [build-dependencies]
 anyhow = { workspace = true }
@@ -92,3 +92,17 @@ aya-build = "0.1.2"
 [[bin]]
 name = "lueur"
 path = "src/main.rs"
+
+[features]
+default = [
+]
+stealth = [
+    "aya-ebpf",
+    "aya-log-ebpf",
+    "aya",
+    "aya-log",
+    "nix",
+]
+stealth_auto_build = [
+    "stealth"
+]
