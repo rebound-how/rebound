@@ -3,6 +3,24 @@ resolver = "2"
 members = ["lueur-cli", "lueur-ebpf-programs"]
 default-members = ["lueur-cli"]
 
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license-file = "LICENSE"
+repository = "https://github.com/rebound-how/rebound" 
+documentation = "https://lueur.dev" 
+homepage = "https://lueur.dev"
+include = [
+  "build.rs",
+  "src/**/*",
+  "Cargo.toml",
+  "Cargo.lock",
+  "LICENSE*",
+  "README.md",
+]
+
+
 [workspace.dependencies]
 which = { version = "7.0.0", default-features = false }
 anyhow = { version = "1", default-features = false }

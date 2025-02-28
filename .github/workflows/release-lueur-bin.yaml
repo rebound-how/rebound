@@ -28,7 +28,6 @@ jobs:
           git checkout main
 
           nex_ver=$(git cliff --bumped-version -c lueur/cliff.toml)
-          echo $nex_ver
           commit_msg="chore(release): update CHANGELOG.md for ${nex_ver}"
 
           git-cliff \
@@ -116,9 +115,13 @@ jobs:
           sudo apt-get update
           sudo apt install -y protobuf-compiler libssl-dev
 
-      - name: Install bpf-linker
+      - name: Install bpf-linker (Linux)
         if: matrix.os == 'ubuntu-24.04'
         run: cargo install bpf-linker --git https://github.com/aya-rs/bpf-linker.git
+
+      #- name: Install bpf-linker (MacOSX)
+      #  if: matrix.os == 'macos-latest'
+      #  run: cargo install bpf-linker --git https://github.com/aya-rs/bpf-linker.git --no-default-features
 
       - name: Install gRPC build dependencies (Windows)
         if: matrix.os == 'windows-latest'
@@ -143,17 +146,10 @@ jobs:
           asset_name: ${{ matrix.asset_name }}
           tag: ${{ github.ref }}
 
-      - name: Publish CLI assets to Cargo Registry
-        uses: katyo/publish-crates@v2
-        with:
-          path: './lueur/lueur-cli'
-          registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-          ignore-unpublished-changes: true
-
-      - name: Publish ebpf assets to Cargo Registry
-        if: matrix.os == 'ubuntu-24.04'
-        uses: katyo/publish-crates@v2
-        with:
-          path: './lueur/lueur-ebpf-programs'
-          registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-          ignore-unpublished-changes: true
+      - name: Publish lueur CLI
+        working-directory: ./lueur/lueur-cli
+        run: |
+          cargo install cargo-release
+          cargo release --exclude lueur-ebpf-programs --token ${CRATES_TOKEN}
+        env:
+          CRATES_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}

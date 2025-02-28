@@ -1,15 +1,19 @@
 [package]
 name = "lueur-ebpf-programs"
-version = "0.1.0"
-edition = "2024"
 authors = ["Sylvain Hellegouarch <sylvain@lueur.dev>"]
 description = "Lueur CLI" 
 keywords = ["lueur", "ebpf"]
-license-file = "LICENSE" 
 readme = "README.md"
-repository = "https://github.com/lueurdev/lueur" 
-documentation = "https://github.com/lueurdev/lueur/blob/master/README.md" 
-homepage = "https://lueur.dev" 
+repository.workspace = true
+license-file.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+include.workspace = true
+version.workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs", "--generate-link-to-definition"]
 
 [dependencies]
 aya-ebpf = "0.1.1"
