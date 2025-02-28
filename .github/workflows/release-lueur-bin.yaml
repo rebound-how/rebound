@@ -131,7 +131,7 @@ jobs:
           brew install protobuf
 
       - name: Build
-        run: cargo build --release --locked
+        run: cargo build --release
         working-directory: ./lueur/lueur-cli
 
       - name: Upload binaries to release
