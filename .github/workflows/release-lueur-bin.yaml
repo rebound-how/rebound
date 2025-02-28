@@ -137,11 +137,11 @@ jobs:
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
+          promote: true
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: lueur/lueur-cli/target/release/${{ matrix.artifact_name }}
           asset_name: ${{ matrix.asset_name }}
           tag: ${{ github.ref }}
-          promote: true
 
       - name: Publish CLI assets to Cargo Registry
         uses: katyo/publish-crates@v2
