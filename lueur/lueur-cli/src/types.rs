@@ -14,9 +14,6 @@ use crate::errors::ScenarioError;
 pub struct ProxyAddrConfig {
     pub proxy_ip: Ipv4Addr,
     pub proxy_port: u16,
-    pub proxy_ifindex: u32,
-    pub ebpf_ifindex: u32,
-    pub ebpf_ifname: String,
 }
 
 impl ProxyAddrConfig {
@@ -32,19 +29,36 @@ impl fmt::Display for ProxyAddrConfig {
             "Proxy Configuration:\n\
              ---------------------\n\
              Proxy IP          : {}\n\
-             Proxy Port        : {}\n\
-             Proxy Ifindex     : {}\n\
-             eBPF Ifindex      : {}\n\
-             eBPF Interface Name: {}",
-            self.proxy_ip,
-            self.proxy_port,
-            self.proxy_ifindex,
-            self.ebpf_ifindex,
-            self.ebpf_ifname
+             Proxy Port        : {}",
+            self.proxy_ip, self.proxy_port
         )
     }
 }
 
+pub struct EbpfProxyAddrConfig {
+    pub ip: Ipv4Addr,
+    pub port: u16,
+    pub ifname: String,
+}
+
+impl EbpfProxyAddrConfig {
+    pub fn proxy_address(&self) -> String {
+        format!("{}:{}", self.ip, self.port)
+    }
+}
+
+impl fmt::Display for EbpfProxyAddrConfig {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Ebpf Proxy Configuration:\n\
+             ---------------------\n\
+             Proxy IP          : {}\n\
+             Proxy Port        : {}",
+            self.ip, self.port
+        )
+    }
+}
 
 #[derive(clap::ValueEnum, Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub enum LatencyDistribution {
@@ -129,14 +143,13 @@ impl fmt::Display for Direction {
     }
 }
 
-
 #[derive(
     clap::ValueEnum, Clone, Debug, Serialize, Deserialize, Eq, PartialEq,
 )]
 #[serde(rename_all = "lowercase")]
 pub enum StreamSide {
     Client,
-    Server
+    Server,
 }
 
 impl Default for StreamSide {
@@ -250,13 +263,13 @@ pub enum FaultConfiguration {
     },
     PacketLoss {
         direction: String,
-        side: Option<StreamSide>
+        side: Option<StreamSide>,
     },
     Bandwidth {
         rate: u32,
         unit: BandwidthUnit,
         direction: String,
-        side: Option<StreamSide>
+        side: Option<StreamSide>,
     },
     Jitter {
         jitter_amplitude: f64,
@@ -270,8 +283,8 @@ pub enum FaultConfiguration {
     HttpError {
         status_code: u16,
         body: Option<String>,
-        probability: f64
-    }
+        probability: f64,
+    },
 }
 
 impl FaultConfiguration {
@@ -320,10 +333,7 @@ impl FaultConfiguration {
 
                 Ok(FaultConfig::Latency(settings))
             }
-            FaultConfiguration::PacketLoss {
-                direction,
-                side
-            } => {
+            FaultConfiguration::PacketLoss { direction, side } => {
                 let settings = config::PacketLossSettings {
                     direction: Direction::from_str(direction).unwrap(),
                     side: side.clone().unwrap_or_default(),
@@ -351,21 +361,22 @@ impl FaultConfiguration {
                 };
 
                 Ok(FaultConfig::Dns(settings))
-            },
+            }
             FaultConfiguration::HttpError {
-                status_code, body, probability 
+                status_code,
+                body,
+                probability,
             } => {
                 let settings = config::HttpResponseSettings {
                     http_response_status_code: *status_code,
                     http_response_body: body.clone(),
-                    http_response_trigger_probability: *probability
+                    http_response_trigger_probability: *probability,
                 };
 
                 Ok(FaultConfig::HttpError(settings))
             }
         }
     }
-
 }
 
 pub struct ConnectRequest {
@@ -392,7 +403,10 @@ impl fmt::Display for FaultConfiguration {
                 let mut details = Vec::new();
 
                 details.push(format!("Global: {}", global.unwrap_or(true)));
-                details.push(format!("Side: {}", side.clone().unwrap_or_default()));
+                details.push(format!(
+                    "Side: {}",
+                    side.clone().unwrap_or_default()
+                ));
 
                 if let Some(dist) = distribution {
                     details.push(format!("Distribution: {}", dist));
@@ -427,15 +441,8 @@ impl fmt::Display for FaultConfiguration {
 
                 Ok(())
             }
-            FaultConfiguration::PacketLoss {
-                direction,
-                side: _,
-            } => {
-                write!(
-                    f,
-                    "Packet Loss Fault - Direction: {}",
-                    direction
-                )
+            FaultConfiguration::PacketLoss { direction, side: _ } => {
+                write!(f, "Packet Loss Fault - Direction: {}", direction)
             }
             FaultConfiguration::Bandwidth { rate, unit, direction, side } => {
                 write!(
@@ -464,9 +471,11 @@ impl fmt::Display for FaultConfiguration {
                     "DNS Fault - Rate: {}%, Direction: {}",
                     dns_rate, direction
                 )
-            },
+            }
             FaultConfiguration::HttpError {
-                status_code, body, probability 
+                status_code,
+                body,
+                probability,
             } => {
                 write!(
                     f,

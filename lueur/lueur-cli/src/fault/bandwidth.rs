@@ -20,18 +20,11 @@ use pin_project::pin_project;
 use reqwest::Body;
 use reqwest::ClientBuilder;
 use reqwest::Request;
-use tokio::io::split;
 use tokio::io::AsyncRead;
 use tokio::io::AsyncWrite;
 use tokio::io::ReadBuf;
+use tokio::io::split;
 use tokio_util::io::ReaderStream;
-
-use crate::config::BandwidthSettings;
-use crate::errors::ProxyError;
-use crate::event::FaultEvent;
-use crate::event::ProxyTaskEvent;
-use crate::types::Direction;
-use crate::types::StreamSide;
 
 use super::Bidirectional;
 use super::BidirectionalReadHalf;
@@ -39,6 +32,12 @@ use super::BidirectionalWriteHalf;
 use super::DelayWrapper;
 use super::FaultInjector;
 use super::FutureDelay;
+use crate::config::BandwidthSettings;
+use crate::errors::ProxyError;
+use crate::event::FaultEvent;
+use crate::event::ProxyTaskEvent;
+use crate::types::Direction;
+use crate::types::StreamSide;
 
 type Limiter = RateLimiter<NotKeyed, InMemoryState, DefaultClock>;
 
@@ -181,13 +180,12 @@ impl<S: AsyncWrite + Unpin> AsyncWrite for BandwidthLimitedWrite<S> {
                         Poll::Ready(Ok(written)) => {
                             // Emit event
                             if let Some(event) = &*this.event {
-                                let _ = event.on_applied(
-                                    FaultEvent::Bandwidth {
+                                let _ =
+                                    event.on_applied(FaultEvent::Bandwidth {
                                         direction: Direction::Egress,
                                         side: this.side.clone(),
                                         bps: Some(written),
-                                    }
-                                );
+                                    });
                             }
                             Poll::Ready(Ok(written))
                         }
@@ -199,10 +197,10 @@ impl<S: AsyncWrite + Unpin> AsyncWrite for BandwidthLimitedWrite<S> {
                     // Rate limit exceeded
                     if this.delay.is_none() {
                         let limiter_clone = limiter.clone();
-                        let delay_future = async move {
-                            limiter_clone.until_ready().await
-                        };
-                        *this.delay = Some(Box::pin(DelayWrapper::new(delay_future)));
+                        let delay_future =
+                            async move { limiter_clone.until_ready().await };
+                        *this.delay =
+                            Some(Box::pin(DelayWrapper::new(delay_future)));
                     }
 
                     if let Some(ref mut delay) = *this.delay {
@@ -284,13 +282,12 @@ impl<S: AsyncRead + Unpin> AsyncRead for BandwidthLimitedRead<S> {
                             buf.advance(filled);
 
                             if let Some(event) = &*this.event {
-                                let _ = event.on_applied(
-                                    FaultEvent::Bandwidth {
+                                let _ =
+                                    event.on_applied(FaultEvent::Bandwidth {
                                         direction: Direction::Ingress,
                                         side: this.side.clone(),
-                                        bps: Some(filled)
-                                    }
-                                );
+                                        bps: Some(filled),
+                                    });
                             }
 
                             Poll::Ready(Ok(()))
@@ -306,7 +303,8 @@ impl<S: AsyncRead + Unpin> AsyncRead for BandwidthLimitedRead<S> {
                         let delay_future = async move {
                             limiter_clone.until_ready().await;
                         };
-                        *this.delay = Some(Box::pin(DelayWrapper::new(delay_future)));
+                        *this.delay =
+                            Some(Box::pin(DelayWrapper::new(delay_future)));
                     }
 
                     if let Some(ref mut delay) = *this.delay {
@@ -425,9 +423,12 @@ impl FaultInjector for BandwidthLimitFaultInjector {
         let (read_half, write_half) = split(stream);
 
         let direction = self.settings.direction.clone();
-    
-        let _ = event
-            .with_fault(FaultEvent::Bandwidth { direction: direction.clone(), side: self.settings.side.clone(), bps: None });
+
+        let _ = event.with_fault(FaultEvent::Bandwidth {
+            direction: direction.clone(),
+            side: self.settings.side.clone(),
+            bps: None,
+        });
 
         // Wrap the read half if ingress or both directions are specified
         let limited_read: Box<dyn BidirectionalReadHalf> =
@@ -484,8 +485,11 @@ impl FaultInjector for BandwidthLimitFaultInjector {
         request: Request,
         event: Box<dyn ProxyTaskEvent>,
     ) -> Result<Request, ProxyError> {
-        let _ = event
-            .with_fault(FaultEvent::Bandwidth { direction: Direction::Egress, side: StreamSide::Client, bps: None });
+        let _ = event.with_fault(FaultEvent::Bandwidth {
+            direction: Direction::Egress,
+            side: StreamSide::Client,
+            bps: None,
+        });
 
         let original_body = request.body();
         if let Some(body) = original_body {
@@ -524,9 +528,11 @@ impl FaultInjector for BandwidthLimitFaultInjector {
         resp: http::Response<Vec<u8>>,
         event: Box<dyn ProxyTaskEvent>,
     ) -> Result<http::Response<Vec<u8>>, ProxyError> {
-        let _ = event.with_fault(
-            FaultEvent::Bandwidth { direction: Direction::Ingress, side: StreamSide::Server, bps: None }
-        );
+        let _ = event.with_fault(FaultEvent::Bandwidth {
+            direction: Direction::Ingress,
+            side: StreamSide::Server,
+            bps: None,
+        });
 
         let (parts, body) = resp.into_parts();
         let version = parts.version;

@@ -4,14 +4,15 @@
 mod cli;
 mod config;
 mod demo;
-#[cfg(all(target_os = "linux", feature = "stealth"))]
+#[cfg(all(
+    target_os = "linux",
+    any(feature = "stealth", feature = "stealth-auto-build")
+))]
 mod ebpf;
 mod errors;
 mod event;
 mod fault;
 mod logging;
-#[cfg(all(target_os = "linux", feature = "stealth"))]
-mod nic;
 mod plugin;
 mod proxy;
 mod reporting;
@@ -34,7 +35,10 @@ use std::time::Duration;
 use std::time::Instant;
 
 use anyhow::Result;
-#[cfg(all(target_os = "linux", feature = "stealth"))]
+#[cfg(all(
+    target_os = "linux",
+    any(feature = "stealth", feature = "stealth-auto-build")
+))]
 use aya::Ebpf;
 use clap::Parser;
 use cli::Cli;
@@ -60,6 +64,7 @@ use logging::shutdown_tracer;
 use opentelemetry_sdk::metrics::SdkMeterProvider;
 use opentelemetry_sdk::trace::TracerProvider;
 use proxy::ProxyState;
+use proxy::run_ebpf_proxy;
 use proxy::run_proxy;
 use reporting::OutputFormat;
 use reporting::Report;
@@ -84,6 +89,7 @@ use tokio::sync::watch;
 use tokio::task;
 use tokio_stream::StreamExt;
 use tracing::error;
+use types::EbpfProxyAddrConfig;
 use types::ProxyAddrConfig;
 use url::Url;
 
@@ -91,13 +97,12 @@ use url::Url;
 async fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    let (_file_guard, _stdout_guard, log_layers) = setup_logging(
-        cli.log_file, cli.log_stdout, cli.log_level
-    ).unwrap();
+    let (_file_guard, _stdout_guard, log_layers) =
+        setup_logging(cli.log_file, cli.log_stdout, cli.log_level).unwrap();
 
     let mut meter_provider: Option<SdkMeterProvider> = None;
     let mut tracer_provider: Option<TracerProvider> = None;
-    
+
     if cli.with_otel {
         meter_provider = Some(init_meter_provider());
         tracer_provider = Some(init_tracer_provider());
@@ -105,9 +110,30 @@ async fn main() -> Result<()> {
 
     let _ = init_subscriber(log_layers, &tracer_provider, &meter_provider);
 
-    let (shutdown_tx, shutdown_rx) = broadcast::channel::<()>(1); // Capacity of 1
-
+    let (proxy_shutdown_tx, proxy_shutdown_rx) = broadcast::channel::<()>(1);
     let (task_manager, receiver) = TaskManager::new(1000);
+    let (config_tx, config_rx) = watch::channel(ProxyConfig::default());
+
+    #[cfg(all(
+        target_os = "linux",
+        any(feature = "stealth", feature = "stealth-auto-build")
+    ))]
+    let mut _guard: Option<Ebpf> = None;
+
+    #[cfg(all(
+        target_os = "linux",
+        any(feature = "stealth", feature = "stealth-auto-build")
+    ))]
+    let mut _ebpf_proxy_guard: task::JoinHandle<
+        std::result::Result<(), ProxyError>,
+    >;
+
+    #[cfg(all(
+        target_os = "linux",
+        any(feature = "stealth", feature = "stealth-auto-build")
+    ))]
+    let (ebpf_proxy_shutdown_tx, ebpf_proxy_shutdown_rx) =
+        broadcast::channel::<()>(1);
 
     match &cli.command {
         Commands::Run { options } => {
@@ -115,39 +141,66 @@ async fn main() -> Result<()> {
                 task::spawn(handle_displayable_events(receiver));
 
             let proxy_nic_config = get_proxy_address(&options.common);
-            
-            #[cfg(all(target_os = "linux", feature = "stealth"))]
-            {
-                initialize_stealth(&options.common, &proxy_nic_config);
-            }
 
-            #[cfg(all(target_os = "linux", feature = "stealth_auto_build"))]
-            {
-                initialize_stealth(&options.common, &proxy_nic_config);
-            }
-            
-            let app_state = initialize_proxy(
-                &options.common,
+            let app_state = initialize_application_state(&options.common).await;
+
+            let _proxy_guard = initialize_proxy(
                 &proxy_nic_config,
-                shutdown_rx,
+                app_state.clone(),
+                proxy_shutdown_rx,
+                config_rx.clone(),
                 task_manager.clone(),
             )
             .await;
 
+            #[cfg(all(
+                target_os = "linux",
+                any(feature = "stealth", feature = "stealth-auto-build")
+            ))]
+            {
+                if options.common.ebpf {
+                    if options.common.ebpf_process_name.is_none() {
+                        tracing::error!(
+                            "In stealth mode, you must pass a process name"
+                        );
+                    } else {
+                        let ebpf_proxy_config =
+                            ebpf::get_ebpf_proxy(&proxy_nic_config).unwrap();
+                        _ebpf_proxy_guard = initialize_ebpf_proxy(
+                            &ebpf_proxy_config,
+                            app_state.clone(),
+                            ebpf_proxy_shutdown_rx,
+                            config_rx.clone(),
+                            task_manager.clone(),
+                        )
+                        .await
+                        .unwrap();
+
+                        _guard = initialize_stealth(
+                            &options.common,
+                            &ebpf_proxy_config,
+                        );
+                    }
+                }
+            }
+
             let cmd_config: ProxyConfig = options.into();
 
-            if app_state.config_tx.send(cmd_config).is_err() {
+            if config_tx.send(cmd_config).is_err() {
                 error!("Proxy configuration listener has been shut down.");
             }
 
-            proxy_prelude(app_state.proxy_address);
+            proxy_prelude(proxy_nic_config.proxy_address());
 
-            tokio::signal::ctrl_c().await.map_err(|e| {
-                ProxyError::Internal(format!(
-                    "Failed to listen for shutdown signal: {}",
-                    e
-                ))
-            }).unwrap();
+            tokio::signal::ctrl_c()
+                .await
+                .map_err(|e| {
+                    ProxyError::Internal(format!(
+                        "Failed to listen for shutdown signal: {}",
+                        e
+                    ))
+                })
+                .unwrap();
 
             tracing::info!("Shutdown signal received. Initiating shutdown.");
         }
@@ -169,10 +222,13 @@ async fn main() -> Result<()> {
 
                 let m = MultiProgress::new();
 
-                let app_state = initialize_proxy(
-                    common,
+                let app_state = initialize_application_state(&common).await;
+
+                let _proxy_guard = initialize_proxy(
                     &proxy_nic_config,
-                    shutdown_rx,
+                    app_state.clone(),
+                    proxy_shutdown_rx,
+                    config_rx,
                     task_manager.clone(),
                 )
                 .await;
@@ -233,6 +289,8 @@ async fn main() -> Result<()> {
 
                                 for i in items {
                                     let report = execute_item(
+                                        proxy_nic_config.proxy_address(),
+                                        config_tx.clone(),
                                         i,
                                         app_state.clone(),
                                         event_manager.clone(),
@@ -285,7 +343,11 @@ async fn main() -> Result<()> {
                                         None => progress_state = format!("{} {}", progress_state, "▮".to_string().grey0())
                                     }
 
-                                    results.push(ReportItem::new(title.clone(), metrics, report));
+                                    results.push(ReportItem::new(
+                                        title.clone(),
+                                        metrics,
+                                        report,
+                                    ));
 
                                     pb.inc(1);
                                     pb.set_message(format!(
@@ -348,9 +410,20 @@ async fn main() -> Result<()> {
         },
     }
 
-    match shutdown_tx.send(()) {
+    match proxy_shutdown_tx.send(()) {
         Ok(_) => tracing::debug!("Shutdown notified."),
         Err(e) => tracing::warn!("Failed to notify shutdown {}", e),
+    }
+
+    #[cfg(all(
+        target_os = "linux",
+        any(feature = "stealth", feature = "stealth-auto-build")
+    ))]
+    {
+        match ebpf_proxy_shutdown_tx.send(()) {
+            Ok(_) => tracing::debug!("Shutdown of ebpf notified."),
+            Err(e) => tracing::warn!("Failed to notify ebpf shutdown {}", e),
+        }
     }
 
     drop(task_manager);
@@ -372,8 +445,6 @@ fn map_faults(
 #[derive(Debug, Clone)]
 struct AppState {
     pub proxy_state: Arc<ProxyState>,
-    pub config_tx: watch::Sender<ProxyConfig>,
-    pub proxy_address: String,
 }
 
 #[cfg(all(target_os = "linux", feature = "stealth"))]
@@ -396,38 +467,41 @@ fn is_stealth(cli: &ProxyAwareCommandCommon) -> bool {
     false
 }
 
-async fn initialize_proxy(
+async fn initialize_application_state(
     cli: &ProxyAwareCommandCommon,
-    proxy_nic_config: &ProxyAddrConfig,
-    shutdown_rx: broadcast::Receiver<()>,
-    task_manager: Arc<TaskManager>,
 ) -> AppState {
     let stealth_mode = is_stealth(&cli);
 
     // Initialize shared state with empty configuration
     let state = Arc::new(ProxyState::new(stealth_mode));
 
-    // Create a watch channel for configuration updates
-    let (config_tx, config_rx) = watch::channel(ProxyConfig::default());
-
-    // Create a oneshot channel for readiness signaling
-    let (readiness_tx, readiness_rx) = oneshot::channel::<()>();
+    //let rpc_plugin = load_remote_plugins(cli.grpc_plugins.clone()).await;
+    //state.update_plugins(vec![rpc_plugin]).await;
 
     let upstream_hosts = cli.upstream_hosts.clone();
     let upstreams: Vec<String> =
         upstream_hosts.iter().map(|h| upstream_to_addr(h).unwrap()).collect();
 
-    let proxy_state = state.clone();
-    let proxy_address = proxy_nic_config.proxy_address();
-
-    //let rpc_plugin = load_remote_plugins(cli.grpc_plugins.clone()).await;
-    //state.update_plugins(vec![rpc_plugin]).await;
-
     state.update_upstream_hosts(upstreams).await;
 
-    tokio::spawn(run_proxy(
+    AppState { proxy_state: state }
+}
+
+async fn initialize_proxy(
+    proxy_nic_config: &ProxyAddrConfig,
+    state: AppState,
+    shutdown_rx: broadcast::Receiver<()>,
+    config_rx: watch::Receiver<ProxyConfig>,
+    task_manager: Arc<TaskManager>,
+) -> Result<task::JoinHandle<std::result::Result<(), ProxyError>>> {
+    let proxy_address = proxy_nic_config.proxy_address();
+
+    // Create a oneshot channel for readiness signaling
+    let (readiness_tx, readiness_rx) = oneshot::channel::<()>();
+
+    let handle = tokio::spawn(run_proxy(
         proxy_address.clone(),
-        proxy_state,
+        state.proxy_state,
         shutdown_rx,
         readiness_tx,
         config_rx,
@@ -444,7 +518,41 @@ async fn initialize_proxy(
 
     tracing::info!("Proxy server is listening on {}", proxy_address);
 
-    AppState { proxy_address, proxy_state: state, config_tx }
+    Ok(handle)
+}
+
+async fn initialize_ebpf_proxy(
+    ebpf_proxy_config: &EbpfProxyAddrConfig,
+    state: AppState,
+    shutdown_rx: broadcast::Receiver<()>,
+    config_rx: watch::Receiver<ProxyConfig>,
+    task_manager: Arc<TaskManager>,
+) -> Result<task::JoinHandle<std::result::Result<(), ProxyError>>> {
+    let proxy_address = ebpf_proxy_config.proxy_address();
+
+    // Create a oneshot channel for readiness signaling
+    let (readiness_tx, readiness_rx) = oneshot::channel::<()>();
+
+    let handle = tokio::spawn(run_ebpf_proxy(
+        proxy_address.clone(),
+        state.proxy_state,
+        shutdown_rx,
+        readiness_tx,
+        config_rx,
+        task_manager,
+    ));
+
+    // Wait for the proxy to signal readiness
+    let _ = readiness_rx.await.map_err(|e| {
+        ProxyError::Internal(format!(
+            "Failed to receive readiness signal: {}",
+            e
+        ))
+    });
+
+    tracing::info!("Proxy server is listening on {}", proxy_address);
+
+    Ok(handle)
 }
 
 fn upstream_to_addr(
@@ -505,10 +613,10 @@ fn demo_prelude(demo_address: String) {
     );
 }
 
-#[cfg(all(target_os = "linux", feature = "stealth_auto_build"))]
+#[cfg(all(target_os = "linux", feature = "stealth-auto-build"))]
 fn initialize_stealth(
     cli: &ProxyAwareCommandCommon,
-    proxy_nic_config: &ProxyAddrConfig,
+    ebpf_proxy_config: &EbpfProxyAddrConfig,
 ) -> Option<Ebpf> {
     let upstream_hosts = cli.upstream_hosts.clone();
 
@@ -524,11 +632,7 @@ fn initialize_stealth(
                 tracing::warn!("failed to initialize eBPF logger: {}", e);
             }
 
-            let _ = ebpf::install_and_run(
-                &mut bpf,
-                &proxy_nic_config,
-                upstream_hosts.clone(),
-            );
+            let _ = ebpf::install_and_run(&mut bpf, &ebpf_proxy_config);
 
             tracing::info!("Ebpf has been loaded");
 
@@ -543,8 +647,10 @@ fn initialize_stealth(
 #[cfg(all(target_os = "linux", feature = "stealth"))]
 fn initialize_stealth(
     cli: &ProxyAwareCommandCommon,
-    proxy_nic_config: &ProxyAddrConfig,
+    ebpf_proxy_config: &EbpfProxyAddrConfig,
 ) -> Option<Ebpf> {
+    let proc_name = cli.ebpf_process_name.clone().unwrap();
+
     let upstream_hosts = cli.upstream_hosts.clone();
 
     #[allow(unused_variables)]
@@ -557,8 +663,11 @@ fn initialize_stealth(
                 );
                 return None;
             }
-            tracing::info!("Loading ebpf programs from bin directory {:?}", cargo_bin_dir);
-            
+            tracing::info!(
+                "Loading ebpf programs from bin directory {:?}",
+                cargo_bin_dir
+            );
+
             let bin_dir = cargo_bin_dir.unwrap();
             let programs_path = bin_dir.join("lueur-ebpf");
             if !programs_path.exists() {
@@ -569,18 +678,15 @@ fn initialize_stealth(
             }
 
             tracing::info!("Loading ebpf programs from {:?}", programs_path);
-            
+
             let mut bpf = aya::Ebpf::load_file(programs_path).unwrap();
 
             if let Err(e) = aya_log::EbpfLogger::init(&mut bpf) {
                 tracing::warn!("failed to initialize eBPF logger: {}", e);
             }
 
-            let _ = ebpf::install_and_run(
-                &mut bpf,
-                &proxy_nic_config,
-                upstream_hosts.clone(),
-            );
+            let _ =
+                ebpf::install_and_run(&mut bpf, &ebpf_proxy_config, proc_name);
 
             tracing::info!("Ebpf has been loaded");
 
@@ -614,7 +720,6 @@ fn get_cargo_bin_dir(cli: &ProxyAwareCommandCommon) -> Option<PathBuf> {
     None
 }
 
-
 fn get_output_format_result(file_path: &str) -> Result<OutputFormat, String> {
     Path::new(file_path)
         .extension()
@@ -630,25 +735,14 @@ fn get_output_format_result(file_path: &str) -> Result<OutputFormat, String> {
         })
 }
 
-#[cfg(all(target_os = "linux", feature = "stealth"))]
 fn get_proxy_address(common: &ProxyAwareCommandCommon) -> ProxyAddrConfig {
     let proxy_address = common.proxy_address.clone();
 
-    nic::determine_proxy_and_ebpf_config(
-        proxy_address,
-        common.iface.clone(),
-    )
-    .unwrap()
-}
-
-#[cfg(all(target_os = "linux", not(feature = "stealth")))]
-fn get_proxy_address(common: &ProxyAwareCommandCommon) -> ProxyAddrConfig {
-    let proxy_address = common.proxy_address.clone();
-
-    let addr = proxy_address.unwrap();
-    let socket_addr: SocketAddr = addr.parse().map_err(|e| {
-        format!("Invalid proxy address '{}': {}", addr, e)
-    }).unwrap();
+    let addr = proxy_address.unwrap_or("127.0.0.1:8080".to_string());
+    let socket_addr: SocketAddr = addr
+        .parse()
+        .map_err(|e| format!("Invalid proxy address '{}': {}", addr, e))
+        .unwrap();
     let sock_proxy_ip = socket_addr.ip();
     let proxy_port = socket_addr.port();
 
@@ -659,67 +753,5 @@ fn get_proxy_address(common: &ProxyAwareCommandCommon) -> ProxyAddrConfig {
         }
     };
 
-    ProxyAddrConfig {
-        proxy_ip: proxy_ip,
-        proxy_port: proxy_port,
-        proxy_ifindex: 0,
-        ebpf_ifindex: 0,
-        ebpf_ifname: "".to_string(),
-    }
+    ProxyAddrConfig { proxy_ip, proxy_port }
 }
-
-#[cfg(all(feature = "stealth", not(target_os = "linux")))]
-fn get_proxy_address(common: &ProxyAwareCommandCommon) -> ProxyAddrConfig {
-    let proxy_address = common.proxy_address.clone();
-
-    let addr = proxy_address.unwrap();
-    let socket_addr: SocketAddr = addr.parse().map_err(|e| {
-        format!("Invalid proxy address '{}': {}", addr, e)
-    }).unwrap();
-    let sock_proxy_ip = socket_addr.ip();
-    let proxy_port = socket_addr.port();
-
-    let proxy_ip = match sock_proxy_ip {
-        IpAddr::V4(ipv4) => ipv4,
-        IpAddr::V6(_ipv6) => {
-            panic!("IPV6 addresses are not supported for proxy");
-        }
-    };
-
-    ProxyAddrConfig {
-        proxy_ip: proxy_ip,
-        proxy_port: proxy_port,
-        proxy_ifindex: 0,
-        ebpf_ifindex: 0,
-        ebpf_ifname: "".to_string(),
-    }
-}
-
-
-#[cfg(all(not(feature = "stealth"), not(target_os = "linux")))]
-fn get_proxy_address(common: &ProxyAwareCommandCommon) -> ProxyAddrConfig {
-    let proxy_address = common.proxy_address.clone();
-
-    let addr = proxy_address.unwrap();
-    let socket_addr: SocketAddr = addr.parse().map_err(|e| {
-        format!("Invalid proxy address '{}': {}", addr, e)
-    }).unwrap();
-    let sock_proxy_ip = socket_addr.ip();
-    let proxy_port = socket_addr.port();
-
-    let proxy_ip = match sock_proxy_ip {
-        IpAddr::V4(ipv4) => ipv4,
-        IpAddr::V6(_ipv6) => {
-            panic!("IPV6 addresses are not supported for proxy");
-        }
-    };
-
-    ProxyAddrConfig {
-        proxy_ip: proxy_ip,
-        proxy_port: proxy_port,
-        proxy_ifindex: 0,
-        ebpf_ifindex: 0,
-        ebpf_ifname: "".to_string(),
-    }
-}
-

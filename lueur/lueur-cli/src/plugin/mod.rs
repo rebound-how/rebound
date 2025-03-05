@@ -203,7 +203,7 @@ impl ProxyPlugin for CompositePlugin {
             client = injector.inject(client, event.clone(), StreamSide::Client);
 
             tracing::debug!("Wrapping server stream with {}", injector);
-            server = injector.inject(server, event.clone(),StreamSide::Server);
+            server = injector.inject(server, event.clone(), StreamSide::Server);
 
             modified_client_stream = client;
             modified_server_stream = server;

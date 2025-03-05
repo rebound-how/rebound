@@ -5,7 +5,8 @@ use std::fs::File;
 use std::io::BufWriter;
 use std::time::Duration;
 
-use chrono::{DateTime, Utc};
+use chrono::DateTime;
+use chrono::Utc;
 use colored::*;
 use prettytable::Table;
 use prettytable::row;
@@ -123,8 +124,8 @@ pub struct ReportItemResult {
     pub expect: Option<ReportItemExpectation>,
     pub metrics: Option<ReportItemMetrics>, // Metrics collected
     pub faults: Vec<FaultConfiguration>,
-    pub errors: Vec<String>,                // Errors encountered
-    pub total_time: f64,                    // Total time in milliseconds
+    pub errors: Vec<String>, // Errors encountered
+    pub total_time: f64,     // Total time in milliseconds
 }
 
 /// Final Report for a single entry in the scenario
@@ -137,13 +138,17 @@ pub struct ReportItem {
     pub metrics: Option<ReportItemMetrics>, // Metrics collected
     pub expect: Option<ReportItemExpectation>,
     pub faults: Vec<FaultConfiguration>,
-    pub errors: Vec<String>,                // Errors encountered
-    pub total_time: f64,                    // Total time in milliseconds
+    pub errors: Vec<String>, // Errors encountered
+    pub total_time: f64,     // Total time in milliseconds
 }
 
 impl ReportItem {
-    pub fn new(title: String, metrics: Option<ReportItemMetrics>, result: ReportItemResult) -> Self {
-        ReportItem{
+    pub fn new(
+        title: String,
+        metrics: Option<ReportItemMetrics>,
+        result: ReportItemResult,
+    ) -> Self {
+        ReportItem {
             title: title,
             target: result.target,
             expect: result.expect,
@@ -151,7 +156,7 @@ impl ReportItem {
             metrics,
             errors: result.errors,
             total_time: result.total_time,
-            timestamp: Utc::now()
+            timestamp: Utc::now(),
         }
     }
 }
@@ -602,8 +607,7 @@ fn format_slo_markdown(slo: &SloResult) -> String {
     } else {
         let amount = slo.breach_amount.unwrap_or(0.0);
         let unit = slo.breach_unit.clone().unwrap_or_default();
-        let time =
-            slo.breach_time.map_or("".to_string(), format_duration);
+        let time = slo.breach_time.map_or("".to_string(), format_duration);
         format!("❌ (+{:.1}{}), {}", amount, unit, time)
     }
 }
@@ -874,8 +878,7 @@ fn format_slo_html(slo: &SloResult) -> FormattedHtmlSlo {
     } else {
         let amount = slo.breach_amount.unwrap_or(0.0);
         let unit = slo.breach_unit.clone().unwrap_or_default();
-        let time =
-            slo.breach_time.map_or("".to_string(), format_duration);
+        let time = slo.breach_time.map_or("".to_string(), format_duration);
         FormattedHtmlSlo {
             class: "breached".to_string(),
             formatted: format!("❌ (+{:.1}{}), {}", amount, unit, time),

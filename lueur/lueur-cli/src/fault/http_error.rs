@@ -13,7 +13,8 @@ use crate::config::HttpResponseSettings;
 use crate::errors::ProxyError;
 use crate::event::FaultEvent;
 use crate::event::ProxyTaskEvent;
-use crate::types::{Direction, StreamSide};
+use crate::types::Direction;
+use crate::types::StreamSide;
 
 #[derive(Debug, Clone)]
 pub struct HttpResponseFaultInjector {
@@ -60,14 +61,12 @@ impl FaultInjector for HttpResponseFaultInjector {
         if rand::random::<f64>()
             < self.settings.http_response_trigger_probability
         {
-            let _ = event.on_applied(
-                FaultEvent::HttpResponseFault {
-                    direction: Direction::Ingress,
-                    side: StreamSide::Server, 
-                    status_code: self.settings.http_response_status_code,
-                    response_body: self.settings.http_response_body.clone(),
-                }
-            );
+            let _ = event.on_applied(FaultEvent::HttpResponseFault {
+                direction: Direction::Ingress,
+                side: StreamSide::Server,
+                status_code: self.settings.http_response_status_code,
+                response_body: self.settings.http_response_body.clone(),
+            });
 
             let (parts, body) = resp.into_parts();
             let version = parts.version;

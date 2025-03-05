@@ -27,12 +27,13 @@ use tokio::sync::broadcast;
 use tokio::sync::broadcast::Receiver;
 use tokio::sync::broadcast::Sender;
 use tokio::sync::broadcast::error::SendError;
+use tokio::sync::watch;
 use tokio_stream::Stream;
 use url::Url;
 use walkdir::WalkDir;
 
-use crate::config::FaultConfig;
 use crate::AppState;
+use crate::config::FaultConfig;
 use crate::config::ProxyConfig;
 use crate::errors::ProxyError;
 use crate::errors::ScenarioError;
@@ -120,22 +121,23 @@ pub struct Scenario {
 }
 
 pub async fn execute_item(
+    proxy_address: String,
+    config_tx: watch::Sender<ProxyConfig>,
     item: ScenarioItem,
     app_state: AppState,
     event_manager: Arc<ScenarioEventManager>,
 ) -> ReportItemResult {
-    let proxy_address = app_state.proxy_address.clone();
-
     let upstream_hosts = item.context.upstreams.clone();
     let upstreams: Vec<String> =
         upstream_hosts.iter().map(|h| upstream_to_addr(h).unwrap()).collect();
     app_state.proxy_state.update_upstream_hosts(upstreams).await;
 
     let faults = item.context.faults.clone();
-    let fault_config: Vec<FaultConfig> = faults.iter().map(|f| f.build().unwrap()).collect();
+    let fault_config: Vec<FaultConfig> =
+        faults.iter().map(|f| f.build().unwrap()).collect();
     let new_config = ProxyConfig { faults: fault_config };
 
-    if app_state.config_tx.send(new_config).is_err() {
+    if config_tx.send(new_config).is_err() {
         tracing::error!("Proxy task has been shut down.");
     }
 
@@ -248,9 +250,7 @@ pub fn build_item_list(source: ScenarioItem) -> Vec<ScenarioItem> {
 
     if let Some(strategy) = strategy {
         if strategy.add_baseline_call.is_some_and(|x| x == true) {
-            tracing::debug!(
-                "Add first call as a baseline without any faults"
-            );
+            tracing::debug!("Add first call as a baseline without any faults");
             let mut next_item = source.clone();
             next_item.context.faults = Vec::new();
             items.insert(0, next_item);
@@ -263,64 +263,72 @@ pub fn build_item_list(source: ScenarioItem) -> Vec<ScenarioItem> {
                     let mut next_faults = Vec::new();
 
                     for fault in next_item.context.faults {
-                        next_faults.push(
-                            match fault {
-                                FaultConfiguration::Latency {
-                                    distribution,
-                                    global,
-                                    side,
-                                    mean,
-                                    stddev,
-                                    min,
-                                    max,
-                                    shape,
-                                    scale,
-                                    direction,
-                                } => FaultConfiguration::Latency {
-                                    distribution,
-                                    global,
-                                    side,
-                                    mean: Some(
-                                        mean.unwrap() + (strategy.step * i as f64),
-                                    ),
-                                    stddev,
-                                    min,
-                                    max,
-                                    shape,
-                                    scale,
-                                    direction,
-                                },
-                                FaultConfiguration::PacketLoss {
-                                    direction,
-                                    side,
-                                } => FaultConfiguration::PacketLoss {
-                                    direction,
-                                    side,
-                                },
-                                FaultConfiguration::Bandwidth {
-                                    rate,
-                                    unit,
-                                    direction,
-                                    side,
-                                } => FaultConfiguration::Bandwidth { rate, unit, direction, side },
-                                FaultConfiguration::Jitter {
-                                    jitter_amplitude,
-                                    jitter_frequency,
-                                    direction,
-                                } => FaultConfiguration::Jitter {
-                                    jitter_amplitude,
-                                    jitter_frequency,
-                                    direction,
-                                },
-                                FaultConfiguration::Dns {
-                                    dns_rate,
-                                    direction,
-                                } => FaultConfiguration::Dns { dns_rate, direction },
-                                FaultConfiguration::HttpError {
-                                    status_code, body, probability
-                                } => FaultConfiguration::HttpError { status_code, body, probability }
+                        next_faults.push(match fault {
+                            FaultConfiguration::Latency {
+                                distribution,
+                                global,
+                                side,
+                                mean,
+                                stddev,
+                                min,
+                                max,
+                                shape,
+                                scale,
+                                direction,
+                            } => FaultConfiguration::Latency {
+                                distribution,
+                                global,
+                                side,
+                                mean: Some(
+                                    mean.unwrap() + (strategy.step * i as f64),
+                                ),
+                                stddev,
+                                min,
+                                max,
+                                shape,
+                                scale,
+                                direction,
+                            },
+                            FaultConfiguration::PacketLoss {
+                                direction,
+                                side,
+                            } => FaultConfiguration::PacketLoss {
+                                direction,
+                                side,
+                            },
+                            FaultConfiguration::Bandwidth {
+                                rate,
+                                unit,
+                                direction,
+                                side,
+                            } => FaultConfiguration::Bandwidth {
+                                rate,
+                                unit,
+                                direction,
+                                side,
+                            },
+                            FaultConfiguration::Jitter {
+                                jitter_amplitude,
+                                jitter_frequency,
+                                direction,
+                            } => FaultConfiguration::Jitter {
+                                jitter_amplitude,
+                                jitter_frequency,
+                                direction,
+                            },
+                            FaultConfiguration::Dns { dns_rate, direction } => {
+                                FaultConfiguration::Dns { dns_rate, direction }
                             }
-                        )
+                            FaultConfiguration::HttpError {
+                                status_code,
+                                body,
+                                probability,
+                            } => FaultConfiguration::HttpError {
+                                status_code,
+                                body,
+                                probability,
+                            },
+                        })
                     }
                     next_faults
                 }
@@ -781,5 +789,3 @@ impl ScenarioItemLifecycleFaults {
         ReportItemMetricsFaults { url: self.url.clone(), applied }
     }
 }
-
-

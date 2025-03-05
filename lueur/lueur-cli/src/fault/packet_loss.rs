@@ -1,4 +1,5 @@
 use std::fmt;
+use std::fmt::Debug;
 use std::io::Cursor;
 use std::io::Result as IoResult;
 use std::pin::Pin;
@@ -20,7 +21,6 @@ use tokio::io::AsyncWrite;
 use tokio::io::ReadBuf;
 use tokio::io::split;
 use tokio_util::io::ReaderStream;
-use std::fmt::Debug;
 
 use super::Bidirectional;
 use super::BidirectionalReadHalf;
@@ -60,11 +60,13 @@ impl Default for PacketLossStrategy {
                 vec![0.0, 0.0, 0.0, 0.3, 0.7],
             ],
             loss_probabilities: vec![
-                0.0,  // Excellent: No packet loss in an optimal state.
-                0.1,  // Good: Still a relatively good state but with a small chance.
-                0.3,  // Fair: Noticeable loss; simulates moderate network degradation.
-                0.6,  // Poor: High probability of loss.
-                0.9,  // Bad: Nearly all packets get dropped.
+                0.0, // Excellent: No packet loss in an optimal state.
+                0.1, /* Good: Still a relatively good state but with a small
+                      * chance. */
+                0.3, /* Fair: Noticeable loss; simulates moderate network
+                      * degradation. */
+                0.6, // Poor: High probability of loss.
+                0.9, // Bad: Nearly all packets get dropped.
             ],
         }
     }
@@ -213,11 +215,11 @@ where
             // bytes
             if let Some(event) = &*this.event {
                 let s: MultiState = *this.state;
-                let _ = event
-                    .on_applied(FaultEvent::PacketLoss {
-                        direction: Direction::Ingress, side: this.side.clone(),
-                        state: s.to_string()
-                    });
+                let _ = event.on_applied(FaultEvent::PacketLoss {
+                    direction: Direction::Ingress,
+                    side: this.side.clone(),
+                    state: s.to_string(),
+                });
             }
             buf.advance(0);
             Poll::Ready(Ok(()))
@@ -323,11 +325,11 @@ where
             // bytes
             if let Some(event) = &*this.event {
                 let s: MultiState = *this.state;
-                let _ = event
-                    .on_applied(FaultEvent::PacketLoss {
-                        state: s.to_string(), direction: Direction::Egress,
-                        side: this.side.clone()
-                    });
+                let _ = event.on_applied(FaultEvent::PacketLoss {
+                    state: s.to_string(),
+                    direction: Direction::Egress,
+                    side: this.side.clone(),
+                });
             }
             Poll::Ready(Ok(0))
         } else {
@@ -448,7 +450,11 @@ impl FaultInjector for PacketLossInjector {
         let direction = self.settings.direction.clone();
         let side = self.settings.side.clone();
 
-        let _ = event.with_fault(FaultEvent::PacketLoss { state: "".to_owned(), direction: direction.clone(), side: side.clone() });
+        let _ = event.with_fault(FaultEvent::PacketLoss {
+            state: "".to_owned(),
+            direction: direction.clone(),
+            side: side.clone(),
+        });
 
         // Wrap the read half if ingress or both directions are specified
         let limited_read: Box<dyn BidirectionalReadHalf> =
@@ -457,7 +463,7 @@ impl FaultInjector for PacketLossInjector {
                 Box::new(PacketLossLimitedRead::new(
                     read_half,
                     self.settings.clone(),
-                    Some(event.clone())
+                    Some(event.clone()),
                 ))
             } else {
                 Box::new(read_half) as Box<dyn BidirectionalReadHalf>
@@ -470,7 +476,7 @@ impl FaultInjector for PacketLossInjector {
                 Box::new(PacketLossLimitedWrite::new(
                     write_half,
                     self.settings.clone(),
-                    Some(event.clone())
+                    Some(event.clone()),
                 ))
             } else {
                 Box::new(write_half) as Box<dyn BidirectionalWriteHalf>
@@ -500,7 +506,11 @@ impl FaultInjector for PacketLossInjector {
         request: ReqwestRequest,
         event: Box<dyn ProxyTaskEvent>,
     ) -> Result<ReqwestRequest, ProxyError> {
-        let _ = event.with_fault(FaultEvent::PacketLoss {state: "".to_owned(), direction: Direction::Egress, side: StreamSide::Client });
+        let _ = event.with_fault(FaultEvent::PacketLoss {
+            state: "".to_owned(),
+            direction: Direction::Egress,
+            side: StreamSide::Client,
+        });
 
         let original_body = request.body();
         if let Some(body) = original_body {
@@ -541,7 +551,11 @@ impl FaultInjector for PacketLossInjector {
         resp: http::Response<Vec<u8>>,
         event: Box<dyn ProxyTaskEvent>,
     ) -> Result<http::Response<Vec<u8>>, ProxyError> {
-        let _ = event.with_fault(FaultEvent::PacketLoss { state: "".to_owned(), direction: Direction::Ingress, side: StreamSide::Server });
+        let _ = event.with_fault(FaultEvent::PacketLoss {
+            state: "".to_owned(),
+            direction: Direction::Ingress,
+            side: StreamSide::Server,
+        });
 
         // Split the response into parts and body
         let (parts, body) = resp.into_parts();

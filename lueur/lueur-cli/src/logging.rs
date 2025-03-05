@@ -1,22 +1,33 @@
-use std::{path::PathBuf, str::FromStr};
+use std::path::PathBuf;
+use std::str::FromStr;
 
-use opentelemetry::{global, trace::TracerProvider as _, KeyValue};
-use opentelemetry_sdk::{
-    metrics::{MeterProviderBuilder, PeriodicReader, SdkMeterProvider},
-    runtime,
-    trace::{RandomIdGenerator, Sampler, TracerProvider},
-    Resource,
-};
-use opentelemetry_semantic_conventions::{
-    attribute::{DEPLOYMENT_ENVIRONMENT_NAME, SERVICE_NAME, SERVICE_VERSION},
-    SCHEMA_URL,
-};
-use tracing_appender::{non_blocking::WorkerGuard, rolling::never};
+use opentelemetry::KeyValue;
+use opentelemetry::global;
+use opentelemetry::trace::TracerProvider as _;
+use opentelemetry_sdk::Resource;
+use opentelemetry_sdk::metrics::MeterProviderBuilder;
+use opentelemetry_sdk::metrics::PeriodicReader;
+use opentelemetry_sdk::metrics::SdkMeterProvider;
+use opentelemetry_sdk::runtime;
+use opentelemetry_sdk::trace::RandomIdGenerator;
+use opentelemetry_sdk::trace::Sampler;
+use opentelemetry_sdk::trace::TracerProvider;
+use opentelemetry_semantic_conventions::SCHEMA_URL;
+use opentelemetry_semantic_conventions::attribute::DEPLOYMENT_ENVIRONMENT_NAME;
+use opentelemetry_semantic_conventions::attribute::SERVICE_NAME;
+use opentelemetry_semantic_conventions::attribute::SERVICE_VERSION;
+use tracing_appender::non_blocking::WorkerGuard;
+use tracing_appender::rolling::never;
 use tracing_log::LogTracer;
-use tracing_opentelemetry::{MetricsLayer, OpenTelemetryLayer};
-use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Layer, Registry};
+use tracing_opentelemetry::MetricsLayer;
+use tracing_opentelemetry::OpenTelemetryLayer;
+use tracing_subscriber::EnvFilter;
+use tracing_subscriber::Layer;
+use tracing_subscriber::Registry;
+use tracing_subscriber::layer::SubscriberExt;
 
-// Create a Resource that captures information about the entity for which telemetry is recorded.
+// Create a Resource that captures information about the entity for which
+// telemetry is recorded.
 fn resource() -> Resource {
     Resource::from_schema_url(
         [
@@ -67,16 +78,19 @@ pub fn init_tracer_provider() -> TracerProvider {
 
     TracerProvider::builder()
         // Customize sampling strategy
-        .with_sampler(Sampler::ParentBased(Box::new(Sampler::TraceIdRatioBased(
-            1.0,
-        ))))
+        .with_sampler(Sampler::ParentBased(Box::new(
+            Sampler::TraceIdRatioBased(1.0),
+        )))
         .with_id_generator(RandomIdGenerator::default())
         .with_resource(resource())
         .with_batch_exporter(exporter, runtime::Tokio)
         .build()
 }
 
-pub fn shutdown_tracer(tracer_provider: Option<TracerProvider>, meter_provider: Option<SdkMeterProvider>) {
+pub fn shutdown_tracer(
+    tracer_provider: Option<TracerProvider>,
+    meter_provider: Option<SdkMeterProvider>,
+) {
     if tracer_provider.is_some() {
         let provider = tracer_provider.unwrap();
         provider.force_flush();
@@ -96,7 +110,6 @@ pub fn shutdown_tracer(tracer_provider: Option<TracerProvider>, meter_provider: 
     }
 }
 
-
 /// Combines logging and tracing/metrics layers into a single subscriber.
 ///
 /// # Arguments
@@ -108,10 +121,12 @@ pub fn shutdown_tracer(tracer_provider: Option<TracerProvider>, meter_provider: 
 pub fn init_subscriber(
     log_layers: Vec<Box<dyn tracing_subscriber::Layer<Registry> + Send + Sync>>,
     tracer_provider: &Option<TracerProvider>,
-    meter_provider: &Option<SdkMeterProvider>
+    meter_provider: &Option<SdkMeterProvider>,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    //env_logger::init();
+
     let registry = tracing_subscriber::registry();
-    
+
     let mut layers = Vec::new();
     layers.extend(log_layers);
 
@@ -123,7 +138,7 @@ pub fn init_subscriber(
     }
 
     if meter_provider.is_some() {
-        let provider= meter_provider.clone().unwrap();
+        let provider = meter_provider.clone().unwrap();
         let metrics = MetricsLayer::new(provider.clone());
         layers.push(Box::new(metrics));
     }
@@ -149,7 +164,7 @@ pub fn init_subscriber_without_opentelemetry(
     log_layers: Vec<Box<dyn tracing_subscriber::Layer<Registry> + Send + Sync>>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let registry = tracing_subscriber::registry();
-    
+
     let mut layers = Vec::new();
     layers.extend(log_layers);
 
@@ -177,14 +192,20 @@ pub fn setup_logging(
     enable_stdout: bool,
     log_level: Option<String>,
 ) -> Result<
-    (Option<WorkerGuard>, Option<WorkerGuard>, Vec<Box<dyn tracing_subscriber::Layer<Registry> + Send + Sync>>),
+    (
+        Option<WorkerGuard>,
+        Option<WorkerGuard>,
+        Vec<Box<dyn tracing_subscriber::Layer<Registry> + Send + Sync>>,
+    ),
     Box<dyn std::error::Error>,
 > {
     let mut fileguard: Option<WorkerGuard> = None;
     let mut stdoutguard: Option<WorkerGuard> = None;
     let mut layers = Vec::new();
 
-    let log_level = log_level.unwrap_or_else(|| "debug,tower_http=debug,otel::tracing=info".to_string());
+    let log_level = log_level.unwrap_or_else(|| {
+        "debug,tower_http=debug,otel::tracing=info".to_string()
+    });
 
     if let Some(log_file) = log_file {
         let path = log_file.as_str();

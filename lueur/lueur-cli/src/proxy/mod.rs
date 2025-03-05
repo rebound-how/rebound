@@ -1,7 +1,12 @@
 pub mod forward;
+pub mod stealth;
 pub mod tunnel;
 
+use std::mem::MaybeUninit;
+use std::net::Ipv4Addr;
 use std::net::SocketAddr;
+use std::os::fd::AsFd;
+use std::os::fd::AsRawFd;
 use std::sync::Arc;
 
 use ::oneshot::Sender;
@@ -12,11 +17,16 @@ use hyper::Method;
 use hyper::body::Incoming;
 use hyper::server::conn::http1;
 use hyper_util::rt::TokioIo;
+use libc::SO_ORIGINAL_DST;
+use libc::SOL_IP;
+use libc::getsockopt;
+use libc::sockaddr_in;
+use libc::socklen_t;
+use libc::syscall;
+use opentelemetry::trace::FutureExt;
 use tokio::sync::RwLock;
 use tokio::sync::broadcast;
 use tokio::sync::watch;
-use tower::Service;
-use tower::service_fn;
 use url::Url;
 
 use crate::config::ProxyConfig;
@@ -150,10 +160,7 @@ async fn handle_new_connection(
         };
         Ok(resp)
     } else {
-        tracing::debug!(
-            "Processing forward request to {}",
-            upstream_url
-        );
+        tracing::debug!("Processing forward request to {}", upstream_url);
         let r = forward::handle_request(
             req,
             state.clone(),
@@ -165,7 +172,7 @@ async fn handle_new_connection(
 
         let resp = match r {
             Ok(r) => r,
-            Err(e) => e.into_response()
+            Err(e) => e.into_response(),
         };
         Ok(resp)
     }
@@ -187,15 +194,6 @@ pub async fn run_proxy(
     })?;
 
     let state_cloned = state.clone();
-    let tower_service = service_fn(move |req: Request<Incoming>| {
-        handle_new_connection(req.map(Body::new), state.clone(), task_manager.clone())
-    });
-
-    let hyper_service =
-        hyper::service::service_fn(move |request: Request<Incoming>| {
-            tower_service.clone().call(request)
-        });
-
     let state = state_cloned.clone();
     let config_change_handle = tokio::spawn(async move {
         let state = state.clone();
@@ -216,12 +214,13 @@ pub async fn run_proxy(
         }
     });
 
-    let listener = tokio::net::TcpListener::bind(addr).await.map_err(|e| {
-        ProxyError::IoError(std::io::Error::new(
-            e.kind(),
-            format!("Failed to bind to address {}: {}", addr, e),
-        ))
-    })?;
+    let proxy_listener =
+        tokio::net::TcpListener::bind(addr).await.map_err(|e| {
+            ProxyError::IoError(std::io::Error::new(
+                e.kind(),
+                format!("Failed to bind to address {}: {}", addr, e),
+            ))
+        })?;
 
     let _ = readiness_tx.send(()).map_err(|e| {
         ProxyError::Internal(format!("Failed to send readiness signal: {}", e))
@@ -234,13 +233,23 @@ pub async fn run_proxy(
                 config_change_handle.abort();
                 break;
             },
-            accept_result = listener.accept() => {
+            accept_result = proxy_listener.accept() => {
                 match accept_result {
                     Ok((stream, addr)) => {
                         tracing::debug!("Accepted connection from {}", addr);
 
                         let io = TokioIo::new(stream);
-                        let hyper_service = hyper_service.clone();
+                        let state = state_cloned.clone();
+                        let task_manager = task_manager.clone();
+
+                        let hyper_service =
+                        hyper::service::service_fn(move |request: Request<Incoming>| {
+                            handle_new_connection(
+                                request.map(Body::new),
+                                state.clone(),
+                                task_manager.clone()
+                            )
+                        });
 
                         tokio::task::spawn(async move {
                             if let Err(err) = http1::Builder::new()
@@ -267,6 +276,99 @@ pub async fn run_proxy(
 
     Ok(())
 }
+
+#[cfg(all(
+    target_os = "linux",
+    any(feature = "stealth", feature = "stealth-auto-build")
+))]
+pub async fn run_ebpf_proxy(
+    ebpf_proxy_address: String,
+    state: Arc<ProxyState>,
+    mut shutdown_rx: broadcast::Receiver<()>,
+    readiness_tx: Sender<()>,
+    mut config_rx: watch::Receiver<ProxyConfig>,
+    task_manager: Arc<TaskManager>,
+) -> Result<(), ProxyError> {
+    let addr: SocketAddr = ebpf_proxy_address.parse().map_err(|e| {
+        ProxyError::Internal(format!(
+            "Failed to parse eBpf proxy address {}: {}",
+            ebpf_proxy_address, e
+        ))
+    })?;
+
+    let state_cloned = state.clone();
+    let state = state_cloned.clone();
+    let config_change_handle = tokio::spawn(async move {
+        let state = state.clone();
+
+        loop {
+            match config_rx.changed().await {
+                Ok(_) => {
+                    let new_config = config_rx.borrow_and_update().clone();
+                    let faults = load_injectors(&new_config);
+                    state.update_config(new_config).await;
+                    state.set_faults(faults).await;
+                }
+                Err(e) => {
+                    tracing::debug!("Exited proxy config loop: {}", e);
+                    break;
+                }
+            };
+        }
+    });
+
+    let proxy_listener =
+        tokio::net::TcpListener::bind(addr).await.map_err(|e| {
+            ProxyError::IoError(std::io::Error::new(
+                e.kind(),
+                format!("Failed to bind ebpf proxy to address {}: {}", addr, e),
+            ))
+        })?;
+
+    let _ = readiness_tx.send(()).map_err(|e| {
+        ProxyError::Internal(format!("Failed to send readiness signal: {}", e))
+    });
+
+    loop {
+        tokio::select! {
+            _ = shutdown_rx.recv() => {
+                tracing::info!("Shutdown signal received. Stopping listener.");
+                config_change_handle.abort();
+                break;
+            },
+            accept_result = proxy_listener.accept() => {
+                match accept_result {
+                    Ok((stream, addr)) => {
+                        tracing::debug!("Accepted connection from {}", addr);
+
+                        let event = task_manager
+                            .new_fault_event("".to_string())
+                            .await
+                            .unwrap();
+
+                        let _ = stealth::handle_stream(
+                            stream,
+                            state_cloned.clone(),
+                            false,
+                            event
+                        ).await;
+                    }
+                    Err(e) => {
+                        tracing::error!("Failed to accept connection: {}", e);
+                        continue;
+                    }
+                }
+            }
+        }
+    }
+
+    tracing::debug!("ebpf proxy is now finised, bye bye");
+
+    Ok(())
+}
+
+///
+/// -------------------- Private functions -----------------------------------
 
 async fn determine_upstream(
     scheme: String,

@@ -1,3 +1,4 @@
+use std::net::SocketAddr;
 use std::sync::Arc;
 
 use axum::body::Body;
@@ -190,7 +191,10 @@ impl Forward {
 
         let new_status = &new_parts.status;
         let _ = event.on_response(new_status.as_u16());
-        tracing::debug!("Forward proxy response set with status: {}", new_status);
+        tracing::debug!(
+            "Forward proxy response set with status: {}",
+            new_status
+        );
 
         let response_bytes = new_body.len();
         let axum_response =

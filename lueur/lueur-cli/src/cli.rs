@@ -44,38 +44,51 @@ pub struct ProxyAwareCommandCommon {
         help_heading = "Proxy Options",
         long = "proxy-address",
         help = "Listening address for the proxy server.",
+        env = "LUEUR_PROXY_ADDRESS",
         value_parser
     )]
     pub proxy_address: Option<String>,
 
-    #[cfg(all(target_os = "linux", feature = "stealth"))]
+    #[cfg(all(
+        target_os = "linux",
+        any(feature = "stealth", feature = "stealth-auto-build")
+    ))]
     /// Enable stealth mode (using ebpf)
     #[arg(
         help_heading = "Stealth Options",
         long = "stealth",
         default_value_t = false,
         help = "Enable stealth support (using ebpf).",
+        env = "LUEUR_STEALTH_MODE",
         value_parser
     )]
     pub ebpf: bool,
 
-    #[cfg(all(target_os = "linux", feature = "stealth"))]
-    /// Enable ebpf interface
+    #[cfg(all(
+        target_os = "linux",
+        any(feature = "stealth", feature = "stealth-auto-build")
+    ))]
+
+    /// Ebpf allowed process by names
     #[arg(
         help_heading = "Stealth Options",
-        long = "ebpf-interface",
-        help = "Interface to bind ebpf programs to.",
-        requires_if("interface", "ebpf"),
+        long = "ebpf-process-name",
+        help = "Process name to intercept using ebpf.",
+        env = "LUEUR_EBPF_PROCESS_NAME",
         value_parser
     )]
-    pub iface: Option<String>,
+    pub ebpf_process_name: Option<String>,
 
-    #[cfg(all(target_os = "linux", feature = "stealth"))]
-    /// EBpf programs directory
+    #[cfg(all(
+        target_os = "linux",
+        any(feature = "stealth", feature = "stealth-auto-build")
+    ))]
+    ///
     #[arg(
         help_heading = "Stealth Options",
         long = "ebpf-programs-dir",
         help = "Directory containing the lueur ebpf programs.",
+        env = "LUEUR_EBPF_PROGRAMS_DIR",
         value_parser
     )]
     pub ebpf_programs_dir: Option<String>,
@@ -96,6 +109,7 @@ pub struct ProxyAwareCommandCommon {
         short,
         long = "upstream",
         help = "Host to proxy.",
+        env = "LUEUR_UPSTREAMS",
         value_parser
     )]
     pub upstream_hosts: Vec<String>,
@@ -143,7 +157,7 @@ pub struct LatencyOptions {
         action,
         long,
         default_value_t = true,
-        help = "Apply a global latency rather than a per write/read operation.",
+        help = "Apply a global latency rather than a per write/read operation."
     )]
     pub global: bool,
 

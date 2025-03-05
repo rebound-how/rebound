@@ -1,11 +1,9 @@
-
-
-use std::pin::Pin;
-use std::task::{Context, Poll};
-use std::future::Future;
 use std::fmt::Debug;
+use std::future::Future;
 use std::marker::Unpin;
-
+use std::pin::Pin;
+use std::task::Context;
+use std::task::Poll;
 
 use async_trait::async_trait;
 use axum::http;
@@ -47,7 +45,7 @@ impl<T> BidirectionalReadHalf for T where
 }
 
 pub trait BidirectionalWriteHalf:
-TokioAsyncWrite + Unpin + Send + std::fmt::Debug
+    TokioAsyncWrite + Unpin + Send + std::fmt::Debug
 {
 }
 
@@ -57,7 +55,9 @@ impl<T> BidirectionalWriteHalf for T where
 }
 
 #[async_trait]
-pub trait FaultInjector: Send + Sync + std::fmt::Debug + std::fmt::Display {
+pub trait FaultInjector:
+    Send + Sync + std::fmt::Debug + std::fmt::Display
+{
     fn inject(
         &self,
         stream: Box<dyn Bidirectional + 'static>,
@@ -84,10 +84,7 @@ pub trait FaultInjector: Send + Sync + std::fmt::Debug + std::fmt::Display {
     ) -> Result<http::Response<Vec<u8>>, ProxyError>;
 }
 
-pub trait FutureDelay:
-    Future<Output = ()> + Send + Debug
-{
-}
+pub trait FutureDelay: Future<Output = ()> + Send + Debug {}
 
 // Wrapper struct for any future implementing `Future<Output = ()>`
 
@@ -108,7 +105,6 @@ impl<F> std::fmt::Debug for DelayWrapper<F> {
     }
 }
 
-
 // Implement `Future` for the wrapper
 impl<F> Future for DelayWrapper<F>
 where
@@ -123,8 +119,4 @@ where
 }
 
 // Implement `FutureDelay` for the wrapper
-impl<F> FutureDelay for DelayWrapper<F>
-where
-    F: Future<Output = ()> + Send,
-{
-}
+impl<F> FutureDelay for DelayWrapper<F> where F: Future<Output = ()> + Send {}

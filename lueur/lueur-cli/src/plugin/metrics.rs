@@ -4,17 +4,17 @@ use std::pin::Pin;
 use std::task::Context;
 use std::task::Poll;
 
-use axum::http;
 use axum::async_trait;
+use axum::http;
 use bytes::BytesMut;
-use reqwest::Body;
 use futures::StreamExt;
+use hyper::http::Response;
 use pin_project::pin_project;
+use reqwest::Body;
 use tokio::io::AsyncRead;
 use tokio::io::AsyncWrite;
 use tokio::io::ReadBuf;
 use tokio_util::io::ReaderStream;
-use hyper::http::Response;
 
 use crate::errors::ProxyError;
 use crate::event::ProxyTaskEvent;
@@ -23,12 +23,11 @@ use crate::fault::FaultInjector;
 use crate::types::StreamSide;
 
 #[derive(Debug)]
-pub struct MetricsInjector {
-}
+pub struct MetricsInjector {}
 
 impl MetricsInjector {
     pub fn new() -> MetricsInjector {
-        Self { }
+        Self {}
     }
 }
 
@@ -40,7 +39,7 @@ impl fmt::Display for MetricsInjector {
 
 impl Clone for MetricsInjector {
     fn clone(&self) -> Self {
-        Self { }
+        Self {}
     }
 }
 
@@ -67,7 +66,8 @@ impl FaultInjector for MetricsInjector {
 
         let owned_body = Cursor::new(body);
 
-        let reader = WrapperStream::new(owned_body, self.clone(), event.clone());
+        let reader =
+            WrapperStream::new(owned_body, self.clone(), event.clone());
 
         let mut reader_stream = ReaderStream::new(reader);
 
@@ -99,13 +99,16 @@ impl FaultInjector for MetricsInjector {
         request: reqwest::Request,
         event: Box<dyn ProxyTaskEvent>,
     ) -> Result<reqwest::Request, crate::errors::ProxyError> {
-        
         let original_body = request.body();
         if let Some(body) = original_body {
             if let Some(bytes) = body.as_bytes() {
                 let owned_bytes = Cursor::new(bytes.to_vec());
 
-                let latency_read = WrapperStream::new(owned_bytes, self.clone(), event.clone());
+                let latency_read = WrapperStream::new(
+                    owned_bytes,
+                    self.clone(),
+                    event.clone(),
+                );
 
                 let reader_stream = ReaderStream::new(latency_read);
 
@@ -144,16 +147,11 @@ impl<S> WrapperStream<S> {
         injector: MetricsInjector,
         event: Box<dyn ProxyTaskEvent>,
     ) -> Self {
-        Self {
-            stream,
-            injector,
-            event,
-            ttfb_event_sent: false
-        }
+        Self { stream, injector, event, ttfb_event_sent: false }
     }
 }
 
-impl <S: AsyncRead + Unpin> AsyncRead for WrapperStream<S> {
+impl<S: AsyncRead + Unpin> AsyncRead for WrapperStream<S> {
     fn poll_read(
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
@@ -161,7 +159,7 @@ impl <S: AsyncRead + Unpin> AsyncRead for WrapperStream<S> {
     ) -> Poll<std::io::Result<()>> {
         let mut this = self.project();
 
-        if  !*this.ttfb_event_sent {
+        if !*this.ttfb_event_sent {
             *this.ttfb_event_sent = true;
             let _ = this.event.on_first_byte();
         }
@@ -170,7 +168,7 @@ impl <S: AsyncRead + Unpin> AsyncRead for WrapperStream<S> {
     }
 }
 
-impl <S: AsyncWrite + Unpin> AsyncWrite for WrapperStream<S> {
+impl<S: AsyncWrite + Unpin> AsyncWrite for WrapperStream<S> {
     fn poll_write(
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,

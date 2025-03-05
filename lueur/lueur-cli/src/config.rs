@@ -202,7 +202,10 @@ impl From<&DnsOptions> for DnsSettings {
 
 impl From<&PacketLossOptions> for PacketLossSettings {
     fn from(cli: &PacketLossOptions) -> Self {
-        PacketLossSettings { direction: cli.packet_loss_direction.clone(), side: cli.side.clone() }
+        PacketLossSettings {
+            direction: cli.packet_loss_direction.clone(),
+            side: cli.side.clone(),
+        }
     }
 }
 

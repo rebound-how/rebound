@@ -20,3 +20,29 @@ can quickly see how your application responds when the network isn’t perfect.
   with your existing CI/CD pipelines.
 - **Insight:** Generate structured reports that help pinpoint issues and
   identify ways to improve resiliency.
+
+## Install
+
+The lueur proxy is installed as follows:
+
+```bash
+cargo +nightly install lueur-cli
+```
+
+If you want to enable ebpf support (highly experimental and likely broken):
+
+```bash
+cargo +nightly install lueur-cli --features stealth
+```
+
+## Run
+
+Once installed, you can start a latency fault inkjection proxy (for instance):
+
+```bash
+lueur run --with-latency --latency-mean 300 --latency-direction ingress --upstream localhost:9090
+```
+
+This is will inject `300ms` (mean) latency on network coming back from the
+host `localhost:9090`.
+

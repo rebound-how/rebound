@@ -1,12 +1,14 @@
 use std::fmt;
 use std::io::Cursor;
+use std::io::Result as IoResult;
 use std::pin::Pin;
 use std::task::Context;
-use std::io::Result as IoResult;
 use std::task::Poll;
 
 use axum::async_trait;
 use axum::http;
+use bytes::BytesMut;
+use futures::StreamExt;
 use hyper::http::Response;
 use pin_project::pin_project;
 use rand::SeedableRng;
@@ -16,15 +18,13 @@ use rand_distr::Normal;
 use rand_distr::Pareto;
 use rand_distr::Uniform;
 use reqwest::Body;
-use tokio::io::split;
 use tokio::io::AsyncRead;
 use tokio::io::AsyncWrite;
 use tokio::io::ReadBuf;
+use tokio::io::split;
 use tokio::time::Duration;
 use tokio::time::Sleep;
 use tokio::time::sleep;
-use bytes::BytesMut;
-use futures::StreamExt;
 use tokio_util::io::ReaderStream;
 
 use super::Bidirectional;
@@ -146,7 +146,11 @@ impl LatencyInjector {
             }
         };
 
-        tracing::debug!("Latency delay: {}ms [{}]", delay.as_millis_f64(), self.settings.direction);
+        tracing::debug!(
+            "Latency delay: {}ms [{}]",
+            delay.as_millis_f64(),
+            self.settings.direction
+        );
 
         delay
     }
@@ -229,15 +233,21 @@ impl FaultInjector for LatencyInjector {
         }
 
         let (read_half, write_half) = split(stream);
-        
+
         let direction = self.settings.direction.clone();
-        let _ = event
-            .with_fault(FaultEvent::Latency { direction: direction.clone(), side: self.settings.side.clone(), delay: None });
-        
+        let _ = event.with_fault(FaultEvent::Latency {
+            direction: direction.clone(),
+            side: self.settings.side.clone(),
+            delay: None,
+        });
+
         // Wrap the read half if ingress or both directions are specified
         let limited_read: Box<dyn BidirectionalReadHalf> =
             if direction.is_ingress() {
-                tracing::debug!("Wrapping {} read half for latency", self.settings.side);
+                tracing::debug!(
+                    "Wrapping {} read half for latency",
+                    self.settings.side
+                );
                 match LatencyStreamRead::new(
                     read_half,
                     self.clone(),
@@ -255,7 +265,10 @@ impl FaultInjector for LatencyInjector {
         // Wrap the write half if egress or both directions are specified
         let limited_write: Box<dyn BidirectionalWriteHalf> =
             if direction.is_egress() {
-                tracing::debug!("Wrapping {} write half for latency", self.settings.side);
+                tracing::debug!(
+                    "Wrapping {} write half for latency",
+                    self.settings.side
+                );
                 match LatencyStreamWrite::new(
                     write_half,
                     self.clone(),
@@ -282,10 +295,12 @@ impl FaultInjector for LatencyInjector {
         event: Box<dyn ProxyTaskEvent>,
     ) -> Result<http::Response<Vec<u8>>, crate::errors::ProxyError> {
         if self.settings.side == StreamSide::Server {
-            let _ = event.with_fault(
-                FaultEvent::Latency { direction: Direction::Ingress, side: StreamSide::Server, delay: None }
-            );
-    
+            let _ = event.with_fault(FaultEvent::Latency {
+                direction: Direction::Ingress,
+                side: StreamSide::Server,
+                delay: None,
+            });
+
             let (parts, body) = resp.into_parts();
             let version = parts.version;
             let status = parts.status;
@@ -336,9 +351,12 @@ impl FaultInjector for LatencyInjector {
         event: Box<dyn ProxyTaskEvent>,
     ) -> Result<reqwest::Request, crate::errors::ProxyError> {
         if self.settings.side == StreamSide::Client {
-            let _ = event
-                .with_fault(FaultEvent::Latency { direction: Direction::Egress, side: StreamSide::Client, delay: None });
-    
+            let _ = event.with_fault(FaultEvent::Latency {
+                direction: Direction::Egress,
+                side: StreamSide::Client,
+                delay: None,
+            });
+
             let original_body = request.body();
             if let Some(body) = original_body {
                 if let Some(bytes) = body.as_bytes() {
@@ -391,7 +409,7 @@ pub struct LatencyStreamRead<S> {
 
 impl<S> LatencyStreamRead<S>
 where
-S: AsyncRead + Unpin + std::fmt::Debug,
+    S: AsyncRead + Unpin + std::fmt::Debug,
 {
     /// Creates a new LatencyStreamRead with the specified bandwidth
     /// options.
@@ -407,21 +425,21 @@ S: AsyncRead + Unpin + std::fmt::Debug,
         event: Option<Box<dyn ProxyTaskEvent>>,
     ) -> Result<Self, S> {
         let side = injector.settings.side.clone();
-        Ok(
-            LatencyStreamRead {
-                stream: inner,
-                injector,
-                rng: SmallRng::from_entropy(),
-                event: event.clone(),
-                side,
-                read_sleep: None,
-                applied_count: 0
-            }
-        )
+        Ok(LatencyStreamRead {
+            stream: inner,
+            injector,
+            rng: SmallRng::from_entropy(),
+            event: event.clone(),
+            side,
+            read_sleep: None,
+            applied_count: 0,
+        })
     }
 }
 
-impl<S: AsyncRead + Unpin + std::fmt::Debug> AsyncRead for LatencyStreamRead<S> {
+impl<S: AsyncRead + Unpin + std::fmt::Debug> AsyncRead
+    for LatencyStreamRead<S>
+{
     #[tracing::instrument]
     fn poll_read(
         self: Pin<&mut Self>,
@@ -443,9 +461,12 @@ impl<S: AsyncRead + Unpin + std::fmt::Debug> AsyncRead for LatencyStreamRead<S> 
             let delay = injector.get_delay(&mut rng);
             let event = this.event;
             if event.is_some() {
-                let _ = event.clone().unwrap().on_applied(
-                    FaultEvent::Latency { direction: Direction::Ingress, side: this.side.clone(), delay: Some(delay) },
-                );
+                let _ =
+                    event.clone().unwrap().on_applied(FaultEvent::Latency {
+                        direction: Direction::Ingress,
+                        side: this.side.clone(),
+                        delay: Some(delay),
+                    });
             }
             *this.applied_count += 1;
             this.read_sleep.replace(Box::pin(sleep(delay)));
@@ -479,7 +500,7 @@ pub struct LatencyStreamWrite<S> {
     event: Option<Box<dyn ProxyTaskEvent>>,
     side: StreamSide,
     write_sleep: Option<Pin<Box<Sleep>>>,
-    applied_count: usize
+    applied_count: usize,
 }
 
 impl<S> LatencyStreamWrite<S>
@@ -500,21 +521,21 @@ where
         event: Option<Box<dyn ProxyTaskEvent>>,
     ) -> Result<Self, S> {
         let side = injector.settings.side.clone();
-        Ok(
-            LatencyStreamWrite {
-                stream: inner,
-                injector,
-                rng: SmallRng::from_entropy(),
-                event: event.clone(),
-                side,
-                write_sleep: None,
-                applied_count: 0
-            }
-        )
+        Ok(LatencyStreamWrite {
+            stream: inner,
+            injector,
+            rng: SmallRng::from_entropy(),
+            event: event.clone(),
+            side,
+            write_sleep: None,
+            applied_count: 0,
+        })
     }
 }
 
-impl<S: AsyncWrite + Unpin + std::fmt::Debug> AsyncWrite for LatencyStreamWrite<S> {
+impl<S: AsyncWrite + Unpin + std::fmt::Debug> AsyncWrite
+    for LatencyStreamWrite<S>
+{
     #[tracing::instrument]
     fn poll_write(
         self: Pin<&mut Self>,
@@ -537,9 +558,12 @@ impl<S: AsyncWrite + Unpin + std::fmt::Debug> AsyncWrite for LatencyStreamWrite<
             let delay = injector.get_delay(&mut rng);
             let event = this.event;
             if event.is_some() {
-                let _ = event.clone().unwrap().on_applied(
-                    FaultEvent::Latency { direction: Direction::Egress, side: this.side.clone(), delay: Some(delay) },
-                );
+                let _ =
+                    event.clone().unwrap().on_applied(FaultEvent::Latency {
+                        direction: Direction::Egress,
+                        side: this.side.clone(),
+                        delay: Some(delay),
+                    });
             }
             *this.applied_count += 1;
             this.write_sleep.replace(Box::pin(sleep(delay)));

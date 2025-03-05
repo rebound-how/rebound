@@ -2,17 +2,19 @@ use std::env;
 use std::fmt;
 use std::time::Instant;
 
-use axum::response::IntoResponse;
 use axum::Router;
 use axum::body::Body;
 use axum::extract::Json;
 use axum::extract::Request;
-use axum::middleware;
 use axum::http::StatusCode;
+use axum::middleware;
 use axum::response::Html;
+use axum::response::IntoResponse;
 use axum::response::Response;
 use axum::routing::get;
 use axum::routing::post;
+use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
+use axum_tracing_opentelemetry::middleware::OtelInResponseLayer;
 use futures::future::join_all;
 use reqwest::ClientBuilder;
 use serde::Deserialize;
@@ -20,7 +22,6 @@ use serde::Serialize;
 use tokio::signal;
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
-use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
 
 use crate::cli::DemoConfig;
 use crate::errors::DemoError;
@@ -132,28 +133,19 @@ async fn ping_myself() -> axum::response::Response<Body> {
     let client = builder.build().unwrap();
 
     let start = Instant::now();
-    let response = client
-    .get("http://127.0.0.1:7070/")
-    .send()
-    .await
-    .unwrap();
+    let response = client.get("http://127.0.0.1:7070/").send().await.unwrap();
 
     let status = response.status();
-    let _body = response
-        .text()
-        .await
-        .unwrap();
+    let _body = response.text().await.unwrap();
 
     let duration = start.elapsed();
 
     tracing::info!("took {:?}", duration);
-    
+
     if status != 200 {
         tracing::warn!("Downstream dependency returned {}", status);
-        return (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "Something went wrong...",
-        ).into_response();
+        return (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong...")
+            .into_response();
     }
 
     Html("<h1>Hello, World!</h1>").into_response()
@@ -166,21 +158,15 @@ async fn ping_remote() -> Json<Pong> {
     let client = builder.build().unwrap();
 
     let start = Instant::now();
-    let response = client
-    .get("https://postman-echo.com/get")
-    .send()
-    .await
-    .unwrap();
+    let response =
+        client.get("https://postman-echo.com/get").send().await.unwrap();
 
     let status = response.status();
     if status != 200 {
         tracing::warn!("Downstream dependency returned {}", status);
     }
 
-    let body = response
-        .json::<serde_json::Value>()
-        .await
-        .unwrap();
+    let body = response.json::<serde_json::Value>().await.unwrap();
 
     let duration = start.elapsed();
 

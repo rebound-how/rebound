@@ -90,9 +90,7 @@ pub trait ProxyTaskEvent: Send + Sync + std::fmt::Debug {
         from_upstream_length: u64,
     ) -> Result<(), SendError<TaskProgressEvent>>;
 
-    fn on_first_byte(
-        &self,
-    ) -> Result<(), SendError<TaskProgressEvent>>;
+    fn on_first_byte(&self) -> Result<(), SendError<TaskProgressEvent>>;
 
     fn on_applied(
         &self,
@@ -184,13 +182,9 @@ impl ProxyTaskEvent for FaultTaskEvent {
         Ok(())
     }
 
-    fn on_first_byte(
-        &self,
-    ) -> Result<(), SendError<TaskProgressEvent>> {
-        let event: TaskProgressEvent = TaskProgressEvent::Ttfb {
-            id: self.id,
-            ts: Instant::now(),
-        };
+    fn on_first_byte(&self) -> Result<(), SendError<TaskProgressEvent>> {
+        let event: TaskProgressEvent =
+            TaskProgressEvent::Ttfb { id: self.id, ts: Instant::now() };
         let sender = self.sender.clone();
         let _ = sender.send(event);
         Ok(())
@@ -281,9 +275,7 @@ impl ProxyTaskEvent for PassthroughTaskEvent {
         Ok(())
     }
 
-    fn on_first_byte(
-        &self,
-    ) -> Result<(), SendError<TaskProgressEvent>> {
+    fn on_first_byte(&self) -> Result<(), SendError<TaskProgressEvent>> {
         Ok(())
     }
 
@@ -400,16 +392,27 @@ pub enum FaultEvent {
 impl FaultEvent {
     pub fn event_type(&self) -> String {
         match self {
-            FaultEvent::Latency { direction:_, side: _, delay: _ } => "latency".to_string(),
-            FaultEvent::Dns { direction:_, side: _, triggered: _ } => "dns".to_string(),
-            FaultEvent::Bandwidth { direction:_, side: _, bps: _ } => "bandwidth".to_string(),
-            FaultEvent::Jitter { direction:_, side: _, amplitude: _, frequency: _ } => {
-                "jitter".to_string()
+            FaultEvent::Latency { direction: _, side: _, delay: _ } => {
+                "latency".to_string()
             }
-            FaultEvent::PacketLoss { state: _, direction:_, side: _ } => "packetloss".to_string(),
+            FaultEvent::Dns { direction: _, side: _, triggered: _ } => {
+                "dns".to_string()
+            }
+            FaultEvent::Bandwidth { direction: _, side: _, bps: _ } => {
+                "bandwidth".to_string()
+            }
+            FaultEvent::Jitter {
+                direction: _,
+                side: _,
+                amplitude: _,
+                frequency: _,
+            } => "jitter".to_string(),
+            FaultEvent::PacketLoss { state: _, direction: _, side: _ } => {
+                "packetloss".to_string()
+            }
             FaultEvent::HttpResponseFault {
-                direction:_, 
-                side: _, 
+                direction: _,
+                side: _,
                 status_code: _,
                 response_body: _,
             } => "httperror".to_string(),

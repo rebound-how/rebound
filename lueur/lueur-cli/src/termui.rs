@@ -324,15 +324,28 @@ fn fault_to_string(faults: &Vec<FaultEvent>) -> String {
 
     for fault in faults {
         let f = match fault {
-            FaultEvent::Latency { direction: _, side, delay: _ } => format!("{} latency", side),
-            FaultEvent::Dns { direction: _, side, triggered: _ } => format!("{} dns", side),
-            FaultEvent::Bandwidth { direction: _, side, bps: _ } => format!("{} bandwidth", side),
-            FaultEvent::Jitter { direction: _, side, amplitude: _, frequency: _ } => {
+            FaultEvent::Latency { direction: _, side, delay: _ } => {
+                format!("{} latency", side)
+            }
+            FaultEvent::Dns { direction: _, side, triggered: _ } => {
+                format!("{} dns", side)
+            }
+            FaultEvent::Bandwidth { direction: _, side, bps: _ } => {
+                format!("{} bandwidth", side)
+            }
+            FaultEvent::Jitter {
+                direction: _,
+                side,
+                amplitude: _,
+                frequency: _,
+            } => {
                 format!("{} jitter", side)
             }
-            FaultEvent::PacketLoss {state: _, direction: _, side} => format!("{} packet loss", side),
+            FaultEvent::PacketLoss { state: _, direction: _, side } => {
+                format!("{} packet loss", side)
+            }
             FaultEvent::HttpResponseFault {
-                direction: _, 
+                direction: _,
                 side,
                 status_code: _,
                 response_body: _,

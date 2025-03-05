@@ -24,7 +24,7 @@ tower = { version = "0.5.1", features = ["full", "make", "util"] }
 hyper = { version = "1.5", features = ["client", "server", "full"] }
 anyhow = "1.0"
 thiserror = "1.0"
-clap = { version = "4.1.8", features = ["derive"] }
+clap = { version = "4.1.8", features = ["derive", "env"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tracing-subscriber = { version = "=0.3.19", features = ["fmt", "env-filter"] }
@@ -73,6 +73,8 @@ tracing-opentelemetry = "0.28.0"
 axum-tracing-opentelemetry = "0.25.0"
 tracing = { version = "0.1.41", features = ["attributes"] }
 openssl = { version = "0.10.71", features = ["vendored"] }
+log = "0.4.26"
+env_logger = "0.11.6"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 aya-ebpf = { version = "0.1.1", optional = true }
@@ -90,12 +92,15 @@ tonic-build = "0.12"
 [target.'cfg(target_os = "linux")'.build-dependencies]
 aya-build = "0.1.2"
 
+#[target.'cfg(all(target_os = "linux", feature = "stealth-auto-build"))'.build-dependencies]
+#lueur-ebpf-programs = { path = "../lueur-ebpf-programs" }
+
 [[bin]]
 name = "lueur"
 path = "src/main.rs"
 
 [features]
-default = []
+default = ["stealth"]
 stealth = [
     "aya-ebpf",
     "aya-log-ebpf",
@@ -104,6 +109,10 @@ stealth = [
     "nix",
     "lueur-ebpf-programs"
 ]
-stealth_auto_build = [
-    "stealth",
+stealth-auto-build = [
+    "aya-ebpf",
+    "aya-log-ebpf",
+    "aya",
+    "aya-log",
+    "nix",
 ]
