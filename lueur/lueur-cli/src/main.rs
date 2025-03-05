@@ -22,11 +22,13 @@ mod termui;
 mod types;
 
 use std::collections::HashMap;
+use std::env;
 use std::fs::File;
 use std::io::Write;
 use std::net::IpAddr;
 use std::net::SocketAddr;
 use std::path::Path;
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::time::Duration;
@@ -702,6 +704,7 @@ fn initialize_stealth(
 
     ebpf_guard
 }
+
 
 #[cfg(all(target_os = "linux", feature = "stealth"))]
 fn get_cargo_bin_dir(cli: &ProxyAwareCommandCommon) -> Option<PathBuf> {
