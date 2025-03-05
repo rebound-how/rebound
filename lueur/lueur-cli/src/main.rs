@@ -63,7 +63,10 @@ use logging::setup_logging;
 use logging::shutdown_tracer;
 use opentelemetry_sdk::metrics::SdkMeterProvider;
 use opentelemetry_sdk::trace::TracerProvider;
-use proxy::ProxyState;
+use proxy::ProxyState;#[cfg(all(
+    target_os = "linux",
+    any(feature = "stealth", feature = "stealth-auto-build")
+))]
 use proxy::run_ebpf_proxy;
 use proxy::run_proxy;
 use reporting::OutputFormat;
@@ -521,6 +524,10 @@ async fn initialize_proxy(
     Ok(handle)
 }
 
+#[cfg(all(
+    target_os = "linux",
+    any(feature = "stealth", feature = "stealth-auto-build")
+))]
 async fn initialize_ebpf_proxy(
     ebpf_proxy_config: &EbpfProxyAddrConfig,
     state: AppState,

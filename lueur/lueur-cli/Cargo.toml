@@ -100,7 +100,7 @@ name = "lueur"
 path = "src/main.rs"
 
 [features]
-default = ["stealth"]
+default = []
 stealth = [
     "aya-ebpf",
     "aya-log-ebpf",
