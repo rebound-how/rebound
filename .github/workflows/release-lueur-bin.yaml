@@ -20,34 +20,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install git-cliff
-        uses: taiki-e/install-action@git-cliff
-
-      - name: Generate and save a changelog
-        run: |
-          git checkout main
-
-          nex_ver=$(git cliff --bumped-version -c lueur/cliff.toml)
-          commit_msg="chore(release): update CHANGELOG.md for ${nex_ver}"
-
-          git-cliff \
-            --with-commit "$commit_msg" \
-            --strip all \
-            -o lueur/CHANGELOG.md \
-            -c lueur/cliff.toml \
-            --include-path "lueur/**/*" \
-            --include-path ".github/workflows/release-lueur-bin.yaml" \
-            --exclude-path "reliably/*" \
-            --exclude-path "chaostoolkit/*" \
-            --bump
-    
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          set +e
-          git add lueur/CHANGELOG.md
-          git commit -m "$commit_msg"
-          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git main
-
       - uses: taiki-e/create-gh-release-action@v1
         if: github.repository_owner == 'rebound-how'
         with:
