@@ -1,7 +1,120 @@
-## [0.1.39] - 2025-02-28
+## [lueur-ebpf-programs-v0.1.21] - 2025-03-05
 
 ### Changed
 
+- Hide behind feature
+- Hide behind feature
+- Made the ebpf program work!
+- Update CHANGELOG.md for 0.1.39
+
+## [lueur-ebpf-programs-v0.1.20] - 2025-02-28
+
+### Changed
+
+- Release
+- Allow to pass non-root location
+
+## [lueur-ebpf-programs-v0.1.18] - 2025-02-28
+
+### Added
+
+- Add logging
+
+### Changed
+
+- Release
+- Move to workspace level
+
+## [lueur-ebpf-programs-v0.1.17] - 2025-02-28
+
+### Changed
+
+- Release
+- Only install when in stealth mode
+
+### Fixed
+
+- Fix where to load programs from
+- Fix minimal version
+- Fix minimal version
+- Fix minimal version
+
+## [lueur-ebpf-programs-v0.1.15] - 2025-02-28
+
+### Changed
+
+- Release
+
+### Fixed
+
+- Fix call
+
+## [lueur-ebpf-programs-v0.1.14] - 2025-02-28
+
+### Changed
+
+- Release
+- Load from bin dir
+
+## [lueur-ebpf-programs-v0.1.13] - 2025-02-28
+
+### Changed
+
+- Release
+- Protect behind a feature
+
+## [lueur-ebpf-programs-v0.1.12] - 2025-02-28
+
+### Changed
+
+- Release
+- Disabling entirely
+
+## [lueur-ebpf-programs-v0.1.11] - 2025-02-28
+
+### Changed
+
+- Release
+- Bump dependency
+
+## [lueur-ebpf-programs-v0.1.10] - 2025-02-28
+
+### Changed
+
+- Release
+- Move patch to local config
+- Move patch to local config
+
+## [lueur-ebpf-programs-v0.1.9] - 2025-02-28
+
+### Changed
+
+- Release
+- Trying again
+- Release
+- Reverting
+- Release
+- Release
+- Trying the other way
+- Release
+- Trying the other way
+- Release
+
+## [lueur-ebpf-programs-v0.1.3] - 2025-02-28
+
+### Changed
+
+- Release
+- Patch to download during install
+
+## [lueur-ebpf-programs-v0.1.2] - 2025-02-28
+
+### Changed
+
+- Release
+- Patch to download during install
+- Release
+- Specify version for publishing purpose
 - Update CHANGELOG.md for 0.1.38
 
 ## [0.1.38] - 2025-02-28
