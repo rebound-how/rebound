@@ -76,7 +76,8 @@
               <option value="3.14">3.14</option>
             </select>
             <p class="inputWrapper__help">
-              Download an install a specific Python version to run the plan
+            Download an install a specific Python version to run the plan. If not
+            set, use the system Python
             </p>
           </div>
           <div class="inputWrapper">

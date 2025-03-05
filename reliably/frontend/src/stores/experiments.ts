@@ -302,7 +302,7 @@ export function getActivityActualTitle(block: string, index: number): string | n
     let actualTitle: string = "";
     if (block === "warmup") {
       actualTitle = exp.definition.method![index].name;
-    } else if (block === "turbulence" || block === "method") {
+    } else if (block === "turbulence" || block === "method") {
       let numberOfWarmupActivities: number = 0;
       const reliablyui = getReliablyUiExtension(exp.definition);
       if (reliablyui) {
@@ -310,7 +310,7 @@ export function getActivityActualTitle(block: string, index: number): string | n
       }
       actualTitle =
         exp.definition.method![index + numberOfWarmupActivities].name;
-    } else if (block === "verification" || block === "hypothesis") {
+    } else if (block === "verification" || block === "hypothesis") {
       actualTitle =
         exp.definition["steady-state-hypothesis"]!.probes![index].name;
     } else if (block === "rollbacks") {
