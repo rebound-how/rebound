@@ -1,12 +1,12 @@
 pub mod forward;
+#[cfg(all(
+    target_os = "linux",
+    any(feature = "stealth", feature = "stealth-auto-build")
+))]
 pub mod stealth;
 pub mod tunnel;
 
-use std::mem::MaybeUninit;
-use std::net::Ipv4Addr;
 use std::net::SocketAddr;
-use std::os::fd::AsFd;
-use std::os::fd::AsRawFd;
 use std::sync::Arc;
 
 use ::oneshot::Sender;
@@ -17,13 +17,6 @@ use hyper::Method;
 use hyper::body::Incoming;
 use hyper::server::conn::http1;
 use hyper_util::rt::TokioIo;
-use libc::SO_ORIGINAL_DST;
-use libc::SOL_IP;
-use libc::getsockopt;
-use libc::sockaddr_in;
-use libc::socklen_t;
-use libc::syscall;
-use opentelemetry::trace::FutureExt;
 use tokio::sync::RwLock;
 use tokio::sync::broadcast;
 use tokio::sync::watch;

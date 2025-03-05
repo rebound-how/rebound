@@ -1,3 +1,8 @@
+#[cfg(all(
+    target_os = "linux",
+    any(feature = "stealth", feature = "stealth-auto-build")
+))]
+
 use std::error::Error;
 use std::io::ErrorKind;
 use std::mem::MaybeUninit;
