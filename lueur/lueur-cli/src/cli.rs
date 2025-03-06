@@ -59,7 +59,7 @@ pub struct ProxyAwareCommandCommon {
         long = "stealth",
         default_value_t = false,
         help = "Enable stealth support (using ebpf).",
-        env = "LUEUR_STEALTH_MODE",
+        env = "LUEUR_ENABLE_STEALTH",
         value_parser
     )]
     pub ebpf: bool,
@@ -73,7 +73,7 @@ pub struct ProxyAwareCommandCommon {
     #[arg(
         help_heading = "Stealth Options",
         long = "ebpf-process-name",
-        help = "Process name to intercept using ebpf.",
+        help = "Process name to intercept traffic using ebpf.",
         env = "LUEUR_EBPF_PROCESS_NAME",
         value_parser
     )]
@@ -147,7 +147,8 @@ pub struct LatencyOptions {
         name = "latency_enabled",
         long = "with-latency",
         default_value_t = false,
-        help = "Enable latency network fault."
+        help = "Enable latency network fault.",
+        env = "LUEUR_WITH_LATENCY"
     )]
     pub enabled: bool,
 
@@ -158,7 +159,8 @@ pub struct LatencyOptions {
         action,
         long,
         default_value_t = true,
-        help = "Apply a global latency rather than a per write/read operation."
+        help = "Apply a global latency rather than a per write/read operation.",
+        env = "LUEUR_LATENCY_GLOBAL"
     )]
     pub global: bool,
 
@@ -169,6 +171,7 @@ pub struct LatencyOptions {
         long,
         default_value_t = StreamSide::Server,
         help = "Apply latency on the communication between client to proxy or proxy to upstream server.",
+        env = "LUEUR_LATENCY_SIDE",
     )]
     pub side: StreamSide,
 
@@ -179,6 +182,7 @@ pub struct LatencyOptions {
         default_value_t = Direction::Ingress,
         value_enum,
         help = "Fault's direction.",
+        env = "LUEUR_LATENCY_DIRECTION",
     )]
     pub latency_direction: Direction,
 
@@ -188,7 +192,8 @@ pub struct LatencyOptions {
         long,
         default_value_t = LatencyDistribution::Normal,
         value_enum,
-        help = "Latency distribution to simulate (options: uniform, normal, pareto, pareto_normal)."
+        help = "Latency distribution to simulate (options: uniform, normal, pareto, pareto_normal).",
+        env = "LUEUR_LATENCY_DISTRIBUTION",
     )]
     pub latency_distribution: LatencyDistribution,
 
@@ -198,7 +203,8 @@ pub struct LatencyOptions {
         long,
         default_value_t = 100.0,
         help = "Mean latency in milliseconds. Must be a positive value.",
-        value_parser = validate_positive_f64
+        value_parser = validate_positive_f64,
+        env = "LUEUR_LATENCY_MEAN",
     )]
     pub latency_mean: f64,
 
@@ -207,9 +213,9 @@ pub struct LatencyOptions {
     #[arg(
         help_heading = "Latency Options",
         long,
-        default_value_t = 20.0,
         help = "Standard deviation in milliseconds. Must be a non-negative value.",
-        value_parser = validate_non_negative_f64
+        value_parser = validate_non_negative_f64,
+        env = "LUEUR_LATENCY_STANDARD_DEVIATION",
     )]
     pub latency_stddev: f64,
 
@@ -217,9 +223,9 @@ pub struct LatencyOptions {
     #[arg(
         help_heading = "Latency Options",
         long,
-        default_value_t = 20.0,
         help = "Distribution shape.",
-        value_parser = validate_non_negative_f64
+        value_parser = validate_non_negative_f64,
+        env = "LUEUR_LATENCY_DISTRIBUTION_SHAPE",
     )]
     pub latency_shape: f64,
 
@@ -227,9 +233,9 @@ pub struct LatencyOptions {
     #[arg(
         help_heading = "Latency Options",
         long,
-        default_value_t = 20.0,
         help = "Distribution scale.",
-        value_parser = validate_non_negative_f64
+        value_parser = validate_non_negative_f64,
+        env = "LUEUR_LATENCY_DISTRIBUTION_SCALE",
     )]
     pub latency_scale: f64,
 
@@ -237,9 +243,9 @@ pub struct LatencyOptions {
     #[arg(
         help_heading = "Latency Options",
         long,
-        default_value_t = 20.0,
         help = "Distribution min.",
-        value_parser = validate_non_negative_f64
+        value_parser = validate_non_negative_f64,
+        env = "LUEUR_LATENCY_DISTRIBUTION_MIN",
     )]
     pub latency_min: f64,
 
@@ -247,9 +253,9 @@ pub struct LatencyOptions {
     #[arg(
         help_heading = "Latency Options",
         long,
-        default_value_t = 20.0,
         help = "Distribution max.",
-        value_parser = validate_non_negative_f64
+        value_parser = validate_non_negative_f64,
+        env = "LUEUR_LATENCY_DISTRIBUTION_MAX",
     )]
     pub latency_max: f64,
 }
@@ -263,7 +269,8 @@ pub struct BandwidthOptions {
         name = "bandwidth_enabled",
         long = "with-bandwidth",
         default_value_t = false,
-        help = "Enable bandwidth network fault."
+        help = "Enable bandwidth network fault.",
+        env = "LUEUR_WITH_BANDWIDTH"
     )]
     pub enabled: bool,
 
@@ -274,6 +281,7 @@ pub struct BandwidthOptions {
         long,
         default_value_t = StreamSide::Server,
         help = "Apply bandwidth on the communication between client to proxy or proxy to upstream server.",
+        env = "LUEUR_BANDWIDTH_SIDE",
     )]
     pub side: StreamSide,
 
@@ -284,6 +292,7 @@ pub struct BandwidthOptions {
         default_value_t = Direction::Ingress,
         value_enum,
         help = "Fault's direction.",
+        env = "LUEUR_BANDWIDTH_DIRECTION",
     )]
     pub bandwidth_direction: Direction,
 
@@ -293,7 +302,8 @@ pub struct BandwidthOptions {
         long,
         default_value_t = 1000,
         help = "Bandwidth rate. Must be a positive integer.",
-        value_parser = validate_positive_usize
+        value_parser = validate_positive_usize,
+        env = "LUEUR_BANDWIDTH_RATE",
     )]
     pub bandwidth_rate: usize,
 
@@ -303,7 +313,8 @@ pub struct BandwidthOptions {
         long,
         default_value_t = BandwidthUnit::Bps,
         value_enum,
-        help = "Unit for the bandwidth rate (options: Bps, KBps, MBps, GBps)."
+        help = "Unit for the bandwidth rate (options: Bps, KBps, MBps, GBps).",
+        env = "LUEUR_BANDWIDTH_UNIT",
     )]
     pub bandwidth_unit: BandwidthUnit,
 }
@@ -317,7 +328,8 @@ pub struct JitterOptions {
         name = "jitter_enabled",
         long = "with-jitter",
         default_value_t = false,
-        help = "Enable jitter network fault."
+        help = "Enable jitter network fault.",
+        env = "LUEUR_WITH_JITTER"
     )]
     pub enabled: bool,
 
@@ -328,6 +340,7 @@ pub struct JitterOptions {
         default_value_t = Direction::Ingress,
         value_enum,
         help = "Fault's direction.",
+        env = "LUEUR_JITTER_DIRECTION",
     )]
     pub jitter_direction: Direction,
 
@@ -337,7 +350,8 @@ pub struct JitterOptions {
         long,
         default_value_t = 20.0,
         help = "Maximum jitter delay in milliseconds. Must be a non-negative value.",
-        value_parser = validate_non_negative_f64
+        value_parser = validate_non_negative_f64,
+        env = "LUEUR_JITTER_DELAY",
     )]
     pub jitter_amplitude: f64,
 
@@ -347,7 +361,8 @@ pub struct JitterOptions {
         long,
         default_value_t = 5.0,
         help = "Frequency of jitter application in Hertz (times per second). Must be a non-negative value.",
-        value_parser = validate_non_negative_f64
+        value_parser = validate_non_negative_f64,
+        env = "LUEUR_JITTER_FREQ",
     )]
     pub jitter_frequency: f64,
 }
@@ -361,7 +376,8 @@ pub struct DnsOptions {
         name = "dns_enabled",
         long = "with-dns",
         default_value_t = false,
-        help = "Enable dns network fault."
+        help = "Enable dns network fault.",
+        env = "LUEUR_WITH_DNS"
     )]
     pub enabled: bool,
 
@@ -371,7 +387,8 @@ pub struct DnsOptions {
         long,
         default_value_t = 0.5,
         help = "Probability to trigger the DNS failure between 0.0 and 1.0.",
-        value_parser = validate_probability
+        value_parser = validate_probability,
+        env = "LUEUR_DNS_PROBABILITY",
     )]
     pub dns_rate: f64,
 }
@@ -385,7 +402,8 @@ pub struct PacketLossOptions {
         name = "packet-loss-enabled",
         long = "with-packet-loss",
         default_value_t = false,
-        help = "Enable packet loss network fault."
+        help = "Enable packet loss network fault.",
+        env = "LUEUR_WITH_PACKET_LOSS"
     )]
     pub enabled: bool,
 
@@ -396,6 +414,7 @@ pub struct PacketLossOptions {
         long,
         default_value_t = StreamSide::Server,
         help = "Apply packet loss on the communication between client to proxy or proxy to upstream server.",
+        env = "LUEUR_PACKET_LOSS_SIDE",
     )]
     pub side: StreamSide,
 
@@ -406,6 +425,7 @@ pub struct PacketLossOptions {
         default_value_t = Direction::Ingress,
         value_enum,
         help = "Fault's direction.",
+        env = "LUEUR_PACKET_LOSS_DIRECTION",
     )]
     pub packet_loss_direction: Direction,
 }
@@ -454,7 +474,8 @@ pub struct HTTPResponseOptions {
         name = "http_response_enabled",
         long = "with-http-response",
         default_value_t = false,
-        help = "Enable HTTP response fault."
+        help = "Enable HTTP response fault.",
+        env = "LUEUR_WITH_HTTP_FAULT"
     )]
     pub enabled: bool,
 
@@ -464,7 +485,8 @@ pub struct HTTPResponseOptions {
         long = "http-status",
         default_value_t = 500,
         help = "HTTP status code to return.",
-        value_parser = validate_http_status
+        value_parser = validate_http_status,
+        env = "LUEUR_HTTP_FAULT_STATUS",
     )]
     pub http_response_status_code: u16,
 
@@ -473,7 +495,8 @@ pub struct HTTPResponseOptions {
         help_heading = "HTTP Response Options",
         long = "http-body",
         help = "Optional HTTP response body to return.",
-        value_parser
+        value_parser,
+        env = "LUEUR_HTTP_FAULT_BODY"
     )]
     pub http_response_body: Option<String>,
 
@@ -483,7 +506,8 @@ pub struct HTTPResponseOptions {
         long,
         default_value_t = 1.0, // Default to always trigger when enabled
         help = "Probability to trigger the HTTP response fault (0.0 to 1.0).",
-        value_parser = validate_probability
+        value_parser = validate_probability,
+        env = "LUEUR_HTTP_FAULT_PROBABILITY",
     )]
     pub http_response_trigger_probability: f64,
 }
@@ -549,7 +573,8 @@ pub struct ScenarioConfig {
         short,
         long,
         help = "File to save the generated report. The extension determines the format: .json, .yaml, .html and .md are supported.",
-        default_value = "report.json"
+        default_value = "report.json",
+        env = "LUEUR_SCENARIO_REPORT_PATH",
     )]
     pub report: String,
 
@@ -557,7 +582,8 @@ pub struct ScenarioConfig {
     #[arg(
         long = "proxy-address",
         help = "Listening address for the proxy server. Overrides the one defined in the scenario.",
-        value_parser
+        value_parser,
+        env = "LUEUR_SCENARIO_PROXY_ADDR",
     )]
     pub proxy_address: Option<String>,
 }
@@ -569,7 +595,8 @@ pub struct DemoConfig {
     #[arg(
         help = "Listening address for the proxy server. Overrides the one defined in the scenario.",
         default_value = "127.0.0.1",
-        value_parser
+        value_parser,
+        env = "LUEUR_DEMO_ADDR",
     )]
     pub address: String,
 
@@ -577,7 +604,8 @@ pub struct DemoConfig {
     #[arg(
         help = "Listening address for the proxy server. Overrides the one defined in the scenario.",
         default_value_t = 7070,
-        value_parser
+        value_parser,
+        env = "LUEUR_DEMO_PORT",
     )]
     pub port: u16,
 }
@@ -591,187 +619,9 @@ pub struct RunCommandCommon {
         default_value_t = Direction::Ingress,
         value_enum,
         help = "Fault's direction.",
+        env = "LUEUR_RUN_FAULT_DIRECTION",
     )]
     pub direction: Direction,
-}
-
-/// CLI Configuration for Latency Fault
-#[derive(Args, Clone, Debug, Serialize, Deserialize)]
-pub struct RunCommandLatency {
-    #[command(flatten)]
-    pub common: RunCommandCommon,
-
-    #[command(flatten)]
-    pub config: CliLatencyConfig,
-}
-
-/// CLI Configuration for Packet Loss Fault
-#[derive(Args, Clone, Debug, Serialize, Deserialize)]
-pub struct RunCommandPacketLoss {
-    #[command(flatten)]
-    pub common: RunCommandCommon,
-
-    #[command(flatten)]
-    pub config: CliPacketLossConfig,
-}
-
-/// CLI Configuration for Bandwidth Throttling Fault
-#[derive(Args, Clone, Debug, Serialize, Deserialize)]
-pub struct RunCommandBandwidth {
-    #[command(flatten)]
-    pub common: RunCommandCommon,
-
-    #[command(flatten)]
-    pub config: CliBandwidthConfig,
-}
-
-/// CLI Configuration for Jitter Fault
-#[derive(Args, Clone, Debug, Serialize, Deserialize)]
-pub struct RunCommandJitter {
-    #[command(flatten)]
-    pub common: RunCommandCommon,
-
-    #[command(flatten)]
-    pub config: CliJitterConfig,
-}
-
-/// CLI DNS Fault
-#[derive(Args, Clone, Debug, Serialize, Deserialize)]
-pub struct RunCommandDNS {
-    #[command(flatten)]
-    pub common: RunCommandCommon,
-
-    #[command(flatten)]
-    pub config: CliDNSConfig,
-}
-
-/// CLI Configuration for Latency Fault
-#[derive(Args, Clone, Debug, Serialize, Deserialize)]
-pub struct CliLatencyConfig {
-    /// Latency distribution to simulate
-    #[arg(
-        long,
-        default_value_t = LatencyDistribution::Normal,
-        value_enum,
-        help = "Latency distribution to simulate (options: uniform, normal, pareto, pareto_normal)."
-    )]
-    pub distribution: LatencyDistribution,
-
-    /// Mean latency in milliseconds
-    #[arg(
-        long,
-        default_value_t = 100.0,
-        help = "Mean latency in milliseconds. Must be a positive value.",
-        value_parser = validate_positive_f64
-    )]
-    pub mean: f64,
-
-    /// Standard deviation in milliseconds (applicable for certain
-    /// distributions)
-    #[arg(
-        long,
-        default_value_t = 20.0,
-        help = "Standard deviation in milliseconds. Must be a non-negative value.",
-        value_parser = validate_non_negative_f64
-    )]
-    pub stddev: f64,
-
-    /// Distribution shape
-    #[arg(
-        long,
-        default_value_t = 20.0,
-        help = "Distribution shape.",
-        value_parser = validate_non_negative_f64
-    )]
-    pub shape: f64,
-
-    /// Distribution scale
-    #[arg(
-        long,
-        default_value_t = 20.0,
-        help = "Distribution scale.",
-        value_parser = validate_non_negative_f64
-    )]
-    pub scale: f64,
-
-    /// Uniform distribution min
-    #[arg(
-        long,
-        default_value_t = 20.0,
-        help = "Distribution min.",
-        value_parser = validate_non_negative_f64
-    )]
-    pub min: f64,
-
-    /// Uniform distribution max
-    #[arg(
-        long,
-        default_value_t = 20.0,
-        help = "Distribution max.",
-        value_parser = validate_non_negative_f64
-    )]
-    pub max: f64,
-}
-
-/// CLI Configuration for Packet Loss Fault
-#[derive(Args, Clone, Debug, Serialize, Deserialize)]
-pub struct CliPacketLossConfig {}
-
-/// CLI Configuration for Bandwidth Throttling Fault
-#[derive(Args, Clone, Debug, Serialize, Deserialize)]
-pub struct CliBandwidthConfig {
-    /// Bandwidth rate
-    #[arg(
-        long,
-        default_value_t = 1000,
-        help = "Bandwidth rate. Must be a positive integer.",
-        value_parser = validate_positive_u32
-    )]
-    pub rate: u32,
-
-    /// Unit for the bandwidth rate
-    #[arg(
-        long,
-        default_value_t = BandwidthUnit::Bps,
-        value_enum,
-        help = "Unit for the bandwidth rate (options: Bps, KBps, MBps, GBps)."
-    )]
-    pub unit: BandwidthUnit,
-}
-
-/// CLI Configuration for Jitter Fault
-#[derive(Args, Clone, Debug, Serialize, Deserialize)]
-pub struct CliJitterConfig {
-    /// Maximum jitter delay in milliseconds
-    #[arg(
-        long,
-        default_value_t = 20.0,
-        help = "Maximum jitter delay in milliseconds. Must be a non-negative value.",
-        value_parser = validate_non_negative_f64
-    )]
-    pub amplitude: f64,
-
-    /// Frequency of jitter application in Hertz (times per second)
-    #[arg(
-        long,
-        default_value_t = 5.0,
-        help = "Frequency of jitter application in Hertz (times per second). Must be a non-negative value.",
-        value_parser = validate_non_negative_f64
-    )]
-    pub frequency: f64,
-}
-
-/// CLI Configuration for DNS
-#[derive(Args, Clone, Debug, Serialize, Deserialize)]
-pub struct CliDNSConfig {
-    /// Probability to inject the error between 0 and 100
-    #[arg(
-        long,
-        default_value_t = 50,
-        help = "Probability to trigger the DNS failure between 0 and 100.",
-        value_parser = validate_positive_u8
-    )]
-    pub rate: u8,
 }
 
 /// Validator for positive f64 values
@@ -789,24 +639,6 @@ fn validate_non_negative_f64(val: &str) -> Result<f64, String> {
         Ok(v) if v >= 0.0 => Ok(v),
         Ok(_) => Err(String::from("Value must be a non-negative number.")),
         Err(_) => Err(String::from("Invalid floating-point number.")),
-    }
-}
-
-/// Validator for positive u32 values
-fn validate_positive_u32(val: &str) -> Result<u32, String> {
-    match val.parse::<u32>() {
-        Ok(v) if v > 0 => Ok(v),
-        Ok(_) => Err(String::from("Value must be a positive integer.")),
-        Err(_) => Err(String::from("Invalid unsigned integer.")),
-    }
-}
-
-/// Validator for positive u8 values
-fn validate_positive_u8(val: &str) -> Result<u8, String> {
-    match val.parse::<u8>() {
-        Ok(v) if v > 0 => Ok(v),
-        Ok(_) => Err(String::from("Value must be a positive integer.")),
-        Err(_) => Err(String::from("Invalid unsigned integer.")),
     }
 }
 
