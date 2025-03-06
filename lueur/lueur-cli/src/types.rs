@@ -272,13 +272,12 @@ pub enum FaultConfiguration {
         side: Option<StreamSide>,
     },
     Jitter {
-        jitter_amplitude: f64,
-        jitter_frequency: f64,
+        amplitude: f64,
+        frequency: f64,
         direction: String,
     },
     Dns {
-        dns_rate: u8,
-        direction: String,
+        rate: f64,
     },
     HttpError {
         status_code: u16,
@@ -342,23 +341,20 @@ impl FaultConfiguration {
                 Ok(FaultConfig::PacketLoss(settings))
             }
             FaultConfiguration::Jitter {
-                jitter_amplitude,
-                jitter_frequency,
+                amplitude: jitter_amplitude,
+                frequency: jitter_frequency,
                 direction,
             } => {
                 let settings = config::JitterSettings {
                     direction: Direction::from_str(direction).unwrap(),
-                    jitter_amplitude: *jitter_amplitude,
-                    jitter_frequency: *jitter_frequency,
+                    amplitude: *jitter_amplitude,
+                    frequency: *jitter_frequency,
                 };
 
                 Ok(FaultConfig::Jitter(settings))
             }
-            FaultConfiguration::Dns { dns_rate, direction } => {
-                let settings = config::DnsSettings {
-                    direction: Direction::from_str(direction).unwrap(),
-                    dns_rate: *dns_rate,
-                };
+            FaultConfiguration::Dns { rate: dns_rate } => {
+                let settings = config::DnsSettings { rate: *dns_rate };
 
                 Ok(FaultConfig::Dns(settings))
             }
@@ -455,8 +451,8 @@ impl fmt::Display for FaultConfiguration {
                 )
             }
             FaultConfiguration::Jitter {
-                jitter_amplitude,
-                jitter_frequency,
+                amplitude: jitter_amplitude,
+                frequency: jitter_frequency,
                 direction,
             } => {
                 write!(
@@ -465,16 +461,12 @@ impl fmt::Display for FaultConfiguration {
                     jitter_amplitude, jitter_frequency, direction
                 )
             }
-            FaultConfiguration::Dns { dns_rate, direction } => {
-                write!(
-                    f,
-                    "DNS Fault - Rate: {}%, Direction: {}",
-                    dns_rate, direction
-                )
+            FaultConfiguration::Dns { rate: dns_rate } => {
+                write!(f, "DNS Fault - Rate: {}%", dns_rate * 100.0)
             }
             FaultConfiguration::HttpError {
                 status_code,
-                body,
+                body: _,
                 probability,
             } => {
                 write!(

@@ -308,16 +308,16 @@ pub fn build_item_list(source: ScenarioItem) -> Vec<ScenarioItem> {
                                 side,
                             },
                             FaultConfiguration::Jitter {
-                                jitter_amplitude,
-                                jitter_frequency,
+                                amplitude: jitter_amplitude,
+                                frequency: jitter_frequency,
                                 direction,
                             } => FaultConfiguration::Jitter {
-                                jitter_amplitude,
-                                jitter_frequency,
+                                amplitude: jitter_amplitude,
+                                frequency: jitter_frequency,
                                 direction,
                             },
-                            FaultConfiguration::Dns { dns_rate, direction } => {
-                                FaultConfiguration::Dns { dns_rate, direction }
+                            FaultConfiguration::Dns { rate: dns_rate } => {
+                                FaultConfiguration::Dns { rate: dns_rate }
                             }
                             FaultConfiguration::HttpError {
                                 status_code,

@@ -63,7 +63,8 @@ use logging::setup_logging;
 use logging::shutdown_tracer;
 use opentelemetry_sdk::metrics::SdkMeterProvider;
 use opentelemetry_sdk::trace::TracerProvider;
-use proxy::ProxyState;#[cfg(all(
+use proxy::ProxyState;
+#[cfg(all(
     target_os = "linux",
     any(feature = "stealth", feature = "stealth-auto-build")
 ))]
@@ -704,7 +705,6 @@ fn initialize_stealth(
 
     ebpf_guard
 }
-
 
 #[cfg(all(target_os = "linux", feature = "stealth"))]
 fn get_cargo_bin_dir(cli: &ProxyAwareCommandCommon) -> Option<PathBuf> {

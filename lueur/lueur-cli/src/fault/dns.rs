@@ -57,7 +57,7 @@ impl From<&DnsSettings> for FaultyResolverInjector {
 
 impl FaultyResolverInjector {
     fn should_apply_fault_resolver(&mut self) -> bool {
-        self.rng.gen_bool(self.settings.dns_rate as f64 / 100.0)
+        self.rng.gen_bool(self.settings.rate)
     }
 
     pub fn with_event(&mut self, event: Box<dyn ProxyTaskEvent>) {

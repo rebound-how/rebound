@@ -8,7 +8,7 @@ use crate::cli::DnsOptions;
 use crate::cli::HTTPResponseOptions;
 use crate::cli::JitterOptions;
 use crate::cli::LatencyOptions;
-use crate::cli::PacketDuplicationOptions;
+//use crate::cli::PacketDuplicationOptions;
 use crate::cli::PacketLossOptions;
 use crate::cli::RunCommandOptions;
 use crate::types::BandwidthUnit;
@@ -51,15 +51,14 @@ pub struct BandwidthSettings {
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
 pub struct JitterSettings {
     pub direction: Direction,
-    pub jitter_amplitude: f64, // in milliseconds
-    pub jitter_frequency: f64, // in Hertz
+    pub amplitude: f64, // in milliseconds
+    pub frequency: f64, // in Hertz
 }
 
 /// Internal Configuration for DNS Fault
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
 pub struct DnsSettings {
-    pub direction: Direction,
-    pub dns_rate: u8, // between 0 and 100
+    pub rate: f64, // between 0 and 1.0
 }
 
 /// Internal Configuration for Packet Duplication Fault
@@ -142,11 +141,13 @@ impl From<&RunCommandOptions> for ProxyConfig {
             faults.push(FaultConfig::PacketLoss((&cli.packet_loss).into()));
         }
 
+        /*
         if cli.packet_duplication.enabled {
             faults.push(FaultConfig::PacketDuplication(
                 (&cli.packet_duplication).into(),
             ));
         }
+        */
 
         if cli.http_error.enabled {
             faults.push(FaultConfig::HttpError((&cli.http_error).into()));
@@ -188,15 +189,15 @@ impl From<&JitterOptions> for JitterSettings {
     fn from(cli: &JitterOptions) -> Self {
         JitterSettings {
             direction: cli.jitter_direction.clone(),
-            jitter_amplitude: cli.jitter_amplitude,
-            jitter_frequency: cli.jitter_frequency,
+            amplitude: cli.jitter_amplitude,
+            frequency: cli.jitter_frequency,
         }
     }
 }
 
 impl From<&DnsOptions> for DnsSettings {
     fn from(cli: &DnsOptions) -> Self {
-        DnsSettings { direction: Direction::Egress, dns_rate: cli.dns_rate }
+        DnsSettings { rate: cli.dns_rate }
     }
 }
 
@@ -209,6 +210,7 @@ impl From<&PacketLossOptions> for PacketLossSettings {
     }
 }
 
+/*
 impl From<&PacketDuplicationOptions> for PacketDuplicationSettings {
     fn from(cli: &PacketDuplicationOptions) -> Self {
         PacketDuplicationSettings {
@@ -217,7 +219,7 @@ impl From<&PacketDuplicationOptions> for PacketDuplicationSettings {
         }
     }
 }
-
+*/
 impl From<&HTTPResponseOptions> for HttpResponseSettings {
     fn from(cli: &HTTPResponseOptions) -> Self {
         HttpResponseSettings {

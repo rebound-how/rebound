@@ -110,6 +110,7 @@ pub struct ProxyAwareCommandCommon {
         long = "upstream",
         help = "Host to proxy.",
         env = "LUEUR_UPSTREAMS",
+        value_delimiter = ',',
         value_parser
     )]
     pub upstream_hosts: Vec<String>,
@@ -117,13 +118,13 @@ pub struct ProxyAwareCommandCommon {
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    /// Apply a network fault
+    /// Run the lueur proxy and apply network faults to traffic
     Run {
         #[command(flatten)]
         options: RunCommandOptions,
     },
 
-    /// Execute a predefined scenario
+    /// Execute a scenario
     Scenario {
         #[command(subcommand)]
         scenario: ScenarioCommands,
@@ -153,7 +154,7 @@ pub struct LatencyOptions {
     /// Global or per-operation (read/write)
     #[arg(
         help_heading = "Latency Options",
-        name = "latency_global",
+        name = "latency-global",
         action,
         long,
         default_value_t = true,
@@ -164,7 +165,7 @@ pub struct LatencyOptions {
     /// Latency side
     #[arg(
         help_heading = "Latency Options",
-        name = "latency_side",
+        name = "latency-side",
         long,
         default_value_t = StreamSide::Server,
         help = "Apply latency on the communication between client to proxy or proxy to upstream server.",
@@ -269,7 +270,7 @@ pub struct BandwidthOptions {
     /// Bandwidth side
     #[arg(
         help_heading = "Bandwidth Options",
-        name = "bandwidth_side",
+        name = "bandwidth-side",
         long,
         default_value_t = StreamSide::Server,
         help = "Apply bandwidth on the communication between client to proxy or proxy to upstream server.",
@@ -368,11 +369,11 @@ pub struct DnsOptions {
     #[arg(
         help_heading = "DNS Options",
         long,
-        default_value_t = 50,
-        help = "Probability to trigger the DNS failure between 0 and 100.",
-        value_parser = validate_positive_u8
+        default_value_t = 0.5,
+        help = "Probability to trigger the DNS failure between 0.0 and 1.0.",
+        value_parser = validate_probability
     )]
-    pub dns_rate: u8,
+    pub dns_rate: f64,
 }
 
 #[derive(Parser, Debug, Serialize, Deserialize, Clone)]
@@ -381,7 +382,7 @@ pub struct PacketLossOptions {
     #[arg(
         help_heading = "Packet Loss Options",
         action,
-        name = "packet_loss_enabled",
+        name = "packet-loss-enabled",
         long = "with-packet-loss",
         default_value_t = false,
         help = "Enable packet loss network fault."
@@ -390,8 +391,8 @@ pub struct PacketLossOptions {
 
     /// Packet Loss side
     #[arg(
-        help_heading = "Bandwidth Options",
-        name = "packet_loss_side",
+        help_heading = "Packet Loss Options",
+        name = "packet-loss-side",
         long,
         default_value_t = StreamSide::Server,
         help = "Apply packet loss on the communication between client to proxy or proxy to upstream server.",
@@ -409,13 +410,14 @@ pub struct PacketLossOptions {
     pub packet_loss_direction: Direction,
 }
 
+/*
 #[derive(Parser, Debug, Serialize, Deserialize, Clone)]
 pub struct PacketDuplicationOptions {
     /// Packet Duplication fault enabled
     #[arg(
         help_heading = "Packet Duplication Options",
         action,
-        name = "packet_duplication_enabled",
+        name = "packet-duplication-enabled",
         long = "with-packet-duplication",
         default_value_t = false,
         help = "Enable packet duplication network fault."
@@ -442,7 +444,7 @@ pub struct PacketDuplicationOptions {
     )]
     pub packet_duplication_probability: f64,
 }
-
+*/
 #[derive(Parser, Debug, Serialize, Deserialize, Clone)]
 pub struct HTTPResponseOptions {
     /// HTTP Response Fault enabled
@@ -514,10 +516,11 @@ pub struct RunCommandOptions {
     // Packet Loss Options
     #[command(flatten)]
     pub packet_loss: PacketLossOptions,
-
+    /*
     // Packet Duplication Options
     #[command(flatten)]
     pub packet_duplication: PacketDuplicationOptions,
+     */
 }
 
 /// Subcommands for executing scenarios

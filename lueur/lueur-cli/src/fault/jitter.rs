@@ -41,12 +41,12 @@ impl fmt::Display for JitterInjector {
 impl JitterInjector {
     /// Determines whether to inject jitter based on the configured frequency.
     fn should_jitter(&self, rng: &mut SmallRng) -> bool {
-        rng.r#gen::<f64>() < self.settings.jitter_frequency
+        rng.r#gen::<f64>() < self.settings.frequency
     }
 
     /// Generates a random jitter duration based on the configured amplitude.
     fn generate_jitter(&self, rng: &mut SmallRng) -> Duration {
-        let millis = rng.gen_range(0.0..=self.settings.jitter_amplitude);
+        let millis = rng.gen_range(0.0..=self.settings.amplitude);
         Duration::from_millis(millis as u64)
     }
 }
