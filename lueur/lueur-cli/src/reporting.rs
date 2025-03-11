@@ -7,7 +7,9 @@ use std::time::Duration;
 
 use chrono::DateTime;
 use chrono::Utc;
-use colored::*;
+use colorful::Color;
+use colorful::Colorful;
+use colorful::ExtraColorInterface;
 use prettytable::Table;
 use prettytable::row;
 use serde::Deserialize;

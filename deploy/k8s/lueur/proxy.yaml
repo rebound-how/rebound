@@ -1,0 +1,86 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: lueur-proxy
+  labels:
+    app: lueur-proxy
+automountServiceAccountToken: false
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lueur-proxy-config
+  labels:
+    app: lueur-proxy
+data:
+  LUEUR_UPSTREAMS: "http://lueur-demo:7070"
+  LUEUR_WITH_LATENCY: "true"
+  LUEUR_LATENCY_MEAN: "300"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lueur-proxy
+  labels:
+    app: lueur-proxy
+spec:
+  selector:
+    app: lueur-proxy
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lueur-proxy
+  labels:
+    app: lueur-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lueur-proxy
+  template:
+    metadata:
+      labels:
+        app: lueur-proxy
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      serviceAccountName: lueur-proxy
+      securityContext:
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+      containers:
+        - name: lueur-proxy
+          image: localhost:32000/rebound/lueur:latest
+          imagePullPolicy: Always
+          tty: true
+          args:
+            - --log-stdout
+            - --log-level
+            - debug
+            - run
+            - --no-ui
+            - --proxy-address
+            - "0.0.0.0:8080"
+          ports:
+            - containerPort: 8080
+              name: http
+          envFrom:
+            - configMapRef:
+                name: lueur-proxy-config
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            privileged: false
+            capabilities:
+              drop:
+                - ALL

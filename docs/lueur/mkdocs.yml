@@ -3,6 +3,8 @@ site_description: "Shift resiliency issues discovery left with Lueur"
 site_author: "The Lueur Team"
 site_url: https://docs.lueur.dev
 repo_url: https://github.com/rebound-how/rebound
+repo_name: rebound/lueur
+edit_uri: edit/main/docs/lueur/docs
 copyright: Copyright &copy; 2024 - 2025 Sylvain Hellegouarch
 extra:
   social:
@@ -14,33 +16,38 @@ extra:
       name: Sylvain Hellegouarch on Fosstodon
 nav:
   - Home: index.md
-  - Why lueur?: why-lueur.md
   - Getting Started:
     - "Install": tutorials/install.md
     - "Getting Started": tutorials/getting-started.md
-    - "Exploring Network Fault Impact": tutorials/real-impact-use-case.md
-    - "Scenario Walkthrough": tutorials/scenario-walkthrough.md
+    - "Creating a Reliability Testing Scenario": tutorials/create-scenario.md
   - "How-To Guides":
-    - "Configure Latency": how-to/configure-latency.md
-    - "Run Scenarios": how-to/run-scenarios.md
-    - "Generate Reports": how-to/generate-reports.md
-    - "Integrate with CI": how-to/integrate-with-ci.md
-  - Explanations:
-    - "What Is Lueur?": explanations/what-is-lueur.md
-    - "Fault Injection Basics": explanations/fault-injection-basics.md
-    - "Understanding Proxies and Latency": explanations/understanding-proxies-and-latency.md
-    - "Architecture Overview": explanations/architecture-overview.md
+    - "Install lueur": how-to/install.md
+    - "Configure Latency": how-to/proxy/faults/configure-latency.md
+    - "Configure Bandwidth": how-to/proxy/faults/configure-bandwidth.md
+    - "Configure Packet Loss": how-to/proxy/faults/configure-packet-loss.md
+    - "Configure HTTP Error": how-to/proxy/faults/configure-http-error.md
+    - "Configure Jitter": how-to/proxy/faults/configure-jitter.md
+    - "Run In Stealth Mode": how-to/proxy/stealth/configure-stealth-mode.md
+    - "Enable Open Telemetry Observability": how-to/observability/traces.md
+    - "Integrate GitHub Actions": how-to/ci/github.md
+    - "Run On Kubernetes": how-to/platform/run-on-kubernetes.md
+    - "Run With Docker": how-to/platform/run-with-docker.md
   - Reference:
     - "CLI Commands": reference/cli-commands.md
     - "Scenario File Format": reference/scenario-file-format.md
-    - "Configuration Options": reference/configuration-options.md
-    - "Report File Format": reference/report-file-format.md
+    - "Environment Variables": reference/environment-variables.md
+    - "Architecture": reference/architecture-overview.md
+  - Explanations:
+    - "Why lueur?": explanations/why-lueur.md
+    - "Fault Injection Basics": explanations/fault-injection-basics.md
+    - "Understanding eBPF": explanations/understanding-ebpf.md
+    - "Technical Choices": reference/technical-choices.md
 theme:
   name: material
-  logo: assets/logo-inverted.svg
   custom_dir: docs/overrides
   icon:
     annotation: material/plus-circle
+    repo: fontawesome/brands/github
   palette:
     # Palette toggle for automatic mode
     - media: "(prefers-color-scheme)"
@@ -52,7 +59,7 @@ theme:
     - media: "(prefers-color-scheme: light)"
       scheme: default
       primary: white
-      accent: amber
+      accent: custom
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
@@ -61,7 +68,7 @@ theme:
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       primary: black
-      accent: amber
+      accent: custom
       toggle:
         icon: material/brightness-4
         name: Switch to system preference
@@ -73,18 +80,25 @@ theme:
     - search.highlight
     - navigation.tracking
     - navigation.sections
+    - navigation.top
     - toc.integrate
     - content.code.copy
     - content.code.annotate
+    - content.action.edit
+
   
 extra_css:
   - stylesheets/lueur.css
 
 plugins:
   - search
+  - glightbox
   - tags
   - social:
       enabled: !ENV [CI, false]
+  - git-revision-date-localized:
+      enabled: !ENV [CI, false]
+      enable_creation_date: true
 
 markdown_extensions:
   - admonition
@@ -95,6 +109,9 @@ markdown_extensions:
   - pymdownx.caret
   - pymdownx.critic
   - pymdownx.mark
+  - pymdownx.blocks.definition
+  - pymdownx.tasklist:
+      custom_checkbox: true
   - pymdownx.highlight:
       anchor_linenums: true
       pygments_lang_class: true

@@ -170,14 +170,14 @@ pub fn cg_connect4(ctx: SockAddrContext) -> i32 {
         (*sock_mut).user_ip4 = config.proxy_ip4.to_be();
         (*sock_mut).user_port = u32::from(config.proxy_port4);
     }
-    debug!(
-        &ctx,
-        "cg_connect4: redirected connection {}:{} (cookie 0x{:x}) {}",
-        u32::from_be(orig_ip),
-        u16::from_be(orig_port),
-        cookie,
-        u16::from_be(config.proxy_port4)
-    );
+
+
+        debug!(
+            &ctx,
+            "where we go {}:{}",
+            config.proxy_ip4,
+            u16::from_be(config.proxy_port4),
+        );
     TC_ACT_RECLASSIFY
 }
 
@@ -202,14 +202,6 @@ pub fn cg_sock_ops(ctx: SockOpsContext) -> u32 {
     unsafe {
         let _ = MAP_PORTS.insert(&local_port, &cookie, 0);
     }
-    debug!(
-        &ctx,
-        "conn established {}:{} => {}:{}",
-        u32::from_be(ctx.local_ip4()),
-        ctx.local_port(),
-        u32::from_be(ctx.remote_ip4()),
-        u32::from_be(ctx.remote_port())
-    );
     // TC_ACT_OK
     0
 }

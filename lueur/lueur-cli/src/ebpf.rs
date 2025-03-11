@@ -2,10 +2,13 @@
     target_os = "linux",
     any(feature = "stealth", feature = "stealth-auto-build")
 ))]
+use std::env;
 use std::net::IpAddr;
 use std::net::Ipv4Addr;
+use std::path::PathBuf;
 use std::process;
 
+use aya::Ebpf;
 use aya::Pod;
 use aya::maps::HashMap;
 use aya::programs::CgroupAttachMode;
@@ -17,6 +20,8 @@ use local_ip_address::list_afinet_netifas;
 use nix::net::if_::if_nametoindex;
 use rand::Rng;
 
+use crate::cli::StealthCommandCommon;
+use crate::cli::ProxyAwareCommandCommon;
 use crate::types::EbpfProxyAddrConfig;
 use crate::types::ProxyAddrConfig;
 
@@ -49,22 +54,69 @@ unsafe impl Pod for EbpfProxyConfig {}
 
 pub fn get_ebpf_proxy(
     proxy_nic_config: &ProxyAddrConfig,
-) -> anyhow::Result<EbpfProxyAddrConfig> {
-    let proxy_ip4: u32 = proxy_nic_config.proxy_ip.into();
-    let proxy_ip6 = ipv4_to_mapped_ipv6_bytes(proxy_ip4);
-
+    ebpf_proxy_iface: Option<String>,
+    ebpf_proxy_ip: Option<String>,
+    ebpf_proxy_port: Option<u16>
+) -> anyhow::Result<Option<EbpfProxyAddrConfig>> {
     let interfaces = get_all_interfaces()?;
-    let proxy_iface =
-        find_interface_by_ip(&interfaces, proxy_ip4.into()).unwrap();
-    let iface_name = proxy_iface.0.clone();
+    if interfaces.len() == 0 {
+        tracing::warn!(
+            "Could not find any suitable interfaces to bind our ebpf program to"
+        );
+        return Ok(None);
+    }
 
-    let ebpf_proxy_port: u16 = rand::thread_rng().gen_range(1024..=65535);
+    let iface_name;
+    let iface_ip: Ipv4Addr;
 
-    Ok(EbpfProxyAddrConfig {
-        ip: proxy_iface.1.clone(),
-        port: ebpf_proxy_port,
+    if let Some(iface) = ebpf_proxy_iface {
+        let proxy_iface = match find_ip_by_interface(&interfaces, iface) {
+            Some(it) => it,
+            None => return Ok(None),
+        };
+        iface_ip = proxy_iface.1.clone();
+        iface_name = proxy_iface.0.clone();
+    } else if let Some(ebpf_ip) = ebpf_proxy_ip {
+        let proxy_iface =
+        match find_interface_by_ip(&interfaces, ebpf_ip.parse()?) {
+            Some(it) => it,
+            None => return Ok(None),
+        };
+        iface_ip = proxy_iface.1.clone();
+        iface_name = proxy_iface.0.clone();
+    } else {
+        let proxy_ip4: u32 = proxy_nic_config.proxy_ip.into();
+        //let proxy_ip6 = ipv4_to_mapped_ipv6_bytes(proxy_ip4);
+
+        if Ipv4Addr::from(proxy_ip4) == Ipv4Addr::new(0, 0, 0, 0) {
+            let proxy_iface = find_non_loopback_interface(
+                &interfaces
+            ).unwrap();
+            iface_ip = proxy_iface.1.clone(); // Ipv4Addr::new(0, 0, 0, 0);
+            iface_name = proxy_iface.0.clone();
+        } else {
+            let proxy_iface=
+                match find_interface_by_ip(&interfaces, proxy_ip4.into()) {
+                    Some(it) => it,
+                    None => return Ok(None),
+                };
+            iface_ip = proxy_iface.1.clone();
+            iface_name = proxy_iface.0.clone();
+        }
+    }
+
+    let port: u16 = match ebpf_proxy_port {
+        Some(p) => p,
+        None => rand::thread_rng().gen_range(1024..=65535),
+    };
+
+    tracing::debug!("eBPF proxy detected address {}:{}", iface_ip, port);
+
+    Ok(Some(EbpfProxyAddrConfig {
+        ip: iface_ip,
+        port: port,
         ifname: iface_name,
-    })
+    }))
 }
 
 pub fn install_and_run(
@@ -92,8 +144,8 @@ pub fn install_and_run(
     let mut config = EbpfProxyConfig {
         target_proc_name: [0; 16],
         proxy_pid: process::id(),
-        proxy_ip4: proxy_ip4.into(),
-        proxy_port4: u16::to_be(ebpf_proxy_port),
+        proxy_ip4: ebpf_proxy_config.ip.into(),
+        proxy_port4: u16::to_be(ebpf_proxy_config.port),
         //proxy_ip6: proxy_ip6,
         //proxy_port6: u16::to_be(proxy_nic_config.proxy_port),
     };
@@ -146,73 +198,6 @@ pub fn install_and_run(
     };
     opt_prog.attach(&cgroup, CgroupAttachMode::Single).unwrap();
 
-    /*
-        let _ = tc::qdisc_add_clsact(&iface);
-        let cgroup_prog: &mut CgroupSockAddr = ebpf.program_mut("tag_connection_v4").unwrap().try_into()?;
-
-        match cgroup_prog.load() {
-            Ok(_) => tracing::debug!("tag_connection_v4 program attached"),
-            Err(e) => tracing::error!("tag_connection_v4 program failed to load {:?}", e),
-        };
-
-        cgroup_prog.attach(
-            &cgroup,
-            CgroupAttachMode::Single
-        ).unwrap();
-
-        let cgroup_prog: &mut CgroupSockAddr = ebpf.program_mut("tag_connection_v6").unwrap().try_into()?;
-
-        match cgroup_prog.load() {
-            Ok(_) => tracing::debug!("tag_connection_v6 program attached"),
-            Err(e) => tracing::error!("tag_connection_v6 program failed to load {:?}", e),
-        };
-
-        cgroup_prog.attach(
-            &cgroup,
-            CgroupAttachMode::Single
-        ).unwrap();
-
-
-        let sock_ops: &mut SockOps = ebpf.program_mut("handle_sock_ops")
-        .unwrap()
-        .try_into()?;
-        match sock_ops.load() {
-            Ok(_) => tracing::debug!("handle_sock_ops program attached"),
-            Err(e) => tracing::error!("handle_sock_ops program failed to load {:?}", e),
-        };
-        sock_ops.attach(&cgroup, CgroupAttachMode::Single).unwrap();
-
-
-        // Attach TC classifier for egress.
-        // Replace "eth0" with the appropriate network interface.
-        let tc_egress: &mut SchedClassifier = ebpf.program_mut("redirect_to_proxy").unwrap().try_into()?;
-        match tc_egress.load() {
-            Ok(_) => tracing::debug!("redirect_to_proxy egress program loaded"),
-            Err(e) => tracing::error!("redirect_to_proxy egress program failed to load{:?}", e),
-        };
-
-        match tc_egress.attach(iface, TcAttachType::Egress) {
-            Ok(_) => tracing::debug!("redirect_to_proxy egress program attached"),
-            Err(e) => {
-                tracing::error!("redirect_to_proxy egress program failed to be attached {:?}", e)
-            }
-        };
-
-        // Attach TC classifier for ingress.
-        let tc_ingress: &mut SchedClassifier = ebpf.program_mut("restore_destination").unwrap().try_into()?;
-        match tc_ingress.load() {
-            Ok(_) => tracing::debug!("restore_destination egress program loaded"),
-            Err(e) => tracing::error!("restore_destination egress program failed to load{:?}", e),
-        };
-
-        match tc_ingress.attach(iface, TcAttachType::Ingress) {
-            Ok(_) => tracing::debug!("restore_destination egress program attached"),
-            Err(e) => {
-                tracing::error!("restore_destination egress program failed to be attached {:?}", e)
-            }
-        };
-    */
-
     tracing::debug!("ebpf programs installed");
 
     Ok(())
@@ -239,9 +224,24 @@ fn find_interface_by_ip(
     interfaces.iter().find(|iface| iface.1 == ip)
 }
 
+// Function to find non loopback interface
+fn find_non_loopback_interface(
+    interfaces: &[(String, Ipv4Addr)],
+) -> Option<&(String, Ipv4Addr)> {
+    interfaces.iter().find(|iface| !iface.1.is_loopback())
+}
+
+// Function to find the IP attached to an IP
+fn find_ip_by_interface(
+    interfaces: &[(String, Ipv4Addr)],
+    iface_name: String,
+) -> Option<&(String, Ipv4Addr)> {
+    interfaces.iter().find(|iface| iface.0 == iface_name)
+}
+
 fn get_all_interfaces() -> anyhow::Result<Vec<(String, Ipv4Addr)>> {
     let interfaces: Vec<(String, IpAddr)> = list_afinet_netifas()
-        .map_err(|e| format!("Failed to get network interfaces: {}", e))
+        .map_err(|e| tracing::error!("Failed to get network interfaces: {}", e))
         .unwrap();
 
     let interfaces: Vec<(String, Ipv4Addr)> = interfaces
@@ -277,4 +277,123 @@ pub fn ipv4_to_mapped_ipv6_bytes(ip4_host: u32) -> [u8; 16] {
     v6[15] = ip4_bytes[3];
 
     v6
+}
+
+#[cfg(all(target_os = "linux", feature = "stealth-auto-build"))]
+pub fn initialize_stealth(
+    cli: &ProxyAwareCommandCommon,
+    ebpf_proxy_config: &EbpfProxyAddrConfig,
+) -> Option<Ebpf> {
+    let upstream_hosts = cli.upstream_hosts.clone();
+
+    #[allow(unused_variables)]
+    let ebpf_guard = match cli.ebpf {
+        true => {
+            let mut bpf = aya::Ebpf::load(aya::include_bytes_aligned!(
+                concat!(env!("OUT_DIR"), "/lueur-ebpf")
+            ))
+            .unwrap();
+
+            if let Err(e) = aya_log::EbpfLogger::init(&mut bpf) {
+                tracing::warn!("failed to initialize eBPF logger: {}", e);
+            }
+
+            let _ = ebpf::install_and_run(&mut bpf, &ebpf_proxy_config);
+
+            tracing::info!("Ebpf has been loaded");
+
+            Some(bpf)
+        }
+        false => None,
+    };
+
+    ebpf_guard
+}
+
+#[cfg(all(target_os = "linux", feature = "stealth"))]
+pub fn initialize_stealth(
+    cli: &ProxyAwareCommandCommon,
+    stealth_options: &StealthCommandCommon,
+    ebpf_proxy_config: &EbpfProxyAddrConfig,
+) -> Option<Ebpf> {
+
+    let proc_name = stealth_options.ebpf_process_name.clone().unwrap();
+
+    let upstream_hosts = cli.upstream_hosts.clone();
+
+    #[allow(unused_variables)]
+    let ebpf_guard = match stealth_options.ebpf {
+        true => {
+            let cargo_bin_dir = get_programs_bin_dir(&stealth_options);
+            if cargo_bin_dir.is_none() {
+                tracing::warn!(
+                    "No cargo bin directory could be detected, please set CARGO_HOME"
+                );
+                return None;
+            }
+            tracing::info!(
+                "Loading ebpf programs from bin directory {:?}",
+                cargo_bin_dir
+            );
+
+            let bin_dir = cargo_bin_dir.unwrap();
+            let programs_path = bin_dir.join("lueur-ebpf");
+            if !programs_path.exists() {
+                tracing::error!(
+                    "Missing the lueur ebpf programs. Please install them."
+                );
+                return None;
+            }
+
+            tracing::info!("Loading ebpf programs from {:?}", programs_path);
+
+            let mut bpf = aya::Ebpf::load_file(programs_path).unwrap();
+
+            if let Err(e) = aya_log::EbpfLogger::init(&mut bpf) {
+                tracing::warn!("failed to initialize eBPF logger: {}", e);
+            }
+
+            let _ = install_and_run(&mut bpf, &ebpf_proxy_config, proc_name);
+
+            tracing::info!("Ebpf has been loaded");
+
+            Some(bpf)
+        }
+        false => None,
+    };
+
+    ebpf_guard
+}
+
+#[cfg(all(target_os = "linux", feature = "stealth"))]
+fn get_programs_bin_dir(cli: &StealthCommandCommon) -> Option<PathBuf> {
+    if let Some(programs_dir) = &cli.ebpf_programs_dir {
+        let path = PathBuf::from(programs_dir);
+        if path.exists() {
+            return Some(path);
+        }
+    } 
+    
+    if let Ok(cargo_home) = env::var("CARGO_HOME") {
+        let mut path = PathBuf::from(cargo_home);
+        path.push("bin");
+
+        if path.exists() {
+            return Some(path);
+        }
+    }
+
+    // Fallback for Unix-like systems: use HOME/.cargo/bin
+    #[cfg(unix)]
+    {
+        match env::home_dir() {
+            Some(mut path) => {
+                path.push(".cargo/bin");
+                return Some(path);
+            },
+            None => return None
+        }
+    }
+
+    None
 }

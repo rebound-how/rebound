@@ -17,19 +17,39 @@ use crate::types::StreamSide;
 )]
 pub struct Cli {
     /// Path to the log file. Disabled by default
-    #[arg(long)]
+    #[arg(
+        help_heading = "Logging Options",
+        long,
+        env = "LUEUR_LOG_FILE",
+    )]
     pub log_file: Option<String>,
 
     /// Stdout logging enabled
-    #[arg(long, default_value_t = false)]
+    #[arg(
+        help_heading = "Logging Options",
+        long,
+        default_value_t = false,
+        env = "LUEUR_WITH_STDOUT_LOGGING",
+    )]
     pub log_stdout: bool,
 
     /// Log level
-    #[arg(long, default_value = "info,tower_http=debug")]
+    #[arg(
+        help_heading = "Logging Options",
+        long,
+        default_value = "info,tower_http=debug",
+        env = "LUEUR_LOG_LEVEL",
+    )]
     pub log_level: Option<String>,
 
-    /// Disable open telemetry
-    #[arg(long, default_value_t = false)]
+    /// Enable open telemetry
+    #[arg(
+        help_heading = "Observability Options",
+        long,
+        help = "Enable Open Telemetry tracing and metrics.",
+        env = "LUEUR_WITH_OTEL",
+        default_value_t = false
+    )]
     pub with_otel: bool,
 
     #[command(subcommand)]
@@ -49,6 +69,34 @@ pub struct ProxyAwareCommandCommon {
     )]
     pub proxy_address: Option<String>,
 
+    /// gRPC plugin addresses to apply (can specify multiple)
+    #[arg(
+        help_heading = "Remote Plugins Options",
+        short,
+        long = "grpc-plugin",
+        help = "gRPC plugin addresses to apply (can specify multiple).",
+        env = "LUEUR_GRPC_PLUGINS",
+        value_delimiter = ',',
+        value_parser
+    )]
+    pub grpc_plugins: Vec<String>,
+
+    /// Target hosts to match against (can be specified multiple times)
+    #[arg(
+        help_heading = "Upstreams Options",
+        short,
+        long = "upstream",
+        help = "Host to proxy.",
+        env = "LUEUR_UPSTREAMS",
+        value_delimiter = ',',
+        value_parser
+    )]
+    pub upstream_hosts: Vec<String>,
+}
+
+
+#[derive(Args, Clone, Debug, Serialize, Deserialize)]
+pub struct StealthCommandCommon {
     #[cfg(all(
         target_os = "linux",
         any(feature = "stealth", feature = "stealth-auto-build")
@@ -72,7 +120,7 @@ pub struct ProxyAwareCommandCommon {
     /// Ebpf allowed process by names
     #[arg(
         help_heading = "Stealth Options",
-        long = "ebpf-process-name",
+        long = "capture-process",
         help = "Process name to intercept traffic using ebpf.",
         env = "LUEUR_EBPF_PROCESS_NAME",
         value_parser
@@ -83,37 +131,58 @@ pub struct ProxyAwareCommandCommon {
         target_os = "linux",
         any(feature = "stealth", feature = "stealth-auto-build")
     ))]
-    ///
+    /// eBPF programs directory
     #[arg(
         help_heading = "Stealth Options",
         long = "ebpf-programs-dir",
         help = "Directory containing the lueur ebpf programs.",
         env = "LUEUR_EBPF_PROGRAMS_DIR",
+        default_value = "~/.local/bin",
         value_parser
     )]
     pub ebpf_programs_dir: Option<String>,
 
-    /// gRPC plugin addresses to apply (can specify multiple)
+    #[cfg(all(
+        target_os = "linux",
+        any(feature = "stealth", feature = "stealth-auto-build")
+    ))]
+    /// eBPF proxy port, leave empty for a random port
     #[arg(
-        help_heading = "Remote Plugins Options",
-        short,
-        long = "grpc-plugin",
-        help = "gRPC plugin addresses to apply (can specify multiple).",
+        help_heading = "Stealth Options",
+        long = "ebpf-proxy-ip",
+        help = "IP of the eBPF proxy, if not provided use the same IP as the proxy or the first non-loopback available.",
+        env = "LUEUR_EBPF_PROXY_IP",
         value_parser
     )]
-    pub grpc_plugins: Vec<String>,
+    pub ebpf_proxy_ip: Option<String>,
 
-    /// Target hosts to match against (can be specified multiple times)
+    #[cfg(all(
+        target_os = "linux",
+        any(feature = "stealth", feature = "stealth-auto-build")
+    ))]
+    /// eBPF proxy port, leave empty for a random port
     #[arg(
-        help_heading = "Upstreams Options",
-        short,
-        long = "upstream",
-        help = "Host to proxy.",
-        env = "LUEUR_UPSTREAMS",
-        value_delimiter = ',',
+        help_heading = "Stealth Options",
+        long = "ebpf-proxy-iface",
+        help = "Interface to bind the EBPF programs to, if not provided find the first non-loopback available.",
+        env = "LUEUR_EBPF_PROXY_IFACE",
         value_parser
     )]
-    pub upstream_hosts: Vec<String>,
+    pub ebpf_proxy_iface: Option<String>,
+
+    #[cfg(all(
+        target_os = "linux",
+        any(feature = "stealth", feature = "stealth-auto-build")
+    ))]
+    /// eBPF proxy port, leave empty for a random port
+    #[arg(
+        help_heading = "Stealth Options",
+        long = "ebpf-proxy-port",
+        help = "Port of the eBPF proxy, if not provided a random port will be used.",
+        env = "LUEUR_EBPF_PROXY_PORT",
+        value_parser
+    )]
+    pub ebpf_proxy_port: Option<u16>,
 }
 
 #[derive(Subcommand, Debug)]
@@ -155,14 +224,14 @@ pub struct LatencyOptions {
     /// Global or per-operation (read/write)
     #[arg(
         help_heading = "Latency Options",
-        name = "latency-global",
+        name = "latency-per-read-write",
         action,
         long,
-        default_value_t = true,
+        default_value_t = false,
         help = "Apply a global latency rather than a per write/read operation.",
-        env = "LUEUR_LATENCY_GLOBAL"
+        env = "LUEUR_LATENCY_PER_READ_WRITE"
     )]
-    pub global: bool,
+    pub per_read_write: bool,
 
     /// Latency side
     #[arg(
@@ -201,12 +270,11 @@ pub struct LatencyOptions {
     #[arg(
         help_heading = "Latency Options",
         long,
-        default_value_t = 100.0,
         help = "Mean latency in milliseconds. Must be a positive value.",
         value_parser = validate_positive_f64,
         env = "LUEUR_LATENCY_MEAN",
     )]
-    pub latency_mean: f64,
+    pub latency_mean: Option<f64>,
 
     /// Standard deviation in milliseconds (applicable for certain
     /// distributions)
@@ -217,7 +285,7 @@ pub struct LatencyOptions {
         value_parser = validate_non_negative_f64,
         env = "LUEUR_LATENCY_STANDARD_DEVIATION",
     )]
-    pub latency_stddev: f64,
+    pub latency_stddev: Option<f64>,
 
     /// Distribution shape
     #[arg(
@@ -225,9 +293,9 @@ pub struct LatencyOptions {
         long,
         help = "Distribution shape.",
         value_parser = validate_non_negative_f64,
-        env = "LUEUR_LATENCY_DISTRIBUTION_SHAPE",
+        env = "LUEUR_LATENCY_SHAPE",
     )]
-    pub latency_shape: f64,
+    pub latency_shape: Option<f64>,
 
     /// Distribution scale
     #[arg(
@@ -235,9 +303,9 @@ pub struct LatencyOptions {
         long,
         help = "Distribution scale.",
         value_parser = validate_non_negative_f64,
-        env = "LUEUR_LATENCY_DISTRIBUTION_SCALE",
+        env = "LUEUR_LATENCY_SCALE",
     )]
-    pub latency_scale: f64,
+    pub latency_scale: Option<f64>,
 
     /// Uniform distribution min
     #[arg(
@@ -245,9 +313,9 @@ pub struct LatencyOptions {
         long,
         help = "Distribution min.",
         value_parser = validate_non_negative_f64,
-        env = "LUEUR_LATENCY_DISTRIBUTION_MIN",
+        env = "LUEUR_LATENCY_MIN",
     )]
-    pub latency_min: f64,
+    pub latency_min: Option<f64>,
 
     /// Uniform distribution max
     #[arg(
@@ -255,9 +323,9 @@ pub struct LatencyOptions {
         long,
         help = "Distribution max.",
         value_parser = validate_non_negative_f64,
-        env = "LUEUR_LATENCY_DISTRIBUTION_MAX",
+        env = "LUEUR_LATENCY_MAX",
     )]
-    pub latency_max: f64,
+    pub latency_max: Option<f64>,
 }
 
 #[derive(Parser, Debug, Serialize, Deserialize, Clone)]
@@ -351,7 +419,7 @@ pub struct JitterOptions {
         default_value_t = 20.0,
         help = "Maximum jitter delay in milliseconds. Must be a non-negative value.",
         value_parser = validate_non_negative_f64,
-        env = "LUEUR_JITTER_DELAY",
+        env = "LUEUR_JITTER_AMPLITUDE",
     )]
     pub jitter_amplitude: f64,
 
@@ -514,8 +582,23 @@ pub struct HTTPResponseOptions {
 
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]
 pub struct RunCommandOptions {
+    /// Disable proxi terminal UI
+    #[arg(
+        long,
+        default_value_t = false,
+        env = "LUEUR_PROXY_NO_UI",
+    )]
+    pub no_ui: bool,
+
     #[command(flatten)]
     pub common: ProxyAwareCommandCommon,
+
+    #[cfg(all(
+        target_os = "linux",
+        any(feature = "stealth", feature = "stealth-auto-build")
+    ))]
+    #[command(flatten)]
+    pub stealth: StealthCommandCommon,
 
     // Http Error Options
     #[command(flatten)]
@@ -564,28 +647,33 @@ pub enum DemoCommands {
 /// Configuration for executing scenarios
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]
 pub struct ScenarioConfig {
-    /// Path to the scenario file (JSON or YAML)
-    #[arg(short, long)]
+    /// Path to the scenario file (YAML)
+    #[arg(
+        short,
+        long,
+        help="Path to a scenario file",
+        env = "LUEUR_SCENARIO_PATH"
+    )]
     pub scenario: String,
 
-    /// Path to the output report file (JSON)
+    /// Path to the output report file
     #[arg(
         short,
         long,
         help = "File to save the generated report. The extension determines the format: .json, .yaml, .html and .md are supported.",
         default_value = "report.json",
-        env = "LUEUR_SCENARIO_REPORT_PATH",
+        env = "LUEUR_SCENARIO_REPORT_PATH"
     )]
     pub report: String,
 
-    /// Listening address for the proxy server
+    /// Path to the output results file (JSON)
     #[arg(
-        long = "proxy-address",
-        help = "Listening address for the proxy server. Overrides the one defined in the scenario.",
-        value_parser,
-        env = "LUEUR_SCENARIO_PROXY_ADDR",
+        long,
+        help = "File to save the generated results.",
+        default_value = "results.json",
+        env = "LUEUR_SCENARIO_RESULTS_PATH"
     )]
-    pub proxy_address: Option<String>,
+    pub result: String,
 }
 
 /// Configuration for executing the demo server
@@ -596,7 +684,7 @@ pub struct DemoConfig {
         help = "Listening address for the proxy server. Overrides the one defined in the scenario.",
         default_value = "127.0.0.1",
         value_parser,
-        env = "LUEUR_DEMO_ADDR",
+        env = "LUEUR_DEMO_ADDR"
     )]
     pub address: String,
 
@@ -605,23 +693,9 @@ pub struct DemoConfig {
         help = "Listening address for the proxy server. Overrides the one defined in the scenario.",
         default_value_t = 7070,
         value_parser,
-        env = "LUEUR_DEMO_PORT",
+        env = "LUEUR_DEMO_PORT"
     )]
     pub port: u16,
-}
-
-/// Common options for all RunCommands
-#[derive(Args, Clone, Debug, Serialize, Deserialize)]
-pub struct RunCommandCommon {
-    /// Direction to apply the latency on
-    #[arg(
-        long,
-        default_value_t = Direction::Ingress,
-        value_enum,
-        help = "Fault's direction.",
-        env = "LUEUR_RUN_FAULT_DIRECTION",
-    )]
-    pub direction: Direction,
 }
 
 /// Validator for positive f64 values

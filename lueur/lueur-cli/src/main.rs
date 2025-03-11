@@ -1,6 +1,10 @@
 // used by duration to access as_millis_f64() which is available in edition2024
 #![feature(duration_millis_float)]
 
+// necessary to use is_global on IPv4 addr
+// https://github.com/rust-lang/rust/issues/27709
+#![feature(ip)]
+
 mod cli;
 mod config;
 mod demo;
@@ -22,13 +26,11 @@ mod termui;
 mod types;
 
 use std::collections::HashMap;
-use std::env;
 use std::fs::File;
 use std::io::Write;
 use std::net::IpAddr;
 use std::net::SocketAddr;
 use std::path::Path;
-use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::time::Duration;
@@ -45,8 +47,8 @@ use cli::Cli;
 use cli::Commands;
 use cli::DemoCommands;
 use cli::ProxyAwareCommandCommon;
+use cli::RunCommandOptions;
 use cli::ScenarioCommands;
-use colored::Colorize;
 use colorful::Color;
 use colorful::Colorful;
 use colorful::ExtraColorInterface;
@@ -88,12 +90,13 @@ use scenario::execute_item;
 use scenario::handle_scenario_events;
 use scenario::load_scenarios;
 use termui::handle_displayable_events;
+use termui::quiet_handle_displayable_events;
 use tokio::sync::broadcast;
 use tokio::sync::watch;
 use tokio::task;
 use tokio_stream::StreamExt;
 use tracing::error;
-use types::EbpfProxyAddrConfig;
+use types::LatencyDistribution;
 use types::ProxyAddrConfig;
 use url::Url;
 
@@ -141,12 +144,21 @@ async fn main() -> Result<()> {
 
     match &cli.command {
         Commands::Run { options } => {
-            let _progress_guard =
-                task::spawn(handle_displayable_events(receiver));
+            let _progress_guard;
+
+            if options.no_ui {
+                _progress_guard =
+                    task::spawn(quiet_handle_displayable_events(receiver));
+            } else {
+                _progress_guard =
+                    task::spawn(handle_displayable_events(receiver));
+            }
 
             let proxy_nic_config = get_proxy_address(&options.common);
 
-            let app_state = initialize_application_state(&options.common).await;
+            let stealth_mode = is_stealth(&options);
+
+            let app_state = initialize_application_state(&options.common, stealth_mode).await;
 
             let _proxy_guard = initialize_proxy(
                 &proxy_nic_config,
@@ -162,28 +174,41 @@ async fn main() -> Result<()> {
                 any(feature = "stealth", feature = "stealth-auto-build")
             ))]
             {
-                if options.common.ebpf {
-                    if options.common.ebpf_process_name.is_none() {
+                if stealth_mode {
+                    if options.stealth.ebpf_process_name.is_none() {
                         tracing::error!(
                             "In stealth mode, you must pass a process name"
                         );
                     } else {
-                        let ebpf_proxy_config =
-                            ebpf::get_ebpf_proxy(&proxy_nic_config).unwrap();
-                        _ebpf_proxy_guard = initialize_ebpf_proxy(
-                            &ebpf_proxy_config,
-                            app_state.clone(),
-                            ebpf_proxy_shutdown_rx,
-                            config_rx.clone(),
-                            task_manager.clone(),
-                        )
-                        .await
-                        .unwrap();
-
-                        _guard = initialize_stealth(
-                            &options.common,
-                            &ebpf_proxy_config,
-                        );
+                        match ebpf::get_ebpf_proxy(&proxy_nic_config, options.stealth.ebpf_proxy_iface.clone(), options.stealth.ebpf_proxy_ip.clone(), options.stealth.ebpf_proxy_port) {
+                            Ok(Some(ebpf_proxy_config)) => {
+                                _ebpf_proxy_guard = initialize_ebpf_proxy(
+                                    &ebpf_proxy_config,
+                                    app_state.clone(),
+                                    ebpf_proxy_shutdown_rx,
+                                    config_rx.clone(),
+                                    task_manager.clone(),
+                                )
+                                .await
+                                .unwrap();
+        
+                                _guard = ebpf::initialize_stealth(
+                                    &options.common,
+                                    &options.stealth,
+                                    &ebpf_proxy_config,
+                                );
+                            }
+                            Ok(None) => {
+                                tracing::warn!(
+                                    "Failed to configure the eBPF proxy. Disabling stealth mode"
+                                );
+                            }
+                            Err(_) => {
+                                tracing::warn!(
+                                    "Failed to configure the eBPF proxy. Disabling stealth mode"
+                                );
+                            }
+                        };
                     }
                 }
             }
@@ -194,7 +219,16 @@ async fn main() -> Result<()> {
                 error!("Proxy configuration listener has been shut down.");
             }
 
-            proxy_prelude(proxy_nic_config.proxy_address());
+            let hosts = app_state.proxy_state.upstream_hosts.read().await;
+            let upstreams = (*hosts).clone();
+
+            if !options.no_ui {
+                proxy_prelude(
+                    proxy_nic_config.proxy_address(),
+                    &options,
+                    &upstreams,
+                );
+            }
 
             tokio::signal::ctrl_c()
                 .await
@@ -226,7 +260,7 @@ async fn main() -> Result<()> {
 
                 let m = MultiProgress::new();
 
-                let app_state = initialize_application_state(&common).await;
+                let app_state = initialize_application_state(&common, false).await;
 
                 let _proxy_guard = initialize_proxy(
                     &proxy_nic_config,
@@ -241,8 +275,7 @@ async fn main() -> Result<()> {
 
                 println!(
                     "\n{}\n",
-                    "================ Running Scenarios ================"
-                        .dimmed()
+                    "================ Running Scenarios ================".dim()
                 );
 
                 let queue =
@@ -371,25 +404,20 @@ async fn main() -> Result<()> {
                 let final_report =
                     Report { plugins: Vec::new(), items: results };
 
-                final_report.save("results.json").unwrap();
+                final_report.save(&config.result).unwrap();
 
                 let report_output = build_report_output(&final_report).unwrap();
 
                 println!("\n");
                 println!(
                     "{}\n",
-                    "===================== Summary ====================="
-                        .dimmed()
+                    "===================== Summary =====================".dim()
                 );
 
                 println!(
                     "Tests run: {}, Tests failed: {}",
-                    report_output.summary.total_tests.to_string().bright_cyan(),
-                    report_output
-                        .summary
-                        .total_failures
-                        .to_string()
-                        .bright_red()
+                    report_output.summary.total_tests.to_string().cyan(),
+                    report_output.summary.total_failures.to_string().red()
                 );
                 println!("Total time: {:.1}s", start.elapsed().as_secs_f64());
 
@@ -401,7 +429,7 @@ async fn main() -> Result<()> {
                             let _ = write!(file, "{}", computed_report);
                             println!(
                                 "\nReport saved as {}",
-                                config.report.bright_yellow()
+                                config.report.clone().yellow()
                             );
                         }
                         Err(e) => {
@@ -452,32 +480,30 @@ struct AppState {
 }
 
 #[cfg(all(target_os = "linux", feature = "stealth"))]
-fn is_stealth(cli: &ProxyAwareCommandCommon) -> bool {
-    cli.ebpf
+fn is_stealth(cli: &RunCommandOptions) -> bool {
+    cli.stealth.ebpf
 }
 
 #[cfg(all(not(target_os = "linux"), feature = "stealth"))]
-fn is_stealth(cli: &ProxyAwareCommandCommon) -> bool {
+fn is_stealth(cli: &RunCommandOptions) -> bool {
     false
 }
 
 #[cfg(all(target_os = "linux", not(feature = "stealth")))]
-fn is_stealth(cli: &ProxyAwareCommandCommon) -> bool {
+fn is_stealth(cli: &RunCommandOptions) -> bool {
     false
 }
 
 #[cfg(not(target_os = "linux"))]
-fn is_stealth(cli: &ProxyAwareCommandCommon) -> bool {
+fn is_stealth(cli: &StealthCommandCommon) -> bool {
     false
 }
 
 async fn initialize_application_state(
-    cli: &ProxyAwareCommandCommon,
+    cli: &ProxyAwareCommandCommon, is_stealth: bool
 ) -> AppState {
-    let stealth_mode = is_stealth(&cli);
-
     // Initialize shared state with empty configuration
-    let state = Arc::new(ProxyState::new(stealth_mode));
+    let state = Arc::new(ProxyState::new(is_stealth));
 
     //let rpc_plugin = load_remote_plugins(cli.grpc_plugins.clone()).await;
     //state.update_plugins(vec![rpc_plugin]).await;
@@ -558,7 +584,7 @@ async fn initialize_ebpf_proxy(
         ))
     });
 
-    tracing::info!("Proxy server is listening on {}", proxy_address);
+    tracing::info!("eBPF Proxy server is listening on {}", proxy_address);
 
     Ok(handle)
 }
@@ -581,7 +607,11 @@ fn upstream_to_addr(
     Ok(format!("{}:{}", host, port))
 }
 
-fn proxy_prelude(proxy_address: String) {
+fn proxy_prelude(
+    proxy_address: String,
+    opts: &RunCommandOptions,
+    upstreams: &Vec<String>,
+) {
     let g = "lueur".gradient(Color::LightYellow3);
     let r = "Your Resiliency Exploration Tool".gradient(Color::Purple3);
     let a = format!("http://{}", proxy_address).cyan();
@@ -599,6 +629,209 @@ fn proxy_prelude(proxy_address: String) {
         ",
         g, r, a
     );
+
+    // Summary header with a bit of color
+    println!("{}", "\n    Configured faults:".bold().white());
+
+    // HTTP Response Fault
+    if opts.http_error.enabled {
+        if let Some(body) = &opts.http_error.http_response_body {
+            println!(
+                "{}",
+                format!(
+                    "     - {}: {}: {}, {}: {}, {}: {}",
+                    "HTTP Response".light_blue(),
+                    "status".dim(),
+                    opts.http_error.http_response_status_code,
+                    "probability".dim(),
+                    opts.http_error.http_response_trigger_probability,
+                    "body".dim(),
+                    body
+                )
+            );
+        } else {
+            println!(
+                "{}",
+                format!(
+                    "     - {}: {}: {}, {}: {}",
+                    "HTTP Response".light_blue(),
+                    "status".dim(),
+                    opts.http_error.http_response_status_code,
+                    "probability".dim(),
+                    opts.http_error.http_response_trigger_probability
+                )
+            );
+        }
+    }
+
+    // Latency Fault
+    if opts.latency.enabled {
+        let mut latency_summary = format!(
+            "     - {}: {}: {}, {}: {:?}, {}: {:?}, {}: {:?}",
+            "Latency".light_blue(),
+            "per read/write".dim(),
+            opts.latency.per_read_write,
+            "side".dim(),
+            opts.latency.side,
+            "direction".dim(),
+            opts.latency.latency_direction,
+            "distribution".dim(),
+            opts.latency.latency_distribution
+        );
+
+        // Depending on the distribution, display the relevant parameters
+        match opts.latency.latency_distribution {
+            LatencyDistribution::Uniform => {
+                if let Some(min) = opts.latency.latency_min {
+                    latency_summary.push_str(&format!(
+                        ", {}: {}ms",
+                        "min".dim(),
+                        min
+                    ));
+                }
+                if let Some(max) = opts.latency.latency_max {
+                    latency_summary.push_str(&format!(
+                        ", {}: {}ms",
+                        "max".dim(),
+                        max
+                    ));
+                }
+            }
+            LatencyDistribution::Normal => {
+                if let Some(mean) = opts.latency.latency_mean {
+                    latency_summary.push_str(&format!(
+                        ", {}: {}ms",
+                        "mean".dim(),
+                        mean
+                    ));
+                }
+                if let Some(stddev) = opts.latency.latency_stddev {
+                    latency_summary.push_str(&format!(
+                        ", {}: {}ms",
+                        "stddev".dim(),
+                        stddev
+                    ));
+                }
+            }
+            _ => {
+                // For Pareto or ParetoNormal distributions
+                if let Some(shape) = opts.latency.latency_shape {
+                    latency_summary.push_str(&format!(
+                        ", {}: {}",
+                        "shape".dim(),
+                        shape
+                    ));
+                }
+                if let Some(scale) = opts.latency.latency_scale {
+                    latency_summary.push_str(&format!(
+                        ", {}: {}",
+                        "scale".dim(),
+                        scale
+                    ));
+                }
+            }
+        }
+        println!("{}", latency_summary);
+    }
+
+    // Bandwidth Fault
+    if opts.bandwidth.enabled {
+        println!(
+            "{}",
+            format!(
+                "     - {}: {}: {:?}, {}: {:?}, {}: {} {:?}",
+                "Bandwidth".light_blue(),
+                "side".dim(),
+                opts.bandwidth.side,
+                "direction".dim(),
+                opts.bandwidth.bandwidth_direction,
+                "rate".dim(),
+                opts.bandwidth.bandwidth_rate,
+                opts.bandwidth.bandwidth_unit
+            )
+        );
+    }
+
+    // Jitter Fault
+    if opts.jitter.enabled {
+        println!(
+            "{}",
+            format!(
+                "     - {}: {}: {:?}, {}: {}ms, {}: {}Hz",
+                "Jitter".light_blue(),
+                "direction".dim(),
+                opts.jitter.jitter_direction,
+                "amplitude".dim(),
+                opts.jitter.jitter_amplitude,
+                "frequency".dim(),
+                opts.jitter.jitter_frequency
+            )
+        );
+    }
+
+    // DNS Fault
+    if opts.dns.enabled {
+        println!(
+            "{}",
+            format!(
+                "     - {}: {}: {}",
+                "DNS".light_blue(),
+                "trigger probability".dim(),
+                opts.dns.dns_rate
+            )
+        );
+    }
+
+    // Packet Loss Fault
+    if opts.packet_loss.enabled {
+        println!(
+            "{}",
+            format!(
+                "     - {}: {}: {:?}, {}: {:?}",
+                "Packet Loss".light_blue(),
+                "side".dim(),
+                opts.packet_loss.side,
+                "direction".dim(),
+                opts.packet_loss.packet_loss_direction
+            )
+        );
+    }
+
+    let mut noop = false;
+
+    // If no fault is enabled, let the user know
+    if !opts.http_error.enabled
+        && !opts.latency.enabled
+        && !opts.bandwidth.enabled
+        && !opts.jitter.enabled
+        && !opts.dns.enabled
+        && !opts.packet_loss.enabled
+    {
+        println!("    {}", " No faults configured.".dim().hsl(0.39, 1.0, 0.50));
+        noop = true;
+    }
+
+    println!("{}", "\n    Hosts Covered By The Faults:".bold().white());
+    if !upstreams.is_empty() {
+        for host in upstreams {
+            println!("     - {}", host.clone().cyan());
+        }
+        println!("\n");
+    } else {
+        println!(
+            "    {}",
+            " No upstream hosts configured.".dim().hsl(0.39, 1.0, 0.50)
+        );
+        noop = true;
+    }
+
+    if noop {
+        println!(
+            "\n    {}{}\n",
+            "\n    💡 The proxy is not configured to impact any traffic.\n    You may want to try setting some parameters. For instance:\n",
+            "\n    lueur run --with-latency --latency-mean 300 --upstream http://localhost:7070"
+        )
+    }
 }
 
 fn demo_prelude(demo_address: String) {
@@ -619,113 +852,6 @@ fn demo_prelude(demo_address: String) {
 
         ", g,
     );
-}
-
-#[cfg(all(target_os = "linux", feature = "stealth-auto-build"))]
-fn initialize_stealth(
-    cli: &ProxyAwareCommandCommon,
-    ebpf_proxy_config: &EbpfProxyAddrConfig,
-) -> Option<Ebpf> {
-    let upstream_hosts = cli.upstream_hosts.clone();
-
-    #[allow(unused_variables)]
-    let ebpf_guard = match cli.ebpf {
-        true => {
-            let mut bpf = aya::Ebpf::load(aya::include_bytes_aligned!(
-                concat!(env!("OUT_DIR"), "/lueur-ebpf")
-            ))
-            .unwrap();
-
-            if let Err(e) = aya_log::EbpfLogger::init(&mut bpf) {
-                tracing::warn!("failed to initialize eBPF logger: {}", e);
-            }
-
-            let _ = ebpf::install_and_run(&mut bpf, &ebpf_proxy_config);
-
-            tracing::info!("Ebpf has been loaded");
-
-            Some(bpf)
-        }
-        false => None,
-    };
-
-    ebpf_guard
-}
-
-#[cfg(all(target_os = "linux", feature = "stealth"))]
-fn initialize_stealth(
-    cli: &ProxyAwareCommandCommon,
-    ebpf_proxy_config: &EbpfProxyAddrConfig,
-) -> Option<Ebpf> {
-    let proc_name = cli.ebpf_process_name.clone().unwrap();
-
-    let upstream_hosts = cli.upstream_hosts.clone();
-
-    #[allow(unused_variables)]
-    let ebpf_guard = match cli.ebpf {
-        true => {
-            let cargo_bin_dir = get_cargo_bin_dir(&cli);
-            if cargo_bin_dir.is_none() {
-                tracing::warn!(
-                    "No cargo bin directory could be detected, please set CARGO_HOME"
-                );
-                return None;
-            }
-            tracing::info!(
-                "Loading ebpf programs from bin directory {:?}",
-                cargo_bin_dir
-            );
-
-            let bin_dir = cargo_bin_dir.unwrap();
-            let programs_path = bin_dir.join("lueur-ebpf");
-            if !programs_path.exists() {
-                tracing::error!(
-                    "Missing the lueur ebpf programs. Please install them."
-                );
-                return None;
-            }
-
-            tracing::info!("Loading ebpf programs from {:?}", programs_path);
-
-            let mut bpf = aya::Ebpf::load_file(programs_path).unwrap();
-
-            if let Err(e) = aya_log::EbpfLogger::init(&mut bpf) {
-                tracing::warn!("failed to initialize eBPF logger: {}", e);
-            }
-
-            let _ =
-                ebpf::install_and_run(&mut bpf, &ebpf_proxy_config, proc_name);
-
-            tracing::info!("Ebpf has been loaded");
-
-            Some(bpf)
-        }
-        false => None,
-    };
-
-    ebpf_guard
-}
-
-#[cfg(all(target_os = "linux", feature = "stealth"))]
-fn get_cargo_bin_dir(cli: &ProxyAwareCommandCommon) -> Option<PathBuf> {
-    if let Some(programs_dir) = &cli.ebpf_programs_dir {
-        let path = PathBuf::from(programs_dir);
-        return Some(path);
-    } else if let Ok(cargo_home) = env::var("CARGO_HOME") {
-        let mut path = PathBuf::from(cargo_home);
-        path.push("bin");
-        return Some(path);
-    }
-    // Fallback for Unix-like systems: use HOME/.cargo/bin
-    #[cfg(unix)]
-    {
-        if let Ok(home) = env::var("HOME") {
-            let mut path = PathBuf::from(home);
-            path.push(".cargo/bin");
-            return Some(path);
-        }
-    }
-    None
 }
 
 fn get_output_format_result(file_path: &str) -> Result<OutputFormat, String> {

@@ -6,6 +6,7 @@ use std::sync::Arc;
 
 use async_std_resolver::config;
 use async_std_resolver::resolver;
+use async_std_resolver::resolver_from_system_conf;
 use axum::body::Body;
 use axum::http::Request as AxumRequest;
 use axum::http::Response as AxumResponse;
@@ -161,11 +162,21 @@ pub async fn handle_connect(
 }
 
 pub async fn resolve_addresses(host: String) -> Vec<IpAddr> {
-    let resolver = resolver(
-        config::ResolverConfig::default(),
-        config::ResolverOpts::default(),
-    )
-    .await;
+    let resolver;
+
+    #[cfg(unix)]
+    {
+        resolver = resolver_from_system_conf()
+        .await.unwrap();
+    }
+    #[cfg(target_os = "windows")]
+    {
+        resolver = resolver(
+            config::ResolverConfig::default(),
+            config::ResolverOpts::default(),
+        )
+        .await;
+    }
 
     let response = resolver.lookup_ip(host.clone()).await.unwrap();
     let filtered = response.into_iter().collect::<Vec<_>>();

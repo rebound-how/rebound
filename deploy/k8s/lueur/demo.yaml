@@ -1,0 +1,68 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: lueur-demo
+  labels:
+    app: lueur-demo
+automountServiceAccountToken: false
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lueur-demo
+  labels:
+    app: lueur-demo
+spec:
+  selector:
+    app: lueur-demo
+  ports:
+    - protocol: TCP
+      port: 7070
+      targetPort: 7070
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lueur-demo
+  labels:
+    app: lueur-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lueur-demo
+  template:
+    metadata:
+      labels:
+        app: lueur-demo
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      serviceAccountName: lueur-demo
+      securityContext:
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+      containers:
+        - name: lueur-demo
+          image: localhost:32000/rebound/lueur:latest
+          imagePullPolicy: Always
+          tty: true
+          args:
+            - demo
+            - run
+            - "0.0.0.0"
+            - "7070"
+          ports:
+            - containerPort: 7070
+              name: http
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            privileged: false
+            capabilities:
+              drop:
+                - ALL

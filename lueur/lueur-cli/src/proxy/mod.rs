@@ -322,6 +322,8 @@ pub async fn run_ebpf_proxy(
         ProxyError::Internal(format!("Failed to send readiness signal: {}", e))
     });
 
+    tracing::debug!("Listening for incoming request via eBPF redirection");
+
     loop {
         tokio::select! {
             _ = shutdown_rx.recv() => {
@@ -355,7 +357,7 @@ pub async fn run_ebpf_proxy(
         }
     }
 
-    tracing::debug!("ebpf proxy is now finised, bye bye");
+    tracing::debug!("ebpf proxy is now finished, bye bye");
 
     Ok(())
 }

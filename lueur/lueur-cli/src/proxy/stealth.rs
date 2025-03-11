@@ -244,6 +244,7 @@ async fn bidirectional_copy(
 async fn get_original_dst(fd: i32) -> Option<String> {
     let mut orig_dst = MaybeUninit::<sockaddr_in>::uninit();
     let mut orig_len = std::mem::size_of::<sockaddr_in>() as socklen_t;
+    tracing::debug!("Socket fd {}", fd.clone());
     let ret = unsafe {
         getsockopt(
             fd,
@@ -255,7 +256,7 @@ async fn get_original_dst(fd: i32) -> Option<String> {
     };
 
     if ret != 0 {
-        tracing::debug!(
+        tracing::error!(
             "getsockopt failed: {:?}",
             std::io::Error::last_os_error()
         );

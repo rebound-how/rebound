@@ -1,12 +1,12 @@
 [project]
 name = "lueur-cli-doc"
 dynamic = ["version"]
-description = "Default template for PDM package"
+description = "Lueur documentation"
 authors = [
-    {name = "Sylvain Hellegouarch", email = "sylvain@lueur.dev"},
+    {name = "Sylvain Hellegouarch", email = "sylvain@rebound.how"},
 ]
-dependencies = ["mkdocs>=1.6.1", "mkdocs-material[imaging]>=9.5.49", "termynal>=0.12.2"]
-requires-python = "==3.12.*"
+dependencies = ["mkdocs>=1.6.1", "mkdocs-material[imaging]>=9.5.49", "termynal>=0.12.2", "mkdocs-git-revision-date-localized-plugin>=1.4.1", "mkdocs-glightbox>=0.4.0"]
+requires-python = ">=3.12"
 readme = "README.md"
 license = {text = "Apache-2.0"}
 

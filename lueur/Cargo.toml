@@ -33,3 +33,7 @@ panic = "abort"
 [profile.release.package.lueur-ebpf-programs]
 codegen-units = 1
 debug = 2
+
+[profile.release.package.lueur-cli]
+strip = true
+opt-level = "z"

@@ -40,27 +40,22 @@ traffic through it to simulate network faults. Let’s start a simple latency
 scenario:
 
 ```bash
-lueur run --upstream http://localhost:7070 latency --mean 300
+lueur run --upstream http://localhost:7070 --with-latency --latency-mean 300
 ```
-
-!!! tip "For all latency options, use:"
-    ```console
-    lueur run latency --help
-    ```
 
 This command launches the lueur proxy on a local port
 (by default, `127.0.0.1:8080`) and injects an average of `300ms` latency into
-outgoing requests. You can adjust the `--mean` value to experiment with
+outgoing requests. You can adjust the `--latency-mean` value to experiment with
 different latencies.
+
+The `--upstream http://localhost:7070` argument tells lueur to only process
+traffic from and to this host.
 
 !!! failure
 
     Note, if you see an error with a mesage such as
     `Os { code: 98, kind: AddrInUse, message: "Address already in use" }`, it is
     a signe that another process is listening on the same address.
-
-The `--upstream http://localhost:7070` argument tells lueur to only process
-traffic from and to this host.
 
 !!! tip
     Always remember to set the right upstream server address that matches the
@@ -81,6 +76,13 @@ As you send requests, lueur will simulate network conditions
 so you can see how your application copes.
 
 Ready when you are — go ahead and make some requests!
+    
+
+Configured faults:
+  - Latency: per packet: false, side: Server, direction: Ingress, distribution: Normal, mean: 300ms
+
+Hosts Covered By The Faults:
+  - localhost:7070
 ```
 
 Notice how the output tells you the address of the proxy server to use from
@@ -117,8 +119,6 @@ curl -x ${HTTP_PROXY} http://127.0.0.1:7070/
 curl -x ${HTTP_PROXY} http://127.0.0.1:7070/ping
 curl -x ${HTTP_PROXY} http://127.0.0.1:7070/ping/myself
 curl -x ${HTTP_PROXY} --json '{"content": "hello"}' http://127.0.0.1:7070/uppercase
-
-
 ```
 
 The demo describes which endpoints are available and how to call them.
@@ -148,18 +148,19 @@ Let's now enrich the `curl` command above to output the time taken from the
 client's perspective:
 
 ```bash hl_lines="2"
-curl \
-  -o /dev/null -s -w '{"total_time": %{time_total}}\n' \
-  http://localhost:7070/
+curl -I -o /dev/null -s \
+  -w "Connected IP: %{remote_ip}:%{remote_port}\nTotal time: %{time_total}s\n" \
+  http://localhost:7070
 ```
 
 This should display something such as:
 
-```json
-{"total_time": 0.000544}
+```text
+Connected IP: 127.0.0.1:7070
+Total time: 0.000239s
 ```
 
-The time is displayed in seconds. Here the response took `544µs`.
+The time is displayed in seconds. Here the response took `239µs`.
 
 Let's now move to the next stage, inducing latency impacting the client's
 point of view of the time taken to receive a response from the demo application.
@@ -171,8 +172,9 @@ through the proxy.
 
 For example, if you’re using `curl`, you might do:
 
-```bash hl_lines="2"
-curl -o /dev/null -s -w '{"total_time": %{time_total}}\n' \
+```bash hl_lines="3"
+curl -I -o /dev/null -s \
+  -w "Connected IP: %{remote_ip}:%{remote_port}\nTotal time: %{time_total}s\n" \
   -x http://127.0.0.1:8080 \
   http://localhost:7070
 ```
@@ -192,7 +194,8 @@ Once you have executed that command, you should see a much higher response
 time:
 
 ```json
-{"total_time": 0.339949}
+Connected IP: 127.0.0.1:8080
+Total time: 0.333350s
 ```
 
 We are now above the `300ms` mark as per the configuration of our proxy.
@@ -220,8 +223,8 @@ traffic through it. What’s next?
 
 - **Try different latency values or other fault injection parameters** to get
   a feel for how your application responds to varied conditions.
-- **Explore our [Tutorials](../) further** to learn how to simulate scenarios
-  using `.toml` files and generate detailed reports.
+- **Explore our [Scenario Tutorial](./real-impact-use-case.md)** to learn how to
+  simulate scenarios using files and generate detailed reports.
 - **Dive into [How-To Guides](../../how-to/)** to integrate lueur deeper into
   your workflow, from automated testing to continuous integration.
 

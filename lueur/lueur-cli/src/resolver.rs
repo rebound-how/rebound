@@ -2,6 +2,7 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Instant;
 
+use hickory_resolver::name_server::TokioConnectionProvider;
 use hickory_resolver::TokioAsyncResolver;
 use hickory_resolver::config::*;
 use local_ip_address::local_ip;
@@ -28,11 +29,28 @@ impl TimingResolver {
         timing: Arc<Mutex<DnsTiming>>,
         event: Box<dyn ProxyTaskEvent>,
     ) -> Self {
+
+        let resolver;
+
         // Initialize the resolver with default system configuration.
-        let resolver = TokioAsyncResolver::tokio(
-            ResolverConfig::default(),
-            ResolverOpts::default(),
-        );
+        #[cfg(unix)]
+        {
+           resolver = TokioAsyncResolver::from_system_conf(
+            TokioConnectionProvider::default()
+           ).unwrap();
+           tracing::debug!("Use /etc/resolve.conf to resolve upstream address");
+        }
+        #[cfg(target_os = "windows")]
+        {
+            let mut opts = ResolverOpts::default();
+            opts.use_hosts_file = true;
+
+            resolver = TokioAsyncResolver::tokio(
+                ResolverConfig::default(),
+                opts,
+            );
+            tracing::debug!("Use external DNS to resolve upstream address");
+        }
 
         TimingResolver {
             resolver: Arc::new(RwLock::new(resolver)),

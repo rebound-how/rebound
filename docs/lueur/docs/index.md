@@ -1,6 +1,20 @@
+---
+template: landing.html
+hide:
+  - navigation
+  - toc
+  - path
+---
+
 #
 
-<span class="lueur-logo">lueur</span>
+<p align="center">
+  <picture>
+      <source srcset="/assets/lueur.svg" media="(prefers-color-scheme: light)">
+      <source srcset="/assets/lueur-inverted.svg" media="(prefers-color-scheme: dark)">
+      <img src="/assets/lueur.svg" width="400px">
+  </picture>
+</p>
 
 lueur is here to help you uncover and address resiliency issues early in your
 development cycle. By easily injecting network faults into your application’s

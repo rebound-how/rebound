@@ -10,29 +10,32 @@ macOS and Windows.
 You can download the appropriate binary for your platform from
 [here](https://github.com/lueurdev/lueur/releases/latest).
 
-Once you have downloaded the archive, you can uncompress it and make sure
-it can be found in your `PATH`.
+??? tip "Configure the binary"
 
-=== "Linux, macOS, Windows Bash"
+    Once you have downloaded the archive, you can uncompress it and make sure
+    it can be found in your `PATH`.
 
-    ```bash
-    export PATH=$PATH:`pwd`
-    ```
+    === "Linux, macOS, Windows Bash"
 
-=== "Windows Powershell"
+        ```bash
+        export PATH=$PATH:`pwd`
+        ```
 
-    ```console
-    $env:Path += ';C:\directoy\where\lueur\lives' 
-    ```
+        Make also sure the downloaded binary is an executable:
 
-!!! tip
+        ```bash
+        chmod a+x lueur
+        ```
 
-    On Linux and macOS you will need to make sure the binary gets the
-    executable permission flipped on with:
+    === "Windows Powershell"
 
-    ```bash
-    chmod a+x lueur
-    ```
+        ```console
+        $env:Path += ';C:\directoy\where\lueur\lives' 
+        ```
+
+!!! info "Do you want to know more?"
+
+    Find more installation options [here](../how-to/install.md).
 
 ## Check lueur is ready to roll
 
@@ -50,8 +53,8 @@ A proxy to test network resilience by injecting various faults.
 Usage: lueur [OPTIONS] <COMMAND>
 
 Commands:
-  run       Apply a network fault
-  scenario  Execute a predefined scenario
+  run       Run the lueur proxy and apply network faults to traffic
+  scenario  Execute a scenario
   demo      Run a simple demo server for learning purpose
   help      Print this message or the help of the given subcommand(s)
 
@@ -59,8 +62,10 @@ Options:
       --log-file <LOG_FILE>    Path to the log file. Disabled by default
       --log-stdout             Stdout logging enabled
       --log-level <LOG_LEVEL>  Log level [default: info,tower_http=debug]
+      --with-otel              Enable open telemetry
   -h, --help                   Print help
   -V, --version                Print version
+
 ```
 
 ## Troubleshooting

@@ -6,15 +6,15 @@ that live fixes will hold up, all under pressure.
 
 lueur aims to change that story. It brings reliability testing right
 into your daily development routine, so you’re not left guessing how your code
-will behave under tough network conditions.
+will behave under poor network conditions.
 
-Instead of waiting until the final stretch—when the impacts are higher and fixes
+Instead of waiting until the final line—when the impacts are higher and fixes
 cost more—lueur invites you to explore resilience as you go. It’s built to help
 you identify weak spots early, reducing last-minute surprises and giving you
 more time to craft thoughtful solutions.
 
-**What’s in it for you?** Less stress. More confidence. And the freedom to
-improve your application’s reliability before it ever reaches your customers.
+**What’s in it for you?** Hopefully, less stress. We believe more reliable
+systems lead to healthier operations.
 
 ## Features That Work With You
 
@@ -26,9 +26,11 @@ traffic through its proxy and test your application as normal:
 - Forward and tunnel proxy modes
 - HTTP and HTTPS
 - HTTP/1.1 and HTTP/2
+- TCP IPv4 transparent proxy
 - Scenarii automation
+- eBPF stealth redirection on Linux
 
-### Real-World Faults at Your Fingertips
+### Real-World Faults
 
 lueur simulates the kinds of hiccups you’ve seen (or worried about) in
 production—right on your own machine:

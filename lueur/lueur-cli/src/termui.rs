@@ -2,7 +2,10 @@ use std::collections::HashMap;
 use std::time::Duration;
 use std::time::Instant;
 
-use colored::*;
+use colorful::Color;
+use colorful::Colorful;
+use colorful::ExtraColorInterface;
+use colorful::core::color_string::CString;
 use indicatif::MultiProgress;
 use indicatif::ProgressBar;
 use indicatif::ProgressStyle;
@@ -51,7 +54,7 @@ pub async fn handle_displayable_events(
                                 pb.set_style(style.clone());
                                 pb.enable_steady_tick(Duration::from_millis(80));
 
-                                let m = format!("{} {}", "URL:".dimmed(), url.bright_blue());
+                                let m = format!("{} {}", "URL:".dim(), url.clone().light_blue());
 
                                 pb.set_message(m);
 
@@ -63,8 +66,8 @@ pub async fn handle_displayable_events(
                                 if let Some(task_info) = task_map.get_mut(&id) {
                                     task_info.resolution_time = time_taken;
 
-                                    let u = format!("{} {}", "URL:".dimmed(), task_info.url.bright_blue());
-                                    let d = format!("{} {:.3}ms", "DNS:".dimmed(), time_taken);
+                                    let u = format!("{} {}", "URL:".dim(), task_info.url.clone().light_blue());
+                                    let d = format!("{} {:.3}ms", "DNS:".dim(), time_taken);
 
                                     task_info.pb.set_message(format!("{} | {} | ...", u, d));
                                 }
@@ -73,11 +76,11 @@ pub async fn handle_displayable_events(
                                 if let Some(task_info) = task_map.get_mut(&id) {
                                     task_info.faults.push(fault.clone());
 
-                                    let u = format!("{} {}", "URL:".dimmed(), task_info.url.bright_blue());
-                                    let d = format!("{} {:.3}ms", "DNS:".dimmed(), task_info.resolution_time);
+                                    let u = format!("{} {}", "URL:".dim(), task_info.url.clone().light_blue());
+                                    let d = format!("{} {:.3}ms", "DNS:".dim(), task_info.resolution_time);
                                     let f = fault_to_string(&task_info.faults);
 
-                                    tracing::info!("With fault {}", f);
+                                    tracing::debug!("With fault {}", f);
                                     task_info.pb.set_message(format!("{} | {} | {} | ...", u, d, f));
                                 }
                             }
@@ -140,21 +143,21 @@ pub async fn handle_displayable_events(
 
                                         fault_results.push_str("");
                                     }
-                                    tracing::info!("{}", fault_results);
-                                    let u = format!("{} {}", "URL:".dimmed(), task_info.url.bright_blue());
-                                    let d = format!("{} {:.3}ms", "DNS:".dimmed(), task_info.resolution_time);
+                                    tracing::debug!("{}", fault_results);
+                                    let u = format!("{} {}", "URL:".dim(), task_info.url.clone().light_blue());
+                                    let d = format!("{} {:.3}ms", "DNS:".dim(), task_info.resolution_time);
                                     task_info.pb.set_message(format!("{} | {} | {} | ...", u, d, fault_results));
                                 }
                             }
                             TaskProgressEvent::ResponseReceived { id, ts: _, status_code } => {
                                 if let Some(task_info) = task_map.get_mut(&id) {
-                                    let c = "Status:".dimmed();
+                                    let c = "Status:".dim();
                                     let m = if (200..300).contains(&status_code) {
                                         status_code.to_string().green()
                                     } else if (400..500).contains(&status_code) {
                                         status_code.to_string().yellow()
                                     } else if status_code == 0 {
-                                        "-".to_string().dimmed()
+                                        "-".to_string().dim()
                                     } else {
                                         status_code.to_string().red()
                                     };
@@ -162,9 +165,9 @@ pub async fn handle_displayable_events(
                                     let s = format!("{} {}", c, m);
 
                                     task_info.status_code = Some(status_code);
-                                    let u = format!("{} {}", "URL:".dimmed(), task_info.url.bright_blue());
-                                    let d = format!("{} {:.3}ms", "DNS:".dimmed(), task_info.resolution_time);
-                                    let f = format!("{} {}", "Faults:".dimmed(), fault_to_string(&task_info.faults).yellow());
+                                    let u = format!("{} {}", "URL:".dim(), task_info.url.clone().light_blue());
+                                    let d = format!("{} {:.3}ms", "DNS:".dim(), task_info.resolution_time);
+                                    let f = format!("{} {}", "Faults:".dim(), fault_to_string(&task_info.faults).yellow());
 
                                     task_info.pb.set_message(format!("{} | {} | {} | {}", u, d, f, s));
                                 }
@@ -177,7 +180,7 @@ pub async fn handle_displayable_events(
                                 from_upstream_length,
                             } => {
                                 if let Some(task_info) = task_map.remove(&id) {
-                                    let c = "Status:".dimmed();
+                                    let c = "Status:".dim();
                                     let status_code = task_info.status_code.unwrap_or(0);
 
                                     let m = if (200..300).contains(&status_code) {
@@ -185,14 +188,14 @@ pub async fn handle_displayable_events(
                                     } else if (400..500).contains(&status_code) {
                                         status_code.to_string().yellow()
                                     } else if status_code == 0 {
-                                        "-".to_string().dimmed()
+                                        "-".to_string().dim()
                                     } else {
                                         status_code.to_string().red()
                                     };
 
                                     let s = format!("{} {}", c, m);
-                                    let u = format!("{} {}", "URL:".dimmed(), task_info.url.bright_blue());
-                                    let d = format!("{} {:.3}ms", "DNS:".dimmed(), task_info.resolution_time);
+                                    let u = format!("{} {}", "URL:".dim(), task_info.url.light_blue());
+                                    let d = format!("{} {:.3}ms", "DNS:".dim(), task_info.resolution_time);
 
                                     let mut fault_results = String::new();
 
@@ -275,11 +278,11 @@ pub async fn handle_displayable_events(
 
                                     let h = format!(
                                         "{} {:.3}ms | {} {}ms | {} ⭫{}/b ⭭{}/b",
-                                        "Duration:".dimmed(),
+                                        "Duration:".dim(),
                                         task_info.started.elapsed().as_millis_f64(),
-                                        "TTFB".dimmed(),
+                                        "TTFB".dim(),
                                         ttfb,
-                                        "Sent/Received:".dimmed(),
+                                        "Sent/Received:".dim(),
                                         from_downstream_length,
                                         from_upstream_length
                                     );
@@ -292,8 +295,8 @@ pub async fn handle_displayable_events(
                             }
                             TaskProgressEvent::Error { id, ts: _, error } => {
                                 if let Some(task_info) = task_map.remove(&id) {
-                                    let u = format!("{} {}", "URL:".dimmed(), task_info.url.bright_blue());
-                                    let d = format!("{} {:.2}ms", "DNS:".dimmed(), task_info.resolution_time);
+                                    let u = format!("{} {}", "URL:".dim(), task_info.url.light_blue());
+                                    let d = format!("{} {:.2}ms", "DNS:".dim(), task_info.resolution_time);
                                     let f = fault_to_string(&task_info.faults);
                                     let e = format!("{} {}", "Failed:".red(), error);
 
@@ -308,7 +311,7 @@ pub async fn handle_displayable_events(
                         break;
                     }
                     Err(broadcast::error::RecvError::Lagged(count)) => {
-                        tracing::warn!("Missed {} events that couldn't be part of the output", count);
+                        tracing::debug!("Missed {} events that couldn't be part of the output", count);
                     }
                 }
             }
@@ -359,7 +362,7 @@ fn fault_to_string(faults: &Vec<FaultEvent>) -> String {
 
 /// Maps a latency duration to a colored Unicode character for the sparkline.
 /// The mapping is based on latency thresholds in milliseconds.
-fn latency_to_sparkline_char(latency: Duration) -> ColoredString {
+fn latency_to_sparkline_char(latency: Duration) -> CString {
     let millis = latency.as_secs_f64() * 1000.0;
 
     if millis < 50.0 {
@@ -395,5 +398,25 @@ fn direction_character(direction: Direction) -> String {
         Direction::Ingress => "⭭".to_string(),
         Direction::Egress => "⭫".to_string(),
         Direction::Both => "⭭⭫".to_string(),
+    }
+}
+
+
+pub async fn quiet_handle_displayable_events(
+    mut receiver: Receiver<TaskProgressEvent>,
+) {
+    loop {
+        tokio::select! {
+            event = receiver.recv() => {
+                match event {
+                    Ok(_) => {}
+                    Err(broadcast::error::RecvError::Closed) => {
+                        break;
+                    }
+                    Err(broadcast::error::RecvError::Lagged(count)) => {
+                    }
+                }
+            }
+        }
     }
 }

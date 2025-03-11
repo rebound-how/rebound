@@ -162,14 +162,14 @@ impl From<&LatencyOptions> for LatencySettings {
         LatencySettings {
             distribution: cli.latency_distribution.clone(),
             direction: cli.latency_direction.clone(),
-            global: cli.global,
+            global: !cli.per_read_write,
             side: cli.side.clone(),
-            latency_mean: cli.latency_mean,
-            latency_stddev: cli.latency_stddev,
-            latency_shape: cli.latency_shape,
-            latency_scale: cli.latency_scale,
-            latency_min: cli.latency_min,
-            latency_max: cli.latency_max,
+            latency_mean: cli.latency_mean.unwrap_or(0.0),
+            latency_stddev: cli.latency_stddev.unwrap_or(0.0),
+            latency_shape: cli.latency_shape.unwrap_or(0.0),
+            latency_scale: cli.latency_scale.unwrap_or(0.0),
+            latency_min: cli.latency_min.unwrap_or(0.0),
+            latency_max: cli.latency_max.unwrap_or(0.0),
         }
     }
 }
