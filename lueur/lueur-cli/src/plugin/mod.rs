@@ -1,7 +1,7 @@
 use std::fmt;
 use std::sync::Arc;
 
-use axum::async_trait;
+use async_trait::async_trait;
 use axum::http;
 use metrics::MetricsInjector;
 use reqwest::ClientBuilder;

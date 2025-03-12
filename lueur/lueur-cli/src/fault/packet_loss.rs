@@ -168,7 +168,7 @@ impl<S> PacketLossLimitedRead<S> {
             loss_probabilities,
             event,
             side: settings.side.clone(),
-            rng: SmallRng::from_entropy(),
+            rng: SmallRng::from_os_rng(),
         }
     }
 }
@@ -278,7 +278,7 @@ impl<S> PacketLossLimitedWrite<S> {
             loss_probabilities,
             event,
             side: settings.side.clone(),
-            rng: SmallRng::from_entropy(),
+            rng: SmallRng::from_os_rng(),
         }
     }
 }

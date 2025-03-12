@@ -1,3 +1,11 @@
+## [0.1.53] - 2025-03-12
+
+### Changed
+
+- Bump dependencies
+- Allow dirty cargo.lock
+- Bump version
+  
 
 ## [0.1.52] - 2025-03-12
 

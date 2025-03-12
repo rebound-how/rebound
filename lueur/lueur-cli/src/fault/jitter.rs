@@ -129,7 +129,7 @@ impl JitterStream {
         Self {
             stream,
             injector,
-            rng: SmallRng::from_entropy(),
+            rng: SmallRng::from_os_rng(),
             read_sleep: None,
             write_sleep: None,
             direction: direction.clone(),

@@ -5,7 +5,7 @@ use std::pin::Pin;
 use std::task::Context;
 use std::task::Poll;
 
-use axum::async_trait;
+use async_trait::async_trait;
 use axum::http;
 use bytes::BytesMut;
 use futures::StreamExt;
@@ -132,7 +132,7 @@ impl LatencyInjector {
                 let uniform = Uniform::new(
                     self.settings.latency_min,
                     self.settings.latency_max,
-                );
+                ).unwrap();
                 let mut sample = uniform.sample(rng);
                 while sample < 0.0 {
                     sample = uniform.sample(rng);
@@ -428,7 +428,7 @@ where
         Ok(LatencyStreamRead {
             stream: inner,
             injector,
-            rng: SmallRng::from_entropy(),
+            rng: SmallRng::from_os_rng(),
             event: event.clone(),
             side,
             read_sleep: None,
@@ -524,7 +524,7 @@ where
         Ok(LatencyStreamWrite {
             stream: inner,
             injector,
-            rng: SmallRng::from_entropy(),
+            rng: SmallRng::from_os_rng(),
             event: event.clone(),
             side,
             write_sleep: None,

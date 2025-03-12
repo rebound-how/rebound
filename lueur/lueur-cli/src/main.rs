@@ -64,7 +64,7 @@ use logging::init_tracer_provider;
 use logging::setup_logging;
 use logging::shutdown_tracer;
 use opentelemetry_sdk::metrics::SdkMeterProvider;
-use opentelemetry_sdk::trace::TracerProvider;
+use opentelemetry_sdk::trace::SdkTracerProvider;
 use proxy::ProxyState;
 #[cfg(all(
     target_os = "linux",
@@ -109,7 +109,7 @@ async fn main() -> Result<()> {
         setup_logging(cli.log_file, cli.log_stdout, cli.log_level).unwrap();
 
     let mut meter_provider: Option<SdkMeterProvider> = None;
-    let mut tracer_provider: Option<TracerProvider> = None;
+    let mut tracer_provider: Option<SdkTracerProvider> = None;
 
     if cli.with_otel {
         meter_provider = Some(init_meter_provider());

@@ -1,20 +1,17 @@
 use std::path::PathBuf;
 use std::str::FromStr;
+use std::sync::OnceLock;
 
+use opentelemetry::trace::TracerProvider;
 use opentelemetry::KeyValue;
 use opentelemetry::global;
-use opentelemetry::trace::TracerProvider as _;
+use opentelemetry_sdk::trace::SdkTracerProvider;
 use opentelemetry_sdk::Resource;
 use opentelemetry_sdk::metrics::MeterProviderBuilder;
 use opentelemetry_sdk::metrics::PeriodicReader;
 use opentelemetry_sdk::metrics::SdkMeterProvider;
-use opentelemetry_sdk::runtime;
 use opentelemetry_sdk::trace::RandomIdGenerator;
 use opentelemetry_sdk::trace::Sampler;
-use opentelemetry_sdk::trace::TracerProvider;
-use opentelemetry_semantic_conventions::SCHEMA_URL;
-use opentelemetry_semantic_conventions::attribute::DEPLOYMENT_ENVIRONMENT_NAME;
-use opentelemetry_semantic_conventions::attribute::SERVICE_NAME;
 use opentelemetry_semantic_conventions::attribute::SERVICE_VERSION;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_appender::rolling::never;
@@ -26,17 +23,18 @@ use tracing_subscriber::Layer;
 use tracing_subscriber::Registry;
 use tracing_subscriber::layer::SubscriberExt;
 
-// Create a Resource that captures information about the entity for which
-// telemetry is recorded.
+
+
 fn resource() -> Resource {
-    Resource::from_schema_url(
-        [
-            KeyValue::new(SERVICE_NAME, env!("CARGO_PKG_NAME")),
-            KeyValue::new(SERVICE_VERSION, env!("CARGO_PKG_VERSION")),
-            KeyValue::new(DEPLOYMENT_ENVIRONMENT_NAME, "dev"),
-        ],
-        SCHEMA_URL,
-    )
+    static RESOURCE: OnceLock<Resource> = OnceLock::new();
+    RESOURCE
+        .get_or_init(|| {
+            Resource::builder()
+                .with_service_name(env!("CARGO_PKG_NAME"))
+                .with_attribute(KeyValue::new(SERVICE_VERSION, env!("CARGO_PKG_VERSION")))
+                .build()
+        })
+        .clone()
 }
 
 // Construct MeterProvider for MetricsLayer
@@ -47,14 +45,13 @@ pub fn init_meter_provider() -> SdkMeterProvider {
         .build()
         .unwrap();
 
-    let reader = PeriodicReader::builder(exporter, runtime::Tokio)
+    let reader = PeriodicReader::builder(exporter)
         .with_interval(std::time::Duration::from_secs(30))
         .build();
 
     // For debugging in development
     let stdout_reader = PeriodicReader::builder(
         opentelemetry_stdout::MetricExporter::default(),
-        runtime::Tokio,
     )
     .build();
 
@@ -70,25 +67,25 @@ pub fn init_meter_provider() -> SdkMeterProvider {
 }
 
 // Construct TracerProvider for OpenTelemetryLayer
-pub fn init_tracer_provider() -> TracerProvider {
+pub fn init_tracer_provider() -> SdkTracerProvider {
     let exporter = opentelemetry_otlp::SpanExporter::builder()
         .with_tonic()
         .build()
         .unwrap();
 
-    TracerProvider::builder()
+    SdkTracerProvider::builder()
         // Customize sampling strategy
         .with_sampler(Sampler::ParentBased(Box::new(
             Sampler::TraceIdRatioBased(1.0),
         )))
         .with_id_generator(RandomIdGenerator::default())
         .with_resource(resource())
-        .with_batch_exporter(exporter, runtime::Tokio)
+        .with_batch_exporter(exporter)
         .build()
 }
 
 pub fn shutdown_tracer(
-    tracer_provider: Option<TracerProvider>,
+    tracer_provider: Option<SdkTracerProvider>,
     meter_provider: Option<SdkMeterProvider>,
 ) {
     if tracer_provider.is_some() {
@@ -120,7 +117,7 @@ pub fn shutdown_tracer(
 /// A combined `tracing_subscriber` ready to be set as the global default.
 pub fn init_subscriber(
     log_layers: Vec<Box<dyn tracing_subscriber::Layer<Registry> + Send + Sync>>,
-    tracer_provider: &Option<TracerProvider>,
+    tracer_provider: &Option<SdkTracerProvider>,
     meter_provider: &Option<SdkMeterProvider>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     //env_logger::init();

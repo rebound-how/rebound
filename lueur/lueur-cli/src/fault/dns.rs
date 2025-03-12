@@ -2,7 +2,7 @@ use std::fmt;
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use axum::async_trait;
+use async_trait::async_trait;
 use axum::http;
 use hickory_resolver::TokioAsyncResolver;
 use hickory_resolver::config::*;
@@ -50,14 +50,14 @@ impl From<&DnsSettings> for FaultyResolverInjector {
             settings: settings.clone(),
             event: None,
             side: StreamSide::Client,
-            rng: SmallRng::from_entropy(),
+            rng: SmallRng::from_os_rng(),
         }
     }
 }
 
 impl FaultyResolverInjector {
     fn should_apply_fault_resolver(&mut self) -> bool {
-        self.rng.gen_bool(self.settings.rate)
+        self.rng.random_bool(self.settings.rate)
     }
 
     pub fn with_event(&mut self, event: Box<dyn ProxyTaskEvent>) {

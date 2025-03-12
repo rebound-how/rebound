@@ -70,7 +70,7 @@ jobs:
           brew install protobuf
 
       - name: Build
-        run: cargo build --release --locked --target ${{ matrix.target }}
+        run: cargo build --release --target ${{ matrix.target }}
         working-directory: ./lueur/lueur-cli
 
       - name: Upload binaries to release
@@ -97,7 +97,7 @@ jobs:
         if: matrix.os == 'ubuntu-24.04'
         working-directory: ./lueur/lueur-cli
         run: |
-          cargo publish --no-verify --package lueur-cli --token ${CRATES_TOKEN}
+          cargo publish --allow-dirty --no-verify --package lueur-cli --token ${CRATES_TOKEN}
         env:
           CRATES_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
 
@@ -142,10 +142,9 @@ jobs:
         if: matrix.os == 'ubuntu-24.04'
         run: |
           cargo install bpf-linker --git https://github.com/aya-rs/bpf-linker.git
-          cargo build --release --locked --features stealth --target ${{ matrix.target }}
+          cargo build --release --features stealth --target ${{ matrix.target }}
           cargo build \
             --release \
-            --locked \
             -p lueur-ebpf-programs \
             --target=bpfel-unknown-none \
             -Z build-std=core

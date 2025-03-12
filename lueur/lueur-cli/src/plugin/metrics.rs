@@ -4,7 +4,7 @@ use std::pin::Pin;
 use std::task::Context;
 use std::task::Poll;
 
-use axum::async_trait;
+use async_trait::async_trait;
 use axum::http;
 use bytes::BytesMut;
 use futures::StreamExt;
