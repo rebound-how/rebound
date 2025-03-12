@@ -49,7 +49,6 @@ use cli::DemoCommands;
 use cli::ProxyAwareCommandCommon;
 use cli::RunCommandOptions;
 use cli::ScenarioCommands;
-use cli::StealthCommandCommon;
 use colorful::Color;
 use colorful::Colorful;
 use colorful::ExtraColorInterface;
@@ -496,7 +495,7 @@ fn is_stealth(cli: &RunCommandOptions) -> bool {
 }
 
 #[cfg(not(target_os = "linux"))]
-fn is_stealth(cli: &StealthCommandCommon) -> bool {
+fn is_stealth(cli: &RunCommandOptions) -> bool {
     false
 }
 
