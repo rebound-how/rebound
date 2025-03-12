@@ -98,6 +98,7 @@ use tokio_stream::StreamExt;
 use tracing::error;
 use types::LatencyDistribution;
 use types::ProxyAddrConfig;
+use types::EbpfProxyAddrConfig;
 use url::Url;
 
 #[tokio::main]
