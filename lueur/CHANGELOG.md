@@ -1,4 +1,12 @@
 
+## [0.1.52] - 2025-03-12
+
+### Changed
+
+- Lock Cargo.lock on release
+  
+
+
 ## [0.1.51] - 2025-03-12
 
 ### Changed
