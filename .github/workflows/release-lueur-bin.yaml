@@ -79,7 +79,7 @@ jobs:
         with:
           promote: true
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: lueur/target/release/${{ matrix.artifact_name }}
+          file: lueur/target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
           asset_name: ${{ matrix.asset_name }}-${{ github.ref }}-${{ matrix.target }}
           tag: ${{ github.ref }}
 
@@ -89,7 +89,7 @@ jobs:
         with:
           promote: true
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: lueur/target/release/${{ matrix.artifact_name }}
+          file: lueur/target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
           asset_name: ${{ matrix.asset_name }}-${{ github.ref }}-${{ matrix.target }}.exe
           tag: ${{ github.ref }}
 
@@ -154,8 +154,8 @@ jobs:
         with:
           promote: true
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: lueur/target/release/${{ matrix.artifact_name }}
-          asset_name: lueur-cli-ebpf-${{ github.ref }}-${{ matrix.target }}
+          file: lueur/target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
+          asset_name: lueur-cli-ebpf-${{ github.ref_name }}-${{ matrix.target }}
           tag: ${{ github.ref }}
 
       - name: Upload ebpf programs to release
@@ -164,6 +164,6 @@ jobs:
         with:
           promote: true
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: lueur/target/release/${{ matrix.artifact_name }}
-          asset_name: lueur-ebpf-programs-${{ github.ref }}-${{ matrix.target }}
+          file: lueur/target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
+          asset_name: lueur-ebpf-programs-${{ github.ref_name }}-${{ matrix.target }}
           tag: ${{ github.ref }}
