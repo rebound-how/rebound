@@ -1,4 +1,11 @@
 
+## [0.1.51] - 2025-03-12
+
+### Changed
+
+- Fix cargo publish flags
+  
+
 ## [0.1.50] - 2025-03-12
 
 ### Changed
