@@ -97,8 +97,8 @@ jobs:
         if: matrix.os == 'ubuntu-24.04'
         working-directory: ./lueur/lueur-cli
         run: |
-          cargo install cargo-bump
-          cargo bump ${{ github.ref_name }}
+          cargo install cargo-release
+          cargo release version --workspace ${{ github.ref_name }}
           cargo publish --no-verify --exclude lueur-ebpf-programs --token ${CRATES_TOKEN}
         env:
           CRATES_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
