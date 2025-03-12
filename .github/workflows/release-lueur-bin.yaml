@@ -94,6 +94,7 @@ jobs:
           tag: ${{ github.ref }}
 
       - name: Publish lueur CLI
+        if: matrix.os == 'ubuntu-24.04'
         working-directory: ./lueur/lueur-cli
         run: |
           cargo publish --token ${CRATES_TOKEN}
