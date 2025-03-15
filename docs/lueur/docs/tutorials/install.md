@@ -8,7 +8,7 @@ lueur is provided as a binary targetting the three major platforms: Linux,
 macOS and Windows.
 
 You can download the appropriate binary for your platform from
-[here](https://github.com/lueurdev/lueur/releases/latest).
+[here](https://github.com/rebound-how/rebound/releases).
 
 ??? tip "Configure the binary"
 
