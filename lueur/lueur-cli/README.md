@@ -23,7 +23,14 @@ can quickly see how your application responds when the network isn’t perfect.
 
 ## Install
 
-The lueur proxy is installed as follows:
+### Using built binaries
+
+lueur is distributed as built bianries on GitHub. Please refer to the
+[documentation](https://lueur.dev/how-to/install/).
+
+### Using cargo
+
+The lueur proxy is installed as follows
 
 ```bash
 cargo +nightly install lueur-cli
@@ -35,7 +42,10 @@ If you want to enable ebpf support (highly experimental and likely broken):
 cargo +nightly install lueur-cli --features stealth
 ```
 
-## Run
+In that case you will also need to install the
+[lueur ebpf programs](https://crates.io/crates/lueur-ebpf-programs).
+
+## Run
 
 Once installed, you can start a latency fault inkjection proxy (for instance):
 
@@ -45,4 +55,3 @@ lueur run --with-latency --latency-mean 300 --latency-direction ingress --upstre
 
 This is will inject `300ms` (mean) latency on network coming back from the
 host `localhost:9090`.
-
