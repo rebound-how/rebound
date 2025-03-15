@@ -193,11 +193,13 @@ jobs:
       - name: Build and push lueur CLI
         uses: docker/build-push-action@v6
         with:
-          context: "{{defaultContext}}:lueur"
-          file: "../docker/lueur/Dockerfile"
+          context: "."
+          file: "deploy/docker/lueur/Dockerfile"
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          provenance: mode=max
+          sbom: true
 
   release-docker-ebpf-images:
     runs-on: ubuntu-latest
@@ -223,8 +225,10 @@ jobs:
       - name: Build and push lueur CLI with ebpf support
         uses: docker/build-push-action@v6
         with:
-          context: "{{defaultContext}}:lueur"
-          file: "../docker/lueur/Dockerfile_ebpf"
+          context: "."
+          file: "deploy/docker/lueur/Dockerfile_ebpf"
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          provenance: mode=max
+          sbom: true

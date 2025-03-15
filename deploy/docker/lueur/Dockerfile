@@ -6,7 +6,7 @@ RUN apt-get update && apt install -y protobuf-compiler && \
     rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
 RUN cargo install bpf-linker --git https://github.com/aya-rs/bpf-linker.git
 
-COPY . /app
+COPY ./lueur /app
 
 RUN cargo +nightly build --release
 

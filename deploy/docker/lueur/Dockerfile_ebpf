@@ -6,7 +6,7 @@ RUN apt-get update && apt install -y protobuf-compiler libcap2-bin && \
     rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
 RUN cargo install bpf-linker --git https://github.com/aya-rs/bpf-linker.git
 
-COPY . /app
+COPY ./lueur /app
 
 RUN cargo +nightly build --release  --features stealth
 RUN cargo +nightly build --release -p lueur-ebpf-programs --target=bpfel-unknown-none -Z build-std=core
