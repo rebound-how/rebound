@@ -1,10 +1,18 @@
+
+## [0.1.62] - 2025-03-15
+
+### Added
+
+- Publish ebpf to crates.io
+- Pass GH credentials to docker build action
+
+
 ## [0.1.61] - 2025-03-15
 
 ### Added
 
 - Support to specify any upstream hosts via `--upstream=*`
 - Build and deliver Docker images of lueur
-- 
 
 ## [0.1.53] - 2025-03-12
 
