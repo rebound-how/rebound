@@ -193,7 +193,7 @@ jobs:
       - name: Build and push lueur CLI
         uses: docker/build-push-action@v6
         with:
-          context: lueur
+          context: "{{defaultContext}}:lueur"
           file: deploy/docker/lueur/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -223,7 +223,7 @@ jobs:
       - name: Build and push lueur CLI with ebpf support
         uses: docker/build-push-action@v6
         with:
-          context: lueur
+          context: "{{defaultContext}}:lueur"
           file: deploy/docker/lueur/Dockerfile_ebpf
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
