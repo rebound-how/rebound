@@ -1,11 +1,14 @@
 :root  > * {
-  --md-accent-fg-color:         	hsl(31, 100%, 51%);
-  --md-accent-fg-color--transparent: hsla(31, 100%, 51%, 0.1);
-  --md-typeset-a-color:  	 	hsla(211, 100%, 51%, 1) !important;
+  --lueur-orange: hsla(31, 100%, 51%, 1);
+  --lueur-orange-transparent: hsla(31, 100%, 51%, 0.1);
+  --lueur-pink: hsla(301, 100%, 51%, 1);
+  --lueur-pink-transparent: hsla(301, 100%, 51%, 0.1);
+
+  --md-typeset-a-color:  	 	 var(--lueur-orange) !important;
 }
 
 [data-md-color-scheme="slate"] {
-  --md-hue: 195; 
+  --md-hue: 209; 
 }
 
 
@@ -14,6 +17,9 @@
   src: "...";
 }
 
+.rounded {
+  border-radius: 2em !important;
+}
 
 .task-list .task-list-indicator::after {
   --guide-width: 1px;
@@ -27,4 +33,54 @@
   bottom: var(--bullet-margin);
   width: var(--guide-width);
   left: -0.75rem;
+}
+
+
+.hero { 
+  display: grid;
+  grid-template-columns: 0.6fr 1.4fr;
+  grid-template-rows: 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "left right";
+}
+
+.right {  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "right-full";
+  align-self: center;
+  grid-area: right;
+}
+
+.right-full {
+  align-self: center;
+  grid-area: right-full;
+}
+
+.left {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(2, 1fr);
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "left-top"
+    "left-bottom";
+  align-self: start;
+  grid-area: left;
+}
+
+.left-top {
+  align-self: end;
+  grid-area: left-top;
+}
+
+.left-bottom {
+  align-self: start;
+  grid-area: left-bottom;
 }
