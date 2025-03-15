@@ -54,5 +54,5 @@ you have full access to the code and all its assets. To make sure Rebound keeps
 on rocking, we encourage you to look into our [sponsorship][] program.
 We also offer commercial support, just [give us a shout][commercial].
 
-[sponsorship]: https://rebound.how/support/
+[sponsorship]: https://opencollective.com/rebound
 [commercial]: https://rebound.how/support/
