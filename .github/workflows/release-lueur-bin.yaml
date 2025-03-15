@@ -199,7 +199,10 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/rebound-how/lueur
+          images: ghcr.io/rebound-how/rebound
+          flavor:
+            latest=auto
+            prefix=lueur-v,onlatest=true
           tags: |
             type=semver,pattern={{version}}
 
@@ -237,7 +240,10 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/rebound-how/lueur-ebpf
+          images: ghcr.io/rebound-how/rebound
+          flavor:
+            latest=auto
+            prefix=lueur-stealth-v,onlatest=true
           tags: |
             type=semver,pattern={{version}}
 

@@ -1,4 +1,11 @@
 
+## [0.1.63] - 2025-03-15
+
+### Fixed
+
+- Docker image name and tags
+
+
 ## [0.1.62] - 2025-03-15
 
 ### Added
