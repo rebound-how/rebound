@@ -1,6 +1,6 @@
 site_name: ""
-site_description: "Shift resiliency issues discovery left with Lueur"
-site_author: "The Lueur Team"
+site_description: "Developer-Friendly Reliability Engineering | /lɥœʁ/"
+site_author: "Sylvain Hellegouarch"
 site_url: https://docs.lueur.dev
 repo_url: https://github.com/rebound-how/rebound
 repo_name: rebound/lueur
@@ -18,6 +18,7 @@ nav:
   - Home: index.md
   - Getting Started:
     - "Install": tutorials/install.md
+    - "tl;dr": tutorials/tldr.md
     - "Getting Started": tutorials/getting-started.md
     - "Creating a Reliability Testing Scenario": tutorials/create-scenario.md
   - "How-To Guides":
@@ -49,29 +50,9 @@ theme:
     annotation: material/plus-circle
     repo: fontawesome/brands/github
   palette:
-    # Palette toggle for automatic mode
-    - media: "(prefers-color-scheme)"
-      toggle:
-        icon: material/brightness-auto
-        name: Switch to light mode
-
-    # Palette toggle for light mode
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: white
-      accent: custom
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-
-    # Palette toggle for dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: black
-      accent: custom
-      toggle:
-        icon: material/brightness-4
-        name: Switch to system preference
+    scheme: slate
+    primary: black
+    accent: yellow
 
   features:
     - navigation.tabs
@@ -84,7 +65,7 @@ theme:
     - toc.integrate
     - content.code.copy
     - content.code.annotate
-    - content.action.edit
+    #- content.action.edit
 
   
 extra_css:
@@ -121,3 +102,6 @@ markdown_extensions:
       slugify: !!python/object/apply:pymdownx.slugs.slugify
         kwds:
           case: lower
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg

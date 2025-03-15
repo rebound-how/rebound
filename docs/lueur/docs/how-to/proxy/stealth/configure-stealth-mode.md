@@ -18,17 +18,11 @@ explicitely re-route via the proxy.
 
 ## Capture HTTPS Traffic
 
--   [X] Install lueur
+-   [X] Install lueur with {==stealth mode==} enabled
     
     Follow the procedure to
-    [install](../../../tutorials/install.md#download-lueur) lueur on your
-    machine.
-
--   [X] Install lueur's ebpf dependencies
-    
-    Follow the procedure to
-    [install](../../../tutorials/install.md#optional-configure-ebpf-support) the
-    eBPF programs on your machine.
+    [install](../../../how-to/install.md#stealth-dependencies) the
+    right binary and dependencies on your machine.
 
 -   [X] Start the proxy in stealth mode with a normal distribution latency
 
