@@ -11,7 +11,7 @@ The most direct route is to download the lueur binary on your machine.
 -   [X] Download lueur
 
     You can download the appropriate {==lueur-cli==} binary for your platform
-    from [here](https://github.com/lueurdev/lueur/releases/latest).
+    from [here](https://github.com/rebound-how/rebound/releases).
 
 -   [X] Ensure `lueur` can be found in your `PATH`
 
