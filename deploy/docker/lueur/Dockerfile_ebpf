@@ -1,4 +1,4 @@
-FROM rust:1-bullseye as build-env
+FROM rust:1-bullseye AS build-env
 
 WORKDIR /app
 
