@@ -1,3 +1,11 @@
+## [0.1.60] - 2025-03-15
+
+### Added
+
+- Support to specify any upstream hosts via `--upstream=*`
+- Build and deliver Docker images of lueur
+- 
+
 ## [0.1.53] - 2025-03-12
 
 ### Changed

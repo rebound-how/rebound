@@ -114,11 +114,14 @@ async fn handle_new_connection(
 
     let hosts = state.upstream_hosts.read().await;
     let upstream_host = get_host(&upstream);
-    if hosts.contains(&upstream_host) {
+    if hosts.contains(&String::from("*")) {
+        tracing::debug!("All upstreams are allowed");
+        passthrough = false;
+    } else if hosts.contains(&upstream_host) {
         tracing::debug!("Upstream host in allowed list");
         passthrough = false;
     } else {
-        tracing::debug!("Upstream host will be passthrough");
+        tracing::debug!("Upstream host {} NOT in allowed list", upstream_host);
     }
 
     let upstream_url: Url = upstream.parse().unwrap();

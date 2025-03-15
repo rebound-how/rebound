@@ -8,6 +8,7 @@ use colorful::ExtraColorInterface;
 use colorful::core::color_string::CString;
 use indicatif::MultiProgress;
 use indicatif::ProgressBar;
+use indicatif::ProgressDrawTarget;
 use indicatif::ProgressStyle;
 use tokio::sync::broadcast;
 use tokio::sync::broadcast::Receiver;
@@ -33,7 +34,7 @@ struct TaskInfo {
 pub async fn handle_displayable_events(
     mut receiver: Receiver<TaskProgressEvent>,
 ) {
-    let multi = MultiProgress::new();
+    let multi = MultiProgress::with_draw_target(ProgressDrawTarget::stdout());
 
     let style = ProgressStyle::default_bar()
         .template("{spinner:.green} {msg}")

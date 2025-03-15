@@ -593,6 +593,10 @@ async fn initialize_ebpf_proxy(
 fn upstream_to_addr(
     host: &String,
 ) -> Result<String, Box<dyn std::error::Error>> {
+    if host == &String::from("*") {
+        return Ok(host.clone())
+    }
+
     let url_str = if host.contains("://") {
         host.to_string()
     } else {
