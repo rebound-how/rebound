@@ -200,7 +200,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/rebound-how/rebound
-          flavor:
+          flavor: |
             latest=auto
             prefix=lueur-v,onlatest=true
           tags: |
@@ -241,7 +241,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/rebound-how/rebound
-          flavor:
+          flavor: |
             latest=auto
             prefix=lueur-stealth-v,onlatest=true
           tags: |
