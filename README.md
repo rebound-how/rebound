@@ -41,7 +41,7 @@ software delivery and operations.
 Rebound has a variety of channels to discuss:
 
 * [Bug Board][bug]: You have met a bug or an issue with the tools, please feel free to create a new [issue][issue]
-* [Board Discussion][board]: You want to suggest a new feature? Change the behavior of one of our tools? The discussion forum is the right place
+* [Discussion Board][board]: You want to suggest a new feature? Change the behavior of one of our tools? The discussion forum is the right place
 
 [bug]: https://github.com/rebound-how/rebound/issues
 [issue]: https://github.com/rebound-how/rebound/issues/new/choose
