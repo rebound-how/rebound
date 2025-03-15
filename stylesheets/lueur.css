@@ -84,3 +84,29 @@
   align-self: start;
   grid-area: left-bottom;
 }
+
+.left-top picture img {
+  max-width: 90%;
+  height: auto;
+  display: block;
+}
+
+.right-full video {
+  max-width: 100%;
+  height: auto;
+}
+
+
+@media (max-width: 768px) {
+  .hero {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      "left"
+      "right";
+  }
+  
+  .left {
+    margin-bottom: 1rem;
+  }
+}
