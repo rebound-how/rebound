@@ -6,13 +6,13 @@
 <h4 align="center">Rebound | The open source toolbox for resilient organizations</h4>
 
 <p align="center">
-   <a href="https://github.com/reliablyhq/cli/blob/master/LICENSE.md">
+   <a href="https://github.com/rebound-how/rebound/blob/main/LICENSE.md">
    <img alt="License" src="https://img.shields.io/github/license/reliablyhq/cli">
 </p>
 
 <p align="center">
   <a href="https://rebound.how/docs/tutorials/install/">Installation</a> •
-  <a href="https://reliably.com/docs/cli/">Documentation</a>
+  <a href="https://rebound.how/docs/">Documentation</a>
 </p>
 
 ---
@@ -23,11 +23,36 @@ strategy.
 Rebound is composed of three main applications:
 
 * [lueur](./lueur/README.md): a Rust-powered CLI that simulates network disruptions right on your local machine.
-* [Chaos Toolkit](./chaostoolkit/README.md): a Chaos Engineering ecosystem to evaluate your response to operational incidents.
-* [Reliably](./reliably/README.md): a platform to centralize and orchestrate your reliability strategy.
+* [Chaos Toolkit](./chaostoolkit/README.md): a Python CLI with a rich Chaos Engineering ecosystem to evaluate your response to operational incidents.
+* [Reliably](./reliably/README.md): a full platform to centralize and orchestrate your reliability strategy.
 
 # Usage
 
-Please follow the [guidelines][] to walk you through Reliably's main features.
+Please follow the [documentation][] to walk you get you started with Rebound.
 
-[guidelines]: https://reliably.com/docs/guides/first-plan/
+[documentation]: https://rebound.how/docs/
+
+# Community
+
+Rebound is not just a toolbox, it's first and foremost a community of forward
+thinking people who want to share their interest in improving the world of
+software delivery and operations.
+
+Rebound has a variety of channels to discuss:
+
+* [Bug Board][bug]: You have met a bug or an issue with the tools, please feel free to create a new [issue][issue]
+* [Board Discussion][board]: You want to suggest a new feature? Change the behavior of one of our tools? The discussion forum is the right place
+
+[bug]: https://github.com/rebound-how/rebound/issues
+[issue]: https://github.com/rebound-how/rebound/issues/new/choose
+[board]: https://github.com/rebound-how/rebound/discussions
+
+# Support & Sponsorship
+
+Rebound is a collection of open-source tools. We have elected an approach where
+you have full access to the code and all its assets. To make sure Rebound keeps
+on rocking, we encourage you to look into our [sponsorship][] program.
+We also offer commercial support, just [give us a shout][commercial].
+
+[sponsorship]: https://rebound.how/support/
+[commercial]: https://rebound.how/support/
