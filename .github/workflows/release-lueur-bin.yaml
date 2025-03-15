@@ -179,6 +179,11 @@ jobs:
 
   release-docker-images:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -199,10 +204,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/rebound-how/rebound
-          flavor: |
-            latest=auto
-            prefix=lueur-v,onlatest=true
+          images: ghcr.io/rebound-how/lueur
           tags: |
             type=semver,pattern={{version}}
 
@@ -220,6 +222,11 @@ jobs:
 
   release-docker-ebpf-images:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -240,10 +247,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/rebound-how/rebound
-          flavor: |
-            latest=auto
-            prefix=lueur-stealth-v,onlatest=true
+          images: ghcr.io/rebound-how/lueur-stealth
           tags: |
             type=semver,pattern={{version}}
 

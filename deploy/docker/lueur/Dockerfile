@@ -11,6 +11,9 @@ COPY ./lueur /app
 RUN cargo +nightly build --release
 
 FROM gcr.io/distroless/cc-debian12
+
+LABEL org.opencontainers.image.source=https://github.com/rebound-how/rebound
+
 COPY --from=build-env --chown=65532:65532 /app/target/release/lueur /
 
 WORKDIR /home/nonroot

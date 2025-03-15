@@ -1,4 +1,11 @@
 
+## [0.1.65] - 2025-03-16
+
+### Fixed
+
+- github action permissions
+
+
 ## [0.1.64] - 2025-03-15
 
 ### Fixed

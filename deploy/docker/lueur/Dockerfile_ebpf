@@ -16,6 +16,9 @@ RUN cargo +nightly build --release -p lueur-ebpf-programs --target=bpfel-unknown
 RUN setcap cap_sys_admin,cap_bpf,cap_net_admin+ep  /app/target/release/lueur
 
 FROM gcr.io/distroless/cc-debian12
+
+LABEL org.opencontainers.image.source=https://github.com/rebound-how/rebound
+
 COPY --from=build-env --chown=65532:65532 /app/target/release/lueur /
 COPY --from=build-env --chown=65532:65532 /app/target/bpfel-unknown-none/release/lueur-ebpf /home/nonroot/.cargo/bin/lueur-ebpf
 
