@@ -12,13 +12,13 @@
         <meta name="author" content="Sylvain Hellegouarch">
       
       
-        <link rel="canonical" href="https://docs.lueur.dev/how-to/platform/run-with-docker/">
+        <link rel="canonical" href="https://docs.lueur.dev/how-to/platform/run-on-windows/">
       
       
-        <link rel="prev" href="../run-on-kubernetes/">
+        <link rel="prev" href="../run-with-docker/">
       
       
-        <link rel="next" href="../run-on-windows/">
+        <link rel="next" href="../../../reference/cli-commands/">
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
@@ -26,7 +26,7 @@
     
     
       
-        <title>Run With Docker - </title>
+        <title>Run on Windows - </title>
       
     
     
@@ -69,11 +69,11 @@
       
         <meta  property="og:type"  content="website" >
       
-        <meta  property="og:title"  content="Run With Docker - " >
+        <meta  property="og:title"  content="Run on Windows - " >
       
         <meta  property="og:description"  content="Developer-Friendly Reliability Engineering | /lɥœʁ/" >
       
-        <meta  property="og:image"  content="https://docs.lueur.dev/assets/images/social/how-to/platform/run-with-docker.png" >
+        <meta  property="og:image"  content="https://docs.lueur.dev/assets/images/social/how-to/platform/run-on-windows.png" >
       
         <meta  property="og:image:type"  content="image/png" >
       
@@ -81,15 +81,15 @@
       
         <meta  property="og:image:height"  content="630" >
       
-        <meta  property="og:url"  content="https://docs.lueur.dev/how-to/platform/run-with-docker/" >
+        <meta  property="og:url"  content="https://docs.lueur.dev/how-to/platform/run-on-windows/" >
       
         <meta  name="twitter:card"  content="summary_large_image" >
       
-        <meta  name="twitter:title"  content="Run With Docker - " >
+        <meta  name="twitter:title"  content="Run on Windows - " >
       
         <meta  name="twitter:description"  content="Developer-Friendly Reliability Engineering | /lɥœʁ/" >
       
-        <meta  name="twitter:image"  content="https://docs.lueur.dev/assets/images/social/how-to/platform/run-with-docker.png" >
+        <meta  name="twitter:image"  content="https://docs.lueur.dev/assets/images/social/how-to/platform/run-on-windows.png" >
       
     
     
@@ -119,7 +119,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#run-lueur-as-a-docker-container" class="md-skip">
+        <a href="#run-lueur-on-a-microsoft-windows-host" class="md-skip">
           Skip to content
         </a>
       
@@ -152,7 +152,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Run With Docker
+              Run on Windows
             
           </span>
         </div>
@@ -794,6 +794,28 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../run-with-docker/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Run With Docker
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -810,7 +832,7 @@
           
   
   <span class="md-ellipsis">
-    Run With Docker
+    Run on Windows
     
   </span>
   
@@ -822,7 +844,7 @@
         
   
   <span class="md-ellipsis">
-    Run With Docker
+    Run on Windows
     
   </span>
   
@@ -854,18 +876,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#run-lueur-as-a-container-step-by-step" class="md-nav__link">
+  <a href="#run-lueur-via-windows-powershell" class="md-nav__link">
     <span class="md-ellipsis">
-      Run lueur as A Container - Step-by-Step
+      Run lueur via Windows PowerShell
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#run-stealh-mode-in-a-container-step-by-step" class="md-nav__link">
+  <a href="#run-lueur-via-windows-subsystem-for-linux-wsl" class="md-nav__link">
     <span class="md-ellipsis">
-      Run Stealh Mode in A Container - Step-by-Step
+      Run lueur via Windows Subsystem for Linux (WSL)
     </span>
   </a>
   
@@ -875,28 +897,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../run-on-windows/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Run on Windows
-    
-  </span>
-  
-
-      </a>
     </li>
   
 
@@ -1200,141 +1200,60 @@
   
 
 
-<h1 id="run-lueur-as-a-docker-container">Run lueur as a Docker Container</h1>
-<p>This guide will show you how can you easily introduce network faults with 
-Docker containers.</p>
+<h1 id="run-lueur-on-a-microsoft-windows-host">Run lueur on a Microsoft Windows host</h1>
+<p>This guide will show you how to run lueur on a Microsoft Windows host.</p>
 <h2 id="what-youll-achieve">What You'll Achieve</h2>
-<p>You will learn how to use lueur in a Docker environment, either as
-a standalone container or as part of a set of services orchestrated with
-Docker Compose.</p>
-<h2 id="run-lueur-as-a-container-step-by-step">Run lueur as A Container - Step-by-Step</h2>
+<p>You will learn how to run lueur from a PowerShell command line or
+via the Windows Subsystem for Linux.</p>
+<h2 id="run-lueur-via-windows-powershell">Run lueur via Windows PowerShell</h2>
 <ul class="task-list">
 <li class="task-list-item">
-<p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Pull the lueur image</p>
-<div class="language-bash highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>docker<span class="w"> </span>pull<span class="w"> </span>rebound/lueur
-</code></pre></div>
+<p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Download lueur for Windows</p>
+<p>Download the latest Windows release of lueur from the
+<a href="https://github.com/rebound-how/rebound/releases/latest">releases</a> page.</p>
 </li>
 <li class="task-list-item">
-<p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Run lueur with a latency fault</p>
-<div class="language-bash highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>docker<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span>-p<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (1)!</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span>--rm<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (2)!</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span>-it<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (3)!</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span>rebound/lueur<span class="w"> </span><span class="se">\ </span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span>run<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span>--proxy-address<span class="w"> </span><span class="m">0</span>.0.0.0:8080<span class="w">  </span><span class="se">\ </span><span class="c1"># (4)!</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">        </span>--upstream<span class="w"> </span>http://192.168.1.3:7070<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (5)!</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">        </span>--with-latency<span class="w"> </span>--latency-mean<span class="w"> </span><span class="m">300</span>
-</code></pre></div>
-<ol>
-<li>Expose the proxy port if you need to access it from the host</li>
-<li>Release the system resources once the container finishes</li>
-<li>Give the process a terminal</li>
-<li>The default behavior is to bind the proxy to the loopback which would prevent the proxy from being reached. Bind to all public interfaces with <code>0.0.0.0</code></li>
-<li>The address of the demo application we will apply the latency to</li>
-</ol>
+<p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Rename the binary</p>
+<p>Once downloaded, rename the executable to <code>lueur.exe</code></p>
 </li>
 <li class="task-list-item">
-<p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Run the lueur demo using the same image</p>
-<div class="language-bash highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span>-p<span class="w"> </span><span class="m">7070</span>:7070<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (1)!</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span>rebound/lueur<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">        </span>demo<span class="w"> </span>run<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w">  </span><span class="c1"># (2)!</span>
-</code></pre></div>
-<ol>
-<li>Expose the demo application port to the host</li>
-<li>Run the demo server and bind to all container's interfaces</li>
-</ol>
-</li>
-<li class="task-list-item">
-<p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Make a request to the demo application and see it impacted by the proxy</p>
-<div class="language-bash highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>curl<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span>-w<span class="w"> </span><span class="s2">&quot;\nConnected IP: %{remote_ip}\nTotal time: %{time_total}s\n&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span>-x<span class="w"> </span>http://localhost:8080<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span>http://192.168.1.3:7070
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>&lt;h1&gt;Hello,<span class="w"> </span>World!&lt;/h1&gt;
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>Connected<span class="w"> </span>IP:<span class="w"> </span>::1
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>Total<span class="w"> </span>time:<span class="w"> </span><span class="m">0</span>.313161s
+<p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Add the directory to the <code>Path</code></p>
+<p>You may additionnaly update the <code>Path</code> so that lueur is found.</p>
+<div class="language-console highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="gp">$</span>env:Path<span class="w"> </span>+<span class="o">=</span><span class="w"> </span><span class="s1">&#39;;C:\directoy\where\lueur\lives&#39;</span><span class="w"> </span>
 </code></pre></div>
 </li>
 </ul>
-<h2 id="run-stealh-mode-in-a-container-step-by-step">Run Stealh Mode in A Container - Step-by-Step</h2>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Stealth mode gives the opportunity to intercept traffic without having to
-explicitely set the proxy on the client. It relies on eBPF and therefore
-requires a lot of provileges which likely you would not have in a production
-environment.</p>
-</div>
+<h2 id="run-lueur-via-windows-subsystem-for-linux-wsl">Run lueur via Windows Subsystem for Linux (WSL)</h2>
 <ul class="task-list">
 <li class="task-list-item">
-<p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Pull the lueur image</p>
-<div class="language-bash highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>docker<span class="w"> </span>pull<span class="w"> </span>rebound/lueur
+<p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Install a Ubuntu release</p>
+<p>Another approach to run from Windows is to benefit from the Windows
+<a href="https://learn.microsoft.com/en-us/windows/wsl/setup/environment">Substem for Linux</a>,
+which exposes Windows lower level resources in a way that allows Linux to
+run from them directly.</p>
+<div class="language-powershell highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">wsl</span> <span class="p">-</span><span class="n">-install</span> <span class="n">-d</span> <span class="n">Ubuntu</span><span class="p">-</span><span class="n">24</span><span class="p">.</span><span class="n">04</span>
+</code></pre></div>
+<p>This will install a base Ubuntu distribution. It will ask you for a
+username and password along the way. Finally, it will log you in to that
+user.</p>
+</li>
+<li class="task-list-item">
+<p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Configure the environment</p>
+<p>Install the <mark class="critic">jq</mark> command:</p>
+<div class="language-bash highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>jq
+</code></pre></div>
+<p>Then, create the target directory where <code>lueur</code> will be installed:</p>
+<div class="language-bash highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>.local/bin
+</code></pre></div>
+<p>Add the following to your <code>.bashrc</code> file:</p>
+<div class="language-bash highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$HOME</span>/.local/bin
 </code></pre></div>
 </li>
 <li class="task-list-item">
-<p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Run lueur with a latency fault</p>
-<div class="language-bash highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>docker<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span>-p<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (1)!</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span>-p<span class="w"> </span><span class="m">8089</span>:8089<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (2)!</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span>--rm<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (3)!</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span>-it<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (4)!</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span>--network<span class="o">=</span>host<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (5)!</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span>--pid<span class="o">=</span>host<span class="w"> </span><span class="se">\ </span><span class="c1"># (6)!</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span>-v<span class="w"> </span>/sys/fs/cgroup/:/sys/fs/cgroup/:ro<span class="w"> </span><span class="se">\ </span><span class="c1"># (7)!</span>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span>--cap-add<span class="o">=</span>SYS_ADMIN<span class="w"> </span><span class="se">\ </span><span class="c1"># (8)!</span>
-<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span>--cap-add<span class="o">=</span>BPF<span class="w"> </span><span class="se">\ </span><span class="c1"># (9)!</span>
-<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span>--cap-add<span class="o">=</span>NET_ADMIN<span class="w"> </span><span class="se">\ </span><span class="c1"># (10)!</span>
-<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">    </span>rebound/lueur<span class="w"> </span><span class="se">\ </span>
-<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">        </span>run<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">        </span>--stealth<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (11)!</span>
-<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">        </span>--ebpf-proxy-port<span class="w"> </span><span class="m">8989</span><span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (12)!</span>
-<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">        </span>--proxy-address<span class="w"> </span><span class="m">0</span>.0.0.0:8080<span class="w">  </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (13)!</span>
-<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">        </span>--upstream<span class="w"> </span>http://192.168.1.3:7070<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (14)!</span>
-<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">        </span>--with-latency<span class="w"> </span>--latency-mean<span class="w"> </span><span class="m">300</span>
+<p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Install lueur</p>
+<p>Install lueur using our installer script:</p>
+<div class="language-bash highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>curl<span class="w"> </span>-sSL<span class="w"> </span>https://lueur.dev/get<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
 </code></pre></div>
-<ol>
-<li>Expose the proxy port if you need to access it from the host</li>
-<li>Expose the eBPF proxy port</li>
-<li>Release the system resources once the container finishes</li>
-<li>Give the process a terminal</li>
-<li>Share the host network as in our example, the client runs on the host. You could also share another container's network instead</li>
-<li>Share the host porocess namespace to access the client's process</li>
-<li>Give access to the host's kernel resources for lueur eBPF programs to attach to</li>
-<li>Give too much power to the container but unfortunately we cannot reduce the scope so we need it</li>
-<li>Specific BPF priviledges</li>
-<li>lueur needs quite a bit of access to networking to do its job</li>
-<li>Enable stealth mode and loads eBPF programs</li>
-<li>By default, lueur picks up a random port for listening to traffic routed via ebBPF, but we need to set it to expose it</li>
-<li>The default behavior is to bind the proxy to the loopback which would prevent the proxy from being reached. Bind to all public interfaces with <code>0.0.0.0</code></li>
-<li>The address of the demo application we will apply the latency to. Note that this is ignored by lueur for now</li>
-</ol>
-</li>
-<li class="task-list-item">
-<p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Run the lueur demo using the same image</p>
-<div class="language-bash highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>docker<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span>-p<span class="w"> </span><span class="m">7070</span>:7070<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (1)!</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span>rebound/lueur<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">        </span>demo<span class="w"> </span>run<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w">  </span><span class="c1"># (2)!</span>
-</code></pre></div>
-<ol>
-<li>Expose the demo application port to the host</li>
-<li>Run the demo server and bind to all container's interfaces</li>
-</ol>
-</li>
-<li class="task-list-item">
-<p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Make a request to the demo application and see it impacted by the proxy</p>
-<div class="language-bash highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>curl<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span>-w<span class="w"> </span><span class="s2">&quot;\nConnected IP: %{remote_ip}\nTotal time: %{time_total}s\n&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span>http://192.168.1.3:7070
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>&lt;h1&gt;Hello,<span class="w"> </span>World!&lt;/h1&gt;
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>Connected<span class="w"> </span>IP:<span class="w"> </span>::1
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>Total<span class="w"> </span>time:<span class="w"> </span><span class="m">0</span>.313161s
-</code></pre></div>
-<p>Notice how we do not need to be explicit about routing traffic to the
-proxy by omitting setting <code>-x http://localhost:8080</code></p>
 </li>
 </ul>
 
@@ -1359,7 +1278,7 @@ proxy by omitting setting <code>-x http://localhost:8080</code></p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="March 11, 2025 16:53:18">March 11, 2025</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="March 16, 2025 14:38:52">March 16, 2025</span>
   </span>
 
     
@@ -1369,7 +1288,7 @@ proxy by omitting setting <code>-x http://localhost:8080</code></p>
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="March 11, 2025 16:53:18">March 11, 2025</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="March 16, 2025 14:38:52">March 16, 2025</span>
   </span>
 
     
