@@ -17,7 +17,7 @@ hide:
     Download the [`lueur`](./tutorials/install.md) CLI and start observing how
     your application deals with uncertainty.
 
-    ```bash
+    ```console
     curl -sSL https://lueur.dev/get | bash
     ```
 
@@ -30,7 +30,7 @@ hide:
     Focus on learning from your application's behavior. lueur comes with a
     straightforward CLI.
 
-    ```bash
+    ```console
     lueur run --with-bandwidth --bandwidth-rate 100
     ```
 
@@ -43,7 +43,7 @@ hide:
     Reliability starts with product engineers. Straight from
     their development cycle.
 
-    ```bash
+    ```console
     lueur scenario run --scenario scenario.yaml
     ```
 

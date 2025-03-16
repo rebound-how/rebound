@@ -5,7 +5,7 @@
 The following command starts the proxy impacting any requests to any upstream
 server with a `300ms` latency on average.
 
-```bash
+```console
 lueur run --with-latency --latency-mean=300 --upstream=* 
 ```
 
