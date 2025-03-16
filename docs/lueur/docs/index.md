@@ -18,7 +18,7 @@ hide:
     your application deals with uncertainty.
 
     ```bash
-    curl -sSL https://github.com/rebound-how/rebound/releases/latest
+    curl -sSL https://lueur.dev/get | bash
     ```
 
     [:octicons-arrow-right-24: Get started](./tutorials/tldr/)
