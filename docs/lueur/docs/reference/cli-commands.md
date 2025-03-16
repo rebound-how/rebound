@@ -62,6 +62,13 @@ Fault injection parameters are grouped into sections based on the type of
 network fault. Each section allows you to enable or disable a fault and
 configure its properties.
 
+### UI Options
+
+These options define how the UI is setup on lueur's output:
+
+- **`--no-ui`**  
+  _Disable entirely the terminal UI and make the output fully silent._  
+
 ### Proxy Configuration Options
 
 These options define how to comnfigure the proxy started by lueur:
@@ -104,10 +111,17 @@ These options configure the stealth mode of the lueur's proxy.
   _Process name captured by the eBPF program (requires `--stealth`)._  
   **Example:** `--capture-process curl`
 
-- **`--ebpf-programs-dir <directory>`**  
-  _Directory path where lueur eBPF programs are located (requires `--stealth`)._  
-  _Default:_ `$HOME/.local/bin`  
-  **Example:** `--ebpf-programs-dir /tmp/somewhere`
+- **`--ebpf-proxy-ip <ip>`**  
+  _IP address to bind the eBPF proxy to. If unset, uses the same as the default proxy address (requires `--stealth`)._  
+  **Example:** `--ebpf-proxy-ip 192.168.1.26`
+
+- **`--ebpf-proxy-port <port>`**  
+  _Port to bind the eBPF proxy to. If unset, uses a random port (requires `--stealth`)._  
+  **Example:** `--ebpf-proxy-port 47070`
+
+- **`--ebpf-proxy-iface <iface>`**  
+  _Interface to attach the eBPF programs to. Defaults to the interface associated to the eBPF proxy IP (requires `--stealth`)._  
+  **Example:** `--ebpf-proxy-iface eth0`
 
 ### Latency Options
 

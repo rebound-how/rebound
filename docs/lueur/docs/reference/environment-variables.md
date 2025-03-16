@@ -21,10 +21,14 @@ be simpler to populate these options via environment variables.
 
 | **Name**                         | **Default Value**   | **Explanation**                                                                                  |
 |----------------------------------|---------------------|--------------------------------------------------------------------------------------------------|
+| `LUEUR_PROXY_NO_UI`                  | (none)    | Disables the terminal UI and make the output fully silent.                                                 |
 | `LUEUR_PROXY_ADDRESS`                  | `127.0.0.1:8080`    | The address on which the proxy server listens.                                                 |
 | `LUEUR_ENABLE_STEALTH`                   | `false`             | Whether stealth mode (using eBPF) is enabled.                                                    |
 | `LUEUR_EBPF_PROCESS_NAME`                 | (none)              | The name of a process to intercept traffic from (used when stealth mode is enabled).           |
 | `LUEUR_EBPF_PROGRAMS_DIR`                 | `"$HOME/cargo/bin"`              | The directory where eBPF programs for lueur can be found (used when stealth mode is enabled).           |
+| `LUEUR_EBPF_PROXY_IP`                 | (none)              | The address to use by the eBPF proxy. If unset, uses the same as the default proxy address.           |
+| `LUEUR_EBPF_PROXY_PORT`                 | (none)              | The port the eBPF proxy is bound to. By default uses a random port.           |
+| `LUEUR_EBPF_PROXY_IFACE`                 | (none)              | The interface to attach the eBPF programs to. Uses the interface of the proxy IP by default.           |
 | `LUEUR_GRPC_PLUGINS`                   | (none)              | Comma-separated list of gRPC plugin addresses.                                                 |
 | `LUEUR_UPSTREAMS`                 | (none)              | Comma-separated list of upstream hostnames to proxy.                                           |
 | `LUEUR_WITH_LATENCY`                   | `false`             | Whether a latency fault is enabled.                                                    |
