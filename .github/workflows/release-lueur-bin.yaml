@@ -13,7 +13,22 @@ on:
       - '.github/workflows/release-lueur-bin.yaml'
 
 jobs:
+  create-the-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create lueur release
+        run: |
+          gh release create -d "$GITHUB_REF_NAME" --generate-notes --discussion-category "Announcements"
+        env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   release-assets:
+    needs:
+      - create-the-release
     strategy:
       fail-fast: false
       matrix:
@@ -123,6 +138,8 @@ jobs:
           CRATES_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
 
   release-ebpf-assets:
+    needs:
+      - create-the-release
     strategy:
       fail-fast: false
       matrix:
@@ -199,6 +216,8 @@ jobs:
           CRATES_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
 
   release-docker-images:
+    needs:
+      - create-the-release
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -246,6 +265,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
 
   release-docker-ebpf-images:
+    needs:
+      - create-the-release
     runs-on: ubuntu-latest
     permissions:
       contents: read
