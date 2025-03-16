@@ -33,6 +33,7 @@ nav:
     - "Integrate GitHub Actions": how-to/ci/github.md
     - "Run On Kubernetes": how-to/platform/run-on-kubernetes.md
     - "Run With Docker": how-to/platform/run-with-docker.md
+    - "Run on Windows": how-to/platform/run-on-windows.md
   - Reference:
     - "CLI Commands": reference/cli-commands.md
     - "Scenario File Format": reference/scenario-file-format.md

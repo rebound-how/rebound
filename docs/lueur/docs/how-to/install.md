@@ -4,7 +4,7 @@ lueur is a designed to be easily installed on major systems such as Linux,
 macOS and Windows. We provide a variety of approaches to install lueur depending
 on your environment.
 
-## Install the lueur binary
+## Download the lueur binary
 
 The most direct route is to download the lueur binary on your machine.
 
