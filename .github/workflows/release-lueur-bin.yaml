@@ -22,7 +22,7 @@ jobs:
 
       - name: Create lueur release
         run: |
-          gh release create -d "$GITHUB_REF_NAME" --generate-notes --discussion-category "Announcements"
+          gh release create -d "$GITHUB_REF_NAME" --generate-notes
         env:
            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
