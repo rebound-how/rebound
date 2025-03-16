@@ -1,4 +1,11 @@
 
+## [0.1.68] - 2025-03-16
+
+### Added
+
+- add dependencies for aartch64 on linux and musl
+
+
 ## [0.1.67] - 2025-03-16
 
 ### Added
