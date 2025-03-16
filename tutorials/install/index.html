@@ -1192,7 +1192,10 @@
 <h2 id="download-lueur">Download lueur</h2>
 <p>lueur is provided as a binary targetting the three major platforms: Linux,
 macOS and Windows.</p>
-<p>You can download the appropriate binary for your platform from
+<p>You may try the installation script:</p>
+<div class="language-bash highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>curl<span class="w"> </span>-sSL<span class="w"> </span>https://lueur.dev/get<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
+</code></pre></div>
+<p>Alternatively, you can download the appropriate binary for your platform from
 <a href="https://github.com/rebound-how/rebound/releases">here</a>.</p>
 <details class="tip">
 <summary>Configure the binary</summary>
@@ -1201,14 +1204,14 @@ it can be found in your <code>PATH</code>.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="linux-macos-windows-bash" name="__tabbed_1" type="radio" /><input id="windows-powershell" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="linux-macos-windows-bash">Linux, macOS, Windows Bash</label><label for="windows-powershell">Windows Powershell</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="language-bash highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="sb">`</span><span class="nb">pwd</span><span class="sb">`</span>
+<div class="language-bash highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="sb">`</span><span class="nb">pwd</span><span class="sb">`</span>
 </code></pre></div>
 <p>Make also sure the downloaded binary is an executable:</p>
-<div class="language-bash highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>chmod<span class="w"> </span>a+x<span class="w"> </span>lueur
+<div class="language-bash highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>chmod<span class="w"> </span>a+x<span class="w"> </span>lueur
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="language-console highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="gp">$</span>env:Path<span class="w"> </span>+<span class="o">=</span><span class="w"> </span><span class="s1">&#39;;C:\directoy\where\lueur\lives&#39;</span><span class="w"> </span>
+<div class="language-console highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="gp">$</span>env:Path<span class="w"> </span>+<span class="o">=</span><span class="w"> </span><span class="s1">&#39;;C:\directoy\where\lueur\lives&#39;</span><span class="w"> </span>
 </code></pre></div>
 </div>
 </div>
@@ -1220,26 +1223,26 @@ it can be found in your <code>PATH</code>.</p>
 </div>
 <h2 id="check-lueur-is-ready-to-roll">Check lueur is ready to roll</h2>
 <p>Let's verify it all went well by running the following command:</p>
-<div class="language-bash highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>lueur<span class="w"> </span>--help
+<div class="language-bash highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>lueur<span class="w"> </span>--help
 </code></pre></div>
 <p>This should output the following:</p>
-<div class="language-text highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>A proxy to test network resilience by injecting various faults.
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>Usage: lueur [OPTIONS] &lt;COMMAND&gt;
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>Commands:
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>  run       Run the lueur proxy and apply network faults to traffic
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>  scenario  Execute a scenario
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>  demo      Run a simple demo server for learning purpose
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>  help      Print this message or the help of the given subcommand(s)
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
-<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>Options:
-<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>      --log-file &lt;LOG_FILE&gt;    Path to the log file. Disabled by default
-<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>      --log-stdout             Stdout logging enabled
-<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>      --log-level &lt;LOG_LEVEL&gt;  Log level [default: info,tower_http=debug]
-<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>      --with-otel              Enable open telemetry
-<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>  -h, --help                   Print help
-<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>  -V, --version                Print version
+<div class="language-text highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>A proxy to test network resilience by injecting various faults.
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>Usage: lueur [OPTIONS] &lt;COMMAND&gt;
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>Commands:
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>  run       Run the lueur proxy and apply network faults to traffic
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>  scenario  Execute a scenario
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>  demo      Run a simple demo server for learning purpose
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>  help      Print this message or the help of the given subcommand(s)
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>Options:
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>      --log-file &lt;LOG_FILE&gt;    Path to the log file. Disabled by default
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>      --log-stdout             Stdout logging enabled
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>      --log-level &lt;LOG_LEVEL&gt;  Log level [default: info,tower_http=debug]
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>      --with-otel              Enable open telemetry
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>  -h, --help                   Print help
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>  -V, --version                Print version
 </code></pre></div>
 <h2 id="troubleshooting">Troubleshooting</h2>
 <p>If you receive a message such as ̀<code>lueur: No such file or directory</code>, it likely
@@ -1275,7 +1278,7 @@ effect.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="March 15, 2025 20:20:45">March 15, 2025</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="March 16, 2025 13:58:06">March 16, 2025</span>
   </span>
 
     
