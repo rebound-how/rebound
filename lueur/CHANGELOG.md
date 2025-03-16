@@ -1,4 +1,11 @@
 
+## [0.1.67] - 2025-03-16
+
+### Added
+
+- add missing toolchain when building
+
+
 ## [0.1.66] - 2025-03-16
 
 ### Added
