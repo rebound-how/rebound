@@ -1,7 +1,6 @@
+# Changes
 
-## [0.1.70] - 2025-03-16
-
-### Changed
+## Changed
 
 - Removed git-cliff support as I couldn't make it work as I wanted. I'm going
   to try a different approach. Not generate automatically the changelog from
