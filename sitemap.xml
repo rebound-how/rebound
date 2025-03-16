@@ -2,94 +2,94 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://docs.lueur.dev/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/explanations/fault-injection-basics/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/explanations/understanding-ebpf/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/explanations/what-is-lueur/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/explanations/why-lueur/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/how-to/install/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/how-to/ci/github/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/how-to/observability/traces/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/how-to/platform/run-on-kubernetes/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/how-to/platform/run-with-docker/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/how-to/proxy/faults/configure-bandwidth/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/how-to/proxy/faults/configure-http-error/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/how-to/proxy/faults/configure-jitter/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/how-to/proxy/faults/configure-latency/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/how-to/proxy/faults/configure-packet-loss/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/how-to/proxy/stealth/configure-stealth-mode/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/reference/cli-commands/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/reference/environment-variables/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/reference/scenario-file-format/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/tutorials/create-scenario/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/tutorials/getting-started/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/tutorials/install/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
     <url>
          <loc>https://docs.lueur.dev/tutorials/tldr/</loc>
-         <lastmod>2025-03-15</lastmod>
+         <lastmod>2025-03-16</lastmod>
     </url>
 </urlset>
