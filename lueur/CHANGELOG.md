@@ -1,4 +1,11 @@
 
+## [0.1.66] - 2025-03-16
+
+### Added
+
+- multiplatform support for releases
+
+
 ## [0.1.65] - 2025-03-16
 
 ### Fixed
