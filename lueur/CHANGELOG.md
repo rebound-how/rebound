@@ -1,8 +1,5 @@
 # Changes
 
-## Changed
+## Added
 
-- Removed git-cliff support as I couldn't make it work as I wanted. I'm going
-  to try a different approach. Not generate automatically the changelog from
-  commits but try to write it manually. I will also keep only the last entry
-  here and copy it in its entirety as the release description.
+- Specifying the linker on architecture `aarch64-unknown-linux-gnu`
