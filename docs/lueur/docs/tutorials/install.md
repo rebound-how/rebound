@@ -7,7 +7,13 @@ lueur strives to get of your way and it starts with a smooth installation.
 lueur is provided as a binary targetting the three major platforms: Linux,
 macOS and Windows.
 
-You can download the appropriate binary for your platform from
+You may try the installation script:
+
+```bash
+curl -sSL https://lueur.dev/get | bash
+```
+
+Alternatively, you can download the appropriate binary for your platform from
 [here](https://github.com/rebound-how/rebound/releases).
 
 ??? tip "Configure the binary"
