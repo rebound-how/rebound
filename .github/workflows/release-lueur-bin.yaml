@@ -51,7 +51,8 @@ jobs:
           fetch-depth: 0
 
       - run: |
-         rustup toolchain install nightly --component rust-src
+         rustup target add ${{ matrix.target }}
+         rustup toolchain install nightly --component rust-src -t ${{ matrix.target }}
          rustup update nightly
          rustup override set nightly
 
