@@ -80,6 +80,9 @@ plugins:
   - git-revision-date-localized:
       enabled: !ENV [CI, false]
       enable_creation_date: true
+  - mkdocs-simple-hooks:
+      hooks:
+        on_post_build: "hooks:copy_install"
 
 markdown_extensions:
   - admonition

@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:016d1de4f3834acc181098148d9ae752906c304b01311e010306019874207afc"
+content_hash = "sha256:1eaf1c8aab1f8ab710b71df53b2f589e84f4f97df3a45127329534b908b06a4a"
 
 [[metadata.targets]]
 requires_python = ">=3.12"
@@ -456,6 +456,19 @@ dependencies = [
 files = [
     {file = "mkdocs_material-9.6.8-py3-none-any.whl", hash = "sha256:0a51532dd8aa80b232546c073fe3ef60dfaef1b1b12196ac7191ee01702d1cf8"},
     {file = "mkdocs_material-9.6.8.tar.gz", hash = "sha256:8de31bb7566379802532b248bd56d9c4bc834afc4625884bf5769f9412c6a354"},
+]
+
+[[package]]
+name = "mkdocs-simple-hooks"
+version = "0.1.5"
+summary = "Define your own hooks for mkdocs, without having to create a new package."
+groups = ["default"]
+dependencies = [
+    "mkdocs>=1.2",
+]
+files = [
+    {file = "mkdocs-simple-hooks-0.1.5.tar.gz", hash = "sha256:dddbdf151a18723c9302a133e5cf79538be8eb9d274e8e07d2ac3ac34890837c"},
+    {file = "mkdocs_simple_hooks-0.1.5-py3-none-any.whl", hash = "sha256:efeabdbb98b0850a909adee285f3404535117159d5cb3a34f541d6eaa644d50a"},
 ]
 
 [[package]]
