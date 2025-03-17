@@ -2,4 +2,5 @@
 
 ## Fixed
 
-- `Swatinem/rust-cache@v2` is poorly documented. It's either shared-key or key.
+- disabling provenance on docker images because it seems to be the solution
+  to have the multiarch support from GitHuib container registry.

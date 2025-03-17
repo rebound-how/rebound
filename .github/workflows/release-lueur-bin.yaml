@@ -428,6 +428,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
           sbom: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           platforms: linux/amd64
@@ -489,6 +490,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
           sbom: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           platforms: linux/arm64
