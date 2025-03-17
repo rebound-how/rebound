@@ -22,7 +22,7 @@ jobs:
 
       - name: Create lueur release
         run: |
-          gh release create -d "$GITHUB_REF_NAME" --notes-file lueur/CHANGELOG.md --generate-notes
+          gh release create -d "$GITHUB_REF_NAME" --notes-file lueur/CHANGELOG.md --latest=false --generate-notes
         env:
            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -40,7 +40,7 @@ jobs:
 
       - name: Promote lueur release
         run: |
-          gh release edit -d "$GITHUB_REF_NAME" --draft=false --discussion-category="Announcements"
+          gh release edit -d "$GITHUB_REF_NAME" --latest=true --draft=false --discussion-category="Announcements"
         env:
            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -105,7 +105,7 @@ jobs:
         if: matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
           sudo apt-get update
-          sudo apt install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu lld
+          sudo apt install -y gcc-aarch64-linux-gnu lld
 
       - name: Install gRPC build dependencies (Linux)
         if: matrix.os == 'ubuntu-24.04'
@@ -281,8 +281,10 @@ jobs:
           sbom: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           platforms: linux/amd64,linux/arm64
+          cache-from: type=registry,ref= ghcr.io/rebound-how/lueur-stealth:buildcache
+          cache-to: type=registry,ref= ghcr.io/rebound-how/lueur-stealth:buildcache,mode=max
 
-  release-docker-ebpf-images:
+  release-docker-ebpf-images-for-x86_64:
     needs:
       - create-the-release
     runs-on: ubuntu-latest
@@ -318,15 +320,68 @@ jobs:
           tags: |
             type=semver,pattern={{version}}
 
-      - name: Build and push lueur CLI with ebpf support
+      - name: Build and push lueur CLI for amd64 with ebpf support
         uses: docker/build-push-action@v6
         with:
           context: "."
-          file: "./deploy/docker/lueur/Dockerfile_ebpf"
+          file: "./deploy/docker/lueur/Dockerfile_ebpf_x6_64"
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           provenance: mode=max
           sbom: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
+          cache-from: type=registry,ref= ghcr.io/rebound-how/lueur-stealth-x86_64:buildcache
+          cache-to: type=registry,ref= ghcr.io/rebound-how/lueur-stealth-x86_64:buildcache,mode=max
+
+  release-docker-ebpf-images-for-aarch64:
+    needs:
+      - create-the-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/rebound-how/lueur-stealth
+          tags: |
+            type=semver,pattern={{version}}
+
+      - name: Build and push lueur CLI for arm64 with ebpf support
+        uses: docker/build-push-action@v6
+        with:
+          context: "."
+          file: "./deploy/docker/lueur/Dockerfile_ebpf_aarch64"
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: mode=max
+          sbom: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          platforms: linux/arm64
+          cache-from: type=registry,ref= ghcr.io/rebound-how/lueur-stealth-aarch64:buildcache
+          cache-to: type=registry,ref= ghcr.io/rebound-how/lueur-stealth-aarch64:buildcache,mode=max

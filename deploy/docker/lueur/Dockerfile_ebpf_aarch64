@@ -1,0 +1,35 @@
+FROM rust:1-bullseye AS build-env-aarch64
+
+WORKDIR /app
+
+RUN apt-get update && apt install -y protobuf-compiler libcap2-bin gcc-aarch64-linux-gnu lld && \
+    rustup target add aarch64-unknown-linux-gnu && \
+    rustup toolchain install nightly --component rust-src -t aarch64-unknown-linux-gnu && \
+    rustup update nightly && \
+    rustup override set nightly
+RUN cargo install bpf-linker --git https://github.com/aya-rs/bpf-linker.git
+
+COPY ./lueur /app
+
+RUN cargo +nightly build --release --features stealth --target aarch64-unknown-linux-gnu
+RUN cargo +nightly build --release -p lueur-ebpf-programs --target=bpfel-unknown-none -Z build-std=core
+
+# we need these privileges on lueur so it can load the ebpg programs
+# as nonroot user
+RUN setcap cap_sys_admin,cap_bpf,cap_net_admin+ep  /app/target/release/lueur
+
+FROM gcr.io/distroless/cc-debian12
+
+LABEL org.opencontainers.image.source=https://github.com/rebound-how/rebound
+
+COPY --from=build-env-aarch64 --chown=65532:65532 /app/target/release/lueur /
+COPY --from=build-env-aarch64 --chown=65532:65532 /app/target/bpfel-unknown-none/release/lueur-ebpf /home/nonroot/.cargo/bin/lueur-ebpf
+
+
+WORKDIR /home/nonroot
+USER nonroot
+
+EXPOSE 8080
+
+ENTRYPOINT ["/lueur"]
+CMD []
