@@ -1,5 +1,7 @@
-FROM gcr.io/distroless/cc-debian12
+FROM --platform=$BUILDPLATFORM gcr.io/distroless/cc-debian12
 
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
 ARG CLI_PATH
 ARG EBPF_PATH
 
