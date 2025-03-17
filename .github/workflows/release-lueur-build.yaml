@@ -140,7 +140,7 @@ jobs:
           promote: false
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: lueur/target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
-          asset_name: ${{ matrix.asset_name }}-${{ github.ref_name }}-${{ matrix.target }}
+          asset_name: ${{ matrix.asset_name }}-${RELEASE_TAG}-${{ matrix.target }}
           tag: ${RELEASE_TAG}
 
       - name: Upload binaries to release
@@ -152,7 +152,7 @@ jobs:
           promote: false
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: lueur/target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
-          asset_name: ${{ matrix.asset_name }}-${{ github.ref_name }}-${{ matrix.target }}.exe
+          asset_name: ${{ matrix.asset_name }}-${RELEASE_TAG}-${{ matrix.target }}.exe
           tag: ${RELEASE_TAG}
 
       - name: Archive lueur ebpf assets
@@ -235,7 +235,7 @@ jobs:
           promote: false
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: lueur/target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
-          asset_name: lueur-cli-ebpf-${{ github.ref_name }}-${{ matrix.target }}
+          asset_name: lueur-cli-ebpf-${RELEASE_TAG}-${{ matrix.target }}
           tag: ${RELEASE_TAG}
 
       - name: Upload ebpf programs to release
@@ -247,7 +247,7 @@ jobs:
           promote: false
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: lueur/target/bpfel-unknown-none/release/lueur-ebpf
-          asset_name: lueur-ebpf-programs-${{ github.ref_name }}-${{ matrix.target }}
+          asset_name: lueur-ebpf-programs-${RELEASE_TAG}-${{ matrix.target }}
           tag: ${RELEASE_TAG}
 
       - name: Archive lueur ebpf assets
