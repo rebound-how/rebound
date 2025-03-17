@@ -134,13 +134,11 @@ jobs:
       - name: Upload binaries to release
         if: matrix.os != 'windows-latest'
         uses: svenstaro/upload-release-action@v2
-        env:
-           RELEASE_TAG: ${{needs.create-the-release.outputs.rel_tag}}
         with:
           promote: false
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: lueur/target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
-          asset_name: ${{ matrix.asset_name }}-${RELEASE_TAG}-${{ matrix.target }}
+          asset_name: ${{ matrix.asset_name }}-${{needs.create-the-release.outputs.rel_tag}}-${{ matrix.target }}
           tag: ${{needs.create-the-release.outputs.rel_tag}}
 
       - name: Upload binaries to release
@@ -152,14 +150,12 @@ jobs:
           promote: false
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: lueur/target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
-          asset_name: ${{ matrix.asset_name }}-${RELEASE_TAG}-${{ matrix.target }}.exe
+          asset_name: ${{ matrix.asset_name }}-${{needs.create-the-release.outputs.rel_tag}}-${{ matrix.target }}.exe
           tag: ${{needs.create-the-release.outputs.rel_tag}}
 
       - name: Archive lueur ebpf assets
         if: matrix.os == 'ubuntu-24.04'
         uses: actions/upload-artifact@v4
-        env:
-           LUEUR_VERSION: ${{needs.extract-version.outputs.version}}
         with:
           name: lueur-${LUEUR_VERSION}-${{ matrix.target }}
           path: |
@@ -229,25 +225,21 @@ jobs:
 
       - name: Upload lueur CLI with ebpf support to release
         uses: svenstaro/upload-release-action@v2
-        env:
-           RELEASE_TAG: ${{needs.create-the-release.outputs.rel_tag}}
         with:
           promote: false
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: lueur/target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
-          asset_name: lueur-cli-ebpf-${RELEASE_TAG}-${{ matrix.target }}
+          asset_name: lueur-cli-ebpf-${{needs.create-the-release.outputs.rel_tag}}-${{ matrix.target }}
           tag: ${{needs.create-the-release.outputs.rel_tag}}
 
       - name: Upload ebpf programs to release
         if: matrix.os == 'ubuntu-24.04'
         uses: svenstaro/upload-release-action@v2
-        env:
-           RELEASE_TAG: ${{needs.create-the-release.outputs.rel_tag}}
         with:
           promote: false
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: lueur/target/bpfel-unknown-none/release/lueur-ebpf
-          asset_name: lueur-ebpf-programs-${RELEASE_TAG}-${{ matrix.target }}
+          asset_name: lueur-ebpf-programs-${{needs.create-the-release.outputs.rel_tag}}-${{ matrix.target }}
           tag: ${{needs.create-the-release.outputs.rel_tag}}
 
       - name: Archive lueur ebpf assets
