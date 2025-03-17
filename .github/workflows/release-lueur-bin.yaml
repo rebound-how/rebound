@@ -42,7 +42,7 @@ jobs:
 
       - name: Promote lueur release
         run: |
-          gh release edit "$GITHUB_REF_NAME" --latest=true --draft=false --discussion-category Announcements
+          gh release edit "$GITHUB_REF_NAME" --latest=true --draft=false
         env:
            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
