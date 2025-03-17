@@ -1,0 +1,37 @@
+name: Prepare Next Lueur Release
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Next release version'
+        required: true
+        type: string
+
+jobs:
+  bump-version-and-rebase:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update version
+        run: |
+          sed -i 's/^version\s*=\s*".*"/version = "${{ inputs.version }}"/' ./lueur/Cargo.toml
+
+          git add ./lueur/Cargo.toml
+          git commit -s -m "Bump version to ${{ inputs.version }} [skip ci]"
+          git push
+
+      - name: Merge to the release branch
+        run: |
+          git checkout release
+          git pull --rebase origin main
+          git push
+
+
+
