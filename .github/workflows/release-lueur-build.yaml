@@ -1,0 +1,481 @@
+name: Build and Upload Lueur Binaries
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches:
+      - release
+    paths: 
+      - 'lueur/**'
+
+jobs:
+  create-the-release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create lueur release
+        run: |
+          gh release create -d "$GITHUB_REF_NAME" --notes-file lueur/CHANGELOG.md --latest=false --generate-notes
+        env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-and-upload-assets:
+    needs:
+      - create-the-release
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            artifact_name: lueur
+            asset_name: lueur-cli
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-24.04
+            artifact_name: lueur
+            asset_name: lueur-cli
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-24.04
+            artifact_name: lueur
+            asset_name: lueur-cli
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-24.04
+            artifact_name: lueur
+            asset_name: lueur-cli
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            artifact_name: lueur.exe
+            asset_name: lueur-cli
+
+    name: Build workspace on ${{ matrix.os }} / ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+
+    env:
+      CARGO_TERM_COLOR: always
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - run: |
+         rustup target add ${{ matrix.target }}
+         rustup toolchain install nightly --component rust-src -t ${{ matrix.target }}
+         rustup update nightly
+         rustup override set nightly
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+         prefix-key: lueur
+         shared-key: ${{ github.job }}-${{ matrix.target }}
+         workspaces: |
+           lueur
+      
+      - name: Install musl dependencies (Linux)
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        run: |
+          sudo apt-get update
+          sudo apt install -y musl-tools
+
+      - name: Install aarch64 dependencies (Linux)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt install -y gcc-aarch64-linux-gnu lld
+
+      - name: Install gRPC build dependencies (Linux)
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          sudo apt-get update
+          sudo apt install -y protobuf-compiler libssl-dev
+
+      - name: Install gRPC build dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install protoc --pre -y
+
+      - name: Install gRPC build dependencies (MacOSX)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install protobuf
+
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }}
+        working-directory: ./lueur/lueur-cli
+
+      - name: Upload binaries to release
+        if: matrix.os != 'windows-latest'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          promote: false
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: lueur/target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
+          asset_name: ${{ matrix.asset_name }}-${{ github.ref_name }}-${{ matrix.target }}
+          tag: ${{ github.ref }}
+
+      - name: Upload binaries to release
+        if: matrix.os == 'windows-latest'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          promote: false
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: lueur/target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
+          asset_name: ${{ matrix.asset_name }}-${{ github.ref_name }}-${{ matrix.target }}.exe
+          tag: ${{ github.ref }}
+
+      - name: Archive lueur ebpf assets
+        if: matrix.os == 'ubuntu-24.04'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lueur-${{ matrix.target }}
+          path: |
+            lueur/target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
+
+  build-and-upload-ebpf-assets:
+    needs:
+      - create-the-release
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-24.04
+            artifact_name: lueur
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-24.04
+            artifact_name: lueur
+
+    name: Build workspace on ${{ matrix.os }} / ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+
+    env:
+      CARGO_TERM_COLOR: always
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - run: |
+         rustup target add ${{ matrix.target }}
+         rustup toolchain install nightly --component rust-src -t ${{ matrix.target }}
+         rustup update nightly
+         rustup override set nightly
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+         prefix-key: lueur
+         shared-key: ${{ github.job }}-${{ matrix.target }}
+         workspaces: |
+           lueur
+      
+      - name: Install aarch64 dependencies (Linux)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt install -y gcc-aarch64-linux-gnu lld
+
+      - name: Install gRPC build dependencies (Linux)
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          sudo apt-get update
+          sudo apt install -y protobuf-compiler libssl-dev
+
+      - name: Build
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          cargo install bpf-linker --git https://github.com/aya-rs/bpf-linker.git
+          cargo build --release --features stealth --target ${{ matrix.target }}
+          cargo build \
+            --release \
+            -p lueur-ebpf-programs \
+            --target=bpfel-unknown-none \
+            -Z build-std=core
+        working-directory: ./lueur/lueur-cli
+
+      - name: Upload lueur CLI with ebpf support to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          promote: false
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: lueur/target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
+          asset_name: lueur-cli-ebpf-${{ github.ref_name }}-${{ matrix.target }}
+          tag: ${{ github.ref }}
+
+      - name: Upload ebpf programs to release
+        if: matrix.os == 'ubuntu-24.04'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          promote: false
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: lueur/target/bpfel-unknown-none/release/lueur-ebpf
+          asset_name: lueur-ebpf-programs-${{ github.ref_name }}-${{ matrix.target }}
+          tag: ${{ github.ref }}
+
+      - name: Archive lueur ebpf assets
+        if: matrix.os == 'ubuntu-24.04'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lueur-ebpf-${{ matrix.target }}
+          path: |
+            lueur/target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
+            lueur/target/bpfel-unknown-none/release/lueur-ebpf
+
+  build-and-upload-docker-images-for-x86_64:
+    needs:
+      - build-and-upload-assets
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - linux/amd64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/rebound-how/lueur
+          tags: |
+            type=semver,pattern={{version}}
+      
+      - name: Download a single artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: lueur-x86_64-unknown-linux-gnu
+          path: lueur-cli
+          merge-multiple: true
+
+      - name: Build and push lueur CLI
+        uses: docker/build-push-action@v6
+        with:
+          context: "."
+          file: "./deploy/docker/lueur/Dockerfile_from_release"
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          sbom: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          platforms: ${{ matrix.platform }}
+
+  build-and-upload-docker-images-for-aarch64:
+    needs:
+      - build-and-upload-assets
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - linux/arm64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/rebound-how/lueur
+          tags: |
+            type=semver,pattern={{version}}
+      
+      - name: Download a single artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: lueur-aarch64-unknown-linux-gnu
+          path: lueur-cli
+          merge-multiple: true
+
+      - name: Build and push lueur CLI
+        uses: docker/build-push-action@v6
+        with:
+          context: "."
+          file: "./deploy/docker/lueur/Dockerfile_from_release"
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          sbom: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          platforms: ${{ matrix.platform }}
+
+  build-and-upload-docker-ebpf-images-for-x86_64:
+    needs:
+      - build-and-upload-ebpf-assets
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - linux/amd64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/rebound-how/lueur-stealth
+          tags: |
+            type=semver,pattern={{version}}
+
+      - name: Download lueur artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: lueur-assets
+          name: lueur-ebpf-x86_64-unknown-linux-gnu
+          merge-multiple: true
+
+      - name: Display structure of downloaded files
+        run: ls -R lueur-assets
+
+      - name: Build and push lueur CLI
+        uses: docker/build-push-action@v6
+        with:
+          context: "."
+          file: "./deploy/docker/lueur/Dockerfile_from_release"
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
+          sbom: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          platforms: ${{ matrix.platform }}
+          build-args: |
+            CLI_PATH=lueur-assets/x86_64-unknown-linux-gnu/release/lueur
+            EBPF_PATH=lueur-assets/bpfel-unknown-none/release/lueur-ebpf
+
+  build-and-upload-docker-ebpf-images-for-aarch64:
+    needs:
+      - build-and-upload-ebpf-assets
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - linux/arm64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/rebound-how/lueur-stealth
+          tags: |
+            type=semver,pattern={{version}}
+
+      - name: Download lueur artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: lueur-assets
+          name: lueur-ebpf-aarch64-unknown-linux-gnu
+          merge-multiple: true
+      
+      - name: Display structure of downloaded files
+        run: ls -R lueur-assets
+
+      - name: Build and push lueur CLI
+        uses: docker/build-push-action@v6
+        with:
+          context: "."
+          file: "./deploy/docker/lueur/Dockerfile_from_release"
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
+          sbom: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          platforms: ${{ matrix.platform }}
+          build-args: |
+            CLI_PATH=lueur-assets/aarch64-unknown-linux-gnu/release/lueur
+            EBPF_PATH=lueur-assets/bpfel-unknown-none/release/lueur-ebpf
