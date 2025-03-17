@@ -4,6 +4,8 @@ ARG CLI_PATH
 ARG EBPF_PATH
 
 LABEL org.opencontainers.image.source=https://github.com/rebound-how/rebound
+LABEL org.opencontainers.image.description="lueur network proxy CLI with ebpf support"
+LABEL org.opencontainers.image.licenses=Apache-2.0
 
 COPY --chown=65532:65532 ${CLI_PATH} /lueur
 COPY --chown=65532:65532 ${EBPF_PATH} /home/nonroot/.local/bin/lueur-ebpf
