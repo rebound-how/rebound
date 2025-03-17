@@ -94,8 +94,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
          prefix-key: lueur
-         shared-key: ${{ github.job }}
-         key: ${{ matrix.target }}
+         shared-key: ${{ github.job }}-${{ matrix.target }}
          workspaces: |
            lueur
       
@@ -201,8 +200,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
          prefix-key: lueur
-         shared-key: ${{ github.job }}
-         key: ${{ matrix.target }}
+         shared-key: ${{ github.job }}-${{ matrix.target }}
          workspaces: |
            lueur
       
