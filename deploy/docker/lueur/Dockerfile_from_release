@@ -1,0 +1,14 @@
+FROM gcr.io/distroless/cc-debian12
+
+LABEL org.opencontainers.image.source=https://github.com/rebound-how/rebound
+
+COPY --chown=65532:65532 ./lueur-cli /lueur
+
+WORKDIR /home/nonroot
+USER nonroot
+
+EXPOSE 8080
+
+ENTRYPOINT ["/lueur"]
+CMD []
+
