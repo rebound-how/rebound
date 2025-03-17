@@ -432,7 +432,7 @@ jobs:
           sbom: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           platforms: linux/amd64
-          build-args:
+          build-args: |
             CLI_PATH=lueur-assets/x86_64-unknown-linux-gnu/release/lueur
             EBPF_PATH=lueur-assets/bpfel-unknown-none/release/lueur-ebpf
 
@@ -494,6 +494,6 @@ jobs:
           sbom: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           platforms: linux/arm64
-          build-args:
+          build-args: |
             CLI_PATH=lueur-assets/aarch64-unknown-linux-gnu/release/lueur
             EBPF_PATH=lueur-assets/bpfel-unknown-none/release/lueur-ebpf
