@@ -34,7 +34,7 @@ jobs:
 
       - name: Merge to the release branch
         run: |
-          git checkout main
+          git pull
           git fetch origin
           git checkout release
           git pull --rebase origin main
