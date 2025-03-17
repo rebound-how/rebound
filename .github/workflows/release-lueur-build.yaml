@@ -149,8 +149,10 @@ jobs:
       - name: Archive lueur ebpf assets
         if: matrix.os == 'ubuntu-24.04'
         uses: actions/upload-artifact@v4
+        env:
+           LUEUR_VERSION: ${{needs.extract-version.outputs.version}}
         with:
-          name: lueur-${{ matrix.target }}
+          name: lueur-${LUEUR_VERSION}-${{ matrix.target }}
           path: |
             lueur/target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
 
@@ -238,8 +240,10 @@ jobs:
       - name: Archive lueur ebpf assets
         if: matrix.os == 'ubuntu-24.04'
         uses: actions/upload-artifact@v4
+        env:
+           LUEUR_VERSION: ${{needs.extract-version.outputs.version}}
         with:
-          name: lueur-ebpf-${{ matrix.target }}
+          name: lueur-ebpf-${LUEUR_VERSION}-${{ matrix.target }}
           path: |
             lueur/target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
             lueur/target/bpfel-unknown-none/release/lueur-ebpf
