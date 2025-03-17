@@ -41,10 +41,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Merge main -> release
-        uses: devmasx/merge-branch@master
-        with:
-          type: now
-          target_branch: release
-          message: Prepare release ${{ inputs.version }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup git User
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Rebase main -> release
+        run: |
+          git checkout release
+          git pull --rebase origin main
+          git push origin release
