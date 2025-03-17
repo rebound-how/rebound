@@ -30,7 +30,8 @@ jobs:
     needs:
       - release-assets
       - release-ebpf-assets
-      - release-docker-images
+      - release-docker-images-for-x86_64
+      - release-docker-images-for-aarch64
       - release-docker-ebpf-images-for-x86_64
       - release-docker-ebpf-images-for-aarch64
     runs-on: ubuntu-latest
