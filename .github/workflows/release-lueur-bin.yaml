@@ -333,8 +333,8 @@ jobs:
           sbom: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           platforms: linux/amd64
-          cache-from: type=registry,ref=ghcr.io/rebound-how/lueur-stealth-x86_64:buildcache
-          cache-to: type=registry,ref=ghcr.io/rebound-how/lueur-stealth-x86_64:buildcache,mode=max
+          cache-from: type=registry,ref=rebound-how/lueur-stealth-x86_64:buildcache
+          cache-to: type=registry,ref=rebound-how/lueur-stealth-x86_64:buildcache,mode=max
 
   release-docker-ebpf-images-for-aarch64:
     needs:
@@ -384,5 +384,5 @@ jobs:
           sbom: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           platforms: linux/arm64
-          cache-from: type=registry,ref=ghcr.io/rebound-how/lueur-stealth-aarch64:buildcache
-          cache-to: type=registry,ref=ghcr.io/rebound-how/lueur-stealth-aarch64:buildcache,mode=max
+          cache-from: type=registry,ref=rebound-how/lueur-stealth-aarch64:buildcache
+          cache-to: type=registry,ref=rebound-how/lueur-stealth-aarch64:buildcache,mode=max
