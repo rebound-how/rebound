@@ -1,10 +1,12 @@
 FROM gcr.io/distroless/cc-debian12
 
 ARG CLI_PATH
+ARG EBPF_PATH
 
 LABEL org.opencontainers.image.source=https://github.com/rebound-how/rebound
 
 COPY --chown=65532:65532 ${CLI_PATH} /lueur
+COPY --chown=65532:65532 ${EBPF_PATH} /home/nonroot/.local/bin/lueur-ebpf
 
 WORKDIR /home/nonroot
 USER nonroot
@@ -13,3 +15,4 @@ EXPOSE 8080
 
 ENTRYPOINT ["/lueur"]
 CMD []
+
