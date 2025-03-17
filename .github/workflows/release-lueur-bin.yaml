@@ -366,7 +366,7 @@ jobs:
 
   release-docker-ebpf-images-for-x86_64:
     needs:
-      - create-the-release
+      - release-ebpf-assets
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -425,7 +425,7 @@ jobs:
 
   release-docker-ebpf-images-for-aarch64:
     needs:
-      - create-the-release
+      - release-ebpf-assets
     runs-on: ubuntu-latest
     permissions:
       contents: read
