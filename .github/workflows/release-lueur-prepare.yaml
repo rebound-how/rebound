@@ -32,8 +32,10 @@ jobs:
           git commit -s -m "Bump version to ${{ inputs.version }} [skip ci]"
           git push
 
-      - name: Merge to the release branch
-        run: |
-          git checkout origin/release
-          git pull --rebase origin main
-          git push origin release
+      - name: Merge main -> release
+        uses: devmasx/merge-branch@master
+        with:
+          type: now
+          target_branch: release
+          message: Prepare release ${{ inputs.version }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
