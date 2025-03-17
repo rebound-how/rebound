@@ -20,7 +20,7 @@ jobs:
 
       - name: Create lueur release
         run: |
-          version=$(sed -n 's/^version\s*=\s*"\([^"]*\)".*/\1/p' Cargo.toml)
+          version=$(sed -n 's/^version\s*=\s*"\([^"]*\)".*/\1/p' lueur/Cargo.toml)
           echo "LUEUR_VERSION=$version" >> "$GITHUB_ENV"
 
   create-the-release:
