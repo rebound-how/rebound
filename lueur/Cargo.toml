@@ -4,7 +4,7 @@ members = ["lueur-cli", "lueur-ebpf-programs"]
 default-members = ["lueur-cli"]
 
 [workspace.package]
-version = "0.1.102"
+version = "0.1.103"
 edition = "2024"
 rust-version = "1.85"
 license-file = "LICENSE"
