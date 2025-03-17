@@ -12,7 +12,7 @@ on:
         type: string
 
 jobs:
-  bump-version-and-rebase:
+  bump-version:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -31,6 +31,15 @@ jobs:
           git add ./lueur/Cargo.toml
           git commit -s -m "Bump version to ${{ inputs.version }} [skip ci]"
           git push
+
+  rebase-into-release-branch:
+    needs:
+      - bump-version
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Merge main -> release
         uses: devmasx/merge-branch@master
