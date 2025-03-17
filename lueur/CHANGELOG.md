@@ -1,6 +1,6 @@
 # Changes
 
-## Removed
+## Fixed
 
-- Removed `provenance` from Docker images because GitHub container registry
-  can't handle them nicely https://github.com/orgs/community/discussions/45969
+- Trying to make `Swatinem/rust-cache@v2` play nicely with a matrix of targets.
+  https://github.com/Swatinem/rust-cache/issues/42

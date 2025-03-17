@@ -42,7 +42,7 @@ jobs:
 
       - name: Promote lueur release
         run: |
-          gh release edit "$GITHUB_REF_NAME" --latest=true --draft=false --discussion-category="Announcements"
+          gh release edit "$GITHUB_REF_NAME" --latest=true --draft=false --discussion-category Announcements
         env:
            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -93,6 +93,8 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
+         prefix-key: lueur
+         shared-key: ${{ github.job }}
          key: ${{ matrix.target }}
          workspaces: |
            lueur
@@ -198,6 +200,8 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
+         prefix-key: lueur
+         shared-key: ${{ github.job }}
          key: ${{ matrix.target }}
          workspaces: |
            lueur
