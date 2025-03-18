@@ -261,11 +261,11 @@ jobs:
           sudo apt install -y protobuf-compiler libssl-dev
 
       - name: Install zig
-        if: matrix.target != 'aarch64-unknown-linux-musl' || matrix.target != 'aarch64-unknown-linux-musl'
+        if: matrix.target == 'aarch64-unknown-linux-musl' || matrix.target == 'aarch64-unknown-linux-musl'
         uses: mlugg/setup-zig@v1
 
       - name: Install cargo zigbuild
-        if: matrix.target != 'aarch64-unknown-linux-musl' || matrix.target != 'aarch64-unknown-linux-musl'
+        if: matrix.target == 'aarch64-unknown-linux-musl' || matrix.target == 'aarch64-unknown-linux-musl'
         run: cargo install --locked cargo-zigbuild
 
       - name: Build (shared)
