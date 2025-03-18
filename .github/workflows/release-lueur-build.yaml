@@ -47,6 +47,27 @@ jobs:
            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
            LUEUR_VERSION: ${{needs.extract-version.outputs.version}}
 
+  tag-release:
+    needs:
+      - extract-version
+      - build-and-upload-docker-images
+      - build-and-upload-docker-ebpf-images
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Release -> tag ${{needs.extract-version.outputs.version}}
+        env:
+          VERSION: ${{needs.extract-version.outputs.version}}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git tag -f -a ${VERSION} -F lueur/CHANGELOG.md
+          git push -f origin ${VERSION}
+
+
   build-and-upload-assets:
     needs:
       - extract-version
