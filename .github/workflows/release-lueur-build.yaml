@@ -40,7 +40,7 @@ jobs:
       - name: Create lueur release
         id: create
         run: |
-          rel_url=$(gh release create ${LUEUR_VERSION} -d --notes-file lueur/CHANGELOG.md --latest=false --generate-notes)
+          rel_url=$(gh release create ${LUEUR_VERSION} -d --prerelease --notes-file lueur/CHANGELOG.md --latest=false --generate-notes)
           tag="${rel_url##*/}"
           echo "reltag=$tag" >> "$GITHUB_OUTPUT"
         env:
@@ -69,6 +69,7 @@ jobs:
 
   promote-the-release:
     needs:
+      - extract-version
       - publish-crates
       - publish-ebpf-crates
     runs-on: ubuntu-latest
@@ -79,7 +80,7 @@ jobs:
 
       - name: Promote lueur release
         run: |
-          gh release edit "$VERSION" --latest=true --draft=false --tag="$VERSION"
+          gh release edit "$VERSION" --latest=true --draft=false --tag="$VERSION" --discussion-category announcements
         env:
            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
            VERSION: ${{needs.extract-version.outputs.version}}
