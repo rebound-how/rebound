@@ -285,7 +285,7 @@ jobs:
         run: |
           cargo install bpf-linker --git https://github.com/aya-rs/bpf-linker.git
           cargo zigbuild --release --features stealth --target ${{ matrix.target }}
-          cargo zigbuild \
+          cargo build \
             --release \
             -p lueur-ebpf-programs \
             --target=bpfel-unknown-none \
