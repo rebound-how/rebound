@@ -141,7 +141,7 @@ jobs:
         run: cargo install --locked cargo-zigbuild
 
       - name: Build (shared)
-        if: matrix.target != 'aarch64-unknown-linux-musl' && matrix.target != 'aarch64-unknown-linux-musl'
+        if: matrix.target != 'x86_64-unknown-linux-musl' && matrix.target != 'aarch64-unknown-linux-musl'
         run: cargo build --release --target ${{ matrix.target }}
         working-directory: ./lueur/lueur-cli
 
@@ -261,15 +261,15 @@ jobs:
           sudo apt install -y protobuf-compiler libssl-dev
 
       - name: Install zig
-        if: matrix.target == 'aarch64-unknown-linux-musl' || matrix.target == 'aarch64-unknown-linux-musl'
+        if: matrix.target == 'x86_64-unknown-linux-musl' || matrix.target == 'aarch64-unknown-linux-musl'
         uses: mlugg/setup-zig@v1
 
       - name: Install cargo zigbuild
-        if: matrix.target == 'aarch64-unknown-linux-musl' || matrix.target == 'aarch64-unknown-linux-musl'
+        if: matrix.target == 'x86_64-unknown-linux-musl' || matrix.target == 'aarch64-unknown-linux-musl'
         run: cargo install --locked cargo-zigbuild
 
       - name: Build (shared)
-        if: matrix.target != 'aarch64-unknown-linux-musl' && matrix.target != 'aarch64-unknown-linux-musl'
+        if: matrix.target != 'x86_64-unknown-linux-musl' && matrix.target != 'aarch64-unknown-linux-musl'
         run: |
           cargo install bpf-linker --git https://github.com/aya-rs/bpf-linker.git
           cargo build --release --features stealth --target ${{ matrix.target }}
@@ -281,7 +281,7 @@ jobs:
         working-directory: ./lueur/lueur-cli
 
       - name: Build (static)
-        if: matrix.target == 'aarch64-unknown-linux-musl' || matrix.target == 'aarch64-unknown-linux-musl'
+        if: matrix.target == 'x86_64-unknown-linux-musl' || matrix.target == 'aarch64-unknown-linux-musl'
         run: |
           cargo install bpf-linker --git https://github.com/aya-rs/bpf-linker.git
           cargo zigbuild --release --features stealth --target ${{ matrix.target }}
