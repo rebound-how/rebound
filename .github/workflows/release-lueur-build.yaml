@@ -297,12 +297,12 @@ jobs:
         with:
           images: ghcr.io/rebound-how/lueur
           tags: |
-            type=semver,pattern={{version}},value=${{needs.create-the-release.outputs.rel_tag}}
+            type=semver,pattern={{version}},value=${{needs.extract-version.outputs.version}}
       
       - name: Download a single artifact
         uses: actions/download-artifact@v4
         with:
-          name: lueur-${{needs.create-the-release.outputs.rel_tag}}-x86_64-unknown-linux-gnu
+          name: lueur-${{needs.extract-version.outputs.version}}-x86_64-unknown-linux-gnu
           path: lueur-cli
           merge-multiple: true
 
@@ -361,12 +361,12 @@ jobs:
         with:
           images: ghcr.io/rebound-how/lueur
           tags: |
-            type=semver,pattern={{version}},value=${{needs.create-the-release.outputs.rel_tag}}
+            type=semver,pattern={{version}},value=${{needs.extract-version.outputs.version}}
       
       - name: Download a single artifact
         uses: actions/download-artifact@v4
         with:
-          name: lueur-${{needs.create-the-release.outputs.rel_tag}}-aarch64-unknown-linux-gnu
+          name: lueur-${{needs.extract-version.outputs.version}}-aarch64-unknown-linux-gnu
           path: lueur-cli
           merge-multiple: true
 
@@ -425,13 +425,13 @@ jobs:
         with:
           images: ghcr.io/rebound-how/lueur-stealth
           tags: |
-            type=semver,pattern={{version}},value=${{needs.create-the-release.outputs.rel_tag}}
+            type=semver,pattern={{version}},value=${{needs.extract-version.outputs.version}}
 
       - name: Download lueur artifacts
         uses: actions/download-artifact@v4
         with:
           path: lueur-assets
-          name: lueur-ebpf-${{needs.create-the-release.outputs.rel_tag}}-x86_64-unknown-linux-gnu
+          name: lueur-ebpf-${{needs.extract-version.outputs.version}}-x86_64-unknown-linux-gnu
           merge-multiple: true
 
       - name: Display structure of downloaded files
@@ -496,13 +496,13 @@ jobs:
         with:
           images: ghcr.io/rebound-how/lueur-stealth
           tags: |
-            type=semver,pattern={{version}},value=${{needs.create-the-release.outputs.rel_tag}}
+            type=semver,pattern={{version}},value=${{needs.extract-version.outputs.version}}
 
       - name: Download lueur artifacts
         uses: actions/download-artifact@v4
         with:
           path: lueur-assets
-          name: lueur-ebpf-${{needs.create-the-release.outputs.rel_tag}}-aarch64-unknown-linux-gnu
+          name: lueur-ebpf-${{needs.extract-version.outputs.version}}-aarch64-unknown-linux-gnu
           merge-multiple: true
       
       - name: Display structure of downloaded files
