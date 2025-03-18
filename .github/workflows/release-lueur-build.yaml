@@ -103,30 +103,12 @@ jobs:
          shared-key: ${{ github.job }}-${{ matrix.target }}
          workspaces: |
            lueur
-      
-      - name: Install musl dependencies (Linux)
-        if: matrix.target == 'x86_64-unknown-linux-musl' || matrix.target == 'aarch64-unknown-linux-musl'
-        run: |
-          sudo apt update
-          sudo apt install -y musl-dev musl-tools
-
-      - name: Install aarch64 dependencies (Linux)
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
-        run: |
-          sudo apt update
-          sudo apt install -y gcc-aarch64-linux-gnu lld
-
-      - name: Install musl aarch64 dependencies (Linux)
-        if: matrix.target == 'aarch64-unknown-linux-musl'
-        run: |
-          sudo apt update
-          sudo apt install -y gcc-aarch64-linux-gnu lld
 
       - name: Install gRPC build dependencies (Linux)
         if: matrix.os == 'ubuntu-24.04'
         run: |
           sudo apt update
-          sudo apt install -y protobuf-compiler libssl-dev
+          sudo apt install -y protobuf-compiler
 
       - name: Install gRPC build dependencies (Windows)
         if: matrix.os == 'windows-latest'
@@ -138,17 +120,20 @@ jobs:
         run: |
           brew install protobuf
 
+      - name: Install zig
+        uses: mlugg/setup-zig@v1
+
+      - name: Install cargo zigbuild
+        run: cargo install --locked cargo-zigbuild
+
       - name: Build
         if: matrix.target != 'aarch64-unknown-linux-musl'
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo zigbuild --release --target ${{ matrix.target }}
         working-directory: ./lueur/lueur-cli
 
       - name: Build
-        if: matrix.target == 'aarch64-unknown-linux-musl'
-        run: |
-          export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=aarch64-linux-gnu-gcc
-          export CC=aarch64-linux-gnu-gcc
-          cargo build --release --target ${{ matrix.target }}
+        if: matrix.target != 'aarch64-unknown-linux-musl'
+        run: cargo zigbuild --release --target ${{ matrix.target }}
         working-directory: ./lueur/lueur-cli
 
       - name: Upload binaries to release
