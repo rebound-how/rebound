@@ -291,7 +291,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: rebound-how/lueur
+          images: reboundhow/lueur
           tags: |
             type=semver,pattern={{version}},value=${{needs.extract-version.outputs.version}}
       
@@ -352,7 +352,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: rebound-how/lueur
+          images: reboundhow/lueur
           tags: |
             type=semver,pattern={{version}},value=${{needs.extract-version.outputs.version}}
       
@@ -412,7 +412,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: rebound-how/lueur-stealth
+          images: reboundhow/lueur-stealth
           tags: |
             type=semver,pattern={{version}},value=${{needs.extract-version.outputs.version}}
 
@@ -479,7 +479,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: rebound-how/lueur-stealth
+          images: reboundhow/lueur-stealth
           tags: |
             type=semver,pattern={{version}},value=${{needs.extract-version.outputs.version}}
 
