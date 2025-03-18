@@ -410,9 +410,9 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: reboundhow/lueur-stealth
+          images: reboundhow/lueur
           tags: |
-            type=semver,pattern={{version}},value=${{needs.extract-version.outputs.version}}
+            type=semver,pattern={{version}},value=${{needs.extract-version.outputs.version}},suffix=-stealth
 
       - name: Download lueur artifacts
         uses: actions/download-artifact@v4
@@ -477,9 +477,9 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: reboundhow/lueur-stealth
+          images: reboundhow/lueur
           tags: |
-            type=semver,pattern={{version}},value=${{needs.extract-version.outputs.version}}
+            type=semver,pattern={{version}},value=${{needs.extract-version.outputs.version}},suffix=-stealth
 
       - name: Download lueur artifacts
         uses: actions/download-artifact@v4
