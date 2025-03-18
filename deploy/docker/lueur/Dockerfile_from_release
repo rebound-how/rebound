@@ -1,14 +1,14 @@
 FROM --platform=$BUILDPLATFORM gcr.io/distroless/cc-debian12
 
-ARG TARGETPLATFORM
+ARG TARGETARCH
 ARG BUILDPLATFORM
-ARG CLI_PATH
+ARG CLI_PREFIX_PATH
 
 LABEL org.opencontainers.image.source=https://github.com/rebound-how/rebound
 LABEL org.opencontainers.image.description="lueur network proxy CLI"
 LABEL org.opencontainers.image.licenses=Apache-2.0
 
-COPY --chown=65532:65532 ${CLI_PATH} /
+COPY --chown=65532:65532 ${CLI_PREFIX_PATH}-${TARGETARCH} /lueur
 
 WORKDIR /home/nonroot
 USER nonroot
