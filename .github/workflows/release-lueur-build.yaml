@@ -141,7 +141,7 @@ jobs:
         run: cargo install --locked cargo-zigbuild
 
       - name: Build (shared)
-        if: matrix.target != 'aarch64-unknown-linux-musl' || matrix.target != 'aarch64-unknown-linux-musl'
+        if: matrix.target != 'aarch64-unknown-linux-musl' && matrix.target != 'aarch64-unknown-linux-musl'
         run: cargo build --release --target ${{ matrix.target }}
         working-directory: ./lueur/lueur-cli
 
@@ -268,8 +268,8 @@ jobs:
         if: matrix.target != 'aarch64-unknown-linux-musl' || matrix.target != 'aarch64-unknown-linux-musl'
         run: cargo install --locked cargo-zigbuild
 
-      - name: Build
-        if: matrix.target != 'aarch64-unknown-linux-musl' || matrix.target != 'aarch64-unknown-linux-musl'
+      - name: Build (shared)
+        if: matrix.target != 'aarch64-unknown-linux-musl' && matrix.target != 'aarch64-unknown-linux-musl'
         run: |
           cargo install bpf-linker --git https://github.com/aya-rs/bpf-linker.git
           cargo build --release --features stealth --target ${{ matrix.target }}
