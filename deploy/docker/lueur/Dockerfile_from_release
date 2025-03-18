@@ -8,7 +8,7 @@ LABEL org.opencontainers.image.source=https://github.com/rebound-how/rebound
 LABEL org.opencontainers.image.description="lueur network proxy CLI"
 LABEL org.opencontainers.image.licenses=Apache-2.0
 
-COPY --chown=65532:65532 ${CLI_PATH} /lueur
+COPY --chown=65532:65532 ${CLI_PATH} /
 
 WORKDIR /home/nonroot
 USER nonroot

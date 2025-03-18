@@ -357,8 +357,11 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: reboundhow/lueur
+          flavor: |
+            latest=false
+            suffix=-stealth
           tags: |
-            type=semver,pattern={{version}},value=${{needs.extract-version.outputs.version}},suffix=-stealth
+            type=semver,pattern={{version}},value=${{needs.extract-version.outputs.version}}
 
       - name: Download lueur artifacts
         uses: actions/download-artifact@v4
