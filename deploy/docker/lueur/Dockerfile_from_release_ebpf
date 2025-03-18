@@ -10,7 +10,7 @@ LABEL org.opencontainers.image.description="lueur network proxy CLI with ebpf su
 LABEL org.opencontainers.image.licenses=Apache-2.0
 
 COPY --chown=nonroot:nonroot --chmod=+x ${CLI_PREFIX_PATH}-${TARGETARCH}/lueur /home/nonroot/lueur
-COPY --chown=nonroot:nonroot ${EBPF_PREFIX_PATH}-${TARGETARCH} /home/nonroot/.local/bin/lueur-ebpf
+COPY --chown=nonroot:nonroot ${EBPF_PREFIX_PATH}-${TARGETARCH} /home/nonroot/.cargo/bin/lueur-ebpf
 
 WORKDIR /home/nonroot
 USER nonroot
