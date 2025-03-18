@@ -158,7 +158,7 @@ jobs:
         if: matrix.os == 'ubuntu-24.04'
         uses: actions/upload-artifact@v4
         with:
-          name: lueur-${LUEUR_VERSION}-${{ matrix.target }}
+          name: lueur-${{needs.extract-version.outputs.version}}-${{ matrix.target }}
           path: |
             lueur/target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
 
@@ -247,10 +247,8 @@ jobs:
       - name: Archive lueur ebpf assets
         if: matrix.os == 'ubuntu-24.04'
         uses: actions/upload-artifact@v4
-        env:
-           LUEUR_VERSION: ${{needs.extract-version.outputs.version}}
         with:
-          name: lueur-ebpf-${LUEUR_VERSION}-${{ matrix.target }}
+          name: lueur-ebpf-${{needs.extract-version.outputs.version}}-${{ matrix.target }}
           path: |
             lueur/target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
             lueur/target/bpfel-unknown-none/release/lueur-ebpf
@@ -292,8 +290,6 @@ jobs:
       - name: Set up Docker meta
         id: meta
         uses: docker/metadata-action@v5
-        env:
-           LUEUR_VERSION: ${{needs.extract-version.outputs.version}}
         with:
           images: ghcr.io/rebound-how/lueur
           tags: |
@@ -356,8 +352,6 @@ jobs:
       - name: Set up Docker meta
         id: meta
         uses: docker/metadata-action@v5
-        env:
-           LUEUR_VERSION: ${{needs.extract-version.outputs.version}}
         with:
           images: ghcr.io/rebound-how/lueur
           tags: |
@@ -420,8 +414,6 @@ jobs:
       - name: Set up Docker meta
         id: meta
         uses: docker/metadata-action@v5
-        env:
-           LUEUR_VERSION: ${{needs.extract-version.outputs.version}}
         with:
           images: ghcr.io/rebound-how/lueur-stealth
           tags: |
@@ -491,8 +483,6 @@ jobs:
       - name: Set up Docker meta
         id: meta
         uses: docker/metadata-action@v5
-        env:
-           LUEUR_VERSION: ${{needs.extract-version.outputs.version}}
         with:
           images: ghcr.io/rebound-how/lueur-stealth
           tags: |
