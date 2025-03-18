@@ -341,7 +341,6 @@ jobs:
         with:
           path: lueur-assets
           pattern: lueur-cli-${{needs.extract-version.outputs.version}}-*
-          merge-multiple: true
 
       - name: Build and push lueur CLI
         uses: docker/build-push-action@v6
@@ -401,7 +400,6 @@ jobs:
         with:
           path: lueur-assets
           pattern: lueur-ebpf-${{needs.extract-version.outputs.version}}-*
-          merge-multiple: true
 
       - name: Display structure of downloaded files
         run: ls -R lueur-assets
