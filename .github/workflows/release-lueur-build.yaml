@@ -107,25 +107,25 @@ jobs:
       - name: Install musl dependencies (Linux)
         if: matrix.target == 'x86_64-unknown-linux-musl' || matrix.target == 'aarch64-unknown-linux-musl'
         run: |
-          sudo apt-get update
+          sudo apt update
           sudo apt install -y musl-tools
 
       - name: Install aarch64 dependencies (Linux)
         if: matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
-          sudo apt-get update
+          sudo apt update
           sudo apt install -y gcc-aarch64-linux-gnu lld
 
       - name: Install musl aarch64 dependencies (Linux)
         if: matrix.target == 'aarch64-unknown-linux-musl'
         run: |
-          sudo apt-get update
-          sudo apt install -y gcc-aarch64-linux-gnu aarch64-linux-musl-gcc lld
+          sudo apt update
+          sudo apt install -y gcc-aarch64-linux-gnu lld
 
       - name: Install gRPC build dependencies (Linux)
         if: matrix.os == 'ubuntu-24.04'
         run: |
-          sudo apt-get update
+          sudo apt update
           sudo apt install -y protobuf-compiler libssl-dev
 
       - name: Install gRPC build dependencies (Windows)
