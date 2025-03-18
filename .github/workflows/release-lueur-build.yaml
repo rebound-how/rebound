@@ -224,7 +224,7 @@ jobs:
             os: ubuntu-24.04
             artifact_name: lueur
 
-    name: Build workspace on ${{ matrix.os }} / ${{ matrix.target }}
+    name: Build ebpf workspace on ${{ matrix.os }} / ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
 
     env:
@@ -385,6 +385,9 @@ jobs:
         with:
           path: lueur-assets
           pattern: lueur-cli-${{needs.extract-version.outputs.version}}-*
+
+      - name: Display structure of downloaded files
+        run: ls -R lueur-assets
 
       - name: Build and push lueur CLI
         uses: docker/build-push-action@v6
