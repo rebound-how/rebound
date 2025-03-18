@@ -494,7 +494,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: "."
-          file: "./deploy/docker/lueur/Dockerfile_from_release"
+          file: "./deploy/docker/lueur/Dockerfile_from_release_ebpf"
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
