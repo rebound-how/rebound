@@ -310,7 +310,6 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,push-by-digest=true,name-canonical=true,push=true
           sbom: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           platforms: ${{ matrix.platform }}
@@ -372,7 +371,6 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,push-by-digest=true,name-canonical=true,push=true
           sbom: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           platforms: ${{ matrix.platform }}
@@ -441,7 +439,6 @@ jobs:
           sbom: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           platforms: ${{ matrix.platform }}
-          outputs: type=image,push-by-digest=true,name-canonical=true,push=true
           build-args: |
             CLI_PATH=lueur-assets/x86_64-unknown-linux-gnu/release/lueur
             EBPF_PATH=lueur-assets/bpfel-unknown-none/release/lueur-ebpf
@@ -510,7 +507,6 @@ jobs:
           sbom: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           platforms: ${{ matrix.platform }}
-          outputs: type=image,push-by-digest=true,name-canonical=true,push=true
           build-args: |
             CLI_PATH=lueur-assets/aarch64-unknown-linux-gnu/release/lueur
             EBPF_PATH=lueur-assets/bpfel-unknown-none/release/lueur-ebpf
