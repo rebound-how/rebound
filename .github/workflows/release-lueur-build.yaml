@@ -49,6 +49,7 @@ jobs:
 
   build-and-upload-assets:
     needs:
+      - extract-version
       - create-the-release
     strategy:
       fail-fast: false
@@ -163,6 +164,7 @@ jobs:
 
   build-and-upload-ebpf-assets:
     needs:
+      - extract-version
       - create-the-release
     strategy:
       fail-fast: false
@@ -255,6 +257,7 @@ jobs:
 
   build-and-upload-docker-images-for-x86_64:
     needs:
+      - extract-version
       - build-and-upload-assets
     runs-on: ubuntu-24.04
     permissions:
@@ -318,6 +321,7 @@ jobs:
 
   build-and-upload-docker-images-for-aarch64:
     needs:
+      - extract-version
       - build-and-upload-assets
     runs-on: ubuntu-24.04
     permissions:
@@ -381,6 +385,7 @@ jobs:
 
   build-and-upload-docker-ebpf-images-for-x86_64:
     needs:
+      - extract-version
       - build-and-upload-ebpf-assets
     runs-on: ubuntu-24.04
     permissions:
@@ -451,6 +456,7 @@ jobs:
 
   build-and-upload-docker-ebpf-images-for-aarch64:
     needs:
+      - extract-version
       - build-and-upload-ebpf-assets
     runs-on: ubuntu-24.04
     permissions:
