@@ -9,12 +9,20 @@ You will learn how to use lueur in a Docker environment, either as
 a standalone container or as part of a set of services orchestrated with
 Docker Compose.
 
+!!! info
+
+    lueur container images are hosted on
+    [GitHub Container Registry](https://github.com/rebound-how/rebound/pkgs/container/lueur).
+
+    They are [distroless](https://github.com/GoogleContainerTools/distroless)
+    images available for amd64 and arm64 architectures.
+
 ## Run lueur as A Container - Step-by-Step
 
 -   [X] Pull the lueur image
 
     ```bash
-    docker pull rebound/lueur
+    docker pull ghcr.io/rebound-how/lueur
     ```
 
 -   [X] Run lueur with a latency fault
@@ -24,7 +32,7 @@ Docker Compose.
         -p 8080:8080 \  # (1)!
         --rm \  # (2)!
         -it \  # (3)!
-        rebound/lueur \ 
+        ghcr.io/rebound-how/lueur \ 
             run \
             --proxy-address 0.0.0.0:8080  \ # (4)!
             --upstream http://192.168.1.3:7070 \  # (5)!
@@ -74,7 +82,7 @@ Docker Compose.
 -   [X] Pull the lueur image
 
     ```bash
-    docker pull rebound/lueur
+    docker pull ghcr.io/rebound-how/lueur
     ```
 
 -   [X] Run lueur with a latency fault
@@ -89,10 +97,11 @@ Docker Compose.
         --cap-add=SYS_ADMIN \ # (6)!
         --cap-add=BPF \ # (7)!
         --cap-add=NET_ADMIN \ # (8)!
-        rebound/lueur \ 
+        ghcr.io/rebound-how/lueur:0.1.156-stealth \  # (9)!
             run \
-            --stealth \  # (9)!
-            --proxy-address 0.0.0.0:8080  \  # (10)!
+            --stealth \  # (10)!
+            --capture-process curl \  # (11)!
+            --proxy-address 0.0.0.0:8080  \  # (12)!
             --with-latency --latency-mean 300
     ```
 
@@ -104,8 +113,10 @@ Docker Compose.
     6. Give too much power to the container but unfortunately we cannot reduce the scope so we need it
     7. Specific BPF priviledges
     8. lueur needs quite a bit of access to networking to do its job
-    9. Enable stealth mode and loads eBPF programs
-    10. The default behavior is to bind the proxy to the loopback which would prevent the proxy from being reached. Bind to all public interfaces with `0.0.0.0`
+    9. lueur does not expose a `latest` tag for its eBPF-ready images. You must use a specific versionned tag.
+    10. Enable stealth mode and loads eBPF programs
+    11. Let's capture traffic coming from `curl` commands
+    12. The default behavior is to bind the proxy to the loopback which would prevent the proxy from being reached. Bind to all public interfaces with `0.0.0.0`
 
 -   [X] Run the lueur demo using the same image
 
