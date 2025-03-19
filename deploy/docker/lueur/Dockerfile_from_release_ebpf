@@ -1,4 +1,8 @@
-FROM alpine:3.21.3 AS builder
+FROM --platform=$BUILDPLATFORM alpine:3.21.3 AS builder
+
+ARG TARGETARCH
+ARG BUILDPLATFORM
+ARG CLI_PREFIX_PATH
 
 RUN apk add --no-cache libcap-setcap
 
