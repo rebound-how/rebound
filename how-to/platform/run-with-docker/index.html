@@ -1277,38 +1277,30 @@ environment.</p>
 <p><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Run lueur with a latency fault</p>
 <div class="language-bash highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>docker<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span>-p<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (1)!</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span>-p<span class="w"> </span><span class="m">8089</span>:8089<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (2)!</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span>--rm<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (3)!</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span>-it<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (4)!</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span>--network<span class="o">=</span>host<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (5)!</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span>--pid<span class="o">=</span>host<span class="w"> </span><span class="se">\ </span><span class="c1"># (6)!</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span>-v<span class="w"> </span>/sys/fs/cgroup/:/sys/fs/cgroup/:ro<span class="w"> </span><span class="se">\ </span><span class="c1"># (7)!</span>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span>--cap-add<span class="o">=</span>SYS_ADMIN<span class="w"> </span><span class="se">\ </span><span class="c1"># (8)!</span>
-<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span>--cap-add<span class="o">=</span>BPF<span class="w"> </span><span class="se">\ </span><span class="c1"># (9)!</span>
-<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span>--cap-add<span class="o">=</span>NET_ADMIN<span class="w"> </span><span class="se">\ </span><span class="c1"># (10)!</span>
-<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">    </span>rebound/lueur<span class="w"> </span><span class="se">\ </span>
-<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">        </span>run<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">        </span>--stealth<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (11)!</span>
-<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">        </span>--ebpf-proxy-port<span class="w"> </span><span class="m">8989</span><span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (12)!</span>
-<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">        </span>--proxy-address<span class="w"> </span><span class="m">0</span>.0.0.0:8080<span class="w">  </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (13)!</span>
-<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">        </span>--upstream<span class="w"> </span>http://192.168.1.3:7070<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (14)!</span>
-<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">        </span>--with-latency<span class="w"> </span>--latency-mean<span class="w"> </span><span class="m">300</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span>--rm<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (2)!</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span>-it<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (3)!</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span>--pid<span class="o">=</span>host<span class="w"> </span><span class="se">\ </span><span class="c1"># (4)!</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span>-v<span class="w"> </span>/sys/fs/cgroup/:/sys/fs/cgroup/:ro<span class="w"> </span><span class="se">\ </span><span class="c1"># (5)!</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span>--cap-add<span class="o">=</span>SYS_ADMIN<span class="w"> </span><span class="se">\ </span><span class="c1"># (6)!</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span>--cap-add<span class="o">=</span>BPF<span class="w"> </span><span class="se">\ </span><span class="c1"># (7)!</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span>--cap-add<span class="o">=</span>NET_ADMIN<span class="w"> </span><span class="se">\ </span><span class="c1"># (8)!</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span>rebound/lueur<span class="w"> </span><span class="se">\ </span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">        </span>run<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">        </span>--stealth<span class="w"> </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (9)!</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">        </span>--proxy-address<span class="w"> </span><span class="m">0</span>.0.0.0:8080<span class="w">  </span><span class="se">\ </span><span class="w"> </span><span class="c1"># (10)!</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">        </span>--with-latency<span class="w"> </span>--latency-mean<span class="w"> </span><span class="m">300</span>
 </code></pre></div>
 <ol>
 <li>Expose the proxy port if you need to access it from the host</li>
-<li>Expose the eBPF proxy port</li>
 <li>Release the system resources once the container finishes</li>
 <li>Give the process a terminal</li>
-<li>Share the host network as in our example, the client runs on the host. You could also share another container's network instead</li>
-<li>Share the host porocess namespace to access the client's process</li>
+<li>Share the host process namespace to access the client's process</li>
 <li>Give access to the host's kernel resources for lueur eBPF programs to attach to</li>
 <li>Give too much power to the container but unfortunately we cannot reduce the scope so we need it</li>
 <li>Specific BPF priviledges</li>
 <li>lueur needs quite a bit of access to networking to do its job</li>
 <li>Enable stealth mode and loads eBPF programs</li>
-<li>By default, lueur picks up a random port for listening to traffic routed via ebBPF, but we need to set it to expose it</li>
 <li>The default behavior is to bind the proxy to the loopback which would prevent the proxy from being reached. Bind to all public interfaces with <code>0.0.0.0</code></li>
-<li>The address of the demo application we will apply the latency to. Note that this is ignored by lueur for now</li>
 </ol>
 </li>
 <li class="task-list-item">
@@ -1359,7 +1351,7 @@ proxy by omitting setting <code>-x http://localhost:8080</code></p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="March 11, 2025 16:53:18">March 11, 2025</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="March 19, 2025 17:04:07">March 19, 2025</span>
   </span>
 
     
