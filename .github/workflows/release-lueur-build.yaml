@@ -80,7 +80,7 @@ jobs:
 
       - name: Promote lueur release
         run: |
-          gh release edit "$VERSION" --latest=true --draft=false --tag="$VERSION" --discussion-category="Announcements"
+          gh release edit "$VERSION" --latest=true --draft=false --tag="$VERSION"
         env:
            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
            VERSION: ${{needs.extract-version.outputs.version}}
