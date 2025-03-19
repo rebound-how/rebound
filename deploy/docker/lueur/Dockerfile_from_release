@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM gcr.io/distroless/cc-debian12
+FROM --platform=$BUILDPLATFORM gcr.io/distroless/static-debian12
 
 ARG TARGETARCH
 ARG BUILDPLATFORM

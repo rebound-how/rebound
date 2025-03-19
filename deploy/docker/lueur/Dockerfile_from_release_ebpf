@@ -1,4 +1,10 @@
-FROM --platform=$BUILDPLATFORM gcr.io/distroless/cc-debian12
+FROM --platform=$BUILDPLATFORM gcr.io/distroless/static-debian12 AS builder
+
+ARG BUILDPLATFORM
+
+RUN apt-get update && apt-get install --yes libcap2-bin
+
+FROM --platform=$BUILDPLATFORM gcr.io/distroless/static-debian12
 
 ARG TARGETARCH
 ARG BUILDPLATFORM
@@ -9,8 +15,12 @@ LABEL org.opencontainers.image.source=https://github.com/rebound-how/rebound
 LABEL org.opencontainers.image.description="lueur network proxy CLI with ebpf support"
 LABEL org.opencontainers.image.licenses=Apache-2.0
 
+COPY --from=builder /sbin/setcap /sbin
 COPY --chown=nonroot:nonroot --chmod=+x ${CLI_PREFIX_PATH}-${TARGETARCH}/lueur /home/nonroot/lueur
 COPY --chown=nonroot:nonroot ${EBPF_PREFIX_PATH}-${TARGETARCH}/lueur-ebpf /home/nonroot/.cargo/bin/lueur-ebpf
+
+# elevate privilege to not have to run as root
+RUN /sbin/setcap cap_sys_admin,cap_bpf,cap_net_admin+ep /home/nonroot/lueur
 
 WORKDIR /home/nonroot
 USER nonroot
