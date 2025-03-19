@@ -82,8 +82,13 @@ Docker Compose.
 -   [X] Pull the lueur image
 
     ```bash
-    docker pull ghcr.io/rebound-how/lueur
+    docker pull ghcr.io/rebound-how/lueur:0.1.156-stealth
     ```
+
+    !!! abstract
+
+        We do not provide a container image with a `latest` tag for the
+        {==stealth==} mode. You must provide a specific versionned tag.
 
 -   [X] Run lueur with a latency fault
 
