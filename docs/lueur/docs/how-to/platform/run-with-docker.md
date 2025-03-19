@@ -82,38 +82,30 @@ Docker Compose.
     ```bash
     docker run \
         -p 8080:8080 \  # (1)!
-        -p 8089:8089 \  # (2)!
-        --rm \  # (3)!
-        -it \  # (4)!
-        --network=host \  # (5)!
-        --pid=host \ # (6)!
-        -v /sys/fs/cgroup/:/sys/fs/cgroup/:ro \ # (7)!
-        --cap-add=SYS_ADMIN \ # (8)!
-        --cap-add=BPF \ # (9)!
-        --cap-add=NET_ADMIN \ # (10)!
+        --rm \  # (2)!
+        -it \  # (3)!
+        --pid=host \ # (4)!
+        -v /sys/fs/cgroup/:/sys/fs/cgroup/:ro \ # (5)!
+        --cap-add=SYS_ADMIN \ # (6)!
+        --cap-add=BPF \ # (7)!
+        --cap-add=NET_ADMIN \ # (8)!
         rebound/lueur \ 
             run \
-            --stealth \  # (11)!
-            --ebpf-proxy-port 8989 \  # (12)!
-            --proxy-address 0.0.0.0:8080  \  # (13)!
-            --upstream http://192.168.1.3:7070 \  # (14)!
+            --stealth \  # (9)!
+            --proxy-address 0.0.0.0:8080  \  # (10)!
             --with-latency --latency-mean 300
     ```
 
     1. Expose the proxy port if you need to access it from the host
-    2. Expose the eBPF proxy port
-    3. Release the system resources once the container finishes
-    4. Give the process a terminal
-    5. Share the host network as in our example, the client runs on the host. You could also share another container's network instead
-    6. Share the host porocess namespace to access the client's process
-    7. Give access to the host's kernel resources for lueur eBPF programs to attach to
-    8. Give too much power to the container but unfortunately we cannot reduce the scope so we need it
-    9. Specific BPF priviledges
-    10. lueur needs quite a bit of access to networking to do its job
-    11. Enable stealth mode and loads eBPF programs
-    12. By default, lueur picks up a random port for listening to traffic routed via ebBPF, but we need to set it to expose it
-    13. The default behavior is to bind the proxy to the loopback which would prevent the proxy from being reached. Bind to all public interfaces with `0.0.0.0`
-    14. The address of the demo application we will apply the latency to. Note that this is ignored by lueur for now
+    2. Release the system resources once the container finishes
+    3. Give the process a terminal
+    4. Share the host process namespace to access the client's process
+    5. Give access to the host's kernel resources for lueur eBPF programs to attach to
+    6. Give too much power to the container but unfortunately we cannot reduce the scope so we need it
+    7. Specific BPF priviledges
+    8. lueur needs quite a bit of access to networking to do its job
+    9. Enable stealth mode and loads eBPF programs
+    10. The default behavior is to bind the proxy to the loopback which would prevent the proxy from being reached. Bind to all public interfaces with `0.0.0.0`
 
 -   [X] Run the lueur demo using the same image
 
