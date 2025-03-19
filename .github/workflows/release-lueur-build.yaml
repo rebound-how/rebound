@@ -80,11 +80,10 @@ jobs:
 
       - name: Promote lueur release
         run: |
-          gh release edit "$VERSION" --latest=true --draft=false --tag="$VERSION" --discussion-category announcements
+          gh release edit "$VERSION" --latest=true --draft=false --tag="$VERSION" --discussion-category="Announcements"
         env:
            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
            VERSION: ${{needs.extract-version.outputs.version}}
-
 
   build-and-upload-assets:
     needs:
@@ -405,17 +404,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Container Registry
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker meta
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: reboundhow/lueur
+          images: ghcr.io/rebound-how/lueur
           tags: |
             type=semver,pattern={{version}},value=${{needs.extract-version.outputs.version}}
       
@@ -464,17 +464,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Container Registry
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker meta
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: reboundhow/lueur
+          images: ghcr.io/rebound-how/lueur
           flavor: |
             latest=false
             suffix=-stealth
