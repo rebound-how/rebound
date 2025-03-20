@@ -1,0 +1,113 @@
+{
+  "metadata": {
+    "name": "run_proxy",
+    "labels": ["lueur"],
+    "annotations": null
+  },
+  "spec": {
+    "provider": "chaostoolkit",
+    "type": "experiment",
+    "schema": {
+      "configuration": [
+        {
+          "title": "Proxy Arguments",
+          "key": "proxy_args",
+          "help": "Proxy arguments as per https://lueur.dev/reference/cli-commands/#run-command-options",
+          "placeholder": "--with-latency --latency-mean=300 --upstream=*",
+          "default": "",
+          "type": "string",
+          "required": true
+        },
+        {
+          "title": "Duration",
+          "key": "duration",
+          "help": "How long to run the proxy for. Set to 0 to run until explicitely stopped",
+          "placeholder": "",
+          "default": 0,
+          "type": "float",
+          "required": false
+        },
+        {
+          "title": "Set Proxy Variables",
+          "key": "set_http_proxy_variables",
+          "help": "Set the `HTTP_PROXY` and `HTTPS_PROXY` environment variables for the reminder of the process or until the proxy terminates",
+          "placeholder": "",
+          "default": false,
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "title": "Verbose",
+          "key": "verbose",
+          "help": "Enable debug level logging from lueur's proxy",
+          "placeholder": "",
+          "default": false,
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    "template": {
+      "version": "1.0.0",
+      "title": "Run the lueur network proxy to inject network faults into application's traffic",
+      "contributions": {},
+      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
+      "tags": ["lueur"],
+      "configuration": {
+        "proxy_args": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PROXY_ARGS",
+          "default": "",
+          "env_var_type": "str"
+        },
+        "duration": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_DURATION",
+          "default": 0,
+          "env_var_type": "float"
+        },
+        "set_http_proxy_variables": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_SET_HTTP_PROXY_VARIABLES",
+          "default": false,
+          "env_var_type": "boolean"
+        },
+        "verbose": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_VERBOSE",
+          "default": false,
+          "env_var_type": "boolean"
+        }
+      },
+      "extensions": [],
+      "method": [
+        {
+          "name": "run-proxy",
+          "type": "action",
+          "background": true,
+          "provider": {
+            "type": "python",
+            "module": "chaoslueur.actions",
+            "func": "run_proxy",
+            "arguments": {
+              "proxy_args": "${proxy_args}",
+              "duration": "${duration}",
+              "set_http_proxy_variables": "${set_http_proxy_variables}",
+              "verbose": "${verbose}"
+            }
+          }
+        }
+      ]
+    },
+    "related": [
+      {
+        "block": "method",
+        "name": "reliably-pauses-pause_execution"
+      },
+      {
+        "block": "method",
+        "name": "lueur-proxy-stop_proxy"
+      }
+    ]
+  }
+}

@@ -795,9 +795,6 @@ const isQuestionAsked = ref<boolean>(false);
 const isAnswerComplete = ref<boolean>(false);
 function doNothing() {}
 function askQuestion(str?: string) {
-  if (str) {
-    console.log(`askQuestion(): ${str}`);
-  }
   if (prompt.value !== "") {
     input.value?.setAttribute("disabled", "");
     aiDialogContent.value?.classList.remove("AiDialog__content--initial");
@@ -1153,7 +1150,6 @@ async function saveExperiment() {
   e.value.title = t;
   let experimentId: string | undefined = undefined;
   if (localMode.value) {
-    console.log(e.value);
     experimentId = "7";
   } else {
     experimentId = await importExperiment(
@@ -1338,9 +1334,6 @@ watch(experimentTitle, () => {
 });
 
 function scrollToBottom(str?: string) {
-  if (str) {
-    console.log(`scrollToBottom triggered by ${str}`);
-  }
   if (aiDialogContent.value!.scrollHeight > window.innerHeight) {
     const top = Math.max(
       aiDialogContent.value!.getBoundingClientRect().bottom,

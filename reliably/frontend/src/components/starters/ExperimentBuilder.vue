@@ -671,11 +671,16 @@ async function editExperiment() {
 const suffixCounter = ref<number>(1);
 function initializeForm() {
   if (temp.value !== null) {
+    let background = false;
     let suffixPrefix = "M";
     if (starterType.value === "hypothesis") {
       suffixPrefix = "H";
+      background = temp.value.manifest.spec.template["steady-state-hypothesis"]?.probes?.at(0)?.background || false;
     } else if (starterType.value === "rollbacks") {
       suffixPrefix = "R";
+      background = temp.value.manifest.spec.template.rollbacks?.at(0)?.background || false;
+    } else {
+      background = temp.value.manifest.spec.template.method?.at(0)?.background || false;
     }
     const suffix: string = `${suffixPrefix}${suffixCounter.value
       .toString()
@@ -685,7 +690,7 @@ function initializeForm() {
       template: temp.value,
       suffix: suffix,
       fieldsStatus: fieldsStatus,
-      background: false,
+      background,
     };
     if (starterType.value === "method") {
       fullModeTemplate.value.method.push(formInfo);
