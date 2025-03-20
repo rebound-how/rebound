@@ -79,8 +79,10 @@ These options define how to comnfigure the proxy started by lueur:
   **Example:** `--proxy-address 192.168.12.45:8090`
 
 - **`--upstream <host>`**  
-  _Target host(s) to proxy (can be specified multiple times)._  
+  _Target host(s) to proxy (can be specified multiple times). You may also set `*` to tell lueur you want to impact any upstream._  
   **Example:** `--upstream example.com`
+  **Example:** `--upstream '*'`
+  **Example:** `--upstream=*`
 
 - **`--grpc-plugin <address>`**  
   _Specify one or more gRPC plugin addresses._  
