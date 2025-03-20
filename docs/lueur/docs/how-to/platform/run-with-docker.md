@@ -88,7 +88,10 @@ Docker Compose.
     !!! abstract
 
         We do not provide a container image with a `latest` tag for the
-        {==stealth==} mode. You must provide a specific versionned tag.
+        {==stealth==} mode. You must provide a specific versionned tag. The one
+        used in this documentation may be outdated, please check the
+        [registry](https://github.com/rebound-how/rebound/pkgs/container/lueur)
+        for the newest version.
 
 -   [X] Run lueur with a latency fault
 
