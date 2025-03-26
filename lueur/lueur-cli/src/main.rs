@@ -461,7 +461,7 @@ async fn main() -> Result<()> {
                                 }
                             }
 
-                            pb.finish_and_clear();
+                            pb.finish();
                         }
                         Err(e) => error!("Failed to load scenario: {:?}", e),
                     }
