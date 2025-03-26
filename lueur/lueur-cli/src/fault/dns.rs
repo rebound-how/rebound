@@ -5,6 +5,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use axum::http;
 use hickory_resolver::TokioAsyncResolver;
+use hickory_resolver::TokioResolver;
 use hickory_resolver::config::*;
 use rand::Rng;
 use rand::SeedableRng;
@@ -18,6 +19,7 @@ use tokio::sync::RwLock;
 use super::Bidirectional;
 use super::FaultInjector;
 use crate::config::DnsSettings;
+use crate::config::FaultKind;
 use crate::event::FaultEvent;
 use crate::event::ProxyTaskEvent;
 use crate::types::Direction;
@@ -26,7 +28,7 @@ use crate::types::StreamSide;
 /// Custom DNS Resolver that simulates DNS failures
 #[derive(Clone, Debug)]
 pub struct FaultyResolverInjector {
-    inner: Arc<RwLock<TokioAsyncResolver>>,
+    inner: Arc<RwLock<TokioResolver>>,
     settings: DnsSettings,
     event: Option<Box<dyn ProxyTaskEvent>>,
     side: StreamSide,
@@ -41,10 +43,7 @@ impl fmt::Display for FaultyResolverInjector {
 
 impl From<&DnsSettings> for FaultyResolverInjector {
     fn from(settings: &DnsSettings) -> Self {
-        let resolver = TokioAsyncResolver::tokio(
-            ResolverConfig::default(),
-            ResolverOpts::default(),
-        );
+        let resolver = TokioResolver::builder_tokio().unwrap().build();
         FaultyResolverInjector {
             inner: Arc::new(RwLock::new(resolver)),
             settings: settings.clone(),
@@ -150,5 +149,21 @@ impl FaultInjector for FaultyResolverInjector {
         _event: Box<dyn ProxyTaskEvent>,
     ) -> Result<reqwest::Request, crate::errors::ProxyError> {
         Ok(request)
+    }
+
+    fn is_enabled(&self) -> bool {
+        self.settings.enabled
+    }
+
+    fn kind(&self) -> FaultKind {
+        return self.settings.kind;
+    }
+
+    fn enable(&mut self) {
+        self.settings.enabled = true
+    }
+
+    fn disable(&mut self) {
+        self.settings.enabled = false
     }
 }

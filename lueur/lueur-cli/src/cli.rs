@@ -4,6 +4,7 @@ use clap::Subcommand;
 use serde::Deserialize;
 use serde::Serialize;
 
+use crate::errors::SchedulingError;
 use crate::types::BandwidthUnit;
 use crate::types::Direction;
 use crate::types::LatencyDistribution;
@@ -17,11 +18,7 @@ use crate::types::StreamSide;
 )]
 pub struct Cli {
     /// Path to the log file. Disabled by default
-    #[arg(
-        help_heading = "Logging Options",
-        long,
-        env = "LUEUR_LOG_FILE",
-    )]
+    #[arg(help_heading = "Logging Options", long, env = "LUEUR_LOG_FILE")]
     pub log_file: Option<String>,
 
     /// Stdout logging enabled
@@ -29,7 +26,7 @@ pub struct Cli {
         help_heading = "Logging Options",
         long,
         default_value_t = false,
-        env = "LUEUR_WITH_STDOUT_LOGGING",
+        env = "LUEUR_WITH_STDOUT_LOGGING"
     )]
     pub log_stdout: bool,
 
@@ -38,7 +35,7 @@ pub struct Cli {
         help_heading = "Logging Options",
         long,
         default_value = "info,tower_http=debug",
-        env = "LUEUR_LOG_LEVEL",
+        env = "LUEUR_LOG_LEVEL"
     )]
     pub log_level: Option<String>,
 
@@ -92,8 +89,18 @@ pub struct ProxyAwareCommandCommon {
         value_parser
     )]
     pub upstream_hosts: Vec<String>,
-}
 
+    /// How long to run the proxy for
+    /// If omitted, fraction-based times in DSL (like "5%") are disallowed.
+    #[arg(
+        help_heading = "Lifecycle Option",
+        long,
+        help = "How long to run the proxy for.",
+        env = "LUEUR_PROXY_DURATIOn",
+        value_parser
+    )]
+    pub duration: Option<String>,
+}
 
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]
 pub struct StealthCommandCommon {
@@ -326,6 +333,15 @@ pub struct LatencyOptions {
         env = "LUEUR_LATENCY_MAX",
     )]
     pub latency_max: Option<f64>,
+
+    /// Latency period
+    #[arg(
+        help_heading = "Latency Options",
+        long,
+        help = "Latency schedule",
+        env = "LUEUR_LATENCY_SCHED"
+    )]
+    pub latency_sched: Option<String>,
 }
 
 #[derive(Parser, Debug, Serialize, Deserialize, Clone)]
@@ -385,6 +401,15 @@ pub struct BandwidthOptions {
         env = "LUEUR_BANDWIDTH_UNIT",
     )]
     pub bandwidth_unit: BandwidthUnit,
+
+    /// Bandwidth period
+    #[arg(
+        help_heading = "Bandwidth Options",
+        long,
+        help = "Bandwidth schedule",
+        env = "LUEUR_BANDWIDTH_SCHED"
+    )]
+    pub bandwidth_sched: Option<String>,
 }
 
 #[derive(Parser, Debug, Serialize, Deserialize, Clone)]
@@ -433,6 +458,15 @@ pub struct JitterOptions {
         env = "LUEUR_JITTER_FREQ",
     )]
     pub jitter_frequency: f64,
+
+    /// Jitter period
+    #[arg(
+        help_heading = "Jitter Options",
+        long,
+        help = "Jitter schedule",
+        env = "LUEUR_JITTER_SCHED"
+    )]
+    pub jitter_sched: Option<String>,
 }
 
 #[derive(Parser, Debug, Serialize, Deserialize, Clone)]
@@ -459,6 +493,15 @@ pub struct DnsOptions {
         env = "LUEUR_DNS_PROBABILITY",
     )]
     pub dns_rate: f64,
+
+    /// Dns period
+    #[arg(
+        help_heading = "Dns Options",
+        long,
+        help = "Dns schedule",
+        env = "LUEUR_DNS_SCHED"
+    )]
+    pub dns_sched: Option<String>,
 }
 
 #[derive(Parser, Debug, Serialize, Deserialize, Clone)]
@@ -496,6 +539,15 @@ pub struct PacketLossOptions {
         env = "LUEUR_PACKET_LOSS_DIRECTION",
     )]
     pub packet_loss_direction: Direction,
+
+    /// Packet Loss period
+    #[arg(
+        help_heading = "Packet Loss Options",
+        long,
+        help = "Packet Loss schedule",
+        env = "LUEUR_PACKET_LOSS_SCHED"
+    )]
+    pub packet_loss_sched: Option<String>,
 }
 
 /*
@@ -578,17 +630,32 @@ pub struct HTTPResponseOptions {
         env = "LUEUR_HTTP_FAULT_PROBABILITY",
     )]
     pub http_response_trigger_probability: f64,
+
+    /// HTTP Response period
+    #[arg(
+        help_heading = "HTTP Response Options",
+        long,
+        help = "HTTP Response schedule",
+        env = "LUEUR_HTTP_FAULT_SCHED"
+    )]
+    pub http_response_sched: Option<String>,
+}
+
+#[derive(Args, Clone, Debug, Serialize, Deserialize)]
+pub struct ProxyUICommon {
+    /// Disable proxi terminal UI
+    #[arg(long, default_value_t = false, env = "LUEUR_PROXY_NO_UI")]
+    pub no_ui: bool,
+
+    /// Enable tailing of incoming requests
+    #[arg(long, default_value_t = false, env = "LUEUR_PROXY_TAILING")]
+    pub tail: bool,
 }
 
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]
 pub struct RunCommandOptions {
-    /// Disable proxi terminal UI
-    #[arg(
-        long,
-        default_value_t = false,
-        env = "LUEUR_PROXY_NO_UI",
-    )]
-    pub no_ui: bool,
+    #[command(flatten)]
+    pub ui: ProxyUICommon,
 
     #[command(flatten)]
     pub common: ProxyAwareCommandCommon,
@@ -651,7 +718,7 @@ pub struct ScenarioConfig {
     #[arg(
         short,
         long,
-        help="Path to a scenario file",
+        help = "Path to a scenario file",
         env = "LUEUR_SCENARIO_PATH"
     )]
     pub scenario: String,

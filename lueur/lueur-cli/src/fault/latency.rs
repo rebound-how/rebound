@@ -31,6 +31,7 @@ use super::Bidirectional;
 use super::BidirectionalReadHalf;
 use super::BidirectionalWriteHalf;
 use super::FaultInjector;
+use crate::config::FaultKind;
 use crate::config::LatencySettings;
 use crate::errors::ProxyError;
 use crate::event::FaultEvent;
@@ -132,7 +133,8 @@ impl LatencyInjector {
                 let uniform = Uniform::new(
                     self.settings.latency_min,
                     self.settings.latency_max,
-                ).unwrap();
+                )
+                .unwrap();
                 let mut sample = uniform.sample(rng);
                 while sample < 0.0 {
                     sample = uniform.sample(rng);
@@ -220,6 +222,22 @@ where
 
 #[async_trait]
 impl FaultInjector for LatencyInjector {
+    fn is_enabled(&self) -> bool {
+        self.settings.enabled
+    }
+
+    fn kind(&self) -> FaultKind {
+        return self.settings.kind;
+    }
+
+    fn enable(&mut self) {
+        self.settings.enabled = true
+    }
+
+    fn disable(&mut self) {
+        self.settings.enabled = false
+    }
+
     /// Injects latency into a bidirectional stream.
     #[tracing::instrument]
     fn inject(
@@ -235,6 +253,7 @@ impl FaultInjector for LatencyInjector {
         let (read_half, write_half) = split(stream);
 
         let direction = self.settings.direction.clone();
+
         let _ = event.with_fault(FaultEvent::Latency {
             direction: direction.clone(),
             side: self.settings.side.clone(),
@@ -244,10 +263,6 @@ impl FaultInjector for LatencyInjector {
         // Wrap the read half if ingress or both directions are specified
         let limited_read: Box<dyn BidirectionalReadHalf> =
             if direction.is_ingress() {
-                tracing::debug!(
-                    "Wrapping {} read half for latency",
-                    self.settings.side
-                );
                 match LatencyStreamRead::new(
                     read_half,
                     self.clone(),
@@ -265,10 +280,6 @@ impl FaultInjector for LatencyInjector {
         // Wrap the write half if egress or both directions are specified
         let limited_write: Box<dyn BidirectionalWriteHalf> =
             if direction.is_egress() {
-                tracing::debug!(
-                    "Wrapping {} write half for latency",
-                    self.settings.side
-                );
                 match LatencyStreamWrite::new(
                     write_half,
                     self.clone(),

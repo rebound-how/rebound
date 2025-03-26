@@ -166,8 +166,7 @@ pub async fn resolve_addresses(host: String) -> Vec<IpAddr> {
 
     #[cfg(unix)]
     {
-        dns_resolver = resolver_from_system_conf()
-        .await.unwrap();
+        dns_resolver = resolver_from_system_conf().await.unwrap();
     }
     #[cfg(target_os = "windows")]
     {

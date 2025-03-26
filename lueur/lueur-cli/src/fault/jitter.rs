@@ -20,7 +20,9 @@ use tokio::time::sleep;
 
 use super::Bidirectional;
 use super::FaultInjector;
+use crate::config::FaultKind;
 use crate::config::JitterSettings;
+use crate::event::FaultEvent;
 use crate::event::ProxyTaskEvent;
 use crate::types::Direction;
 use crate::types::StreamSide;
@@ -41,12 +43,12 @@ impl fmt::Display for JitterInjector {
 impl JitterInjector {
     /// Determines whether to inject jitter based on the configured frequency.
     fn should_jitter(&self, rng: &mut SmallRng) -> bool {
-        rng.r#gen::<f64>() < self.settings.frequency
+        rng.random::<f64>() < self.settings.frequency
     }
 
     /// Generates a random jitter duration based on the configured amplitude.
     fn generate_jitter(&self, rng: &mut SmallRng) -> Duration {
-        let millis = rng.gen_range(0.0..=self.settings.amplitude);
+        let millis = rng.random_range(0.0..=self.settings.amplitude);
         Duration::from_millis(millis as u64)
     }
 }
@@ -65,14 +67,38 @@ impl Clone for JitterInjector {
 
 #[async_trait]
 impl FaultInjector for JitterInjector {
+    fn is_enabled(&self) -> bool {
+        self.settings.enabled
+    }
+
+    fn kind(&self) -> FaultKind {
+        return self.settings.kind;
+    }
+
+    fn enable(&mut self) {
+        self.settings.enabled = true
+    }
+
+    fn disable(&mut self) {
+        self.settings.enabled = false
+    }
+
     /// Injects jitter into a bidirectional stream.
     fn inject(
         &self,
         stream: Box<dyn Bidirectional + 'static>,
-        _event: Box<dyn ProxyTaskEvent>,
+        event: Box<dyn ProxyTaskEvent>,
         _side: StreamSide,
     ) -> Box<dyn Bidirectional + 'static> {
         let direction = self.settings.direction.clone();
+
+        let _ = event.with_fault(FaultEvent::Jitter {
+            direction: direction.clone(),
+            side: StreamSide::Server,
+            amplitude: Some(Duration::from_secs_f64(self.settings.amplitude)),
+            frequency: Some(self.settings.frequency),
+        });
+
         Box::new(JitterStream::new(stream, self.clone(), &direction))
     }
 

@@ -19,6 +19,7 @@ pub mod jitter;
 pub mod latency;
 pub mod packet_loss;
 
+use crate::config::FaultKind;
 use crate::errors::ProxyError;
 use crate::event::ProxyTaskEvent;
 use crate::types::StreamSide;
@@ -82,11 +83,15 @@ pub trait FaultInjector:
         resp: http::Response<Vec<u8>>,
         _event: Box<dyn ProxyTaskEvent>,
     ) -> Result<http::Response<Vec<u8>>, ProxyError>;
+
+    fn is_enabled(&self) -> bool;
+    fn kind(&self) -> FaultKind;
+
+    fn enable(&mut self);
+    fn disable(&mut self);
 }
 
 pub trait FutureDelay: Future<Output = ()> + Send + Debug {}
-
-// Wrapper struct for any future implementing `Future<Output = ()>`
 
 pub struct DelayWrapper<F> {
     future: F,
@@ -100,12 +105,10 @@ impl<F> DelayWrapper<F> {
 
 impl<F> std::fmt::Debug for DelayWrapper<F> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        // Just output something generic
         write!(f, "DelayWrapper(...)")
     }
 }
 
-// Implement `Future` for the wrapper
 impl<F> Future for DelayWrapper<F>
 where
     F: Future<Output = ()> + Send,
@@ -118,5 +121,4 @@ where
     }
 }
 
-// Implement `FutureDelay` for the wrapper
 impl<F> FutureDelay for DelayWrapper<F> where F: Future<Output = ()> + Send {}

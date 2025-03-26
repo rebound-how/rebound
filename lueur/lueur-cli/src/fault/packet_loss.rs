@@ -26,6 +26,7 @@ use super::Bidirectional;
 use super::BidirectionalReadHalf;
 use super::BidirectionalWriteHalf;
 use super::FaultInjector;
+use crate::config::FaultKind;
 use crate::config::PacketLossSettings;
 use crate::errors::ProxyError;
 use crate::event::FaultEvent;
@@ -192,7 +193,7 @@ where
                 // Transition to the next state based on the current state
                 let current_index = this.state.to_index();
                 let transition_probs = &transition_matrix[current_index];
-                let rand_val = this.rng.r#gen::<f64>();
+                let rand_val = this.rng.random::<f64>();
                 let mut cumulative = 0.0;
                 let mut new_state = current_index;
                 for (i, &prob) in transition_probs.iter().enumerate() {
@@ -206,7 +207,7 @@ where
 
                 // Determine packet loss based on the new state's loss
                 // probability
-                this.rng.r#gen::<f64>() < loss_probabilities[new_state]
+                this.rng.random::<f64>() < loss_probabilities[new_state]
             }
         };
 
@@ -302,7 +303,7 @@ where
                 // Transition to the next state based on the current state
                 let current_index = this.state.to_index();
                 let transition_probs = &transition_matrix[current_index];
-                let rand_val = this.rng.r#gen::<f64>();
+                let rand_val = this.rng.random::<f64>();
                 let mut cumulative = 0.0;
                 let mut new_state = current_index;
                 for (i, &prob) in transition_probs.iter().enumerate() {
@@ -316,7 +317,7 @@ where
 
                 // Determine packet loss based on the new state's loss
                 // probability
-                this.rng.r#gen::<f64>() < loss_probabilities[new_state]
+                this.rng.random::<f64>() < loss_probabilities[new_state]
             }
         };
 
@@ -438,28 +439,46 @@ impl fmt::Display for PacketLossInjector {
 
 #[async_trait]
 impl FaultInjector for PacketLossInjector {
+    fn is_enabled(&self) -> bool {
+        self.settings.enabled
+    }
+
+    fn kind(&self) -> FaultKind {
+        return self.settings.kind;
+    }
+
+    fn enable(&mut self) {
+        self.settings.enabled = true
+    }
+
+    fn disable(&mut self) {
+        self.settings.enabled = false
+    }
+
     /// Injects packet loss into a bidirectional stream based on the direction.
     fn inject(
         &self,
         stream: Box<dyn Bidirectional + 'static>,
         event: Box<dyn ProxyTaskEvent>,
-        _side: StreamSide,
+        side: StreamSide,
     ) -> Box<dyn Bidirectional + 'static> {
+        if side != self.settings.side {
+            return stream;
+        }
+
         let (read_half, write_half) = split(stream);
 
         let direction = self.settings.direction.clone();
-        let side = self.settings.side.clone();
 
         let _ = event.with_fault(FaultEvent::PacketLoss {
             state: "".to_owned(),
             direction: direction.clone(),
-            side: side.clone(),
+            side: self.settings.side.clone(),
         });
 
         // Wrap the read half if ingress or both directions are specified
         let limited_read: Box<dyn BidirectionalReadHalf> =
             if direction.is_ingress() {
-                tracing::debug!("Wrapping read half for packet loss");
                 Box::new(PacketLossLimitedRead::new(
                     read_half,
                     self.settings.clone(),
@@ -472,7 +491,6 @@ impl FaultInjector for PacketLossInjector {
         // Wrap the write half if egress or both directions are specified
         let limited_write: Box<dyn BidirectionalWriteHalf> =
             if direction.is_egress() {
-                tracing::debug!("Wrapping write half for packet loss");
                 Box::new(PacketLossLimitedWrite::new(
                     write_half,
                     self.settings.clone(),
@@ -506,43 +524,46 @@ impl FaultInjector for PacketLossInjector {
         request: ReqwestRequest,
         event: Box<dyn ProxyTaskEvent>,
     ) -> Result<ReqwestRequest, ProxyError> {
-        let _ = event.with_fault(FaultEvent::PacketLoss {
-            state: "".to_owned(),
-            direction: Direction::Egress,
-            side: StreamSide::Client,
-        });
+        if self.settings.side == StreamSide::Client {
+            let _ = event.with_fault(FaultEvent::PacketLoss {
+                state: "".to_owned(),
+                direction: Direction::Egress,
+                side: StreamSide::Client,
+            });
 
-        let original_body = request.body();
-        if let Some(body) = original_body {
-            if let Some(bytes) = body.as_bytes() {
-                let owned_bytes = Cursor::new(bytes.to_vec());
+            let original_body = request.body();
+            if let Some(body) = original_body {
+                if let Some(bytes) = body.as_bytes() {
+                    let owned_bytes = Cursor::new(bytes.to_vec());
 
-                // Wrap the owned bytes with PacketLossLimitedRead
-                let packet_loss_limited_read = PacketLossLimitedRead::new(
-                    owned_bytes,
-                    self.settings.clone(),
-                    Some(event.clone()),
-                );
+                    // Wrap the owned bytes with PacketLossLimitedRead
+                    let packet_loss_limited_read = PacketLossLimitedRead::new(
+                        owned_bytes,
+                        self.settings.clone(),
+                        Some(event.clone()),
+                    );
 
-                // Convert the PacketLossLimitedRead into a ReaderStream
-                let reader_stream = ReaderStream::new(packet_loss_limited_read);
+                    // Convert the PacketLossLimitedRead into a ReaderStream
+                    let reader_stream =
+                        ReaderStream::new(packet_loss_limited_read);
 
-                // Replace the request body with the limited stream
-                let new_body = Body::wrap_stream(reader_stream);
-                let mut builder = request.try_clone().ok_or_else(|| {
-                    ProxyError::Other("Couldn't clone request".into())
-                })?;
-                *builder.body_mut() = Some(new_body);
+                    // Replace the request body with the limited stream
+                    let new_body = Body::wrap_stream(reader_stream);
+                    let mut builder = request.try_clone().ok_or_else(|| {
+                        ProxyError::Other("Couldn't clone request".into())
+                    })?;
+                    *builder.body_mut() = Some(new_body);
 
-                Ok(builder)
+                    return Ok(builder);
+                } else {
+                    return Ok(request);
+                }
             } else {
-                // If the body doesn't have bytes, leave it unchanged
-                Ok(request)
+                return Ok(request);
             }
-        } else {
-            // If there's no body, leave the request unchanged
-            Ok(request)
         }
+
+        Ok(request)
     }
 
     /// Applies packet loss to an incoming response.
@@ -551,45 +572,49 @@ impl FaultInjector for PacketLossInjector {
         resp: http::Response<Vec<u8>>,
         event: Box<dyn ProxyTaskEvent>,
     ) -> Result<http::Response<Vec<u8>>, ProxyError> {
-        let _ = event.with_fault(FaultEvent::PacketLoss {
-            state: "".to_owned(),
-            direction: Direction::Ingress,
-            side: StreamSide::Server,
-        });
+        if self.settings.side == StreamSide::Server {
+            let _ = event.with_fault(FaultEvent::PacketLoss {
+                state: "".to_owned(),
+                direction: Direction::Ingress,
+                side: StreamSide::Server,
+            });
 
-        // Split the response into parts and body
-        let (parts, body) = resp.into_parts();
-        let version = parts.version;
-        let status = parts.status;
-        let headers = parts.headers.clone();
+            // Split the response into parts and body
+            let (parts, body) = resp.into_parts();
+            let version = parts.version;
+            let status = parts.status;
+            let headers = parts.headers.clone();
 
-        // Convert the body into an owned Cursor<Vec<u8>>
-        let owned_body = Cursor::new(body);
+            // Convert the body into an owned Cursor<Vec<u8>>
+            let owned_body = Cursor::new(body);
 
-        // Wrap the owned body with PacketLossLimitedRead
-        let packet_loss_limited_read = PacketLossLimitedRead::new(
-            owned_body,
-            self.settings.clone(),
-            Some(event.clone()),
-        );
+            // Wrap the owned body with PacketLossLimitedRead
+            let packet_loss_limited_read = PacketLossLimitedRead::new(
+                owned_body,
+                self.settings.clone(),
+                Some(event.clone()),
+            );
 
-        // Convert the PacketLossLimitedRead into a ReaderStream
-        let reader_stream = ReaderStream::new(packet_loss_limited_read);
+            // Convert the PacketLossLimitedRead into a ReaderStream
+            let reader_stream = ReaderStream::new(packet_loss_limited_read);
 
-        // Read the limited stream into a buffer
-        let mut buffer = BytesMut::new();
-        tokio::pin!(reader_stream);
-        while let Some(chunk) = reader_stream.next().await {
-            buffer.extend_from_slice(&chunk?);
+            // Read the limited stream into a buffer
+            let mut buffer = BytesMut::new();
+            tokio::pin!(reader_stream);
+            while let Some(chunk) = reader_stream.next().await {
+                buffer.extend_from_slice(&chunk?);
+            }
+            let response_body = buffer.to_vec();
+
+            // Reconstruct the HTTP response with the limited body
+            let mut new_response = http::Response::new(response_body);
+            *new_response.version_mut() = version;
+            *new_response.status_mut() = status;
+            *new_response.headers_mut() = headers;
+
+            return Ok(new_response);
         }
-        let response_body = buffer.to_vec();
 
-        // Reconstruct the HTTP response with the limited body
-        let mut new_response = http::Response::new(response_body);
-        *new_response.version_mut() = version;
-        *new_response.status_mut() = status;
-        *new_response.headers_mut() = headers;
-
-        Ok(new_response)
+        Ok(resp)
     }
 }

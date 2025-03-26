@@ -8,9 +8,10 @@ fn main() -> anyhow::Result<()> {
     tonic_build::configure()
         .build_server(true)
         .build_client(true)
-        .compile_protos(&["src/plugin/rpc/protos/service.proto"], &[
-            "src/plugin/rpc",
-        ])?;
+        .compile_protos(
+            &["src/plugin/rpc/protos/service.proto"],
+            &["src/plugin/rpc"],
+        )?;
 
     // Only build the eBPF package if we're on Linux.
     #[cfg(all(target_os = "linux", feature = "stealth-auto-build"))]

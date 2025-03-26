@@ -13,12 +13,15 @@ use crate::cli::PacketLossOptions;
 use crate::cli::RunCommandOptions;
 use crate::types::BandwidthUnit;
 use crate::types::Direction;
+use crate::types::FaultConfiguration;
 use crate::types::LatencyDistribution;
 use crate::types::StreamSide;
 
 /// Internal Configuration for Latency Fault
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
 pub struct LatencySettings {
+    pub kind: FaultKind,
+    pub enabled: bool,
     pub distribution: LatencyDistribution,
     pub direction: Direction,
     pub global: bool,
@@ -34,6 +37,8 @@ pub struct LatencySettings {
 /// Internal Configuration for Packet Loss Fault
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
 pub struct PacketLossSettings {
+    pub kind: FaultKind,
+    pub enabled: bool,
     pub direction: Direction,
     pub side: StreamSide,
 }
@@ -41,6 +46,8 @@ pub struct PacketLossSettings {
 /// Internal Configuration for Bandwidth Throttling Fault
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
 pub struct BandwidthSettings {
+    pub kind: FaultKind,
+    pub enabled: bool,
     pub direction: Direction,
     pub side: StreamSide,
     pub bandwidth_rate: usize, // in bytes per second
@@ -50,6 +57,8 @@ pub struct BandwidthSettings {
 /// Internal Configuration for Jitter Fault
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
 pub struct JitterSettings {
+    pub kind: FaultKind,
+    pub enabled: bool,
     pub direction: Direction,
     pub amplitude: f64, // in milliseconds
     pub frequency: f64, // in Hertz
@@ -58,12 +67,16 @@ pub struct JitterSettings {
 /// Internal Configuration for DNS Fault
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
 pub struct DnsSettings {
+    pub kind: FaultKind,
+    pub enabled: bool,
     pub rate: f64, // between 0 and 1.0
 }
 
 /// Internal Configuration for Packet Duplication Fault
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
 pub struct PacketDuplicationSettings {
+    pub kind: FaultKind,
+    pub enabled: bool,
     pub direction: Direction,
     pub packet_duplication_probability: f64, // between 0.0 and 1.0
 }
@@ -71,6 +84,8 @@ pub struct PacketDuplicationSettings {
 /// Internal Configuration for HTTP Error Fault
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
 pub struct HttpResponseSettings {
+    pub kind: FaultKind,
+    pub enabled: bool,
     pub http_response_status_code: u16,
     pub http_response_body: Option<String>,
     pub http_response_trigger_probability: f64, // between 0.0 and 1.0
@@ -111,33 +126,107 @@ impl fmt::Display for FaultConfig {
     }
 }
 
+/// A simpler enum for "kind" of fault.
+#[derive(
+    Default, Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash,
+)]
+pub enum FaultKind {
+    #[default]
+    Unknown,
+    Dns,
+    Latency,
+    PacketLoss,
+    Bandwidth,
+    Jitter,
+    PacketDuplication,
+    HttpError,
+    Metrics,
+}
+
+impl FaultConfig {
+    pub fn kind(&self) -> FaultKind {
+        match self {
+            FaultConfig::Dns(_) => FaultKind::Dns,
+            FaultConfig::Latency(_) => FaultKind::Latency,
+            FaultConfig::PacketLoss(_) => FaultKind::PacketLoss,
+            FaultConfig::Bandwidth(_) => FaultKind::Bandwidth,
+            FaultConfig::Jitter(_) => FaultKind::Jitter,
+            FaultConfig::PacketDuplication(_) => FaultKind::PacketDuplication,
+            FaultConfig::HttpError(_) => FaultKind::HttpError,
+        }
+    }
+
+    pub fn enable(&mut self) -> () {
+        match self {
+            FaultConfig::Dns(settings) => settings.enabled = true,
+            FaultConfig::Latency(settings) => settings.enabled = true,
+            FaultConfig::PacketLoss(settings) => settings.enabled = true,
+            FaultConfig::Bandwidth(settings) => settings.enabled = true,
+            FaultConfig::Jitter(settings) => settings.enabled = true,
+            FaultConfig::PacketDuplication(settings) => settings.enabled = true,
+            FaultConfig::HttpError(settings) => settings.enabled = true,
+        };
+        ()
+    }
+
+    pub fn disable(&mut self) -> () {
+        match self {
+            FaultConfig::Dns(settings) => settings.enabled = false,
+            FaultConfig::Latency(settings) => settings.enabled = false,
+            FaultConfig::PacketLoss(settings) => settings.enabled = false,
+            FaultConfig::Bandwidth(settings) => settings.enabled = false,
+            FaultConfig::Jitter(settings) => settings.enabled = false,
+            FaultConfig::PacketDuplication(settings) => {
+                settings.enabled = false
+            }
+            FaultConfig::HttpError(settings) => settings.enabled = false,
+        };
+        ()
+    }
+}
+
 /// Proxy Configuration Struct
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
 pub struct ProxyConfig {
     pub faults: Vec<FaultConfig>,
 }
 
+impl ProxyConfig {
+    pub fn find_mut_by_kind(
+        &mut self,
+        kind: FaultKind,
+    ) -> Option<&mut FaultConfig> {
+        self.faults.iter_mut().find(|f| f.kind() == kind)
+    }
+
+    pub fn add_fault(&mut self, fault_config: FaultConfig) {
+        self.faults.push(fault_config);
+    }
+}
+
 impl From<&RunCommandOptions> for ProxyConfig {
     fn from(cli: &RunCommandOptions) -> Self {
         let mut faults = Vec::new();
 
-        if cli.latency.enabled {
+        if cli.latency.enabled && cli.latency.latency_sched.is_none() {
             faults.push(FaultConfig::Latency((&cli.latency).into()));
         }
 
-        if cli.bandwidth.enabled {
+        if cli.bandwidth.enabled && cli.bandwidth.bandwidth_sched.is_none() {
             faults.push(FaultConfig::Bandwidth((&cli.bandwidth).into()));
         }
 
-        if cli.dns.enabled {
+        if cli.dns.enabled && cli.dns.dns_sched.is_none() {
             faults.push(FaultConfig::Dns((&cli.dns).into()));
         }
 
-        if cli.jitter.enabled {
+        if cli.jitter.enabled && cli.jitter.jitter_sched.is_none() {
             faults.push(FaultConfig::Jitter((&cli.jitter).into()));
         }
 
-        if cli.packet_loss.enabled {
+        if cli.packet_loss.enabled
+            && cli.packet_loss.packet_loss_sched.is_none()
+        {
             faults.push(FaultConfig::PacketLoss((&cli.packet_loss).into()));
         }
 
@@ -149,7 +238,9 @@ impl From<&RunCommandOptions> for ProxyConfig {
         }
         */
 
-        if cli.http_error.enabled {
+        if cli.http_error.enabled
+            && cli.http_error.http_response_sched.is_none()
+        {
             faults.push(FaultConfig::HttpError((&cli.http_error).into()));
         }
 
@@ -160,6 +251,8 @@ impl From<&RunCommandOptions> for ProxyConfig {
 impl From<&LatencyOptions> for LatencySettings {
     fn from(cli: &LatencyOptions) -> Self {
         LatencySettings {
+            enabled: cli.enabled,
+            kind: FaultKind::Latency,
             distribution: cli.latency_distribution.clone(),
             direction: cli.latency_direction.clone(),
             global: !cli.per_read_write,
@@ -177,6 +270,8 @@ impl From<&LatencyOptions> for LatencySettings {
 impl From<&BandwidthOptions> for BandwidthSettings {
     fn from(cli: &BandwidthOptions) -> Self {
         BandwidthSettings {
+            enabled: cli.enabled,
+            kind: FaultKind::Bandwidth,
             direction: cli.bandwidth_direction.clone(),
             side: cli.side.clone(),
             bandwidth_rate: cli.bandwidth_rate,
@@ -188,6 +283,8 @@ impl From<&BandwidthOptions> for BandwidthSettings {
 impl From<&JitterOptions> for JitterSettings {
     fn from(cli: &JitterOptions) -> Self {
         JitterSettings {
+            enabled: cli.enabled,
+            kind: FaultKind::Jitter,
             direction: cli.jitter_direction.clone(),
             amplitude: cli.jitter_amplitude,
             frequency: cli.jitter_frequency,
@@ -197,13 +294,19 @@ impl From<&JitterOptions> for JitterSettings {
 
 impl From<&DnsOptions> for DnsSettings {
     fn from(cli: &DnsOptions) -> Self {
-        DnsSettings { rate: cli.dns_rate }
+        DnsSettings {
+            enabled: cli.enabled,
+            kind: FaultKind::Dns,
+            rate: cli.dns_rate,
+        }
     }
 }
 
 impl From<&PacketLossOptions> for PacketLossSettings {
     fn from(cli: &PacketLossOptions) -> Self {
         PacketLossSettings {
+            enabled: cli.enabled,
+            kind: FaultKind::PacketLoss,
             direction: cli.packet_loss_direction.clone(),
             side: cli.side.clone(),
         }
@@ -223,6 +326,8 @@ impl From<&PacketDuplicationOptions> for PacketDuplicationSettings {
 impl From<&HTTPResponseOptions> for HttpResponseSettings {
     fn from(cli: &HTTPResponseOptions) -> Self {
         HttpResponseSettings {
+            enabled: cli.enabled,
+            kind: FaultKind::HttpError,
             http_response_status_code: cli.http_response_status_code,
             http_response_body: cli.http_response_body.clone(),
             http_response_trigger_probability: cli

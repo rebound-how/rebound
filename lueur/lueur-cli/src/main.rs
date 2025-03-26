@@ -1,6 +1,5 @@
 // used by duration to access as_millis_f64() which is available in edition2024
 #![feature(duration_millis_float)]
-
 // necessary to use is_global on IPv4 addr
 // https://github.com/rust-lang/rust/issues/27709
 #![feature(ip)]
@@ -22,6 +21,7 @@ mod proxy;
 mod reporting;
 mod resolver;
 mod scenario;
+mod sched;
 mod termui;
 mod types;
 
@@ -36,6 +36,7 @@ use std::sync::Mutex;
 use std::time::Duration;
 use std::time::Instant;
 
+use ::oneshot;
 use anyhow::Result;
 #[cfg(all(
     target_os = "linux",
@@ -52,11 +53,13 @@ use cli::ScenarioCommands;
 use colorful::Color;
 use colorful::Colorful;
 use colorful::ExtraColorInterface;
+use config::FaultKind;
 use config::ProxyConfig;
 use errors::ProxyError;
 use event::TaskManager;
 use indicatif::MultiProgress;
 use indicatif::ProgressBar;
+use indicatif::ProgressDrawTarget;
 use indicatif::ProgressStyle;
 use logging::init_meter_provider;
 use logging::init_subscriber;
@@ -65,6 +68,7 @@ use logging::setup_logging;
 use logging::shutdown_tracer;
 use opentelemetry_sdk::metrics::SdkMeterProvider;
 use opentelemetry_sdk::trace::SdkTracerProvider;
+use parse_duration::parse;
 use proxy::ProxyState;
 #[cfg(all(
     target_os = "linux",
@@ -89,16 +93,25 @@ use scenario::count_scenario_items;
 use scenario::execute_item;
 use scenario::handle_scenario_events;
 use scenario::load_scenarios;
-use termui::handle_displayable_events;
+use sched::EventType;
+use sched::FaultPeriodEvent;
+use sched::build_schedule_events;
+use sched::run_fault_schedule;
+use termui::demo_prelude;
+use termui::full_progress;
+use termui::get_output_format_result;
+use termui::lean_progress;
+use termui::proxy_prelude;
 use termui::quiet_handle_displayable_events;
 use tokio::sync::broadcast;
 use tokio::sync::watch;
 use tokio::task;
+use tokio::time::sleep;
 use tokio_stream::StreamExt;
 use tracing::error;
+use types::EbpfProxyAddrConfig;
 use types::LatencyDistribution;
 use types::ProxyAddrConfig;
-use types::EbpfProxyAddrConfig;
 use url::Url;
 
 #[tokio::main]
@@ -118,9 +131,12 @@ async fn main() -> Result<()> {
 
     let _ = init_subscriber(log_layers, &tracer_provider, &meter_provider);
 
-    let (proxy_shutdown_tx, proxy_shutdown_rx) = broadcast::channel::<()>(1);
+    let (proxy_shutdown_tx, proxy_shutdown_rx) = broadcast::channel::<()>(5);
     let (task_manager, receiver) = TaskManager::new(1000);
     let (config_tx, config_rx) = watch::channel(ProxyConfig::default());
+
+    let _fault_schedule_handle;
+    let _progress_guard;
 
     #[cfg(all(
         target_os = "linux",
@@ -145,21 +161,13 @@ async fn main() -> Result<()> {
 
     match &cli.command {
         Commands::Run { options } => {
-            let _progress_guard;
-
-            if options.no_ui {
-                _progress_guard =
-                    task::spawn(quiet_handle_displayable_events(receiver));
-            } else {
-                _progress_guard =
-                    task::spawn(handle_displayable_events(receiver));
-            }
-
             let proxy_nic_config = get_proxy_address(&options.common);
 
             let stealth_mode = is_stealth(&options);
 
-            let app_state = initialize_application_state(&options.common, stealth_mode).await;
+            let app_state =
+                initialize_application_state(&options.common, stealth_mode)
+                    .await;
 
             let _proxy_guard = initialize_proxy(
                 &proxy_nic_config,
@@ -181,7 +189,12 @@ async fn main() -> Result<()> {
                             "In stealth mode, you must pass a process name"
                         );
                     } else {
-                        match ebpf::get_ebpf_proxy(&proxy_nic_config, options.stealth.ebpf_proxy_iface.clone(), options.stealth.ebpf_proxy_ip.clone(), options.stealth.ebpf_proxy_port) {
+                        match ebpf::get_ebpf_proxy(
+                            &proxy_nic_config,
+                            options.stealth.ebpf_proxy_iface.clone(),
+                            options.stealth.ebpf_proxy_ip.clone(),
+                            options.stealth.ebpf_proxy_port,
+                        ) {
                             Ok(Some(ebpf_proxy_config)) => {
                                 _ebpf_proxy_guard = initialize_ebpf_proxy(
                                     &ebpf_proxy_config,
@@ -192,7 +205,7 @@ async fn main() -> Result<()> {
                                 )
                                 .await
                                 .unwrap();
-        
+
                                 _guard = ebpf::initialize_stealth(
                                     &options.common,
                                     &options.stealth,
@@ -223,25 +236,76 @@ async fn main() -> Result<()> {
             let hosts = app_state.proxy_state.upstream_hosts.read().await;
             let upstreams = (*hosts).clone();
 
-            if !options.no_ui {
+            let total_duration = if let Some(ref s) = options.common.duration {
+                Some(parse(s).unwrap())
+            } else {
+                None
+            };
+            let proxy_state = app_state.proxy_state.clone();
+            let fault_schedule =
+                build_schedule_events(&options, total_duration)?;
+
+            let schedule_for_prelude = fault_schedule.clone();
+            _fault_schedule_handle = tokio::spawn(async move {
+                let state = proxy_state.clone();
+                run_fault_schedule(fault_schedule, state).await
+            });
+
+            let faults_scheduled = !schedule_for_prelude.is_empty();
+
+            if !options.ui.no_ui {
                 proxy_prelude(
                     proxy_nic_config.proxy_address(),
                     &options,
                     &upstreams,
+                    schedule_for_prelude,
+                    total_duration,
+                    options.ui.tail,
                 );
             }
 
-            tokio::signal::ctrl_c()
-                .await
-                .map_err(|e| {
-                    ProxyError::Internal(format!(
-                        "Failed to listen for shutdown signal: {}",
-                        e
-                    ))
-                })
-                .unwrap();
+            if options.ui.no_ui {
+                _progress_guard =
+                    task::spawn(quiet_handle_displayable_events(receiver));
+            } else if options.ui.tail {
+                _progress_guard = task::spawn(full_progress(
+                    proxy_shutdown_tx.subscribe(),
+                    receiver,
+                ));
+            } else {
+                _progress_guard = task::spawn(lean_progress(
+                    task_manager.new_subscriber(),
+                    proxy_shutdown_tx.subscribe(),
+                    total_duration,
+                    faults_scheduled,
+                ));
+            }
 
-            tracing::info!("Shutdown signal received. Initiating shutdown.");
+            match total_duration {
+                Some(d) => {
+                    tokio::select! {
+                        _ = tokio::signal::ctrl_c() => {
+                            tracing::info!("Shutdown signal received. Initiating shutdown.");
+                        }
+
+                        _ = sleep(d) => {
+                            tracing::info!("Time's up! Shutting down now.");
+                        }
+                    }
+                }
+                None => {
+                    if let Err(e) = tokio::signal::ctrl_c().await {
+                        tracing::debug!(
+                            "Error listening for shutdown signal: {}",
+                            e
+                        );
+                    } else {
+                        tracing::info!(
+                            "Shutdown signal received. Initiating shutdown."
+                        );
+                    }
+                }
+            }
         }
         Commands::Demo(demo_cmd) => match demo_cmd {
             DemoCommands::Run(demo_config) => {
@@ -261,7 +325,8 @@ async fn main() -> Result<()> {
 
                 let m = MultiProgress::new();
 
-                let app_state = initialize_application_state(&common, false).await;
+                let app_state =
+                    initialize_application_state(&common, false).await;
 
                 let _proxy_guard = initialize_proxy(
                     &proxy_nic_config,
@@ -396,7 +461,7 @@ async fn main() -> Result<()> {
                                 }
                             }
 
-                            pb.finish();
+                            pb.finish_and_clear();
                         }
                         Err(e) => error!("Failed to load scenario: {:?}", e),
                     }
@@ -441,12 +506,12 @@ async fn main() -> Result<()> {
                 }
             }
         },
-    }
+    };
 
     match proxy_shutdown_tx.send(()) {
         Ok(_) => tracing::debug!("Shutdown notified."),
         Err(e) => tracing::warn!("Failed to notify shutdown {}", e),
-    }
+    };
 
     #[cfg(all(
         target_os = "linux",
@@ -456,7 +521,7 @@ async fn main() -> Result<()> {
         match ebpf_proxy_shutdown_tx.send(()) {
             Ok(_) => tracing::debug!("Shutdown of ebpf notified."),
             Err(e) => tracing::warn!("Failed to notify ebpf shutdown {}", e),
-        }
+        };
     }
 
     drop(task_manager);
@@ -501,7 +566,8 @@ fn is_stealth(cli: &RunCommandOptions) -> bool {
 }
 
 async fn initialize_application_state(
-    cli: &ProxyAwareCommandCommon, is_stealth: bool
+    cli: &ProxyAwareCommandCommon,
+    is_stealth: bool,
 ) -> AppState {
     // Initialize shared state with empty configuration
     let state = Arc::new(ProxyState::new(is_stealth));
@@ -594,7 +660,7 @@ fn upstream_to_addr(
     host: &String,
 ) -> Result<String, Box<dyn std::error::Error>> {
     if host == &String::from("*") {
-        return Ok(host.clone())
+        return Ok(host.clone());
     }
 
     let url_str = if host.contains("://") {
@@ -610,268 +676,6 @@ fn upstream_to_addr(
     let port = url.port_or_known_default().unwrap();
 
     Ok(format!("{}:{}", host, port))
-}
-
-fn proxy_prelude(
-    proxy_address: String,
-    opts: &RunCommandOptions,
-    upstreams: &Vec<String>,
-) {
-    let g = "lueur".gradient(Color::LightYellow3);
-    let r = "Your Resiliency Exploration Tool".gradient(Color::Purple3);
-    let a = format!("http://{}", proxy_address).cyan();
-    println!(
-        "
-    Welcome to {} — {}!
-
-    To get started, route your HTTP/HTTPS requests through:
-    {}
-
-    As you send requests, lueur will simulate network conditions
-    so you can see how your application copes.
-
-    Ready when you are — go ahead and make some requests!
-        ",
-        g, r, a
-    );
-
-    // Summary header with a bit of color
-    println!("{}", "\n    Configured faults:".bold().white());
-
-    // HTTP Response Fault
-    if opts.http_error.enabled {
-        if let Some(body) = &opts.http_error.http_response_body {
-            println!(
-                "{}",
-                format!(
-                    "     - {}: {}: {}, {}: {}, {}: {}",
-                    "HTTP Response".light_blue(),
-                    "status".dim(),
-                    opts.http_error.http_response_status_code,
-                    "probability".dim(),
-                    opts.http_error.http_response_trigger_probability,
-                    "body".dim(),
-                    body
-                )
-            );
-        } else {
-            println!(
-                "{}",
-                format!(
-                    "     - {}: {}: {}, {}: {}",
-                    "HTTP Response".light_blue(),
-                    "status".dim(),
-                    opts.http_error.http_response_status_code,
-                    "probability".dim(),
-                    opts.http_error.http_response_trigger_probability
-                )
-            );
-        }
-    }
-
-    // Latency Fault
-    if opts.latency.enabled {
-        let mut latency_summary = format!(
-            "     - {}: {}: {}, {}: {:?}, {}: {:?}, {}: {:?}",
-            "Latency".light_blue(),
-            "per read/write".dim(),
-            opts.latency.per_read_write,
-            "side".dim(),
-            opts.latency.side,
-            "direction".dim(),
-            opts.latency.latency_direction,
-            "distribution".dim(),
-            opts.latency.latency_distribution
-        );
-
-        // Depending on the distribution, display the relevant parameters
-        match opts.latency.latency_distribution {
-            LatencyDistribution::Uniform => {
-                if let Some(min) = opts.latency.latency_min {
-                    latency_summary.push_str(&format!(
-                        ", {}: {}ms",
-                        "min".dim(),
-                        min
-                    ));
-                }
-                if let Some(max) = opts.latency.latency_max {
-                    latency_summary.push_str(&format!(
-                        ", {}: {}ms",
-                        "max".dim(),
-                        max
-                    ));
-                }
-            }
-            LatencyDistribution::Normal => {
-                if let Some(mean) = opts.latency.latency_mean {
-                    latency_summary.push_str(&format!(
-                        ", {}: {}ms",
-                        "mean".dim(),
-                        mean
-                    ));
-                }
-                if let Some(stddev) = opts.latency.latency_stddev {
-                    latency_summary.push_str(&format!(
-                        ", {}: {}ms",
-                        "stddev".dim(),
-                        stddev
-                    ));
-                }
-            }
-            _ => {
-                // For Pareto or ParetoNormal distributions
-                if let Some(shape) = opts.latency.latency_shape {
-                    latency_summary.push_str(&format!(
-                        ", {}: {}",
-                        "shape".dim(),
-                        shape
-                    ));
-                }
-                if let Some(scale) = opts.latency.latency_scale {
-                    latency_summary.push_str(&format!(
-                        ", {}: {}",
-                        "scale".dim(),
-                        scale
-                    ));
-                }
-            }
-        }
-        println!("{}", latency_summary);
-    }
-
-    // Bandwidth Fault
-    if opts.bandwidth.enabled {
-        println!(
-            "{}",
-            format!(
-                "     - {}: {}: {:?}, {}: {:?}, {}: {} {:?}",
-                "Bandwidth".light_blue(),
-                "side".dim(),
-                opts.bandwidth.side,
-                "direction".dim(),
-                opts.bandwidth.bandwidth_direction,
-                "rate".dim(),
-                opts.bandwidth.bandwidth_rate,
-                opts.bandwidth.bandwidth_unit
-            )
-        );
-    }
-
-    // Jitter Fault
-    if opts.jitter.enabled {
-        println!(
-            "{}",
-            format!(
-                "     - {}: {}: {:?}, {}: {}ms, {}: {}Hz",
-                "Jitter".light_blue(),
-                "direction".dim(),
-                opts.jitter.jitter_direction,
-                "amplitude".dim(),
-                opts.jitter.jitter_amplitude,
-                "frequency".dim(),
-                opts.jitter.jitter_frequency
-            )
-        );
-    }
-
-    // DNS Fault
-    if opts.dns.enabled {
-        println!(
-            "{}",
-            format!(
-                "     - {}: {}: {}",
-                "DNS".light_blue(),
-                "trigger probability".dim(),
-                opts.dns.dns_rate
-            )
-        );
-    }
-
-    // Packet Loss Fault
-    if opts.packet_loss.enabled {
-        println!(
-            "{}",
-            format!(
-                "     - {}: {}: {:?}, {}: {:?}",
-                "Packet Loss".light_blue(),
-                "side".dim(),
-                opts.packet_loss.side,
-                "direction".dim(),
-                opts.packet_loss.packet_loss_direction
-            )
-        );
-    }
-
-    let mut noop = false;
-
-    // If no fault is enabled, let the user know
-    if !opts.http_error.enabled
-        && !opts.latency.enabled
-        && !opts.bandwidth.enabled
-        && !opts.jitter.enabled
-        && !opts.dns.enabled
-        && !opts.packet_loss.enabled
-    {
-        println!("    {}", " No faults configured.".dim().hsl(0.39, 1.0, 0.50));
-        noop = true;
-    }
-
-    println!("{}", "\n    Hosts Covered By The Faults:".bold().white());
-    if !upstreams.is_empty() {
-        for host in upstreams {
-            println!("     - {}", host.clone().cyan());
-        }
-        println!("\n");
-    } else {
-        println!(
-            "    {}",
-            " No upstream hosts configured.".dim().hsl(0.39, 1.0, 0.50)
-        );
-        noop = true;
-    }
-
-    if noop {
-        println!(
-            "\n    {}{}\n",
-            "\n    💡 The proxy is not configured to impact any traffic.\n    You may want to try setting some parameters. For instance:\n",
-            "\n    lueur run --with-latency --latency-mean 300 --upstream http://localhost:7070"
-        )
-    }
-}
-
-fn demo_prelude(demo_address: String) {
-    let g = "lueur".gradient(Color::Plum4);
-    println!(
-        "
-    Welcome to {}, this demo application is here to let you explore lueur's capabilities.
-
-    Here are a few examples:
-
-    export HTTP_PROXY=http://localhost:8080
-    export HTTPS_PROXY=http://localhost:8080
-
-    curl -x ${{HTTP_PROXY}} http://{demo_address}/
-    curl -x ${{HTTP_PROXY}} http://{demo_address}/ping
-    curl -x ${{HTTP_PROXY}} http://{demo_address}/ping/myself
-    curl -x ${{HTTP_PROXY}} --json '{{\"content\": \"hello\"}}' http://{demo_address}/uppercase
-
-        ", g,
-    );
-}
-
-fn get_output_format_result(file_path: &str) -> Result<OutputFormat, String> {
-    Path::new(file_path)
-        .extension()
-        .and_then(|ext| ext.to_str())
-        .ok_or_else(|| "File extension is missing or invalid.".to_string())
-        .and_then(|ext_str| match ext_str.to_lowercase().as_str() {
-            "md" | "markdown" => Ok(OutputFormat::Markdown),
-            "txt" => Ok(OutputFormat::Text),
-            "html" | "htm" => Ok(OutputFormat::Html),
-            "json" => Ok(OutputFormat::Json),
-            "yaml" | "yml" => Ok(OutputFormat::Yaml),
-            other => Err(format!("Unrecognized file extension: '{}'", other)),
-        })
 }
 
 fn get_proxy_address(common: &ProxyAwareCommandCommon) -> ProxyAddrConfig {

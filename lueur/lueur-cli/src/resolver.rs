@@ -2,9 +2,9 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Instant;
 
-use hickory_resolver::name_server::TokioConnectionProvider;
-use hickory_resolver::TokioAsyncResolver;
+use hickory_resolver::TokioResolver;
 use hickory_resolver::config::*;
+use hickory_resolver::name_server::TokioConnectionProvider;
 use local_ip_address::local_ip;
 use reqwest::dns::Addrs;
 use reqwest::dns::Resolve;
@@ -18,7 +18,7 @@ use crate::reporting::DnsTiming;
 /// Custom DNS Resolver that measures DNS resolution time and records it.
 #[derive(Clone, Debug)]
 pub struct TimingResolver {
-    resolver: Arc<RwLock<TokioAsyncResolver>>,
+    resolver: Arc<RwLock<TokioResolver>>,
     timing: Arc<Mutex<DnsTiming>>,
     event: Box<dyn ProxyTaskEvent>,
 }
@@ -29,28 +29,10 @@ impl TimingResolver {
         timing: Arc<Mutex<DnsTiming>>,
         event: Box<dyn ProxyTaskEvent>,
     ) -> Self {
-
         let resolver;
 
         // Initialize the resolver with default system configuration.
-        #[cfg(unix)]
-        {
-           resolver = TokioAsyncResolver::from_system_conf(
-            TokioConnectionProvider::default()
-           ).unwrap();
-           tracing::debug!("Use /etc/resolve.conf to resolve upstream address");
-        }
-        #[cfg(target_os = "windows")]
-        {
-            let mut opts = ResolverOpts::default();
-            opts.use_hosts_file = true;
-
-            resolver = TokioAsyncResolver::tokio(
-                ResolverConfig::default(),
-                opts,
-            );
-            tracing::debug!("Use external DNS to resolve upstream address");
-        }
+        resolver = TokioResolver::builder_tokio().unwrap().build();
 
         TimingResolver {
             resolver: Arc::new(RwLock::new(resolver)),

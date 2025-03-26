@@ -1,5 +1,6 @@
 use std::fmt;
 use std::sync::Arc;
+use std::sync::Mutex;
 
 use async_trait::async_trait;
 use axum::http;
@@ -10,6 +11,7 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::config::FaultConfig;
+use crate::config::FaultKind;
 use crate::config::ProxyConfig;
 use crate::errors::ProxyError;
 use crate::event::ProxyTaskEvent;
@@ -71,16 +73,40 @@ pub trait ProxyPlugin: Send + Sync + std::fmt::Debug + fmt::Display {
 /// CompositePlugin that aggregates multiple FaultInjectors.
 #[derive(Debug)]
 pub struct CompositePlugin {
-    injectors: Vec<Arc<dyn FaultInjector>>,
+    injectors: Vec<Box<dyn FaultInjector>>,
 }
 
 impl CompositePlugin {
     /// Adds new FaultInjectors to the CompositePlugin after clearing the
     /// existing set
-    pub fn set_injectors(&mut self, injectors: Vec<Arc<dyn FaultInjector>>) {
+    pub fn set_injectors(&mut self, injectors: Vec<Box<dyn FaultInjector>>) {
         self.injectors.clear();
-        self.injectors.extend(injectors);
-        self.injectors.push(Arc::new(MetricsInjector::new()));
+        for inj in injectors {
+            self.injectors.push(inj);
+        }
+        self.injectors.push(Box::new(MetricsInjector::new()));
+    }
+
+    pub fn add_injector(&mut self, injector: Box<dyn FaultInjector>) {
+        self.injectors.insert(self.injectors.len() - 1, injector);
+    }
+
+    pub fn disable_injector(&mut self, kind: FaultKind) {
+        for injector in self.injectors.iter_mut() {
+            if injector.kind() == kind {
+                injector.disable();
+                break;
+            }
+        }
+    }
+
+    pub fn enable_injector(&mut self, kind: FaultKind) {
+        for injector in self.injectors.iter_mut() {
+            if injector.kind() == kind {
+                injector.enable();
+                break;
+            }
+        }
     }
 
     /// Creates a new CompositePlugin with no FaultInjectors.
@@ -102,38 +128,62 @@ impl From<&ProxyConfig> for CompositePlugin {
 }
 
 #[tracing::instrument]
-pub fn load_injectors(config: &ProxyConfig) -> Vec<Arc<dyn FaultInjector>> {
-    let mut injectors: Vec<Arc<dyn FaultInjector>> = Vec::new();
+pub fn load_injectors(config: &ProxyConfig) -> Vec<Box<dyn FaultInjector>> {
+    let mut injectors: Vec<Box<dyn FaultInjector>> = Vec::new();
     let _: Vec<()> = config
         .faults
         .iter()
         .map(|fault| match fault {
             FaultConfig::Dns(settings) => {
-                injectors.push(Arc::new(FaultyResolverInjector::from(settings)))
+                injectors.push(Box::new(FaultyResolverInjector::from(settings)))
             }
             FaultConfig::Latency(settings) => {
-                injectors.push(Arc::new(LatencyInjector::from(settings)))
+                injectors.push(Box::new(LatencyInjector::from(settings)))
             }
             FaultConfig::PacketLoss(settings) => {
-                injectors.push(Arc::new(PacketLossInjector::from(settings)))
+                injectors.push(Box::new(PacketLossInjector::from(settings)))
             }
             FaultConfig::Bandwidth(settings) => injectors
-                .push(Arc::new(BandwidthLimitFaultInjector::from(settings))),
+                .push(Box::new(BandwidthLimitFaultInjector::from(settings))),
             FaultConfig::Jitter(settings) => {
-                injectors.push(Arc::new(JitterInjector::from(settings)))
+                injectors.push(Box::new(JitterInjector::from(settings)))
             }
             FaultConfig::PacketDuplication(settings) => {}
             FaultConfig::HttpError(settings) => injectors
-                .push(Arc::new(HttpResponseFaultInjector::from(settings))),
+                .push(Box::new(HttpResponseFaultInjector::from(settings))),
         })
         .collect();
 
     injectors
 }
 
+#[tracing::instrument]
+pub fn load_injector(fault: &FaultConfig) -> Box<dyn FaultInjector> {
+    match fault {
+        FaultConfig::Dns(settings) => {
+            Box::new(FaultyResolverInjector::from(settings))
+        }
+        FaultConfig::Latency(settings) => {
+            Box::new(LatencyInjector::from(settings))
+        }
+        FaultConfig::PacketLoss(settings) => {
+            Box::new(PacketLossInjector::from(settings))
+        }
+        FaultConfig::Bandwidth(settings) => {
+            Box::new(BandwidthLimitFaultInjector::from(settings))
+        }
+        FaultConfig::Jitter(settings) => {
+            Box::new(JitterInjector::from(settings))
+        }
+        FaultConfig::PacketDuplication(settings) => todo!(),
+        FaultConfig::HttpError(settings) => {
+            Box::new(HttpResponseFaultInjector::from(settings))
+        }
+    }
+}
+
 #[async_trait]
 impl ProxyPlugin for CompositePlugin {
-    /// Adjust the client builder by sequentially applying each FaultInjector.
     #[tracing::instrument]
     async fn prepare_client(
         &self,
@@ -142,14 +192,15 @@ impl ProxyPlugin for CompositePlugin {
     ) -> Result<ClientBuilder, ProxyError> {
         let mut current_builder = builder;
         for injector in &self.injectors {
-            current_builder = injector
-                .apply_on_request_builder(current_builder, event.clone())
-                .await?;
+            if injector.is_enabled() {
+                current_builder = injector
+                    .apply_on_request_builder(current_builder, event.clone())
+                    .await?;
+            }
         }
         Ok(current_builder)
     }
 
-    /// Process the HTTP request by sequentially applying each FaultInjector.
     #[tracing::instrument]
     async fn process_request(
         &self,
@@ -158,13 +209,15 @@ impl ProxyPlugin for CompositePlugin {
     ) -> Result<ReqwestRequest, ProxyError> {
         let mut current_req = req;
         for injector in &self.injectors {
-            current_req =
-                injector.apply_on_request(current_req, event.clone()).await?;
+            if injector.is_enabled() {
+                current_req = injector
+                    .apply_on_request(current_req, event.clone())
+                    .await?;
+            }
         }
         Ok(current_req)
     }
 
-    /// Process the HTTP response by sequentially applying each FaultInjector.
     #[tracing::instrument]
     async fn process_response(
         &self,
@@ -173,13 +226,15 @@ impl ProxyPlugin for CompositePlugin {
     ) -> Result<http::Response<Vec<u8>>, ProxyError> {
         let mut current_resp = resp;
         for injector in &self.injectors {
-            current_resp =
-                injector.apply_on_response(current_resp, event.clone()).await?;
+            if injector.is_enabled() {
+                current_resp = injector
+                    .apply_on_response(current_resp, event.clone())
+                    .await?;
+            }
         }
         Ok(current_resp)
     }
 
-    /// Inject tunnel faults by sequentially applying each FaultInjector.
     #[tracing::instrument]
     async fn inject_tunnel_faults(
         &self,
@@ -194,19 +249,18 @@ impl ProxyPlugin for CompositePlugin {
         let mut modified_server_stream = server_stream;
 
         for injector in &self.injectors {
-            tracing::debug!("Injector {}", injector);
+            if injector.is_enabled() {
+                let mut client = modified_client_stream;
+                let mut server = modified_server_stream;
 
-            let mut client = modified_client_stream;
-            let mut server = modified_server_stream;
+                client =
+                    injector.inject(client, event.clone(), StreamSide::Client);
+                server =
+                    injector.inject(server, event.clone(), StreamSide::Server);
 
-            tracing::debug!("Wrapping client stream with {}", injector);
-            client = injector.inject(client, event.clone(), StreamSide::Client);
-
-            tracing::debug!("Wrapping server stream with {}", injector);
-            server = injector.inject(server, event.clone(), StreamSide::Server);
-
-            modified_client_stream = client;
-            modified_server_stream = server;
+                modified_client_stream = client;
+                modified_server_stream = server;
+            }
         }
 
         Ok((modified_client_stream, modified_server_stream))

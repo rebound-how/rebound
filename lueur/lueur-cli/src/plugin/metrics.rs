@@ -16,6 +16,8 @@ use tokio::io::AsyncWrite;
 use tokio::io::ReadBuf;
 use tokio_util::io::ReaderStream;
 
+use crate::config::FaultConfig;
+use crate::config::FaultKind;
 use crate::errors::ProxyError;
 use crate::event::ProxyTaskEvent;
 use crate::fault::Bidirectional;
@@ -23,11 +25,13 @@ use crate::fault::FaultInjector;
 use crate::types::StreamSide;
 
 #[derive(Debug)]
-pub struct MetricsInjector {}
+pub struct MetricsInjector {
+    pub enabled: bool,
+}
 
 impl MetricsInjector {
     pub fn new() -> MetricsInjector {
-        Self {}
+        Self { enabled: true }
     }
 }
 
@@ -39,12 +43,26 @@ impl fmt::Display for MetricsInjector {
 
 impl Clone for MetricsInjector {
     fn clone(&self) -> Self {
-        Self {}
+        Self { enabled: self.enabled }
     }
 }
 
 #[async_trait]
 impl FaultInjector for MetricsInjector {
+    fn is_enabled(&self) -> bool {
+        self.enabled
+    }
+
+    fn kind(&self) -> FaultKind {
+        return FaultKind::Metrics;
+    }
+
+    fn enable(&mut self) {}
+
+    fn disable(&mut self) {
+        self.enabled = false
+    }
+
     fn inject(
         &self,
         stream: Box<dyn Bidirectional + 'static>,

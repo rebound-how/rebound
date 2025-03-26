@@ -2,16 +2,16 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::OnceLock;
 
-use opentelemetry::trace::TracerProvider;
 use opentelemetry::KeyValue;
 use opentelemetry::global;
-use opentelemetry_sdk::trace::SdkTracerProvider;
+use opentelemetry::trace::TracerProvider;
 use opentelemetry_sdk::Resource;
 use opentelemetry_sdk::metrics::MeterProviderBuilder;
 use opentelemetry_sdk::metrics::PeriodicReader;
 use opentelemetry_sdk::metrics::SdkMeterProvider;
 use opentelemetry_sdk::trace::RandomIdGenerator;
 use opentelemetry_sdk::trace::Sampler;
+use opentelemetry_sdk::trace::SdkTracerProvider;
 use opentelemetry_semantic_conventions::attribute::SERVICE_VERSION;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_appender::rolling::never;
@@ -23,15 +23,16 @@ use tracing_subscriber::Layer;
 use tracing_subscriber::Registry;
 use tracing_subscriber::layer::SubscriberExt;
 
-
-
 fn resource() -> Resource {
     static RESOURCE: OnceLock<Resource> = OnceLock::new();
     RESOURCE
         .get_or_init(|| {
             Resource::builder()
                 .with_service_name(env!("CARGO_PKG_NAME"))
-                .with_attribute(KeyValue::new(SERVICE_VERSION, env!("CARGO_PKG_VERSION")))
+                .with_attribute(KeyValue::new(
+                    SERVICE_VERSION,
+                    env!("CARGO_PKG_VERSION"),
+                ))
                 .build()
         })
         .clone()
@@ -90,7 +91,7 @@ pub fn shutdown_tracer(
 ) {
     if tracer_provider.is_some() {
         let provider = tracer_provider.unwrap();
-        provider.force_flush();
+        let _ = provider.force_flush();
 
         if let Err(err) = provider.shutdown() {
             eprintln!("{err:?}");

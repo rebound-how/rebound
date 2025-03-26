@@ -1,12 +1,15 @@
 use std::fmt;
 use std::net::Ipv4Addr;
+use std::time::Duration;
 
 use clap::ValueEnum;
 use serde::Deserialize;
 use serde::Serialize;
+use tokio::time::Instant;
 
 use crate::config;
 use crate::config::FaultConfig;
+use crate::config::FaultKind;
 use crate::errors::ScenarioError;
 
 /// Structure to hold the final configuration.
@@ -260,37 +263,51 @@ pub enum FaultConfiguration {
         shape: Option<f64>,
         scale: Option<f64>,
         direction: Option<String>,
+        period: Option<FaultPeriodSpec>,
     },
     PacketLoss {
         direction: String,
         side: Option<StreamSide>,
+        period: Option<FaultPeriodSpec>,
     },
     Bandwidth {
         rate: u32,
         unit: BandwidthUnit,
         direction: String,
         side: Option<StreamSide>,
+        period: Option<FaultPeriodSpec>,
     },
     Jitter {
         amplitude: f64,
         frequency: f64,
         direction: String,
+        period: Option<FaultPeriodSpec>,
     },
     Dns {
         rate: f64,
+        period: Option<FaultPeriodSpec>,
     },
     HttpError {
         status_code: u16,
         body: Option<String>,
         probability: f64,
+        period: Option<FaultPeriodSpec>,
     },
 }
 
 impl FaultConfiguration {
     pub fn build(&self) -> Result<FaultConfig, ScenarioError> {
         match self {
-            FaultConfiguration::Bandwidth { rate, unit, direction, side } => {
+            FaultConfiguration::Bandwidth {
+                rate,
+                unit,
+                direction,
+                side,
+                period,
+            } => {
                 let settings = config::BandwidthSettings {
+                    enabled: true,
+                    kind: FaultKind::Bandwidth,
                     direction: Direction::from_str(direction).unwrap(),
                     side: side.clone().unwrap_or_default(),
                     bandwidth_rate: *rate as usize,
@@ -310,8 +327,11 @@ impl FaultConfiguration {
                 scale,
                 shape,
                 direction,
+                period,
             } => {
                 let settings = config::LatencySettings {
+                    enabled: true,
+                    kind: FaultKind::Latency,
                     distribution: LatencyDistribution::from_str(
                         &distribution.clone().unwrap_or("normal".to_string()),
                     )
@@ -332,8 +352,10 @@ impl FaultConfiguration {
 
                 Ok(FaultConfig::Latency(settings))
             }
-            FaultConfiguration::PacketLoss { direction, side } => {
+            FaultConfiguration::PacketLoss { direction, side, period } => {
                 let settings = config::PacketLossSettings {
+                    enabled: true,
+                    kind: FaultKind::PacketLoss,
                     direction: Direction::from_str(direction).unwrap(),
                     side: side.clone().unwrap_or_default(),
                 };
@@ -344,8 +366,11 @@ impl FaultConfiguration {
                 amplitude: jitter_amplitude,
                 frequency: jitter_frequency,
                 direction,
+                period,
             } => {
                 let settings = config::JitterSettings {
+                    enabled: true,
+                    kind: FaultKind::Jitter,
                     direction: Direction::from_str(direction).unwrap(),
                     amplitude: *jitter_amplitude,
                     frequency: *jitter_frequency,
@@ -353,8 +378,12 @@ impl FaultConfiguration {
 
                 Ok(FaultConfig::Jitter(settings))
             }
-            FaultConfiguration::Dns { rate: dns_rate } => {
-                let settings = config::DnsSettings { rate: *dns_rate };
+            FaultConfiguration::Dns { rate: dns_rate, period } => {
+                let settings = config::DnsSettings {
+                    enabled: true,
+                    kind: FaultKind::Dns,
+                    rate: *dns_rate,
+                };
 
                 Ok(FaultConfig::Dns(settings))
             }
@@ -362,8 +391,11 @@ impl FaultConfiguration {
                 status_code,
                 body,
                 probability,
+                period,
             } => {
                 let settings = config::HttpResponseSettings {
+                    enabled: true,
+                    kind: FaultKind::HttpError,
                     http_response_status_code: *status_code,
                     http_response_body: body.clone(),
                     http_response_trigger_probability: *probability,
@@ -394,6 +426,7 @@ impl fmt::Display for FaultConfiguration {
                 shape,
                 scale,
                 direction,
+                period,
             } => {
                 write!(f, "Latency Fault")?;
                 let mut details = Vec::new();
@@ -437,10 +470,16 @@ impl fmt::Display for FaultConfiguration {
 
                 Ok(())
             }
-            FaultConfiguration::PacketLoss { direction, side: _ } => {
+            FaultConfiguration::PacketLoss { direction, side: _, period } => {
                 write!(f, "Packet Loss Fault - Direction: {}", direction)
             }
-            FaultConfiguration::Bandwidth { rate, unit, direction, side } => {
+            FaultConfiguration::Bandwidth {
+                rate,
+                unit,
+                direction,
+                side,
+                period,
+            } => {
                 write!(
                     f,
                     "Bandwidth Fault - Side {}, Rate: {} {}, Direction: {}",
@@ -454,6 +493,7 @@ impl fmt::Display for FaultConfiguration {
                 amplitude: jitter_amplitude,
                 frequency: jitter_frequency,
                 direction,
+                period,
             } => {
                 write!(
                     f,
@@ -461,13 +501,14 @@ impl fmt::Display for FaultConfiguration {
                     jitter_amplitude, jitter_frequency, direction
                 )
             }
-            FaultConfiguration::Dns { rate: dns_rate } => {
+            FaultConfiguration::Dns { rate: dns_rate, period } => {
                 write!(f, "DNS Fault - Rate: {}%", dns_rate * 100.0)
             }
             FaultConfiguration::HttpError {
                 status_code,
                 body: _,
                 probability,
+                period,
             } => {
                 write!(
                     f,
@@ -477,4 +518,30 @@ impl fmt::Display for FaultConfiguration {
             }
         }
     }
+}
+
+/// A time specification: "30s" / "5m" / "120" / "50%" etc.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum TimeSpec {
+    Absolute(Duration), // e.g. 30s, 120s, etc.
+    Fraction(f64),      // e.g. 0.05 for 5%
+}
+
+impl Default for TimeSpec {
+    fn default() -> Self {
+        TimeSpec::Absolute(Duration::from_secs(0))
+    }
+}
+
+/// A single period: "start:...,duration:..."
+#[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct FaultPeriodSpec {
+    pub start: TimeSpec,
+    pub duration: Option<TimeSpec>,
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct FaultPeriod {
+    pub start: Duration,
+    pub duration: Option<Duration>,
 }

@@ -22,13 +22,18 @@ use tokio::sync::broadcast;
 use tokio::sync::watch;
 use url::Url;
 
+use crate::config::FaultConfig;
+use crate::config::FaultKind;
 use crate::config::ProxyConfig;
 use crate::errors::ProxyError;
 use crate::event::TaskManager;
+use crate::fault;
 use crate::fault::FaultInjector;
 use crate::plugin::CompositePlugin;
+use crate::plugin::load_injector;
 use crate::plugin::load_injectors;
 use crate::resolver::map_localhost_to_nic;
+use crate::types::FaultConfiguration;
 
 /// Shared application state
 #[derive(Debug, Clone)]
@@ -50,8 +55,7 @@ impl ProxyState {
     }
 
     /// Update the faults
-    pub async fn set_faults(&self, new_faults: Vec<Arc<dyn FaultInjector>>) {
-        tracing::debug!("Setting new faults: {:?}", new_faults);
+    pub async fn set_faults(&self, new_faults: Vec<Box<dyn FaultInjector>>) {
         let mut plugins = self.plugins.write().await;
         plugins.set_injectors(new_faults);
     }
@@ -68,6 +72,54 @@ impl ProxyState {
         tracing::debug!("Allowed hosts {:?}", new_hosts);
         let mut hosts = self.upstream_hosts.write().await;
         *hosts = new_hosts;
+    }
+
+    pub async fn set_fault(&self, fault: FaultConfiguration) {
+        tracing::debug!("Setting fault on config: {:?}", fault);
+        let mut config = self.shared_config.write().await;
+
+        let fault_config = fault.build().unwrap();
+        let kind = fault_config.kind();
+
+        if let Some(existing) = config.find_mut_by_kind(kind) {
+            *existing = fault_config;
+        } else {
+            config.faults.push(fault_config);
+        }
+    }
+
+    pub async fn enable_fault(
+        &self,
+        fault_type: FaultKind,
+        fault_config: FaultConfig,
+    ) {
+        tracing::debug!("Enabling fault {:?}", fault_type);
+        let mut config = self.shared_config.write().await;
+        let mut plugins = self.plugins.write().await;
+
+        if let Some(existing) = config.find_mut_by_kind(fault_type) {
+            existing.enable();
+            plugins.enable_injector(fault_type);
+        } else {
+            let injector = load_injector(&fault_config);
+            plugins.add_injector(injector);
+            config.add_fault(fault_config);
+        }
+    }
+
+    pub async fn disable_fault(
+        &self,
+        fault_type: FaultKind,
+        fault_config: FaultConfig,
+    ) {
+        tracing::debug!("Disabling fault {:?}", fault_type);
+        let mut config = self.shared_config.write().await;
+        let mut plugins = self.plugins.write().await;
+
+        if let Some(existing) = config.find_mut_by_kind(fault_type) {
+            existing.disable();
+            plugins.disable_injector(fault_type);
+        }
     }
 }
 
@@ -125,14 +177,16 @@ async fn handle_new_connection(
     }
 
     let upstream_url: Url = upstream.parse().unwrap();
-    let mut event = task_manager
-        .new_passthrough_event(upstream_url.to_string())
-        .await
-        .unwrap();
+    let event;
 
     if !passthrough {
         event = task_manager
             .new_fault_event(upstream_url.to_string())
+            .await
+            .unwrap();
+    } else {
+        event = task_manager
+            .new_passthrough_event(upstream_url.to_string())
             .await
             .unwrap();
     }

@@ -117,3 +117,22 @@ pub enum ScenarioError {
     #[error("WalkDir error: {0}")]
     WalkDirError(String),
 }
+
+#[derive(Error, Debug)]
+pub enum SchedulingError {
+    #[error(
+        "Fraction-based time spec ('{0}') used but no --duration provided.\nHint: Please specify a duration (e.g., --duration=10s) when using fraction-based time specs."
+    )]
+    MissingDuration(String),
+
+    #[error(
+        "Unknown key ('{0}') used in schedule.\nHint: Only `start` and `duration` are allowed."
+    )]
+    UnknownKey(String),
+
+    #[error("Time spec ('{0}') could not be parsed.")]
+    FailedParsing(String),
+
+    #[error("Invalid time fraction ('{0}') in time spec.")]
+    InvalidFraction(String),
+}

@@ -20,8 +20,8 @@ use local_ip_address::list_afinet_netifas;
 use nix::net::if_::if_nametoindex;
 use rand::Rng;
 
-use crate::cli::StealthCommandCommon;
 use crate::cli::ProxyAwareCommandCommon;
+use crate::cli::StealthCommandCommon;
 use crate::types::EbpfProxyAddrConfig;
 use crate::types::ProxyAddrConfig;
 
@@ -56,7 +56,7 @@ pub fn get_ebpf_proxy(
     proxy_nic_config: &ProxyAddrConfig,
     ebpf_proxy_iface: Option<String>,
     ebpf_proxy_ip: Option<String>,
-    ebpf_proxy_port: Option<u16>
+    ebpf_proxy_port: Option<u16>,
 ) -> anyhow::Result<Option<EbpfProxyAddrConfig>> {
     let interfaces = get_all_interfaces()?;
     if interfaces.len() == 0 {
@@ -78,10 +78,10 @@ pub fn get_ebpf_proxy(
         iface_name = proxy_iface.0.clone();
     } else if let Some(ebpf_ip) = ebpf_proxy_ip {
         let proxy_iface =
-        match find_interface_by_ip(&interfaces, ebpf_ip.parse()?) {
-            Some(it) => it,
-            None => return Ok(None),
-        };
+            match find_interface_by_ip(&interfaces, ebpf_ip.parse()?) {
+                Some(it) => it,
+                None => return Ok(None),
+            };
         iface_ip = proxy_iface.1.clone();
         iface_name = proxy_iface.0.clone();
     } else {
@@ -89,13 +89,11 @@ pub fn get_ebpf_proxy(
         //let proxy_ip6 = ipv4_to_mapped_ipv6_bytes(proxy_ip4);
 
         if Ipv4Addr::from(proxy_ip4) == Ipv4Addr::new(0, 0, 0, 0) {
-            let proxy_iface = find_non_loopback_interface(
-                &interfaces
-            ).unwrap();
+            let proxy_iface = find_non_loopback_interface(&interfaces).unwrap();
             iface_ip = proxy_iface.1.clone(); // Ipv4Addr::new(0, 0, 0, 0);
             iface_name = proxy_iface.0.clone();
         } else {
-            let proxy_iface=
+            let proxy_iface =
                 match find_interface_by_ip(&interfaces, proxy_ip4.into()) {
                     Some(it) => it,
                     None => return Ok(None),
@@ -316,7 +314,6 @@ pub fn initialize_stealth(
     stealth_options: &StealthCommandCommon,
     ebpf_proxy_config: &EbpfProxyAddrConfig,
 ) -> Option<Ebpf> {
-
     let proc_name = stealth_options.ebpf_process_name.clone().unwrap();
 
     let upstream_hosts = cli.upstream_hosts.clone();
@@ -372,8 +369,8 @@ fn get_programs_bin_dir(cli: &StealthCommandCommon) -> Option<PathBuf> {
         if path.exists() {
             return Some(path);
         }
-    } 
-    
+    }
+
     if let Ok(cargo_home) = env::var("CARGO_HOME") {
         let mut path = PathBuf::from(cargo_home);
         path.push("bin");
@@ -390,8 +387,8 @@ fn get_programs_bin_dir(cli: &StealthCommandCommon) -> Option<PathBuf> {
             Some(mut path) => {
                 path.push(".cargo/bin");
                 return Some(path);
-            },
-            None => return None
+            }
+            None => return None,
         }
     }
 

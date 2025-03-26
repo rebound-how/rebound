@@ -33,6 +33,7 @@ use super::DelayWrapper;
 use super::FaultInjector;
 use super::FutureDelay;
 use crate::config::BandwidthSettings;
+use crate::config::FaultKind;
 use crate::errors::ProxyError;
 use crate::event::FaultEvent;
 use crate::event::ProxyTaskEvent;
@@ -414,12 +415,32 @@ impl fmt::Display for BandwidthLimitFaultInjector {
 
 #[async_trait]
 impl FaultInjector for BandwidthLimitFaultInjector {
+    fn is_enabled(&self) -> bool {
+        self.settings.enabled
+    }
+
+    fn kind(&self) -> FaultKind {
+        return self.settings.kind;
+    }
+
+    fn enable(&mut self) {
+        self.settings.enabled = true
+    }
+
+    fn disable(&mut self) {
+        self.settings.enabled = false
+    }
+
     fn inject(
         &self,
         stream: Box<dyn Bidirectional + 'static>,
         event: Box<dyn ProxyTaskEvent>,
-        _side: StreamSide,
+        side: StreamSide,
     ) -> Box<dyn Bidirectional + 'static> {
+        if side != self.settings.side {
+            return stream;
+        }
+
         let (read_half, write_half) = split(stream);
 
         let direction = self.settings.direction.clone();
@@ -433,7 +454,6 @@ impl FaultInjector for BandwidthLimitFaultInjector {
         // Wrap the read half if ingress or both directions are specified
         let limited_read: Box<dyn BidirectionalReadHalf> =
             if direction.is_ingress() {
-                tracing::debug!("Wrapping read half for bandwidth");
                 match BandwidthLimitedRead::new(
                     read_half,
                     self.settings.clone(),
@@ -451,7 +471,6 @@ impl FaultInjector for BandwidthLimitFaultInjector {
         // Wrap the write half if egress or both directions are specified
         let limited_write: Box<dyn BidirectionalWriteHalf> =
             if direction.is_egress() {
-                tracing::debug!("Wrapping write half for bandwidth");
                 match BandwidthLimitedWrite::new(
                     write_half,
                     self.settings.clone(),
@@ -485,42 +504,45 @@ impl FaultInjector for BandwidthLimitFaultInjector {
         request: Request,
         event: Box<dyn ProxyTaskEvent>,
     ) -> Result<Request, ProxyError> {
-        let _ = event.with_fault(FaultEvent::Bandwidth {
-            direction: Direction::Egress,
-            side: StreamSide::Client,
-            bps: None,
-        });
+        if self.settings.side == StreamSide::Client {
+            let _ = event.with_fault(FaultEvent::Bandwidth {
+                direction: Direction::Egress,
+                side: StreamSide::Client,
+                bps: None,
+            });
 
-        let original_body = request.body();
-        if let Some(body) = original_body {
-            if let Some(bytes) = body.as_bytes() {
-                let owned_bytes = Cursor::new(bytes.to_vec());
+            let original_body = request.body();
+            if let Some(body) = original_body {
+                if let Some(bytes) = body.as_bytes() {
+                    let owned_bytes = Cursor::new(bytes.to_vec());
 
-                // Wrap the owned bytes with BandwidthLimitedRead
-                let bandwidth_limited_read = BandwidthLimitedRead::new(
-                    owned_bytes,
-                    self.settings.clone(),
-                    Some(event.clone()),
-                )
-                .unwrap();
+                    // Wrap the owned bytes with BandwidthLimitedRead
+                    let bandwidth_limited_read = BandwidthLimitedRead::new(
+                        owned_bytes,
+                        self.settings.clone(),
+                        Some(event.clone()),
+                    )
+                    .unwrap();
 
-                let reader_stream = ReaderStream::new(bandwidth_limited_read);
+                    let reader_stream =
+                        ReaderStream::new(bandwidth_limited_read);
 
-                let new_body = Body::wrap_stream(reader_stream);
-                let mut builder = request.try_clone().ok_or_else(|| {
-                    ProxyError::Other("Couldn't clone request".into())
-                })?;
-                *builder.body_mut() = Some(new_body);
+                    let new_body = Body::wrap_stream(reader_stream);
+                    let mut builder = request.try_clone().ok_or_else(|| {
+                        ProxyError::Other("Couldn't clone request".into())
+                    })?;
+                    *builder.body_mut() = Some(new_body);
 
-                Ok(builder)
+                    return Ok(builder);
+                } else {
+                    return Ok(request);
+                }
             } else {
-                // If the body doesn't have bytes, leave it unchanged
-                Ok(request)
+                return Ok(request);
             }
-        } else {
-            // If there's no body, leave the request unchanged
-            Ok(request)
         }
+
+        Ok(request)
     }
 
     async fn apply_on_response(
@@ -528,40 +550,44 @@ impl FaultInjector for BandwidthLimitFaultInjector {
         resp: http::Response<Vec<u8>>,
         event: Box<dyn ProxyTaskEvent>,
     ) -> Result<http::Response<Vec<u8>>, ProxyError> {
-        let _ = event.with_fault(FaultEvent::Bandwidth {
-            direction: Direction::Ingress,
-            side: StreamSide::Server,
-            bps: None,
-        });
+        if self.settings.side == StreamSide::Server {
+            let _ = event.with_fault(FaultEvent::Bandwidth {
+                direction: Direction::Ingress,
+                side: StreamSide::Server,
+                bps: None,
+            });
 
-        let (parts, body) = resp.into_parts();
-        let version = parts.version;
-        let status = parts.status;
-        let headers = parts.headers.clone();
+            let (parts, body) = resp.into_parts();
+            let version = parts.version;
+            let status = parts.status;
+            let headers = parts.headers.clone();
 
-        let owned_body = Cursor::new(body);
+            let owned_body = Cursor::new(body);
 
-        let reader = BandwidthLimitedRead::new(
-            owned_body,
-            self.settings.clone(),
-            Some(event.clone()),
-        )
-        .unwrap();
+            let reader = BandwidthLimitedRead::new(
+                owned_body,
+                self.settings.clone(),
+                Some(event.clone()),
+            )
+            .unwrap();
 
-        let mut reader_stream = ReaderStream::new(reader);
+            let mut reader_stream = ReaderStream::new(reader);
 
-        let mut buffer = BytesMut::new();
-        while let Some(chunk) = reader_stream.next().await {
-            buffer.extend_from_slice(&chunk?);
+            let mut buffer = BytesMut::new();
+            while let Some(chunk) = reader_stream.next().await {
+                buffer.extend_from_slice(&chunk?);
+            }
+            let response_body = buffer.to_vec();
+
+            // Reconstruct the HTTP response with the limited body
+            let mut intermediate = http::Response::new(response_body);
+            *intermediate.version_mut() = version;
+            *intermediate.status_mut() = status;
+            *intermediate.headers_mut() = headers;
+
+            return Ok(intermediate);
         }
-        let response_body = buffer.to_vec();
 
-        // Reconstruct the HTTP response with the limited body
-        let mut intermediate = http::Response::new(response_body);
-        *intermediate.version_mut() = version;
-        *intermediate.status_mut() = status;
-        *intermediate.headers_mut() = headers;
-
-        Ok(intermediate)
+        Ok(resp)
     }
 }

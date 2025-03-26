@@ -275,6 +275,7 @@ pub fn build_item_list(source: ScenarioItem) -> Vec<ScenarioItem> {
                                 shape,
                                 scale,
                                 direction,
+                                period,
                             } => FaultConfiguration::Latency {
                                 distribution,
                                 global,
@@ -288,45 +289,58 @@ pub fn build_item_list(source: ScenarioItem) -> Vec<ScenarioItem> {
                                 shape,
                                 scale,
                                 direction,
+                                period,
                             },
                             FaultConfiguration::PacketLoss {
                                 direction,
                                 side,
+                                period,
                             } => FaultConfiguration::PacketLoss {
                                 direction,
                                 side,
+                                period,
                             },
                             FaultConfiguration::Bandwidth {
                                 rate,
                                 unit,
                                 direction,
                                 side,
+                                period,
                             } => FaultConfiguration::Bandwidth {
                                 rate,
                                 unit,
                                 direction,
                                 side,
+                                period,
                             },
                             FaultConfiguration::Jitter {
                                 amplitude: jitter_amplitude,
                                 frequency: jitter_frequency,
                                 direction,
+                                period,
                             } => FaultConfiguration::Jitter {
                                 amplitude: jitter_amplitude,
                                 frequency: jitter_frequency,
                                 direction,
+                                period,
                             },
-                            FaultConfiguration::Dns { rate: dns_rate } => {
-                                FaultConfiguration::Dns { rate: dns_rate }
-                            }
+                            FaultConfiguration::Dns {
+                                period,
+                                rate: dns_rate,
+                            } => FaultConfiguration::Dns {
+                                rate: dns_rate,
+                                period,
+                            },
                             FaultConfiguration::HttpError {
                                 status_code,
                                 body,
                                 probability,
+                                period,
                             } => FaultConfiguration::HttpError {
                                 status_code,
                                 body,
                                 probability,
+                                period,
                             },
                         })
                     }
@@ -713,10 +727,11 @@ pub async fn handle_scenario_events(
                                     }
                                 }
                             },
-                            TaskProgressEvent::Ttfb { id: _, ts: _ } => {},
-                            TaskProgressEvent::ResponseReceived { id: _, ts: _, status_code: _ } => {},
-                            TaskProgressEvent::Completed { id: _, ts: _, time_taken: _, from_downstream_length: _, from_upstream_length: _} => {},
-                            TaskProgressEvent::Error { id: _, ts: _, error: _ } => {},
+                            TaskProgressEvent::Ttfb { .. } => {},
+                            TaskProgressEvent::ResponseReceived { .. } => {},
+                            TaskProgressEvent::Completed { .. } => {},
+                            TaskProgressEvent::Error { .. } => {},
+                            TaskProgressEvent::Passthrough { .. } => {},
                         }
                     }
                     Err(broadcast::error::RecvError::Closed) => {

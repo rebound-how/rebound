@@ -60,6 +60,13 @@ pub enum TaskProgressEvent {
         ts: Instant,
         error: String,
     },
+    Passthrough {
+        id: TaskId,
+        ts: Instant,
+        time_taken: Duration,
+        from_downstream_length: u64,
+        from_upstream_length: u64,
+    },
 }
 
 pub type TaskId = usize;
@@ -246,8 +253,12 @@ pub struct PassthroughTaskEvent {
 impl ProxyTaskEvent for PassthroughTaskEvent {
     fn on_started(
         &self,
-        _url: String,
+        url: String,
     ) -> Result<(), SendError<TaskProgressEvent>> {
+        let event: TaskProgressEvent =
+            TaskProgressEvent::Started { id: self.id, ts: Instant::now(), url };
+        let sender = self.sender.clone();
+        let _ = sender.send(event);
         Ok(())
     }
 
@@ -268,10 +279,19 @@ impl ProxyTaskEvent for PassthroughTaskEvent {
 
     fn on_completed(
         &self,
-        _time_taken: Duration,
-        _from_downstream_length: u64,
-        _from_upstream_length: u64,
+        time_taken: Duration,
+        from_downstream_length: u64,
+        from_upstream_length: u64,
     ) -> Result<(), SendError<TaskProgressEvent>> {
+        let event: TaskProgressEvent = TaskProgressEvent::Passthrough {
+            id: self.id,
+            ts: Instant::now(),
+            time_taken,
+            from_downstream_length,
+            from_upstream_length,
+        };
+        let sender = self.sender.clone();
+        let _ = sender.send(event);
         Ok(())
     }
 
@@ -323,6 +343,10 @@ impl TaskManager {
 
     pub fn get_sender(&self) -> TaskProgressSender {
         self.sender.clone()
+    }
+
+    pub fn new_subscriber(&self) -> TaskProgressReceiver {
+        self.sender.subscribe()
     }
 
     pub fn next_id(&self) -> TaskId {
