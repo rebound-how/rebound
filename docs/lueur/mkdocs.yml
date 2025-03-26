@@ -1,7 +1,7 @@
 site_name: ""
 site_description: "Developer-Friendly Reliability Engineering | /lɥœʁ/"
 site_author: "Sylvain Hellegouarch"
-site_url: https://docs.lueur.dev
+site_url: https://lueur.dev
 repo_url: https://github.com/rebound-how/rebound
 repo_name: rebound/lueur
 edit_uri: edit/main/docs/lueur/docs

@@ -1,5 +1,9 @@
 # VHS documentation
+
+# see https://github.com/charmbracelet/vhs/issues/504
+# set VHS_NO_SANDBOX
 #
+
 # Output:
 #   Output <path>.gif               Create a GIF output at the given <path>
 #   Output <path>.mp4               Create an MP4 output at the given <path>
@@ -67,7 +71,7 @@ Set FontSize 18
 Set Width 1400
 Set Height 800
 
-Type "lueur run --with-latency --latency-mean=300 --upstream=*"
+Type "lueur run --with-latency --latency-mean=300 --latency-sched 'start:10%,duration:10%;start:60%' --upstream=* --duration=5"
 Enter
 Sleep 10
 Ctrl+C
