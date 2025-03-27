@@ -12,9 +12,9 @@
         {
           "title": "Duration",
           "key": "duration",
-          "help": "How long to run the proxy for. Set to 0 to run until explicitely stopped",
+          "help": "How long to run the demo for in seconds",
           "placeholder": "",
-          "default": 45,
+          "default": 65,
           "type": "float",
           "required": false
         }
@@ -67,6 +67,9 @@
             "arguments": {
               "duration": "${duration}"
             }
+          },
+          "pauses": {
+            "after": 3
           }
         }
       ]
@@ -78,19 +81,11 @@
       },
       {
         "block": "method",
-        "name": "reliably-pauses-pause_execution"
-      },
-      {
-        "block": "method",
-        "name": "reliably-load-run_load_test"
+        "name": "lueur-load-via_proxy"
       },
       {
         "block": "method",
         "name": "lueur-proxy-stop_proxy"
-      },
-      {
-        "block": "method",
-        "name": "reliably-load-verify_latency_percentile_from_load_test"
       }
     ]
   }

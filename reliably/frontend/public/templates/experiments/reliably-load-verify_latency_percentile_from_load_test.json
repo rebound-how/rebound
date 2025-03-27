@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "name": "verify_latency_percentile_from_load_test",
+    "name": "Verify Latency during Load Test",
     "labels": [
       "reliability",
       "load"
@@ -76,7 +76,7 @@
         "title": "Verify the conditions of your system",
         "probes": [
           {
-            "name": "verify-latency-percentile-from-load-test",
+            "name": "Lookup and Check Latency",
             "type": "probe",
             "background": false,
             "tolerance": true,

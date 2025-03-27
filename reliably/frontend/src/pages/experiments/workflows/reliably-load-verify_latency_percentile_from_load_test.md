@@ -1,5 +1,5 @@
 ---
-name: verify_latency_percentile_from_load_test
+name: Verify Latency during Load Test
 target: reliability
 category: load
 type: probe

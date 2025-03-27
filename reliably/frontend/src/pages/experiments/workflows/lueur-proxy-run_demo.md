@@ -9,7 +9,7 @@ layout: src/layouts/ActivityLayout.astro
 related: |
     - method:lueur-proxy-run_proxy
     - method:reliably-pauses-pause_execution
-    - method:reliably-load-run_load_test
+    - method:lueur-load-via_proxy
     - method:lueur-proxy-stop_proxy
     - method:reliably-load-verify_latency_percentile_from_load_test
 ---
