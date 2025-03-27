@@ -51,7 +51,7 @@ jobs:
       - name: Build and push lueur CLI
         uses: docker/build-push-action@v6
         with:
-          context: "."
+          context: "./deploy/docker/job"
           file: "./deploy/docker/job/Dockerfile"
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
