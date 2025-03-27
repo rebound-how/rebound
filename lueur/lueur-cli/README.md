@@ -1,5 +1,7 @@
 # Lueur Proxy CLI
 
+![Demo](https://lueur.dev/assets/tapes/proxy.gif)
+
 lueur is here to help you uncover and address resiliency issues early in your
 development cycle. By easily injecting network faults into your application’s
 daily workflows, lueur encourages you to shift resiliency concerns to the left,
@@ -15,7 +17,7 @@ can quickly see how your application responds when the network isn’t perfect.
 
 - **Speed:** Quickly stand up a local test environment with minimal setup.
 - **Simplicity:** Just a few commands let you inject latency or run complex
-  scenarios—no steep learning curve required.
+  scenarios. No steep learning curve required.
 - **Extensibility:** Tweak parameters, plug into automated tests, and integrate
   with your existing CI/CD pipelines.
 - **Insight:** Generate structured reports that help pinpoint issues and

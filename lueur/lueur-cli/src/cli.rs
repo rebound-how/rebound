@@ -648,7 +648,7 @@ pub struct HTTPResponseOptions {
     /// HTTP status code to return (e.g., 500, 503)
     #[arg(
         help_heading = "HTTP Response Options",
-        long = "http-status",
+        long = "http-response-status",
         default_value_t = 500,
         help = "HTTP status code to return.",
         value_parser = validate_http_status,
@@ -659,7 +659,7 @@ pub struct HTTPResponseOptions {
     /// Optional response body to return
     #[arg(
         help_heading = "HTTP Response Options",
-        long = "http-body",
+        long = "http-response-body",
         help = "Optional HTTP response body to return.",
         value_parser,
         env = "LUEUR_HTTP_FAULT_BODY"
