@@ -8,7 +8,8 @@ on:
     branches:
       - release
     paths: 
-      - 'deploy/docker/job'
+      - 'deploy/docker/job/**'
+      - '.github/workflows/release-reliably-job.yaml'
 
 jobs:
   build-and-upload-docker-reliably-job-images:
