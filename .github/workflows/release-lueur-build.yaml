@@ -97,6 +97,10 @@ jobs:
             os: macos-latest
             artifact_name: lueur
             asset_name: lueur-cli
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            artifact_name: lueur
+            asset_name: lueur-cli
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-24.04
             artifact_name: lueur
