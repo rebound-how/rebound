@@ -4,7 +4,7 @@ eBPF (extended Berkeley Packet Filter) is a powerful, flexible technology built
 into the Linux kernel. It allows developers to run custom programs safely and
 efficiently in kernel space. In the context of reliability engineering, eBPF
 opens up new possibilities for monitoring, tracing, and manipulating network
-traffic—without having to modify your application or its configuration.
+traffic without having to modify your application or its configuration.
 
 ## eBPF in a nutshell
 
@@ -37,7 +37,7 @@ Leveraging eBPF in this way offers several advantages for engineers focused on b
 - **Zero-Configuration Overhead:**  
   Since there's no need to explicitly set up a proxy in your applications, integrating fault injection into your workflow is simpler and less error-prone.
 - **Transparent Testing:**  
-  Faults are injected without any changes to the application code or environment variables. This means you can test how your application behaves under realistic conditions—just as it would in production.
+  Faults are injected without any changes to the application code or environment variables. This means you can test how your application behaves under realistic conditions.
 
 
 ## Limitations and Future Directions
@@ -49,6 +49,6 @@ Leveraging eBPF in this way offers several advantages for engineers focused on b
 
 ## Conclusion
 
-Integrating eBPF into your reliability engineering practices with lueur opens up a new, transparent way to simulate network faults. By capturing and manipulating traffic at the kernel level, you can inject faults without altering your application’s configuration—providing a more realistic, production-like testing environment.
+Integrating eBPF into your reliability engineering practices with lueur opens up a new, transparent way to simulate network faults. By capturing and manipulating traffic at the kernel level, you can inject faults without altering your application’s configuration, a more realistic, production-like testing environment.
 
 As you embrace these advanced techniques, you’ll gain deeper insights into your system’s behavior under stress and be better equipped to build resilient, high-performance applications.

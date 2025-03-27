@@ -3,12 +3,6 @@
 This guide will show you how can you easily introduce network faults with 
 Docker containers.
 
-## What You'll Achieve
-
-You will learn how to use lueur in a Docker environment, either as
-a standalone container or as part of a set of services orchestrated with
-Docker Compose.
-
 !!! info
 
     lueur container images are hosted on
@@ -17,7 +11,7 @@ Docker Compose.
     They are [distroless](https://github.com/GoogleContainerTools/distroless)
     images available for amd64 and arm64 architectures.
 
-## Run lueur as A Container - Step-by-Step
+## Run lueur as A Container
 
 -   [X] Pull the lueur image
 
@@ -70,7 +64,7 @@ Docker Compose.
     Total time: 0.313161s
     ```
 
-## Run Stealh Mode in A Container - Step-by-Step
+## Run Stealh Mode in A Container
 
 !!! warning
 

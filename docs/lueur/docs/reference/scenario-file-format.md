@@ -4,7 +4,7 @@
 
 A Lueur scenario file is a structured document that defines a suite of tests designed to simulate adverse network conditions and assess your application's resilience. Rather than being an arbitrary collection of tests, each scenario file follows a consistent structure that ensures clarity, repeatability, and ease of automation.
 
-At the top level, a scenario file contains metadata—such as a title and an optional description—that provides context for the entire test suite. This is followed by a collection of individual test cases, each of which is known as a scenario item.
+At the top level, a scenario file contains metadata that provides context for the entire test suite. This is followed by a collection of individual test cases, each of which is known as a scenario item.
 
 Each scenario item is composed of three primary components:
 
@@ -12,12 +12,12 @@ Each scenario item is composed of three primary components:
 This section describes the HTTP request that will be executed during the test. It specifies essential details such as the HTTP method (for example, GET or POST), the target URL, and any headers or body content that are required. Essentially, it outlines the action that triggers the fault injection.
 
 **Context:**  
-The context defines the environment in which the test runs. It lists the upstream endpoints that will be affected by fault injection and specifies the type of faults to simulate. Faults can include network latency, packet loss, bandwidth restrictions, jitter, DNS anomalies, or HTTP errors. Additionally, an optional strategy can be included to repeat or vary the test conditions systematically—allowing you to incrementally adjust parameters such as latency.
+The context defines the environment in which the test runs. It lists the upstream endpoints that will be affected by fault injection and specifies the type of faults to simulate. Faults can include network latency, packet loss, bandwidth restrictions, jitter, DNS anomalies, or HTTP errors. Additionally, an optional strategy can be included to repeat or vary the test conditions systematically.
 
 **Expectation:**  
 This component sets the criteria for a successful test. It defines what outcomes are acceptable by specifying expected HTTP status codes and performance metrics like maximum response times. By clearly stating these expectations, the scenario file provides a benchmark against which the test results can be measured.
 
-The structured approach of a scenario file not only helps maintain consistency across tests but also simplifies troubleshooting and iterative refinement. For detailed information on individual fault parameters—such as the mean and standard deviation for latency or the rate limits for bandwidth—refer to the relevant definitions. This ensures that each test case is both precise and aligned with your reliability objectives.
+The structured approach of a scenario file not only helps maintain consistency across tests but also simplifies troubleshooting and iterative refinement. For detailed information on individual fault parameters, refer to the relevant definitions. This ensures that each test case is both precise and aligned with your reliability objectives.
 
 ## Example
 

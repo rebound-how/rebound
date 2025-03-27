@@ -1,45 +1,62 @@
-# Introducing Packet Loss Fault Into Your Flow
+# How to Simulate Packet Loss Using lueur
 
-This guide will walk you through emulating network packet loss into your
-application using lueur proxy capabilities.
+This How-To guide shows you how to configure Lueur so that a portion of your
+traffic is lost. You can keep a persistent level of packet loss or schedule it
+in specific bursts to test how your application handles intermittent
+unreliability.
 
-## What You'll Achieve
+??? abstract "Prerequisites"
 
-In this guide, you’ll learn how to deliberately inject network packet loss
-issues into your application flow using lueur’s proxy features.
+    -   [X] Install lueur
 
-## Client Packet Loss - Step-by-Step
+        If you haven’t installed lueur yet, follow the
+        [installation instructions](../../install.md).
 
--   [X] Install lueur
-    
-    Follow the procedure to [install](../tutorials/install/) lueur on your
-    machine.
+    -   [X] Basic Proxy Setup
+        Be familiar with running lueur run {==--with-[fault]==} commands from
+        your terminal.
 
--   [X] Start the proxy with packet loss from client side
+    -   [X] Check Available Packet Loss Strategies
 
-    ```bash
-    lueur \
-        --with-packet-loss \ # (1)!
-        --packet-loss-side client # (2)!
-    ```
+        lueur implements the Multi-State Markov strategy. Familiarize yourself
+        with any advanced settings if needed.
 
-    1.  Enable the packet-loss fault support
-    2.  Apply the fault on {==client==} side
+## Constant Packet Loss
 
-## Server Packet Loss - Step-by-Step
+In this scenario, lueur starts with packet loss enabled throughout the entire
+proxy run.
 
--   [X] Install lueur
-    
-    Follow the procedure to [install](../tutorials/install/) lueur on your
-    machine.
-
--   [X] Start the proxy with packet loss from server side
+-   [X] Start the proxy with packet loss on ingress from server side
 
     ```bash
-    lueur \
-        --with-packet-loss \ # (1)!
-        --packet-loss-side server # (2)!
+    lueur run --with-packet-loss 
     ```
 
-    1.  Enable the packet-loss fault support
-    2.  Apply the fault on {==server==} side
+## Scheduled Packet Loss Bursts
+
+-   [X] Start the proxy with packet loss fo
+
+    ```bash
+    lueur run \
+      --duration 10m \
+      --with-packet-loss \
+      --packet-loss-sched "start:5%,duration:20%;start:60%,duration:15%" # (1)!
+    ```
+
+    1.  At 5% of 10 minutes (the 30-second mark), enable packet loss for 20% (2 minutes total).
+        At 60% of 10 minutes (the 6-minute mark), enable packet loss again for 15% (1.5 minutes).
+
+        Timeline:
+        * Minutes 0–0.5: No loss (normal).
+        * Minutes 0.5–2.5: Packet loss enabled (clients see up to some “lost” packets).
+        * Minutes 2.5–6.0: Normal again.
+        * Minutes 6.0–7.5: Packet loss resumes.
+        * Remaining time to minute 10: No loss.
+
+## Next Steps
+
+- Monitor Application Behavior: Track if clients adapt or retry effectively when
+  some packets vanish.
+- Combine with Other Faults: For deeper reliability testing, mix packet loss
+  with [latency](./configure-latency.md) or [bandwidth](configure-bandwidth.md)
+  constraints.

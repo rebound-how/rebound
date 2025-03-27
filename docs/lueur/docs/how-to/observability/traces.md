@@ -2,17 +2,14 @@
 
 This guide will walk you sending traces to an Open Telemetry aware stack.
 
-## What You'll Achieve
+??? abstract "Prerequisites"
 
-In this guide, you’ll learn how to configure lueur so it sends traces to
-a local [Jaeger](https://www.jaegertracing.io).
+    -   [X] Install lueur
+
+        If you haven’t installed lueur yet, follow the
+        [installation instructions](../../install.md).
 
 ## Send Open Telemetry Traces to Jaeger
-
--   [X] Install lueur
-
-    Follow the procedure to [install](../../tutorials/install.md) lueur on your
-    machine.
 
 -   [X] Start a local Jaeger instance
 

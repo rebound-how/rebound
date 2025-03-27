@@ -69,9 +69,19 @@ These options define how the UI is setup on lueur's output:
 - **`--no-ui`**  
   _Disable entirely the terminal UI and make the output fully silent._  
 
+- **`--tail`**  
+  _Enable tailing of intercepted traffic into the console._  
+  _Default:_ Disabled
+
 ### Proxy Configuration Options
 
 These options define how to comnfigure the proxy started by lueur:
+
+- **`--duration <value>`**  
+  _How long to run the proxy process for. See [here](https://docs.rs/parse_duration/latest/parse_duration/#syntax) for the supported syntax_  
+  _Default:_  unlimited
+  **Example:** `--duration 60s`
+  **Example:** `--duration 10m`
 
 - **`--proxy-address <address>`**  
   _Listening address for the proxy server._  
@@ -171,6 +181,11 @@ These options configure the stealth mode of the lueur's proxy.
   Maximum latency for uniform distribution (non-negative float) (requires `--latency-distribution uniform`).  
   **Example:** `--latency-max 50`
 
+- **`--latency-sched <value>`**  
+  [Intervals scheduling](./schedule-intervals-syntax.md) when to apply the fault (require `--duration` whhen using relative schedule).  
+  **Example:** `--latency-sched "start:30s,duration:60s"`
+  **Example:** `--latency-sched "start:5%,duration:40%"` (requires `--duration`)
+
 ---
 
 ### Bandwidth Options
@@ -195,6 +210,11 @@ These options configure the stealth mode of the lueur's proxy.
   Unit for the bandwidth rate (options: Bps, KBps, MBps, GBps).  
   _Default:_ `Bps`
 
+- **`--bandwidth-sched <value>`**  
+  [Intervals scheduling](./schedule-intervals-syntax.md) when to apply the fault (require `--duration` whhen using relative schedule).  
+  **Example:** `--bandwidth-sched "start:30s,duration:60s"`
+  **Example:** `--bandwidth-sched "start:5%,duration:40%"` (requires `--duration`)
+
 ---
 
 ### Jitter Options
@@ -215,6 +235,11 @@ These options configure the stealth mode of the lueur's proxy.
   Frequency of jitter application in Hertz times per second (non-negative float).  
   _Default:_ `5.0`
 
+- **`--jitter-sched <value>`**  
+  [Intervals scheduling](./schedule-intervals-syntax.md) when to apply the fault (require `--duration` whhen using relative schedule).  
+  **Example:** `--jitter-sched "start:30s,duration:60s"`
+  **Example:** `--jitter-sched "start:5%,duration:40%"` (requires `--duration`)
+
 ---
 
 ### DNS Options
@@ -226,6 +251,11 @@ These options configure the stealth mode of the lueur's proxy.
 - **`--dns-rate <value>`**  
   Probability to trigger a DNS failure (non-negative float).  
   _Default:_ `0.5`
+
+- **`--dns-sched <value>`**  
+  [Intervals scheduling](./schedule-intervals-syntax.md) when to apply the fault (require `--duration` whhen using relative schedule).  
+  **Example:** `--dns-sched "start:30s,duration:60s"`
+  **Example:** `--dns-sched "start:5%,duration:40%"` (requires `--duration`)
 
 ---
 
@@ -239,6 +269,11 @@ These options configure the stealth mode of the lueur's proxy.
   Direction to apply the packet loss fault. Options: `ingress`, `egress`, `both`  
   _Default:_ `ingress`
 
+- **`--packet-loss-sched <value>`**  
+  [Intervals scheduling](./schedule-intervals-syntax.md) when to apply the fault (require `--duration` whhen using relative schedule).  
+  **Example:** `--packet-loss-sched "start:30s,duration:60s"`
+  **Example:** `--packet-loss-sched "start:5%,duration:40%"` (requires `--duration`)
+
 ---
 
 ### HTTP Response Options
@@ -251,17 +286,39 @@ These options configure the stealth mode of the lueur's proxy.
   Direction to apply the HTTP response fault. Options: `ingress`, `egress`, `both`  
   _Default:_ `ingress`
 
-- **`--http-status <code>`**  
+- **`--http-response-status <code>`**  
   HTTP status code to return (e.g., 500, 503).  
   _Default:_ `500`
 
-- **`--http-body <string>`**  
+- **`--http-response-body <string>`**  
   Optional response body to return.  
   _Default:_ (none)
 
 - **`--http-response-trigger-probability <value>`**  
   Probability (0.0 to 1.0) to trigger the HTTP response fault.  
   _Default:_ `1.0` (always trigger when enabled)
+
+- **`--http-response-sched <value>`**  
+  [Intervals scheduling](./schedule-intervals-syntax.md) when to apply the fault (require `--duration` whhen using relative schedule).  
+  **Example:** `--http-response-sched "start:30s,duration:60s"`
+  **Example:** `--http-response-sched "start:5%,duration:40%"` (requires `--duration`)
+
+---
+
+### Blackhole Options
+
+- **`--with-blackhole`**  
+  Enable blackhole fault injection.  
+  _Default:_ Disabled
+
+- **`--blackhole-direction <direction>`**  
+  Direction to apply the blackhole fault. Options: `ingress`, `egress`, `both`  
+  _Default:_ `ingress`
+
+- **`--blackhole-sched <value>`**  
+  [Intervals scheduling](./schedule-intervals-syntax.md) when to apply the fault (require `--duration` whhen using relative schedule).  
+  **Example:** `--blackhole-sched "start:30s,duration:60s"`
+  **Example:** `--blackhole-sched "start:5%,duration:40%"` (requires `--duration`)
 
 ---
 

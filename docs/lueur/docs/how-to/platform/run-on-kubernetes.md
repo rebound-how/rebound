@@ -3,14 +3,7 @@
 This guide will walk you through emulating faults into an application running
 in a Kubernetes cluster.
 
-## What You'll Achieve
-
-You will learn how to:
-
-- deploy lueur's proxy as a Deployment
-- run lueur's scenario as a Job
-
-## Run lueur's proxy as a Deployment - Step-by-Step
+## Run lueur's proxy as a Deployment
 
 -   [X] Deploy lueur's demo application in the cluster
 
@@ -226,7 +219,7 @@ You will learn how to:
 
     Once you exist the pod, its resources will be automatically released.
 
-## Run lueur's scenario as a Job - Step-by-Step
+## Run lueur's scenario as a Job
 
 -   [X] Deploy lueur's demo application in the cluster
 

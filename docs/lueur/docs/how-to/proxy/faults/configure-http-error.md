@@ -1,26 +1,27 @@
-# Introducing HTTP Fault Into Your Flow
+# How to Simulate HTTP Errors Using lueur
 
 This guide will walk you through emulating application level HTTP errors into your
 application using lueur proxy capabilities.
 
-## What You'll Achieve
+??? abstract "Prerequisites"
 
-In this guide, you’ll learn how to deliberately inject HTTP errors into
-your application flow using lueur’s proxy features.
+    -   [X] Install lueur
 
-## Constant Internal Server Error - Step-by-Step
+        If you haven’t installed Lueur yet, follow the
+        [installation instructions](../../install.md).
 
--   [X] Install lueur
-    
-    Follow the procedure to [install](../tutorials/install/) lueur on your
-    machine.
+    -   [X] Basic Proxy Setup
+        Be familiar with running lueur run {==--with-[fault]==} commands from
+        your terminal.
+
+## Constant Internal Server Error
 
 -   [X] Start the proxy with HTTP Error 500 from the remote server
 
     ```bash
-    lueur \
+    lueur run \
         --with-http-response \ # (1)!
-        --http-status 500 \ # (2)!
+        --http-response-status 500 \ # (2)!
         --http-response-trigger-probability 1  # (3)!
     ```
 
@@ -28,19 +29,14 @@ your application flow using lueur’s proxy features.
     2.  Set the {==status==} to 500
     3.  Set the error on all responses
 
-## Intermittent Service Unavailable Errors - Step-by-Step
-
--   [X] Install lueur
-    
-    Follow the procedure to [install](../tutorials/install/) lueur on your
-    machine.
+## Intermittent Service Unavailable Errors
 
 -   [X] Start the proxy with HTTP Error 503 from the remote server
 
     ```bash
-    lueur \
+    lueur run \
         --with-http-response \ # (1)!
-        --http-status 503 \ # (2)!
+        --http-response-status 503 \ # (2)!
         --http-response-trigger-probability 0.5  # (3)!
     ```
 
@@ -48,21 +44,16 @@ your application flow using lueur’s proxy features.
     2.  Set the {==status==} to 503
     3.  Set the error on half of the responses
 
-## Intermittent Not Found Errors - Step-by-Step
-
--   [X] Install lueur
-    
-    Follow the procedure to [install](../tutorials/install/) lueur on your
-    machine.
+## Intermittent Not Found Errors
 
 -   [X] Start the proxy with HTTP Error 404 from the remote server
 
     ```bash
     lueur \
         --with-http-response \ # (1)!
-        --http-status 404 \ # (2)!
+        --http-response-status 404 \ # (2)!
         --http-response-trigger-probability 0.5 \ # (3)!
-        --http-body '{"error": "true"}' # (4)!
+        --http-response-body '{"error": "true"}' # (4)!
     ```
 
     1.  Enable the HTTP error fault support

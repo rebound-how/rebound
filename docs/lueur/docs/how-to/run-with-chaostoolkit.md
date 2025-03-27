@@ -8,10 +8,12 @@ in your Chaos Engineering experiments.
 [pypa]: https://packaging.python.org/en/latest/tutorials/installing-packages/
 [ctklueur]: https://github.com/chaostoolkit-incubator/chaostoolkit-lueur
 
-## What You'll Achieve
+??? abstract "Prerequisites"
 
-In this guide, you’ll learn how to write sound operational policies as code
-using the [Chaos Toolkit experiment format][exp].
+    -   [X] Install lueur
+
+        If you haven’t installed Lueur yet, follow the
+        [installation instructions](../../install.md).
 
 ## Run with the Chaos Toolkit Lueur Extension
 

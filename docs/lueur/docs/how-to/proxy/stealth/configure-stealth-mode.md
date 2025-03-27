@@ -10,19 +10,14 @@ network traffic without modifying your application.
     [ebpf](../../../explanations/understanding-ebpf.md).
 
 
-## What You'll Achieve
+??? abstract "Prerequisites"
 
-In this guide, you’ll learn how to intercept network traffic coming from
-a particular process on your machine without having to configure it to
-explicitely re-route via the proxy.
+    -   [X] Install lueur
+
+        If you haven’t installed lueur yet, follow the
+        [installation instructions](../../install.md#stealth-dependencies).
 
 ## Capture HTTPS Traffic
-
--   [X] Install lueur with {==stealth mode==} enabled
-    
-    Follow the procedure to
-    [install](../../../how-to/install.md#stealth-dependencies) the
-    right binary and dependencies on your machine.
 
 -   [X] Start the proxy in stealth mode with a normal distribution latency
 
@@ -57,12 +52,6 @@ explicitely re-route via the proxy.
 
 
 ## Apply Latency to a PostgreSQL Connection
-
--   [X] Install lueur
-    
-    Follow the procedure to
-    [install](../../../tutorials/install.md#download-lueur) lueur on your
-    machine.
 
 -   [X] Install lueur's ebpf dependencies
     

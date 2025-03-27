@@ -530,7 +530,7 @@ simulated network conditions? Reflect on the following questions:
 
 **Error Handling and Retries:**
   Although these examples focus on latency, think about how your system would
-  respond to more disruptive faults—like injected HTTP 500 errors. Are your
+  respond to more disruptive faults. Are your
   error-handling and retry mechanisms robust enough to recover gracefully?
 
 **Bandwidth Constraints:**
@@ -587,7 +587,7 @@ simulated network conditions? Reflect on the following questions:
 - **Insight into Resilience:**  
   The incremental steps in fault injection reveal exactly how your system's
   performance degrades. This information is crucial for making targeted
-  improvements—whether it’s refining retry logic, adjusting timeouts, or
+  improvements. For instance, refining retry logic, adjusting timeouts, or
   optimizing resource management.
 
 ### Next Steps Based on These Insights
@@ -612,8 +612,8 @@ simulated network conditions? Reflect on the following questions:
 In this tutorial, you learned how to:
 
 - **Define and run a scenario:**  
-  You created a scenario file to simulate multiple network faults—such as
-  latency, bandwidth constraints, and error injections—on a real HTTP call.
+  You created a scenario file to simulate multiple network faults:
+  latency, bandwidth constraints, and error injections.
 
 - **Observe real-world impact:**  
   By running your scenarios, you observed how your application behaves under
@@ -625,9 +625,9 @@ In this tutorial, you learned how to:
   performance optimization and error handling improvements.
 
 By integrating these practices into your development cycle, you can catch issues
-earlier in the process—ensuring that your application is more resilient and
-production-ready. This proactive approach not only improves overall system
-reliability but also paves the way for a smoother, more confident path to
+earlier in the process. The goal is to help your application to become more
+resilient and production-ready. This proactive approach not only improves overall
+system reliability but also paves the way for a smoother, more confident path to
 production.
 
 ## Next Steps

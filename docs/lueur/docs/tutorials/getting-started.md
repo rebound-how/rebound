@@ -1,7 +1,7 @@
 # Getting Started with lueur
 
-Welcome to lueur—your new ally in exploring and understanding the impact of
-these petty network issues on your application!
+Welcome to lueur! Your new ally in exploring and understanding the impact of
+these petty network issues on your application.
 In this brief tutorial, we’ll help you get up and running with lueur so that you
 can start experimenting with network faults and latency right from your own
 environment.
@@ -208,8 +208,7 @@ organisation.
 ## Step 5: Observing the Effects
 
 Trigger a few requests from your application. Notice how responses now arrive
-slightly delayed. This delay simulates real-world network conditions—exactly
-what lueur is here to help you understand and address.
+slightly delayed. This delay simulates real-world network conditions.
 
 - If your application times out or behaves strangely under these conditions,
   you’ve just uncovered a resilience gap.

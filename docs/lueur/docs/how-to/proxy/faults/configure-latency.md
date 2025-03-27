@@ -1,21 +1,28 @@
-# Introducing Latency Fault Into Your Flow
+# How to Inject Latency into Your Flow with lueur
 
-This guide will walk you through introducing network latency into your
-application using lueur proxy capabilities.
+This guide shows how to delay traffic by a configurable amount, distribution,
+side (client or server), and direction (ingress or egress). You can simulate
+everything from a stable normal latency to heavy-tailed Pareto scenarios and
+selectively apply them to only client or server traffic.
 
-## What You'll Achieve
+??? abstract "Prerequisites"
 
-In this guide, you’ll learn how to deliberately inject network latency into your
-application flow using lueur’s proxy features. By exploring different latency
-[distributions](../../../explanations/fault-injection-basics.md), you'll gain insights
-into how your system behaves under varying network conditions.
+    -   [X] Install lueur
 
-## Normal Distribution - Step-by-Step
+        If you haven’t installed Lueur yet, follow the
+        [installation instructions](../../install.md).
 
--   [X] Install lueur
-    
-    Follow the procedure to [install](../tutorials/install/) lueur on your
-    machine.
+    -   [X] Basic Proxy Setup
+        Be familiar with running lueur run {==--with-[fault]==} commands from
+        your terminal.
+
+## Normal Distribution
+
+A normal (Gaussian) distribution around a mean of `300ms` with a standard
+deviation of `40ms`.
+
+Most delays hover around `300ms`, but some are quicker/slower based on the bell
+curve.
 
 -   [X] Start the proxy with a normal distribution latency
 
@@ -30,14 +37,14 @@ into how your system behaves under varying network conditions.
     1.  Enable the latency fault support
     2.  Use the {==normal==} distribution
     3.  Introduce a latency of {==300ms==} on average
-    4.  Add {==40ms==} of jitter
+    4.  Add {==40ms==} standard deviation `±40 ms`
 
-## Uniform Distribution - Step-by-Step
+## Uniform Distribution
 
--   [X] Install lueur
-    
-    Follow the procedure to [install](../tutorials/install/) lueur on your
-    machine.
+A uniform distribution means every delay in `min..max` is equally likely.
+
+The added delay is anywhere between `300 / 500ms` without bias around a middle
+value.
 
 -   [X] Start the proxy with a uniform distribution latency
 
@@ -55,12 +62,12 @@ into how your system behaves under varying network conditions.
     4.  Set the maximum latency to {==500ms==}
 
 
-## Pareto Distribution - Step-by-Step
+## Pareto Distribution
 
--   [X] Install lueur
-    
-    Follow the procedure to [install](../tutorials/install/) lueur on your
-    machine.
+A Pareto distribution often creates a heavy‐tail, meaning most delays are small,
+but occasional extremely large spikes.
+
+You’ll see frequent short delays (`20ms` or so) but occasionally large outliers.
 
 -   [X] Start the proxy with a Pareto distribution latency
 
@@ -77,19 +84,17 @@ into how your system behaves under varying network conditions.
     3.  Set a scale of {==20ms==}
     4.  Set the shape of the distribution to {==1.5==}
 
-## Pareto Normal Distribution - Step-by-Step
+## Pareto + Normal Hybrid Distribution
 
--   [X] Install lueur
-    
-    Follow the procedure to [install](../tutorials/install/) lueur on your
-    machine.
+Get a base normal offset of `~50±15ms`, plus a heavy‐tailed portion from the
+Pareto factors.
 
--   [X] Start the proxy with a Pareto distribution latency
+-   [X] Start the proxy with a Pareto + Normal distribution latency
 
     ```bash
     lueur run \
         --with-latency \ # (1)!
-        --latency-distribution pareto \ # (2)!
+        --latency-distribution paretonormal \ # (2)!
         --latency-scale 20 \ # (3)!
         --latency-shape 1.5 \ # (4)!
         --latency-mean 50 \ # (5)!
@@ -101,14 +106,11 @@ into how your system behaves under varying network conditions.
     3.  Set a scale of {==20ms==}
     4.  Set the shape of the distribution to {==1.5==}
     5.  Set a mean of {==50ms==} on average
-    6.  Add {==15ms==} of jitter
+    6.  Standard deviation of {==15ms==} around that mean.
 
-## Latency On Ingress Only - Step-by-Step
+## Latency On Ingress Only
 
--   [X] Install lueur
-    
-    Follow the procedure to [install](../tutorials/install/) lueur on your
-    machine.
+Delay traffic from the server to the client.
 
 -   [X] Start the proxy with any distribution and set the direction to {==ingress==}.
 
@@ -122,12 +124,9 @@ into how your system behaves under varying network conditions.
     1.  Enable the latency fault support
     2.  Set the latency to take place in {==ingress==}
 
-## Latency On Egress Only - Step-by-Step
+## Latency On Egress Only
 
--   [X] Install lueur
-    
-    Follow the procedure to [install](../tutorials/install/) lueur on your
-    machine.
+Delay traffic from the client to the server.
 
 -   [X] Start the proxy with any distribution and set the direction to {==egress==}.
 
@@ -141,12 +140,7 @@ into how your system behaves under varying network conditions.
     1.  Enable the latency fault support
     2.  Set the latency to take place in {==egress==}
 
-## Latency On Client-Side Only - Step-by-Step
-
--   [X] Install lueur
-    
-    Follow the procedure to [install](../tutorials/install/) lueur on your
-    machine.
+## Latency On Client-Side Only
 
 -   [X] Start the proxy with any distribution and set the side to {==client==}.
 
@@ -160,12 +154,7 @@ into how your system behaves under varying network conditions.
     1.  Enable the latency fault support
     2.  Set the latency to take place on {==client==} side
 
-## Latency On Server-Side Only - Step-by-Step
-
--   [X] Install lueur
-    
-    Follow the procedure to [install](../tutorials/install/) lueur on your
-    machine.
+## Latency On Server-Side Only
 
 -   [X] Start the proxy with any distribution and set the side to {==server==}.
 
@@ -180,12 +169,7 @@ into how your system behaves under varying network conditions.
     2.  Set the latency to take place on {==server==} side
 
 
-## Latency On Ingress From Server-Side Only - Step-by-Step
-
--   [X] Install lueur
-    
-    Follow the procedure to [install](../tutorials/install/) lueur on your
-    machine.
+## Latency On Ingress From Server-Side Only
 
 -   [X] Start the proxy with any distribution and set the direction to {==ingress==} and the side to {==server==}.
 
@@ -196,3 +180,13 @@ into how your system behaves under varying network conditions.
         --latency-side server \
         --latency-mean 50
     ```
+
+## Next Steps
+
+- Scheduled Delays: Use `--latency-sched "start:20%,duration:30%"` to enable
+  high latency for part of the total run.
+- Stacking: Combine latency with [jitter](configure-jitter.md) or
+  [bandwidth](configure-bandwidth.md) constraints for a more
+  realistic environment.
+- Extreme Spikes: Increase standard deviation or shape to stress test how your
+  application handles sudden bursts of slowness.
