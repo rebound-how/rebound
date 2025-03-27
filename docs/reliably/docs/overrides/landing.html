@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+<style>
+aside.md-source-file {
+    display: none;
+}
+
+div.md-search {
+    display: none;
+}
+
+a.md-source {
+    text-align: end;
+    padding-right: 20px;
+}
+
+.md-footer {
+    display: none;
+}
+
+</style>
+{% endblock %}
+
+
+{% block container %}
+<div class="md-content landing-hero" data-md-component="content">
+    <article class="md-content__inner md-typeset">
+    <div class="hero">
+        <div class="right">
+            <div class="righ-full">
+            <video controls autoplay>
+                <source src="assets/tapes/proxy.mp4" type="video/mp4">
+                <source src="assets/tapes/proxy.webm" type="video/webm">
+              </video>
+            </div>
+        </div>
+        <div class="left">
+          <div class="left-top">
+                <picture>
+                    <img src="/assets/logo-black-gradient.svg">
+                </picture>
+            </div>
+            <div class="left-bottom">
+                <h2>Orchestrate your resilience across your entire infrastructure from a single platform.</h2>
+    <a class="md-button md-button--primary rounded" href="/tutorials/install/">Get Started</a>
+    <a class="md-button rounded" href="https://github.com/rebound-how/rebound">View on GitHub</a>
+            </div>
+        </div>
+      </div>
+    </article>
+    <article class="md-content__inner md-typeset">
+    {% block content %}
+        {% include "partials/content.html" %}
+    {% endblock %}
+    </article>
+</div>
+{% endblock %}
+
+{% block tabs %}
+{% endblock %}
+
+{% block site_nav %}
+{% endblock %}

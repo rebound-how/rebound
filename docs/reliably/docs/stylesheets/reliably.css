@@ -1,0 +1,116 @@
+
+[data-md-color-accent="reliably"] {
+  --md-accent-fg-color: hsla(149, 98%, 23%, 1);
+  --md-accent-fg-color--transparent: hsla(149, 98%, 23%, 0.1);
+  --md-accent-bg-color: hsla(59, 7%, 8%, 1);
+  --md-accent-bg-color--light: hsla(59, 7%, 96%, 1);
+}
+
+@font-face {
+  font-family: "<font>";
+  src: "...";
+}
+
+@media (min-width: 768px) {
+  body {
+      background-image: url("/assets/background.png");
+      background-position: right bottom;
+      background-color: #fff;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+  }
+}
+  
+.rounded {
+  border-radius: 2em !important;
+}
+
+.task-list .task-list-indicator::after {
+  --guide-width: 1px;
+  --bullet-margin: 0.375rem;
+  --bullet-size: 1.75rem;
+
+  content: "";
+  background: var(--md-default-fg-color--lighter);
+  position: absolute;
+  top: calc(var(--bullet-size) + var(--bullet-margin));
+  bottom: var(--bullet-margin);
+  width: var(--guide-width);
+  left: -0.75rem;
+}
+
+
+.hero { 
+  display: grid;
+  grid-template-columns: 0.6fr 1.4fr;
+  grid-template-rows: 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "left right";
+}
+
+.right {  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "right-full";
+  align-self: center;
+  grid-area: right;
+}
+
+.right-full {
+  align-self: center;
+  grid-area: right-full;
+}
+
+.left {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(2, 1fr);
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "left-top"
+    "left-bottom";
+  align-self: start;
+  grid-area: left;
+}
+
+.left-top {
+  align-self: end;
+  grid-area: left-top;
+}
+
+.left-bottom {
+  align-self: start;
+  grid-area: left-bottom;
+}
+
+.left-top picture img {
+  max-width: 90%;
+  height: auto;
+  display: block;
+}
+
+.right-full video {
+  max-width: 100%;
+  height: auto;
+}
+
+
+@media (max-width: 768px) {
+  .hero {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      "left"
+      "right";
+  }
+  
+  .left {
+    margin-bottom: 1rem;
+  }
+}
