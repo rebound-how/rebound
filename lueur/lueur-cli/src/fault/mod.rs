@@ -13,6 +13,7 @@ use tokio::io::AsyncRead as TokioAsyncRead;
 use tokio::io::AsyncWrite as TokioAsyncWrite;
 
 pub mod bandwidth;
+pub mod blackhole;
 pub mod dns;
 pub mod http_error;
 pub mod jitter;

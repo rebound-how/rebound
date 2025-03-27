@@ -534,6 +534,9 @@ pub async fn full_progress(
                                         } else if let FaultEvent::Jitter { direction, side, amplitude, frequency } = &fault {
                                             fault_results.push_str(&format!("{}{}", sep, "Jitter".yellow()));
                                             sep = " - ".to_string();
+                                        } else if let FaultEvent::Blackhole { direction, side } = &fault {
+                                            fault_results.push_str(&format!("{}{}", sep, "Blackhole".yellow()));
+                                            sep = " - ".to_string();
                                         }
 
                                         fault_results.push_str("");
@@ -615,32 +618,17 @@ fn fault_to_string(faults: &Vec<FaultEvent>) -> String {
 
     for fault in faults {
         let f = match fault {
-            FaultEvent::Latency { direction: _, side, delay: _ } => {
-                format!("{} latency", side)
-            }
-            FaultEvent::Dns { direction: _, side, triggered: _ } => {
-                format!("{} dns", side)
-            }
-            FaultEvent::Bandwidth { direction: _, side, bps: _ } => {
-                format!("{} bandwidth", side)
-            }
-            FaultEvent::Jitter {
-                direction: _,
-                side,
-                amplitude: _,
-                frequency: _,
-            } => {
-                format!("{} jitter", side)
-            }
-            FaultEvent::PacketLoss { state: _, direction: _, side } => {
+            FaultEvent::Latency { side, .. } => format!("{} latency", side),
+            FaultEvent::Dns { side, .. } => format!("{} dns", side),
+            FaultEvent::Bandwidth { side, .. } => format!("{} bandwidth", side),
+            FaultEvent::Jitter { side, .. } => format!("{} jitter", side),
+            FaultEvent::PacketLoss { side, .. } => {
                 format!("{} packet loss", side)
             }
-            FaultEvent::HttpResponseFault {
-                direction: _,
-                side,
-                status_code: _,
-                response_body: _,
-            } => format!("{} http error", side),
+            FaultEvent::HttpResponseFault { side, .. } => {
+                format!("{} http error", side)
+            }
+            FaultEvent::Blackhole { side, .. } => format!("{} blackhole", side),
         };
         b.push(f);
     }
@@ -901,6 +889,21 @@ pub fn proxy_prelude(
         );
     }
 
+    // Blackhole Fault
+    if opts.blackhole.enabled {
+        println!(
+            "{}",
+            format!(
+                "     - {}: {}: {:?}, {}: {:?}",
+                "Blackhole".light_blue(),
+                "side".dim(),
+                opts.blackhole.side,
+                "direction".dim(),
+                opts.blackhole.blackhole_direction
+            )
+        );
+    }
+
     let mut noop = false;
 
     // If no fault is enabled, let the user know
@@ -910,6 +913,7 @@ pub fn proxy_prelude(
         && !opts.jitter.enabled
         && !opts.dns.enabled
         && !opts.packet_loss.enabled
+        && !opts.blackhole.enabled
     {
         println!("    {}", " No faults configured.".dim().hsl(0.39, 1.0, 0.50));
         noop = true;
@@ -1025,6 +1029,7 @@ fn fault_kind_label_and_color(kind: FaultKind) -> (&'static str, Color) {
         FaultKind::PacketDuplication => {
             ("PacketDuplication", Color::LightMagenta)
         }
+        FaultKind::Blackhole => ("Blackhole", Color::Wheat4),
         FaultKind::Metrics => ("Metrics", Color::Pink1),
         FaultKind::Unknown => ("Unknown", Color::Grey0),
     }

@@ -18,6 +18,7 @@ use crate::event::ProxyTaskEvent;
 use crate::fault::Bidirectional;
 use crate::fault::FaultInjector;
 use crate::fault::bandwidth::BandwidthLimitFaultInjector;
+use crate::fault::blackhole::BlackholeInjector;
 use crate::fault::dns::FaultyResolverInjector;
 use crate::fault::http_error::HttpResponseFaultInjector;
 use crate::fault::jitter::JitterInjector;
@@ -151,6 +152,9 @@ pub fn load_injectors(config: &ProxyConfig) -> Vec<Box<dyn FaultInjector>> {
             FaultConfig::PacketDuplication(settings) => {}
             FaultConfig::HttpError(settings) => injectors
                 .push(Box::new(HttpResponseFaultInjector::from(settings))),
+            FaultConfig::Blackhole(settings) => {
+                injectors.push(Box::new(BlackholeInjector::from(settings)))
+            }
         })
         .collect();
 
@@ -178,6 +182,9 @@ pub fn load_injector(fault: &FaultConfig) -> Box<dyn FaultInjector> {
         FaultConfig::PacketDuplication(settings) => todo!(),
         FaultConfig::HttpError(settings) => {
             Box::new(HttpResponseFaultInjector::from(settings))
+        }
+        FaultConfig::Blackhole(settings) => {
+            Box::new(BlackholeInjector::from(settings))
         }
     }
 }

@@ -529,7 +529,7 @@ pub struct PacketLossOptions {
     )]
     pub side: StreamSide,
 
-    /// Direction to apply the jitter on
+    /// Direction to apply the packet loss on
     #[arg(
         help_heading = "Packet Loss Options",
         long,
@@ -548,6 +548,52 @@ pub struct PacketLossOptions {
         env = "LUEUR_PACKET_LOSS_SCHED"
     )]
     pub packet_loss_sched: Option<String>,
+}
+
+#[derive(Parser, Debug, Serialize, Deserialize, Clone)]
+pub struct BlackholeOptions {
+    /// Blackhole fault enabled
+    #[arg(
+        help_heading = "Blackhole Options",
+        action,
+        name = "blackhole-enabled",
+        long = "with-blackhole",
+        default_value_t = false,
+        help = "Enable blackhole network fault.",
+        env = "LUEUR_WITH_BLACKHOLE"
+    )]
+    pub enabled: bool,
+
+    /// Blackhole side
+    #[arg(
+        help_heading = "Blackhole Options",
+        name = "blackhole-side",
+        long,
+        default_value_t = StreamSide::Server,
+        help = "Apply blackhole on the communication between client to proxy or proxy to upstream server.",
+        env = "LUEUR_BLACKHOLE_SIDE",
+    )]
+    pub side: StreamSide,
+
+    /// Direction to apply the blackhole on
+    #[arg(
+        help_heading = "Blackhole Options",
+        long,
+        default_value_t = Direction::Ingress,
+        value_enum,
+        help = "Fault's direction.",
+        env = "LUEUR_BLACKHOLE_DIRECTION",
+    )]
+    pub blackhole_direction: Direction,
+
+    /// Blackhole period
+    #[arg(
+        help_heading = "Blackhole Options",
+        long,
+        help = "Blackhole schedule",
+        env = "LUEUR_BLACKHOLE_SCHED"
+    )]
+    pub blackhole_sched: Option<String>,
 }
 
 /*
@@ -690,6 +736,10 @@ pub struct RunCommandOptions {
     // Packet Loss Options
     #[command(flatten)]
     pub packet_loss: PacketLossOptions,
+
+    // Blackhole Options
+    #[command(flatten)]
+    pub blackhole: BlackholeOptions,
     /*
     // Packet Duplication Options
     #[command(flatten)]

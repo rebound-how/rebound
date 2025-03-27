@@ -1,6 +1,7 @@
 # Changes
 
-## Changed
+## Added
 
-- Splitting the build of releases away from tags because we can't benefit
-  from the cache otherwise. Cache is per-reference.
+- Added a `--tail` flag to enable tailing
+- Added fault intervals
+- Added Blackhole fault support

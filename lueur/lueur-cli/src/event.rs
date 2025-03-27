@@ -411,35 +411,22 @@ pub enum FaultEvent {
         status_code: u16,
         response_body: Option<String>,
     },
+    Blackhole {
+        side: StreamSide,
+        direction: Direction,
+    },
 }
 
 impl FaultEvent {
     pub fn event_type(&self) -> String {
         match self {
-            FaultEvent::Latency { direction: _, side: _, delay: _ } => {
-                "latency".to_string()
-            }
-            FaultEvent::Dns { direction: _, side: _, triggered: _ } => {
-                "dns".to_string()
-            }
-            FaultEvent::Bandwidth { direction: _, side: _, bps: _ } => {
-                "bandwidth".to_string()
-            }
-            FaultEvent::Jitter {
-                direction: _,
-                side: _,
-                amplitude: _,
-                frequency: _,
-            } => "jitter".to_string(),
-            FaultEvent::PacketLoss { state: _, direction: _, side: _ } => {
-                "packetloss".to_string()
-            }
-            FaultEvent::HttpResponseFault {
-                direction: _,
-                side: _,
-                status_code: _,
-                response_body: _,
-            } => "httperror".to_string(),
+            FaultEvent::Latency { .. } => "latency".to_string(),
+            FaultEvent::Dns { .. } => "dns".to_string(),
+            FaultEvent::Bandwidth { .. } => "bandwidth".to_string(),
+            FaultEvent::Jitter { .. } => "jitter".to_string(),
+            FaultEvent::PacketLoss { .. } => "packetloss".to_string(),
+            FaultEvent::HttpResponseFault { .. } => "httperror".to_string(),
+            FaultEvent::Blackhole { .. } => "blackhole".to_string(),
         }
     }
 }

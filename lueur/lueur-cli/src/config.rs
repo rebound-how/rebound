@@ -4,6 +4,7 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::cli::BandwidthOptions;
+use crate::cli::BlackholeOptions;
 use crate::cli::DnsOptions;
 use crate::cli::HTTPResponseOptions;
 use crate::cli::JitterOptions;
@@ -91,6 +92,15 @@ pub struct HttpResponseSettings {
     pub http_response_trigger_probability: f64, // between 0.0 and 1.0
 }
 
+/// Internal Configuration for Blackhole Fault
+#[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
+pub struct BlackholeSettings {
+    pub enabled: bool,
+    pub side: StreamSide,
+    pub direction: Direction,
+    pub kind: FaultKind,
+}
+
 /// Fault Configuration Enum
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub enum FaultConfig {
@@ -101,6 +111,7 @@ pub enum FaultConfig {
     Jitter(JitterSettings),
     PacketDuplication(PacketDuplicationSettings),
     HttpError(HttpResponseSettings),
+    Blackhole(BlackholeSettings),
 }
 
 /// Implement Default manually for FaultConfig
@@ -122,6 +133,7 @@ impl fmt::Display for FaultConfig {
                 write!(f, "packet-duplication")
             }
             FaultConfig::HttpError(_) => write!(f, "http-error"),
+            FaultConfig::Blackhole(_) => write!(f, "blackhole"),
         }
     }
 }
@@ -140,6 +152,7 @@ pub enum FaultKind {
     Jitter,
     PacketDuplication,
     HttpError,
+    Blackhole,
     Metrics,
 }
 
@@ -153,6 +166,7 @@ impl FaultConfig {
             FaultConfig::Jitter(_) => FaultKind::Jitter,
             FaultConfig::PacketDuplication(_) => FaultKind::PacketDuplication,
             FaultConfig::HttpError(_) => FaultKind::HttpError,
+            FaultConfig::Blackhole(_) => FaultKind::Blackhole,
         }
     }
 
@@ -165,6 +179,7 @@ impl FaultConfig {
             FaultConfig::Jitter(settings) => settings.enabled = true,
             FaultConfig::PacketDuplication(settings) => settings.enabled = true,
             FaultConfig::HttpError(settings) => settings.enabled = true,
+            FaultConfig::Blackhole(settings) => settings.enabled = true,
         };
         ()
     }
@@ -180,6 +195,7 @@ impl FaultConfig {
                 settings.enabled = false
             }
             FaultConfig::HttpError(settings) => settings.enabled = false,
+            FaultConfig::Blackhole(settings) => settings.enabled = false,
         };
         ()
     }
@@ -308,6 +324,17 @@ impl From<&PacketLossOptions> for PacketLossSettings {
             enabled: cli.enabled,
             kind: FaultKind::PacketLoss,
             direction: cli.packet_loss_direction.clone(),
+            side: cli.side.clone(),
+        }
+    }
+}
+
+impl From<&BlackholeOptions> for BlackholeSettings {
+    fn from(cli: &BlackholeOptions) -> Self {
+        BlackholeSettings {
+            enabled: cli.enabled,
+            kind: FaultKind::Blackhole,
+            direction: cli.blackhole_direction.clone(),
             side: cli.side.clone(),
         }
     }

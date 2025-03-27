@@ -365,5 +365,29 @@ pub fn build_schedule_events(
         }
     }
 
+    if cli.blackhole.enabled {
+        let period = match &cli.blackhole.blackhole_sched {
+            Some(p) => p,
+            None => match total_duration {
+                Some(_) => "duration:100%",
+                None => "",
+            },
+        };
+
+        if !period.is_empty() {
+            let specs = parse_periods(&period)?;
+            let periods = resolve_periods(&specs, total_duration)?;
+            let fault_config = FaultConfig::Blackhole((&cli.blackhole).into());
+            let fault_events = build_events_for_fault(
+                FaultKind::Blackhole,
+                fault_config,
+                &periods,
+                start,
+            );
+
+            events.extend(fault_events);
+        }
+    }
+
     Ok(events)
 }
