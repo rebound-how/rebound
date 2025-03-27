@@ -140,4 +140,4 @@ reliably:
   organization:
     default: "Hello"
   job:
-    image: "reliably/job:latest"
+    image: "ghcr.io/rebound-how/reliably-job:latest"

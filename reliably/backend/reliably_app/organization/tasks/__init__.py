@@ -157,7 +157,7 @@ async def populate_default_deployments(
                     name="Container Runner",
                     definition=deployment.schemas.DeploymentContainerDefinition(
                         type="container",
-                        image="reliably/job",
+                        image="ghcr.io/rebound-how/reliably-job:latest",
                         working_dir=tempfile.gettempdir(),
                         volumes=None,
                     ),

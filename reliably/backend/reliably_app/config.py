@@ -98,12 +98,12 @@ class Settings(BaseSettings):
     PLAN_SCHEDULER_SA: str | None = None
     GCP_LOCATION: str = "europe-west1"
     GCP_PROJECT_ID: str | None = None
-    JOB_CONTAINER_IMAGE: str = "reliably/job:latest"
+    JOB_CONTAINER_IMAGE: str = "ghcr.io/rebound-how/reliably-job:latest"
 
     # Kubernetes settings
     K8S_SERVICE_ACCOUNT_DIR: Path | None = Path("/home/svc/.config/rebound/sa")
     K8S_DEFAULT_JOB_NS: str = "reliably"
-    K8S_DEFAULT_JOB_IMAGE: str = "localhost:32000/reliably/job"
+    K8S_DEFAULT_JOB_IMAGE: str = "ghcr.io/rebound-how/reliably-job:latest"
 
     # feat flags
     FEATURE_LOGIN_EMAIL: bool = False

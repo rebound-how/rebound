@@ -180,7 +180,7 @@
             name="k8sImage"
             id="k8sImage"
             v-model="definitionK8sImage"
-            placeholder="localhost:32000/reliably/job"
+            placeholder="ghcr.io/rebound-how/reliably-job:latest"
           />
         </div>
         <div
