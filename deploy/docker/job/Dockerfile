@@ -20,10 +20,12 @@ FROM ubuntu:24.10
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-LABEL org.opencontainers.image.authors="Reliably <sylvain@reliably.com>"
-LABEL org.opencontainers.image.vendor="Reliably"
-LABEL org.opencontainers.image.url="https://reliably.com"
+LABEL org.opencontainers.image.authors="Rebound <sylvain@rebound.how>"
+LABEL org.opencontainers.image.vendor="Rebound"
+LABEL org.opencontainers.image.url="https://rebound.how"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
+LABEL org.opencontainers.image.source=https://github.com/rebound-how/rebound
+LABEL org.opencontainers.image.description="lueur network proxy CLI"
 
 RUN apt-get update && apt-get install -y apt-transport-https ca-certificates gnupg curl python3.12 && \
     # next three lines whould be enabled for gcloud support
@@ -31,14 +33,18 @@ RUN apt-get update && apt-get install -y apt-transport-https ca-certificates gnu
     #echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
     #apt-get update && apt-get install -y nano google-cloud-cli google-cloud-sdk-gke-gcloud-auth-plugin && \
     groupadd -g 1001 svc && useradd -m -u 1001 -g svc svc && \
-    curl -Lo aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.6.29/aws-iam-authenticator_0.6.29_linux_amd64 && \
+    curl -Lo aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.6.30/aws-iam-authenticator_0.6.30_linux_amd64 && \
     chmod +x ./aws-iam-authenticator && \
     chown svc:svc ./aws-iam-authenticator && \
     mv ./aws-iam-authenticator /home/svc/aws-iam-authenticator && \
-    curl -Lo oha https://github.com/hatoo/oha/releases/download/v1.6.0/oha-linux-amd64 && \
+    curl -Lo oha https://github.com/hatoo/oha/releases/download/v1.8.0/oha-linux-amd64 && \
     chmod +x ./oha && \
     chown svc:svc ./oha && \
     mv ./oha /home/svc/oha && \
+    curl -Lo lueur https://github.com/rebound-how/rebound/releases/download/0.2.1/lueur-cli-0.2.1-x86_64-unknown-linux-musl && \
+    chmod +x ./lueur && \
+    chown svc:svc ./lueur && \
+    mv ./lueur /home/svc/lueur && \
     apt-get remove --auto-remove -y golang-go curl gnupg apt-transport-https && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
