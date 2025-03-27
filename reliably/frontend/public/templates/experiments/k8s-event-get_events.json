@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "name": "get_events",
+    "name": "Fetch Kubernetes Events",
     "labels": [
       "Event",
       "Kubernetes"
@@ -73,7 +73,7 @@
       "extensions": [],
       "method": [
         {
-          "name": "get-events",
+          "name": "Fetch Kubernetes Events",
           "type": "probe",
           "background": false,
           "provider": {

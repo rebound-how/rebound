@@ -78,9 +78,12 @@
         required
       >
         <option value="">Select GPT model</option>
+        <option value="gpt-4.5-preview">GPT-4.5 Preview</option>
         <option value="gpt-4o">GPT-4o</option>
+        <option value="chatgpt-4o-latest">ChatGPT-4o</option>
         <option value="o1">o1</option>
         <option value="o1-mini">o1-mini</option>
+        <option value="o3-mini">o3-mini</option>
       </select>
       <p
         v-if="!isModelValid"
@@ -171,6 +174,7 @@ async function create(): Promise<void> {
       vendor: "openai",
       environment: {
         name: "openai",
+        used_for: "integration",
         envvars: [
           {
             var_name: "OPENAI_MODEL",

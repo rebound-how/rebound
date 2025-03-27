@@ -15,6 +15,7 @@
           <option value="chaoshoneycomb">Honeycomb</option>
           <option value="chaosistio">Istio</option>
           <option value="chaosk8s">Kubernetes</option>
+          <option value="chaoslueur">Lueur</option>
           <option value="chaosprometheus">Prometheus</option>
           <option value="chaosreliably">Reliably</option>
           <option value="chaosservicefabric">Service Fabric</option>

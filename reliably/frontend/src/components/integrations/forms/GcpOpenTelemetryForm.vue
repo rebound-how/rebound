@@ -158,6 +158,7 @@ async function create(): Promise<void> {
       vendor: "gcp",
       environment: {
         name: `gcp-snapshot-${identifier}`,
+        used_for: "integration",
         envvars: [
           {
             var_name: "LUEUR_GOOGLE_PROJECT",

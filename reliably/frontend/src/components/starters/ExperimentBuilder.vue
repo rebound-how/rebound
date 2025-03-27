@@ -1140,15 +1140,15 @@ async function handleInsertActivity(
       .toString()
       .padStart(3, "0")}`;
     if (to === "method") {
+      const activity = JSON.parse(
+        JSON.stringify(templateToInsert.manifest.spec.template.method![0])
+      );
       fullModeTemplate.value.method.splice(index, 0, {
         template: templateToInsert,
         suffix: `M${suffixNumber}`,
         fieldsStatus: fieldsStatus,
-        background: false,
+        background: activity.background,
       });
-      const activity = JSON.parse(
-        JSON.stringify(templateToInsert.manifest.spec.template.method![0])
-      );
       if (activity.provider.arguments) {
         Object.keys(activity.provider.arguments).forEach((k) => {
           const value = (
@@ -1174,15 +1174,15 @@ async function handleInsertActivity(
         activity as Probe | Action
       );
     } else if (to === "warmup") {
+      const activity = JSON.parse(
+        JSON.stringify(templateToInsert.manifest.spec.template.method![0])
+      );
       fullModeTemplate.value.warmup.splice(index, 0, {
         template: templateToInsert,
         suffix: `W${suffixNumber}`,
         fieldsStatus: fieldsStatus,
-        background: false,
+        background: activity.background,
       });
-      const activity = JSON.parse(
-        JSON.stringify(templateToInsert.manifest.spec.template.method![0])
-      );
       if (activity.provider.arguments) {
         Object.keys(activity.provider.arguments).forEach((k) => {
           const value = (
@@ -1199,17 +1199,17 @@ async function handleInsertActivity(
       }
       experiment.value?.method!.splice(index, 0, activity as Probe | Action);
     } else if (to === "hypothesis") {
+      const activity = JSON.parse(
+        JSON.stringify(templateToInsert.manifest.spec.template.method![0])
+      );
       fullModeTemplate.value.hypothesis.splice(index, 0, {
         template: templateToInsert,
         suffix: `H${suffixNumber}`,
         fieldsStatus: fieldsStatus,
-        background: false,
+        background: activity.background,
         toleranceType: "string",
         tolerance: "",
       });
-      const activity = JSON.parse(
-        JSON.stringify(templateToInsert.manifest.spec.template.method![0])
-      );
       if (activity.provider.arguments) {
         Object.keys(activity.provider.arguments).forEach((k) => {
           const value = (
@@ -1230,15 +1230,15 @@ async function handleInsertActivity(
         activity as Probe
       );
     } else if (to === "rollbacks") {
+      const activity = JSON.parse(
+        JSON.stringify(templateToInsert.manifest.spec.template.method![0])
+      );
       fullModeTemplate.value.rollbacks.splice(index, 0, {
         template: templateToInsert,
         suffix: `R${suffixNumber}`,
         fieldsStatus: fieldsStatus,
-        background: false,
+        background: activity.background,
       });
-      const activity = JSON.parse(
-        JSON.stringify(templateToInsert.manifest.spec.template.method![0])
-      );
       if (activity.provider.arguments) {
         Object.keys(activity.provider.arguments).forEach((k) => {
           const value = (

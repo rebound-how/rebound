@@ -174,6 +174,7 @@ async function create(): Promise<void> {
       vendor: "grafana",
       environment: {
         name: "otel",
+        used_for: "integration",
         envvars: [
           {
             var_name: "OTEL_VENDOR",

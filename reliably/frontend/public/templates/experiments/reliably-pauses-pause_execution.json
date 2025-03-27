@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "name": "pause_execution",
+    "name": "Pause For A Bit",
     "labels": [
       "pauses",
       "reliability"
@@ -43,7 +43,7 @@
       "extensions": [],
       "method": [
         {
-          "name": "pause-execution",
+          "name": "Pause Execution for a While",
           "type": "action",
           "provider": {
             "type": "python",

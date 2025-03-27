@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "name": "cordon_node",
+    "name": "Cordon Nodes",
     "labels": [
       "Node",
       "Kubernetes"
@@ -58,7 +58,7 @@
       "extensions": [],
       "method": [
         {
-          "name": "cordon-node",
+          "name": "Cordon Nodes",
           "type": "action",
           "background": false,
           "provider": {

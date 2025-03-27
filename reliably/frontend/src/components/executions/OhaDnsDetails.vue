@@ -17,8 +17,6 @@ import { toRefs, ref, onMounted } from "vue";
 import { Bar } from "vue-chartjs";
 import * as ChartImport from "chart.js";
 
-import { toFixedIfNecessary } from "@/utils/numbers";
-
 import type { OhaDetails, OhaDetailsDNS } from "@/types/oha";
 import type { StackBarsChartData } from "@/types/ui-types";
 

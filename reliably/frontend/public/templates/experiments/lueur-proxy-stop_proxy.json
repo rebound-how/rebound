@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "name": "stop_proxy",
+    "name": "Stop Network Proxy",
     "labels": ["lueur"],
     "annotations": null
   },
@@ -8,17 +8,7 @@
     "provider": "chaostoolkit",
     "type": "experiment",
     "schema": {
-      "configuration": [
-        {
-          "title": "Unset Proxy Variables",
-          "key": "unset_http_proxy_variables",
-          "help": "unset the `HTTP_PROXY` and `HTTPS_PROXY` environment variables",
-          "placeholder": "",
-          "default": false,
-          "type": "boolean",
-          "required": false
-        }
-      ]
+      "configuration": []
     },
     "template": {
       "version": "1.0.0",
@@ -26,26 +16,16 @@
       "contributions": {},
       "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
       "tags": ["lueur"],
-      "configuration": {
-        "unset_http_proxy_variables": {
-          "type": "env",
-          "key": "RELIABLY_PARAM_UNSET_HTTP_PROXY_VARIABLES",
-          "default": false,
-          "env_var_type": "boolean"
-        }
-      },
+      "configuration": {},
       "extensions": [],
       "method": [
         {
-          "name": "stop-proxy",
+          "name": "Stop Network Proxy",
           "type": "action",
           "provider": {
             "type": "python",
             "module": "chaoslueur.actions",
-            "func": "stop_proxy",
-            "arguments": {
-              "unset_http_proxy_variables": "${unset_http_proxy_variables}"
-            }
+            "func": "stop_proxy"
           }
         }
       ]

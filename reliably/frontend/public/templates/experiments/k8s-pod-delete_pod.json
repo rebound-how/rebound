@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "name": "delete_pod",
+    "name": "Delete Some Pods",
     "labels": [
       "Kubernetes",
       "Pod"
@@ -114,7 +114,7 @@
       ],
       "method": [
         {
-          "name": "terminate-pods",
+          "name": "Delete Some Pods",
           "type": "action",
           "background": false,
           "provider": {

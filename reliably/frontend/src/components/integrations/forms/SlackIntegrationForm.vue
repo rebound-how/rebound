@@ -146,6 +146,7 @@ async function create(): Promise<void> {
       vendor: "slack",
       environment: {
         name: "slack",
+        used_for: "integration",
         envvars: [
           {
             var_name: "SLACK_CHANNEL",

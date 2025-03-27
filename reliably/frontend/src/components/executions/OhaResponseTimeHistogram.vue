@@ -123,7 +123,7 @@ function setData() {
     let counter: number = 1;
     orderedKeys.forEach((k) => {
       const formatedKey: string = toFixedIfNecessary(
-        parseFloat(k),
+        parseFloat(k || "0"),
         3
       ).toString();
       const val: number = source.value[d][k];

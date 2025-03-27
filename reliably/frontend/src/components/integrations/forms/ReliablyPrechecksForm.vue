@@ -114,6 +114,7 @@ async function create(): Promise<void> {
       vendor: "reliably",
       environment: {
         name: name.value,
+        used_for: "integration",
         envvars: [
           {
             var_name: "RELIABLY_PRECHECKS_ENDPOINT",

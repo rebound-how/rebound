@@ -1,4 +1,7 @@
-export function toFixedIfNecessary(value: number, dp: number) {
+export function toFixedIfNecessary(value: number | null, dp: number) {
+  if (value === null) {
+    return +parseFloat("0").toFixed(dp);
+  }
   return +parseFloat(value.toString()).toFixed(dp);
 }
 

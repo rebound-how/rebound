@@ -131,6 +131,7 @@ async function create(): Promise<void> {
       vendor: "dynatrace",
       environment: {
         name: "otel",
+        used_for: "integration",
         envvars: [
           {
             var_name: "OTEL_VENDOR",

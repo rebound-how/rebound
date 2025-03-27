@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "name": "run_load_test",
+    "name": "Run Simple Load Test",
     "labels": [
       "reliability",
       "load"
@@ -101,6 +101,15 @@
           "default": "",
           "type": "string",
           "required": false
+        },
+        {
+          "title": "Proxy URL",
+          "key": "proxy_addr",
+          "help": "Proxy Address to use for each request",
+          "placeholder": null,
+          "default": "",
+          "type": "string",
+          "required": false
         }
       ]
     },
@@ -173,12 +182,18 @@
           "key": "RELIABLY_PARAM_CONTENT_TYPE",
           "default": "",
           "env_var_type": "str"
+        },
+        "proxy_addr": {
+          "type": "env",
+          "key": "RELIABLY_PARAM_PROXY_ADDR",
+          "default": "",
+          "env_var_type": "str"
         }
       },
       "extensions": [],
       "method": [
         {
-          "name": "run-load-test",
+          "name": "Run Simple Load Test",
           "type": "action",
           "background": true,
           "provider": {
@@ -195,7 +210,8 @@
               "method": "${method}",
               "headers": "${headers}",
               "body": "${body}",
-              "content_type": "${content_type}"
+              "content_type": "${content_type}",
+              "proxy_addr": "${proxy_addr}"
             }
           }
         }

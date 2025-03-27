@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "name": "Run Network Fault Proxy",
+    "name": "Run Simple Web Demo Server",
     "labels": ["lueur"],
     "annotations": null
   },
@@ -10,33 +10,34 @@
     "schema": {
       "configuration": [
         {
-          "title": "Proxy Arguments",
-          "key": "proxy_args",
-          "help": "Proxy arguments as per https://lueur.dev/reference/cli-commands/#run-command-options",
-          "placeholder": "--duration=45 --with-latency --latency-mean=300 --upstream=*",
-          "default": "",
-          "type": "string",
-          "required": true
+          "title": "Duration",
+          "key": "duration",
+          "help": "How long to run the proxy for. Set to 0 to run until explicitely stopped",
+          "placeholder": "",
+          "default": 45,
+          "type": "float",
+          "required": false
         }
       ]
     },
     "template": {
       "version": "1.0.0",
-      "title": "Run the lueur network proxy to inject network faults into application's traffic",
-      "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
-      "tags": ["lueur", "fault", "network"],
+      "title": "Run Simple Web Demo Server",
+      "description": "Starts a simple basic HTTP server that allows you to explore Reliably's features.",
+      "tags": ["lueur", "latency", "network"],
       "contributions": {
         "availability": "none",
-        "latency": "none",
+        "latency": "high",
         "security": "none",
-        "errors": "none"
+        "errors": "none",
+        "performance": "high"
       },
       "configuration": {
-        "proxy_args": {
+        "duration": {
           "type": "env",
-          "key": "RELIABLY_PARAM_PROXY_ARGS",
-          "default": "",
-          "env_var_type": "str"
+          "key": "RELIABLY_PARAM_DURATION",
+          "default": 45,
+          "env_var_type": "float"
         }
       },
       "extensions": [
@@ -56,21 +57,25 @@
       ],
       "method": [
         {
-          "name": "Run Network Fault Proxy",
+          "name": "Run Simple Web Demo Server",
           "type": "action",
           "background": true,
           "provider": {
             "type": "python",
             "module": "chaoslueur.actions",
-            "func": "run_proxy",
+            "func": "run_demo",
             "arguments": {
-              "proxy_args": "${proxy_args}"
+              "duration": "${duration}"
             }
           }
         }
       ]
     },
     "related": [
+      {
+        "block": "method",
+        "name": "lueur-proxy-run_proxy"
+      },
       {
         "block": "method",
         "name": "reliably-pauses-pause_execution"

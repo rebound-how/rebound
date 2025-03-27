@@ -324,7 +324,7 @@ def init(
             )
             template = template.replace("<domain>", domain)
 
-            choice_service_host = f"https://{domain}"
+            choice_service_host = f"http://{domain}"
             service_host = Prompt.ask(
                 "What's the URL to communicate back from plans?",
                 console=console,
@@ -345,44 +345,63 @@ def init(
                     f"CLI_RELIABLY_HOST={parsed.netloc}",
                 )
 
-            dbuser = Prompt.ask(
-                "What's the database username?",
+            manageddb = Confirm.ask(
+                "Should we manage the database (requires Docker)?",
                 console=console,
             )
-            template = template.replace("<dbuser>", dbuser)
 
-            dbpassword = Prompt.ask(
-                "What's the database user's password?",
-                console=console,
-            )
-            template = template.replace("<dbpassword>", dbpassword)
+            if manageddb:
+                template = template.replace("#DATABASE_MODE", "DATABASE_MODE")
+                template = template.replace("<dbuser>", "demo")
+                template = template.replace("<dbpassword>", "demo")
+                template = template.replace("<dbaddress>", "localhost")
+                template = template.replace("<dbport>", "5432")
+                template = template.replace("<dbname>", "reliably")
+            else:
+                dbuser = Prompt.ask(
+                    "What's the database username?",
+                    console=console,
+                    default="demo",
+                    show_default=True,
+                )
+                template = template.replace("<dbuser>", dbuser)
 
-            dbaddress = Prompt.ask(
-                "What's the database hostname or address?",
-                console=console,
-            )
-            template = template.replace("<dbaddress>", dbaddress)
+                dbpassword = Prompt.ask(
+                    "What's the database user's password?",
+                    console=console,
+                    default="demo",
+                    show_default=True,
+                )
+                template = template.replace("<dbpassword>", dbpassword)
 
-            dbport = Prompt.ask(
-                "What's the database port?",
-                console=console,
-                default="5432",
-                show_default=True,
-            )
-            template = template.replace("<dbport>", dbport)
+                dbaddress = Prompt.ask(
+                    "What's the database hostname or address?",
+                    console=console,
+                    default="localhost",
+                    show_default=True,
+                )
+                template = template.replace("<dbaddress>", dbaddress)
 
-            dbname = Prompt.ask(
-                "What's the database name?",
-                console=console,
-                default="reliably",
-                show_default=True,
-            )
-            template = template.replace("<dbname>", dbname)
+                dbport = Prompt.ask(
+                    "What's the database port?",
+                    console=console,
+                    default="5432",
+                    show_default=True,
+                )
+                template = template.replace("<dbport>", dbport)
+
+                dbname = Prompt.ask(
+                    "What's the database name?",
+                    console=console,
+                    default="reliably",
+                    show_default=True,
+                )
+                template = template.replace("<dbname>", dbname)
 
             defaultorg = Prompt.ask(
                 "Provide the name of a default Reliably organization to create",
                 console=console,
-                default="My Org",
+                default="Hello",
                 show_default=True,
             )
             template = template.replace("<defaultorg>", defaultorg)

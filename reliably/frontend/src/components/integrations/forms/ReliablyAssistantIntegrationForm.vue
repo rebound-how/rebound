@@ -109,6 +109,7 @@ async function create(): Promise<void> {
       vendor: "reliably",
       environment: {
         name: "openai",
+        used_for: "integration",
         envvars: [
           {
             var_name: "OPENAI_MODEL",

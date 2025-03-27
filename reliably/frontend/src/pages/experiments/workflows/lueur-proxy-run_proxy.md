@@ -1,5 +1,5 @@
 ---
-name: run_proxy
+name: Run Network Fault Proxy
 target: Lueur
 category: Network
 type: action
@@ -10,7 +10,9 @@ assistant: |
   What are good network fault simulations to run to evaluate the resilience of a service?
 related: |
     - method:reliably-pauses-pause_execution
+    - method:reliably-load-run_load_test
     - method:lueur-proxy-stop_proxy
+    - method:reliably-load-verify_latency_percentile_from_load_test
 ---
 
 |            |                                     |
@@ -59,7 +61,6 @@ provider:
 | ---------------- | ------ | ----------- | -------- | ------------ | -------------------------------------------- |
 | **proxy_args**       | string |             | Yes      | Proxy Arguments       | lueur proxy arguments for its run command https://lueur.dev/reference/cli-commands/#run-command-options              |
 | **duration**       | float | 0| No      | Duration       | Sets the window in seconds during which the proxy runs. The default of 0 means the proxy does not stop on its own               |
-| **set_http_proxy_variables**       | boolean | false | No      | Sets Proxy Environment Variables       | Sets the `HTTP_PROXY` and `HTTPS_PROXY` environment variables for the process until the proxy terminates               |
 | **verbose**       | boolean | false | No      | Enables Debug Logging       | Make lueur more verbose. Enable this only for debugging as lueur can be chatty.               |
 
 Run the lueur proxy with the appropriate network faults.

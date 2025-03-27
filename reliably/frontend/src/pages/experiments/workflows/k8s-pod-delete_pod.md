@@ -1,5 +1,5 @@
 ---
-name: delete_pod
+name: Delete Some Pods
 target: Kubernetes
 category: Pod
 type: action

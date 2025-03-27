@@ -102,6 +102,7 @@ async function create(): Promise<void> {
       vendor: "gcp",
       environment: {
         name: "otel",
+        used_for: "integration",
         envvars: [
           {
             var_name: "OTEL_VENDOR",

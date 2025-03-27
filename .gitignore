@@ -311,3 +311,4 @@ reliably/backend/uv.lock
 # Documentation
 ###############################################################################
 docs/lueur/.pdm-python
+docs/reliably/.pdm-python

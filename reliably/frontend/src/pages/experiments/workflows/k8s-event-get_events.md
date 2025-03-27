@@ -1,5 +1,5 @@
 ---
-name: get_events
+name: Fetch Kubernetes Events
 target: Kubernetes
 category: Event
 type: probe

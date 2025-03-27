@@ -27,5 +27,8 @@ export default defineConfig({
     ssr: {
       external: ["svgo"],
     },
+    //build: {
+    //  minify: false,
+    //}
   },
 });

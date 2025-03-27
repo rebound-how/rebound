@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "name": "read_pod_logs",
+    "name": "Read Logs from Pod Containers",
     "labels": [
       "Kubernetes",
       "Pod"
@@ -102,7 +102,7 @@
       "extensions": [],
       "method": [
         {
-          "name": "read-pod-logs",
+          "name": "Read Logs from Pod Containers",
           "type": "probe",
           "provider": {
             "type": "python",
