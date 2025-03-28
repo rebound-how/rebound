@@ -56,7 +56,8 @@ USER 1001
 
 RUN mkdir -p /home/svc/bin && \
     mv ./aws-iam-authenticator /home/svc/bin/aws-iam-authenticator && \
-    mv ./oha /home/svc/bin/oha
+    mv ./oha /home/svc/bin/oha && \
+    mv ./lueur /home/svc/bin/lueur
 
 ENV PATH="$PATH:/home/svc/bin:/home/svc/.venv/bin"
 
