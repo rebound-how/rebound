@@ -207,9 +207,9 @@ chaostoolkit-kubernetes==0.39.0 \
 chaostoolkit-lib==1.44.0 \
     --hash=sha256:ad6f3dad4c97b20711bcc0e8e4475cdcaf65fbf995552ea67efb97136e56842f \
     --hash=sha256:fb5543bf46076694db80fc93c2b53e893c5204e38755d64473399cc3429ab6ac
-chaostoolkit-lueur==0.13.1 \
-    --hash=sha256:6238b3d4bd47f54d5dd3005ecf416b2cb7020fbc8149717a36df9334e81b0edf \
-    --hash=sha256:b80f743c234905816d8d47910b65c948766bea22e7d5cf2092d5881d4ae55bf4
+chaostoolkit-lueur==0.13.2 \
+    --hash=sha256:63abc6cd744f6c328100039e4116b9831c9aac4e1621976cd53c0ae3746d57f7 \
+    --hash=sha256:b77b341c13b83184a008b72d57e251f8d5e455127fb1de4032b59a8a7bc091b8
 chaostoolkit-opentracing==0.17.0 \
     --hash=sha256:c1198a013bfcea27fdf5a3e8ce0c1d8a91788f84ec811808a0a4be27bc0fbd24 \
     --hash=sha256:c1deca439f5122fecc86526e1611f58e702ace24e7a7d4183125ace04589c040
