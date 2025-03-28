@@ -199,7 +199,7 @@
             name="k8sImage"
             id="k8sImage"
             v-model="definitionK8sImage"
-            placeholder="ghcr.io/reliablyhq/cli/full:latest"
+            placeholder="ghcr.io/rebound-how/reliably-job:latest"
             required
           />
         </div>
@@ -351,7 +351,7 @@ const definitionUsername = ref<string>("");
 const definitionToken = ref<string>("");
 const definitionImageName = ref<string>("");
 const definitionK8sNamespace = ref<string>("default");
-const definitionK8sImage = ref<string>("ghcr.io/reliablyhq/cli/full:latest");
+const definitionK8sImage = ref<string>("ghcr.io/rebound-how/reliably-job:latest");
 const definitionK8sUseDefaultManifest = ref<boolean>(true);
 const definitionK8sManifest = ref<string>("");
 const definitionK8sUseInClusterCredentials = ref<boolean>(false);

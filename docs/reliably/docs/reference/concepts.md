@@ -267,38 +267,6 @@ Creating a Reliably Kubernetes deployment requires the following information:
   Or, your own Kubernetes Pod manifest. The first container of the manifest must be using the image that will run the Reliably CLI.
 - The Kubernetes credentials to connect to the cluster.
 
-A few notes:
-
-- You must create a Service Account in the target namespace. This service
-  account will be attached to the Kubernetes Pod running the Plan
-  ```yaml
-    ---
-    kind: ServiceAccount
-    apiVersion: v1
-    metadata:
-        namespace: default
-        name: reliably-job
-    labels:
-        app.kubernetes.io/name: reliably-job
-    automountServiceAccountToken: false
-    ```
-- Make sure to bind the roles matching the expected operations carried by
-  the Experiment.
-- Reliably will create either Kubernetes Job or a Kubernetes Cron Job
-  depending on if the plan uses a CRON schedule or not
-- The Kubernetes Job/CronJob will then create the appropriate Kubernetes Pod
-  to run the Plan
-- The following labels will be set on the Kubernetes Job and Pod:
-  * `reliably.com/plan` set to the Reliably Plan identifier
-  * `reliably.com/org` set to the Reliably Organization
-  * `app.kubernetes.io/managed-by` set to `reliably`
-  * `app.kubernetes.io/component` set to `experiment`
-  * `app.kubernetes.io/name` set to `plan-<PLAN_ID>`
-- For AWS EKS clusters:
-  - Reliably supports authenticating with the
-[aws-iam-authenticator](https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html).
-  - Your credentials configuration must include the `AWS_ACCESS_KEY_ID` and 
-    `AWS_SECRET_ACCESS_KEY` properties set in the `users.user.exec.env` section
 
 
 ## Environments

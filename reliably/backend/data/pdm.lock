@@ -248,21 +248,21 @@ files = [
 
 [[package]]
 name = "awscli"
-version = "1.38.17"
+version = "1.38.22"
 requires_python = ">=3.8"
 summary = "Universal Command Line Environment for AWS."
 groups = ["default"]
 dependencies = [
     "PyYAML<6.1,>=3.10",
-    "botocore==1.37.17",
+    "botocore==1.37.22",
     "colorama<0.4.7,>=0.2.5",
     "docutils<0.17,>=0.10",
     "rsa<4.8,>=3.1.2",
     "s3transfer<0.12.0,>=0.11.0",
 ]
 files = [
-    {file = "awscli-1.38.17-py3-none-any.whl", hash = "sha256:5e13f6b150802fb058212bfe31d99886f1a8d49f8917861271ef75f46c5f31d4"},
-    {file = "awscli-1.38.17.tar.gz", hash = "sha256:9c634bb9cb6dd32988a02d009346351689c6ef3869d2b95a6c982406ce011164"},
+    {file = "awscli-1.38.22-py3-none-any.whl", hash = "sha256:c6aea0b1e5fb9af0f07bd665a1f132d0abcff10a3f5a78d7d5a8c72a955b5d9a"},
+    {file = "awscli-1.38.22.tar.gz", hash = "sha256:75b0b534442ab0096704cac16bb2fb47532f0570761801b13e50d1e4269f934b"},
 ]
 
 [[package]]
@@ -305,7 +305,7 @@ files = [
 
 [[package]]
 name = "botocore"
-version = "1.37.17"
+version = "1.37.22"
 requires_python = ">=3.8"
 summary = "Low-level, data-driven core of boto 3."
 groups = ["default"]
@@ -316,8 +316,8 @@ dependencies = [
     "urllib3<1.27,>=1.25.4; python_version < \"3.10\"",
 ]
 files = [
-    {file = "botocore-1.37.17-py3-none-any.whl", hash = "sha256:f8c93eec385a346c7a59efcb15d8cf3613cd9d6ab27f32492eed9549bd86d69e"},
-    {file = "botocore-1.37.17.tar.gz", hash = "sha256:c879c2a5dc6952b81591d0e765c7b93e90df7f6c50b3d9b68011ec7cfe7fe48d"},
+    {file = "botocore-1.37.22-py3-none-any.whl", hash = "sha256:184db7c9314d13002bc827f511a5140574b5da1acda342d51e093dad6317de98"},
+    {file = "botocore-1.37.22.tar.gz", hash = "sha256:b3b26f1a90236bcd17d4092f8c85a256b44e9955a16b633319a2f5678d605e9f"},
 ]
 
 [[package]]
@@ -624,7 +624,7 @@ files = [
 
 [[package]]
 name = "chaostoolkit-lueur"
-version = "0.12.0"
+version = "0.13.0"
 requires_python = ">=3.10"
 summary = "Template project for Chaos Toolkit extensions"
 groups = ["default"]
@@ -633,8 +633,8 @@ dependencies = [
     "psutil>=7.0.0",
 ]
 files = [
-    {file = "chaostoolkit_lueur-0.12.0-py3-none-any.whl", hash = "sha256:7e9ec6a4fa13dcc8ba49846069a9f12ce9ae10d789afb1a2948e8e7f69293017"},
-    {file = "chaostoolkit_lueur-0.12.0.tar.gz", hash = "sha256:b9141727d488d9291ba3d7b671d15ee7a7f368450153f1254715bfd65cc2338b"},
+    {file = "chaostoolkit_lueur-0.13.0-py3-none-any.whl", hash = "sha256:f1bd27d5ac40385c3141e2a26acdbbea5a0bfb7c4b139e050df73c45f8a5fe2b"},
+    {file = "chaostoolkit_lueur-0.13.0.tar.gz", hash = "sha256:735fb32dac4a7ad7be34ef5603f70bc89702ecd2519bfe822dcecef1e5a732b1"},
 ]
 
 [[package]]

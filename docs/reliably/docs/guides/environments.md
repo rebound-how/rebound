@@ -40,11 +40,6 @@ tries to run and cannot find its Environment.
 This section will introduce common Environment patterns that will help you
 pass the right context to a variety of experiments.
 
-These patterns apply to any Reliably Deployment type. But you declare these
-variables and secrets in Reliably only when using a Reliably Cloud
-deployment. Otherwise, these variables and secrets are declared directly
-on the platform you use to execute Reliably Plans.
-
 ### Kubernetes
 
 Experiments targetting Kubernetes clusters usually require a service account that will define the Kubernetes API server endpoint and credentials to

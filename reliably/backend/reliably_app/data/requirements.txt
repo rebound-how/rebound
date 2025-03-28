@@ -74,9 +74,9 @@ aws-az-failure-chaostoolkit==0.1.10 \
 aws-requests-auth==0.4.3 \
     --hash=sha256:33593372018b960a31dbbe236f89421678b885c35f0b6a7abfae35bb77e069b2 \
     --hash=sha256:646bc37d62140ea1c709d20148f5d43197e6bd2d63909eb36fa4bb2345759977
-awscli==1.38.17 \
-    --hash=sha256:5e13f6b150802fb058212bfe31d99886f1a8d49f8917861271ef75f46c5f31d4 \
-    --hash=sha256:9c634bb9cb6dd32988a02d009346351689c6ef3869d2b95a6c982406ce011164
+awscli==1.38.22 \
+    --hash=sha256:75b0b534442ab0096704cac16bb2fb47532f0570761801b13e50d1e4269f934b \
+    --hash=sha256:c6aea0b1e5fb9af0f07bd665a1f132d0abcff10a3f5a78d7d5a8c72a955b5d9a
 blinker==1.9.0 \
     --hash=sha256:b4ce2265a7abece45e7cc896e98dbebe6cead56bcf805a3d23136d145f5445bf \
     --hash=sha256:ba0efaa9080b619ff2f3459d1d500c57bddea4a6b424b60a91141db6fd2f08bc
@@ -86,9 +86,9 @@ boltons==25.0.0 \
 boto3==1.37.17 \
     --hash=sha256:3e7c2056b0e7950818c4b8695ac0da3a7933cf9f4f45d67f8804ce37fdef8a7b \
     --hash=sha256:f4ae383aca1799061d83c0097e9ccd7b494a71b36d72226628ad0fde1b95b7c9
-botocore==1.37.17 \
-    --hash=sha256:c879c2a5dc6952b81591d0e765c7b93e90df7f6c50b3d9b68011ec7cfe7fe48d \
-    --hash=sha256:f8c93eec385a346c7a59efcb15d8cf3613cd9d6ab27f32492eed9549bd86d69e
+botocore==1.37.22 \
+    --hash=sha256:184db7c9314d13002bc827f511a5140574b5da1acda342d51e093dad6317de98 \
+    --hash=sha256:b3b26f1a90236bcd17d4092f8c85a256b44e9955a16b633319a2f5678d605e9f
 brotli==1.1.0 \
     --hash=sha256:19c116e796420b0cee3da1ccec3b764ed2952ccfcc298b55a10e5610ad7885f9 \
     --hash=sha256:1b2c248cd517c222d89e74669a4adfa5577e06ab68771a529060cf5a156e9757 \
@@ -207,9 +207,9 @@ chaostoolkit-kubernetes==0.39.0 \
 chaostoolkit-lib==1.44.0 \
     --hash=sha256:ad6f3dad4c97b20711bcc0e8e4475cdcaf65fbf995552ea67efb97136e56842f \
     --hash=sha256:fb5543bf46076694db80fc93c2b53e893c5204e38755d64473399cc3429ab6ac
-chaostoolkit-lueur==0.12.0 \
-    --hash=sha256:7e9ec6a4fa13dcc8ba49846069a9f12ce9ae10d789afb1a2948e8e7f69293017 \
-    --hash=sha256:b9141727d488d9291ba3d7b671d15ee7a7f368450153f1254715bfd65cc2338b
+chaostoolkit-lueur==0.13.0 \
+    --hash=sha256:735fb32dac4a7ad7be34ef5603f70bc89702ecd2519bfe822dcecef1e5a732b1 \
+    --hash=sha256:f1bd27d5ac40385c3141e2a26acdbbea5a0bfb7c4b139e050df73c45f8a5fe2b
 chaostoolkit-opentracing==0.17.0 \
     --hash=sha256:c1198a013bfcea27fdf5a3e8ce0c1d8a91788f84ec811808a0a4be27bc0fbd24 \
     --hash=sha256:c1deca439f5122fecc86526e1611f58e702ace24e7a7d4183125ace04589c040

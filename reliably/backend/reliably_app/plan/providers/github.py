@@ -25,9 +25,9 @@ on:
 
 jobs:
   execute-reliably-plan:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: reliablyhq/actions/plan@main
 """
 

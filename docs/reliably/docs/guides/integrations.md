@@ -18,12 +18,6 @@ operations.
 
 ### Create an Integration
 
-!!! info
-
-    Unlike Reliably Environments, Reliably Integrations work with any Reliably
-    Deployment type.
-
-
 To create an integration, go to the
 {==New integration==} page and start
 filling the form as needed.
@@ -70,7 +64,6 @@ review where the action is at and its status as it runs.
     * `file:write`
 
     We suggest you name it `Reliably` to make it clear to your users.
-
 
 ### Honeycomb
 
@@ -215,3 +208,62 @@ takes place.
 Pauses lasts as long as your Billing Plan offers.
 
 
+### Reliably Notifications
+
+The Reliably Notifications Integration gives you a simple approach to notify
+team members when specific events occur on a Reliably Plan.
+
+The following events are supported:
+
+* Plan Started
+* Plan Ended
+* Plan Failed
+
+Reliably supports three channels to react to these events:
+
+* Email
+* WebHook
+* Github Issue
+
+#### Notify with Email
+
+| Field                    | Value |
+| ------------------------ | ----- |
+| `to`                   | A comma-separated list of email addresses to send notifications to. |
+
+!!! info "SMTP Settings"
+
+    The email notification support is only active when the polatform is
+    configured to enable it.
+
+    First the `FEATURE_NOTIFICATION_VIA_EMAIL` environment variable must be
+    set to truthy value. Then the smtp settings must be configured:
+
+    * `SMTP_ADDR` smetp server address
+    * `SMTP_PORT` smtp port
+    * `SMTP_USERNAME` username to authenticate to the server with
+    * `SMTP_PASSWORD` password for the user
+    * `SMTP_FROM_EMAIL` email address to use as the `From` field
+
+#### Notify with WebHook
+
+| Field                    | Value |
+| ------------------------ | ----- |
+| `url`                   | A HTTP/HTTPS URL to make a `POST` request to with the event payload. |
+| `token`                   | An optional bearer token to authenticate the request. |
+
+The payload for the notification contains the following:
+
+* meta: some meta data such as the organization id, the time of the event and the event name
+* plan: the full plan that triggered the event
+* experiment: a summary of the experiment with trends of past executions
+* execution: the execution that triggered this specific event
+
+#### Notify with GitHub Issue
+
+| Field                    | Value |
+| ------------------------ | ----- |
+| `repository`                   | The full URL of the repository. |
+| `token`                   | A personal token that allows to create/update GitHub issues. |
+| `labels`                   | A comma-separated list of labels to apply. The labels must exist in the repository. |
+| `on failure only`                   | Only create issue when a plan has failed. We recommend to leave this checked. |

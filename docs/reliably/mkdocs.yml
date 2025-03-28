@@ -22,6 +22,7 @@ nav:
     - "Install the CLI": tutorials/install/cli.md
     - "Quick Tour": tutorials/tour.md
   - "How-To Guides":
+    - "Deployments": guides/deployments.md
     - "Environments": guides/environments.md
     - "Integrations": guides/integrations.md
     - "Runtime Strategies": guides/runtime-strategies.md
