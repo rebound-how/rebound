@@ -76,7 +76,7 @@ Docker containers.
 -   [X] Pull the lueur image
 
     ```bash
-    docker pull ghcr.io/rebound-how/lueur:0.1.156-stealth
+    docker pull ghcr.io/rebound-how/lueur:0.2.1-stealth
     ```
 
     !!! abstract
@@ -99,7 +99,7 @@ Docker containers.
         --cap-add=SYS_ADMIN \ # (6)!
         --cap-add=BPF \ # (7)!
         --cap-add=NET_ADMIN \ # (8)!
-        ghcr.io/rebound-how/lueur:0.1.156-stealth \  # (9)!
+        ghcr.io/rebound-how/lueur:0.2.1-stealth \  # (9)!
             run \
             --stealth \  # (10)!
             --capture-process curl \  # (11)!
