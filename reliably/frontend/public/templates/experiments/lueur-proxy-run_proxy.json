@@ -73,19 +73,7 @@
     "related": [
       {
         "block": "method",
-        "name": "reliably-pauses-pause_execution"
-      },
-      {
-        "block": "method",
-        "name": "reliably-load-run_load_test"
-      },
-      {
-        "block": "method",
         "name": "lueur-proxy-stop_proxy"
-      },
-      {
-        "block": "method",
-        "name": "reliably-load-verify_latency_percentile_from_load_test"
       }
     ]
   }

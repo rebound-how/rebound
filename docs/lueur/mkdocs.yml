@@ -36,6 +36,7 @@ nav:
     - "Run With Docker": how-to/platform/run-with-docker.md
     - "Run on Windows": how-to/platform/run-on-windows.md
     - "Run with Chaos Toolkit": how-to/run-with-chaostoolkit.md
+    - "Run with Reliably": how-to/run-with-reliably.md
   - Reference:
     - "CLI Commands": reference/cli-commands.md
     - "Scenario File Format": reference/scenario-file-format.md
