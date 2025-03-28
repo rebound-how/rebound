@@ -624,7 +624,7 @@ files = [
 
 [[package]]
 name = "chaostoolkit-lueur"
-version = "0.13.0"
+version = "0.13.1"
 requires_python = ">=3.10"
 summary = "Template project for Chaos Toolkit extensions"
 groups = ["default"]
@@ -633,8 +633,8 @@ dependencies = [
     "psutil>=7.0.0",
 ]
 files = [
-    {file = "chaostoolkit_lueur-0.13.0-py3-none-any.whl", hash = "sha256:f1bd27d5ac40385c3141e2a26acdbbea5a0bfb7c4b139e050df73c45f8a5fe2b"},
-    {file = "chaostoolkit_lueur-0.13.0.tar.gz", hash = "sha256:735fb32dac4a7ad7be34ef5603f70bc89702ecd2519bfe822dcecef1e5a732b1"},
+    {file = "chaostoolkit_lueur-0.13.1-py3-none-any.whl", hash = "sha256:6238b3d4bd47f54d5dd3005ecf416b2cb7020fbc8149717a36df9334e81b0edf"},
+    {file = "chaostoolkit_lueur-0.13.1.tar.gz", hash = "sha256:b80f743c234905816d8d47910b65c948766bea22e7d5cf2092d5881d4ae55bf4"},
 ]
 
 [[package]]
