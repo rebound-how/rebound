@@ -18,7 +18,7 @@ use crate::reporting::DnsTiming;
 /// Custom DNS Resolver that measures DNS resolution time and records it.
 #[derive(Clone, Debug)]
 pub struct TimingResolver {
-    resolver: Arc<RwLock<TokioResolver>>,
+    pub resolver: Arc<RwLock<TokioResolver>>,
     timing: Arc<Mutex<DnsTiming>>,
     event: Box<dyn ProxyTaskEvent>,
 }

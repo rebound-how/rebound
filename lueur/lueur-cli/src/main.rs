@@ -22,6 +22,7 @@ mod reporting;
 mod resolver;
 mod scenario;
 mod sched;
+mod state;
 mod termui;
 mod types;
 
@@ -74,8 +75,11 @@ use proxy::ProxyState;
     target_os = "linux",
     any(feature = "stealth", feature = "stealth-auto-build")
 ))]
-use proxy::run_ebpf_proxy;
-use proxy::run_proxy;
+use proxy::protocols::ebpf::init::initialize_ebpf_proxy;
+use proxy::protocols::http::init::get_http_proxy_address;
+use proxy::protocols::http::init::initialize_http_proxy;
+use proxy::protocols::tcp::init::initialize_tcp_proxies;
+use proxy::protocols::tcp::init::parse_proxy_protocols;
 use reporting::OutputFormat;
 use reporting::Report;
 use reporting::ReportItem;
@@ -97,6 +101,7 @@ use sched::EventType;
 use sched::FaultPeriodEvent;
 use sched::build_schedule_events;
 use sched::run_fault_schedule;
+use state::initialize_application_state;
 use termui::demo_prelude;
 use termui::full_progress;
 use termui::get_output_format_result;
@@ -161,19 +166,31 @@ async fn main() -> Result<()> {
 
     match &cli.command {
         Commands::Run { options } => {
-            let proxy_nic_config = get_proxy_address(&options.common);
-
             let stealth_mode = is_stealth(&options);
+            let app_state = state::initialize_application_state(
+                &options.common,
+                stealth_mode,
+            )
+            .await;
 
-            let app_state =
-                initialize_application_state(&options.common, stealth_mode)
-                    .await;
-
-            let _proxy_guard = initialize_proxy(
-                &proxy_nic_config,
+            let http_proxy_nic_config = get_http_proxy_address(&options.common);
+            let _http_proxy_guard = initialize_http_proxy(
+                &http_proxy_nic_config,
                 app_state.clone(),
-                proxy_shutdown_rx,
+                proxy_shutdown_tx.subscribe(),
                 config_rx.clone(),
+                task_manager.clone(),
+            )
+            .await;
+
+            let proxied_protos =
+                parse_proxy_protocols(options.common.proxy_protocols.clone())
+                    .await?;
+            let _tcp_proxy_guard = initialize_tcp_proxies(
+                proxied_protos.clone(),
+                app_state.clone(),
+                proxy_shutdown_tx.clone(),
+                config_tx.clone(),
                 task_manager.clone(),
             )
             .await;
@@ -190,7 +207,7 @@ async fn main() -> Result<()> {
                         );
                     } else {
                         match ebpf::get_ebpf_proxy(
-                            &proxy_nic_config,
+                            &http_proxy_nic_config,
                             options.stealth.ebpf_proxy_iface.clone(),
                             options.stealth.ebpf_proxy_ip.clone(),
                             options.stealth.ebpf_proxy_port,
@@ -255,7 +272,8 @@ async fn main() -> Result<()> {
 
             if !options.ui.no_ui {
                 proxy_prelude(
-                    proxy_nic_config.proxy_address(),
+                    http_proxy_nic_config.proxy_address(),
+                    proxied_protos.clone(),
                     &options,
                     &upstreams,
                     schedule_for_prelude,
@@ -321,14 +339,14 @@ async fn main() -> Result<()> {
             ScenarioCommands::Run(config) => {
                 let start = Instant::now();
 
-                let proxy_nic_config = get_proxy_address(common);
+                let proxy_nic_config = get_http_proxy_address(common);
 
                 let m = MultiProgress::new();
 
                 let app_state =
                     initialize_application_state(&common, false).await;
 
-                let _proxy_guard = initialize_proxy(
+                let _proxy_guard = initialize_http_proxy(
                     &proxy_nic_config,
                     app_state.clone(),
                     proxy_shutdown_rx,
@@ -540,11 +558,6 @@ fn map_faults(
         .collect()
 }
 
-#[derive(Debug, Clone)]
-struct AppState {
-    pub proxy_state: Arc<ProxyState>,
-}
-
 #[cfg(all(target_os = "linux", feature = "stealth"))]
 fn is_stealth(cli: &RunCommandOptions) -> bool {
     cli.stealth.ebpf
@@ -563,138 +576,4 @@ fn is_stealth(cli: &RunCommandOptions) -> bool {
 #[cfg(not(target_os = "linux"))]
 fn is_stealth(cli: &RunCommandOptions) -> bool {
     false
-}
-
-async fn initialize_application_state(
-    cli: &ProxyAwareCommandCommon,
-    is_stealth: bool,
-) -> AppState {
-    // Initialize shared state with empty configuration
-    let state = Arc::new(ProxyState::new(is_stealth));
-
-    //let rpc_plugin = load_remote_plugins(cli.grpc_plugins.clone()).await;
-    //state.update_plugins(vec![rpc_plugin]).await;
-
-    let upstream_hosts = cli.upstream_hosts.clone();
-    let upstreams: Vec<String> =
-        upstream_hosts.iter().map(|h| upstream_to_addr(h).unwrap()).collect();
-
-    state.update_upstream_hosts(upstreams).await;
-
-    AppState { proxy_state: state }
-}
-
-async fn initialize_proxy(
-    proxy_nic_config: &ProxyAddrConfig,
-    state: AppState,
-    shutdown_rx: broadcast::Receiver<()>,
-    config_rx: watch::Receiver<ProxyConfig>,
-    task_manager: Arc<TaskManager>,
-) -> Result<task::JoinHandle<std::result::Result<(), ProxyError>>> {
-    let proxy_address = proxy_nic_config.proxy_address();
-
-    // Create a oneshot channel for readiness signaling
-    let (readiness_tx, readiness_rx) = oneshot::channel::<()>();
-
-    let handle = tokio::spawn(run_proxy(
-        proxy_address.clone(),
-        state.proxy_state,
-        shutdown_rx,
-        readiness_tx,
-        config_rx,
-        task_manager,
-    ));
-
-    // Wait for the proxy to signal readiness
-    let _ = readiness_rx.await.map_err(|e| {
-        ProxyError::Internal(format!(
-            "Failed to receive readiness signal: {}",
-            e
-        ))
-    });
-
-    tracing::info!("Proxy server is listening on {}", proxy_address);
-
-    Ok(handle)
-}
-
-#[cfg(all(
-    target_os = "linux",
-    any(feature = "stealth", feature = "stealth-auto-build")
-))]
-async fn initialize_ebpf_proxy(
-    ebpf_proxy_config: &EbpfProxyAddrConfig,
-    state: AppState,
-    shutdown_rx: broadcast::Receiver<()>,
-    config_rx: watch::Receiver<ProxyConfig>,
-    task_manager: Arc<TaskManager>,
-) -> Result<task::JoinHandle<std::result::Result<(), ProxyError>>> {
-    let proxy_address = ebpf_proxy_config.proxy_address();
-
-    // Create a oneshot channel for readiness signaling
-    let (readiness_tx, readiness_rx) = oneshot::channel::<()>();
-
-    let handle = tokio::spawn(run_ebpf_proxy(
-        proxy_address.clone(),
-        state.proxy_state,
-        shutdown_rx,
-        readiness_tx,
-        config_rx,
-        task_manager,
-    ));
-
-    // Wait for the proxy to signal readiness
-    let _ = readiness_rx.await.map_err(|e| {
-        ProxyError::Internal(format!(
-            "Failed to receive readiness signal: {}",
-            e
-        ))
-    });
-
-    tracing::info!("eBPF Proxy server is listening on {}", proxy_address);
-
-    Ok(handle)
-}
-
-fn upstream_to_addr(
-    host: &String,
-) -> Result<String, Box<dyn std::error::Error>> {
-    if host == &String::from("*") {
-        return Ok(host.clone());
-    }
-
-    let url_str = if host.contains("://") {
-        host.to_string()
-    } else {
-        format!("scheme://{}", host)
-    };
-
-    let url = Url::parse(&url_str)?;
-
-    let host = url.host_str().ok_or("Missing host")?.to_string();
-
-    let port = url.port_or_known_default().unwrap();
-
-    Ok(format!("{}:{}", host, port))
-}
-
-fn get_proxy_address(common: &ProxyAwareCommandCommon) -> ProxyAddrConfig {
-    let proxy_address = common.proxy_address.clone();
-
-    let addr = proxy_address.unwrap_or("127.0.0.1:8080".to_string());
-    let socket_addr: SocketAddr = addr
-        .parse()
-        .map_err(|e| format!("Invalid proxy address '{}': {}", addr, e))
-        .unwrap();
-    let sock_proxy_ip = socket_addr.ip();
-    let proxy_port = socket_addr.port();
-
-    let proxy_ip = match sock_proxy_ip {
-        IpAddr::V4(ipv4) => ipv4,
-        IpAddr::V6(_ipv6) => {
-            panic!("IPV6 addresses are not supported for proxy");
-        }
-    };
-
-    ProxyAddrConfig { proxy_ip, proxy_port }
 }

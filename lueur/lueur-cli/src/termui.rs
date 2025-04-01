@@ -34,6 +34,7 @@ use crate::sched::FaultPeriodEvent;
 use crate::types::Direction;
 use crate::types::LatencyDistribution;
 use crate::types::ProxyAddrConfig;
+use crate::types::ProxyProtocol;
 
 /// Struct to hold information about each task
 struct TaskInfo {
@@ -119,7 +120,6 @@ pub async fn lean_progress(
     if total_duration.is_none() {
         chr = "".to_string();
     }
-
     status_bar.set_style(
         ProgressStyle::with_template(
             format!("{}{}{{msg}}", chr, base_indent).as_str(),
@@ -457,7 +457,7 @@ pub async fn full_progress(
                                     let mut sep = "".to_string();
 
                                     for fault in task_info.faults.clone() {
-                                        if let FaultEvent::Latency { direction, side, delay: _ } = &fault {
+                                        if let FaultEvent::Latency { .. } = &fault {
                                             /*let max_events = 20;
 
                                             let sparkline: String = task_info.events.iter()
@@ -475,7 +475,7 @@ pub async fn full_progress(
                                                 .rev()
                                                 .map(|c| c.to_string())
                                                 .collect();
-                                            fault_results.push_str(&format!("{} {}{} ", format!("{} latency", side).yellow(), "".to_string(), &sparkline));
+                                            fault_results.push_str(&format!("{} {}{} ", format!("{} latency", side).cyan(), "".to_string(), &sparkline));
                                             */
                                             let mut latency = 0.0;
                                             if !task_info.events.is_empty() {
@@ -498,7 +498,7 @@ pub async fn full_progress(
 
                                             fault_results.push_str(&format!("{}{} ~{:.3}ms", sep, "Latency".yellow(), latency));
                                             sep = " - ".to_string();
-                                        } else if let FaultEvent::Bandwidth { direction: _, side, bps: _ } = &fault {
+                                        } else if let FaultEvent::Bandwidth { ..  } = &fault {
 
                                             let mut bandwidth = 0;
                                             if !task_info.events.is_empty() {
@@ -522,19 +522,19 @@ pub async fn full_progress(
                                             let formatted_rate = format!("~{}", format_bandwidth(bandwidth));
                                             fault_results.push_str(&format!("{}{} {}", sep, "Bandwidth".yellow(), &formatted_rate));
                                             sep = " - ".to_string();
-                                        } else if let FaultEvent::PacketLoss {state: _, direction: _, side} = &fault {
+                                        } else if let FaultEvent::PacketLoss { .. } = &fault {
                                             fault_results.push_str(&format!("{}{}", sep, "Packet Loss".yellow()));
                                             sep = " - ".to_string();
-                                        } else if let FaultEvent::HttpResponseFault { direction, side, status_code, response_body } = &fault {
+                                        } else if let FaultEvent::HttpResponseFault { .. } = &fault {
                                             fault_results.push_str(&format!("{}{}", sep, "Http".yellow()));
                                             sep = " - ".to_string();
-                                        } else if let FaultEvent::Dns { direction, side, triggered } = &fault {
+                                        } else if let FaultEvent::Dns { ..  } = &fault {
                                             fault_results.push_str(&format!("{}{}", sep, "Dns".yellow()));
                                             sep = " - ".to_string();
-                                        } else if let FaultEvent::Jitter { direction, side, amplitude, frequency } = &fault {
+                                        } else if let FaultEvent::Jitter { ..  } = &fault {
                                             fault_results.push_str(&format!("{}{}", sep, "Jitter".yellow()));
                                             sep = " - ".to_string();
-                                        } else if let FaultEvent::Blackhole { direction, side } = &fault {
+                                        } else if let FaultEvent::Blackhole { ..  } = &fault {
                                             fault_results.push_str(&format!("{}{}", sep, "Blackhole".yellow()));
                                             sep = " - ".to_string();
                                         }
@@ -698,6 +698,7 @@ pub async fn quiet_handle_displayable_events(
 
 pub fn proxy_prelude(
     proxy_address: String,
+    proxied_protos: Vec<ProxyProtocol>,
     opts: &RunCommandOptions,
     upstreams: &Vec<String>,
     events: Vec<FaultPeriodEvent>,
@@ -707,19 +708,76 @@ pub fn proxy_prelude(
     let g = "lueur".gradient(Color::DarkOrange);
     let r = "Your Resiliency Exploration Tool".gradient(Color::Purple1a);
     let a = format!("http://{}", proxy_address).cyan();
+    let pp = proxied_protos
+        .iter()
+        .map(|p| {
+            format!(
+                "{}",
+                format!(
+                    "      - {} {} {} {}",
+                    format!(
+                        "{}:{}",
+                        p.proxy.proxy_ip.to_string(),
+                        p.proxy.proxy_port
+                    )
+                    .cyan(),
+                    "=>".dim(),
+                    format!(
+                        "{}:{}",
+                        p.remote.remote_host, p.remote.remote_port
+                    )
+                    .cyan(),
+                    "[tcp: tunnel]".dim()
+                )
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    let mut hosts;
+
+    if !upstreams.is_empty() {
+        hosts = format!(
+            "{}",
+            upstreams
+                .iter()
+                .map(|h| h.clone())
+                .collect::<Vec<String>>()
+                .join(", ")
+        );
+        if hosts == "*" {
+            hosts = "All Hosts".to_string();
+        }
+        hosts = format!("🎯 {}", hosts.dim());
+    } else {
+        hosts = format!("💡 {}", "No upstream hosts configured for the HTTP proxy. No faults will be applied.".color(Color::Orange1).dim());
+    }
+
+    let h = "As you route traffic through these proxies, lueur will simulate network
+    conditions so you can see how your application copes.".dim();
+
     println!(
         "
     Welcome to {} — {}!
 
-    To get started, route your HTTP/HTTPS requests through:
     {}
+      - {} {}
+         {} {}
+      - {} {}
+{}
 
-    As you send requests, lueur will simulate network conditions
-    so you can see how your application copes.
-
-    Ready when you are — go ahead and make some requests!
-        ",
-        g, r, a
+    {}",
+        g,
+        r,
+        "Enabled Proxies:".bold(),
+        a,
+        "[HTTP: forward]".dim(),
+        "Target Upstreams:".dim(),
+        hosts,
+        a,
+        "[HTTP: tunnel]".dim(),
+        pp,
+        h
     );
 
     // Summary header with a bit of color
@@ -732,7 +790,7 @@ pub fn proxy_prelude(
                 "{}",
                 format!(
                     "     - {}: {}: {}, {}: {}, {}: {}",
-                    "HTTP Response".light_blue(),
+                    "HTTP Response".cyan(),
                     "status".dim(),
                     opts.http_error.http_response_status_code,
                     "probability".dim(),
@@ -746,7 +804,7 @@ pub fn proxy_prelude(
                 "{}",
                 format!(
                     "     - {}: {}: {}, {}: {}",
-                    "HTTP Response".light_blue(),
+                    "HTTP Response".cyan(),
                     "status".dim(),
                     opts.http_error.http_response_status_code,
                     "probability".dim(),
@@ -760,7 +818,7 @@ pub fn proxy_prelude(
     if opts.latency.enabled {
         let mut latency_summary = format!(
             "     - {}: {}: {}, {}: {:?}, {}: {:?}, {}: {:?}",
-            "Latency".light_blue(),
+            "Latency".cyan(),
             "per read/write".dim(),
             opts.latency.per_read_write,
             "side".dim(),
@@ -832,7 +890,7 @@ pub fn proxy_prelude(
             "{}",
             format!(
                 "     - {}: {}: {:?}, {}: {:?}, {}: {} {:?}",
-                "Bandwidth".light_blue(),
+                "Bandwidth".cyan(),
                 "side".dim(),
                 opts.bandwidth.side,
                 "direction".dim(),
@@ -850,7 +908,7 @@ pub fn proxy_prelude(
             "{}",
             format!(
                 "     - {}: {}: {:?}, {}: {}ms, {}: {}Hz",
-                "Jitter".light_blue(),
+                "Jitter".cyan(),
                 "direction".dim(),
                 opts.jitter.jitter_direction,
                 "amplitude".dim(),
@@ -867,7 +925,7 @@ pub fn proxy_prelude(
             "{}",
             format!(
                 "     - {}: {}: {}",
-                "DNS".light_blue(),
+                "DNS".cyan(),
                 "trigger probability".dim(),
                 opts.dns.dns_rate
             )
@@ -880,7 +938,7 @@ pub fn proxy_prelude(
             "{}",
             format!(
                 "     - {}: {}: {:?}, {}: {:?}",
-                "Packet Loss".light_blue(),
+                "Packet Loss".cyan(),
                 "side".dim(),
                 opts.packet_loss.side,
                 "direction".dim(),
@@ -895,7 +953,7 @@ pub fn proxy_prelude(
             "{}",
             format!(
                 "     - {}: {}: {:?}, {}: {:?}",
-                "Blackhole".light_blue(),
+                "Blackhole".cyan(),
                 "side".dim(),
                 opts.blackhole.side,
                 "direction".dim(),
@@ -903,8 +961,6 @@ pub fn proxy_prelude(
             )
         );
     }
-
-    let mut noop = false;
 
     // If no fault is enabled, let the user know
     if !opts.http_error.enabled
@@ -916,32 +972,8 @@ pub fn proxy_prelude(
         && !opts.blackhole.enabled
     {
         println!("    {}", " No faults configured.".dim().hsl(0.39, 1.0, 0.50));
-        noop = true;
     }
 
-    println!("{}", "\n    Hosts Covered By The Faults:".bold().white());
-    if !upstreams.is_empty() {
-        for host in upstreams {
-            println!("     - {}", host.clone().cyan());
-        }
-    } else {
-        println!(
-            "    {}",
-            " No upstream hosts configured.".dim().hsl(0.39, 1.0, 0.50)
-        );
-        noop = true;
-    }
-
-    if noop {
-        println!(
-            "{}",
-            format!(
-                "{}{}",
-                "\n     The proxy is not configured to impact any traffic 💡.\n     You may want to try setting some parameters. For instance:\n",
-                "\n     $ lueur run --with-latency --latency-mean 300 --upstream=*"
-            ).light_gray()
-        )
-    }
     let process_start = tokio::time::Instant::now();
     let (schedules, computed_total_duration) =
         build_fault_schedules(events, process_start, total_duration);
@@ -1149,8 +1181,10 @@ pub fn schedule_timeline(faults: &[FaultSchedule], total_run_seconds: f64) {
     const LABEL_WIDTH: usize = 12 + INDENT;
 
     for fault in faults {
-        let label =
-            format!("{:>width$}: ", fault.name, width = LABEL_WIDTH - 2);
+        let label = format!(
+            "{}: ",
+            format!("{:>width$}", fault.name, width = LABEL_WIDTH - 2).cyan()
+        );
 
         let mut line = String::new();
         line.push_str(&label);

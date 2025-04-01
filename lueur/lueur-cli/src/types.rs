@@ -1,19 +1,65 @@
 use std::fmt;
+use std::net::IpAddr;
 use std::net::Ipv4Addr;
 use std::time::Duration;
 
 use clap::ValueEnum;
 use serde::Deserialize;
 use serde::Serialize;
-use tokio::time::Instant;
 
 use crate::config;
 use crate::config::FaultConfig;
 use crate::config::FaultKind;
 use crate::errors::ScenarioError;
 
+#[derive(Debug, Clone)]
+pub enum ProtocolType {
+    Http,
+    Https,
+    Psql,
+}
+
+#[derive(Debug, Clone)]
+pub struct ProxyProtocol {
+    pub proxy: ProxyAddrConfig,
+    pub remote: RemoteAddrConfig,
+    pub proto: Option<ProtocolType>,
+}
+
+impl fmt::Display for ProxyProtocol {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}:{} => {}:{}",
+            self.proxy.proxy_ip.to_string(),
+            self.proxy.proxy_port,
+            self.remote.remote_host,
+            self.remote.remote_port,
+        )
+    }
+}
+
+impl ProxyProtocol {
+    pub fn remote_requires_tls(&self) -> bool {
+        match &self.proto {
+            Some(t) => match t {
+                ProtocolType::Http => false,
+                ProtocolType::Https => true,
+                ProtocolType::Psql => false,
+            },
+            None => false,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct RemoteAddrConfig {
+    pub remote_host: String,
+    pub remote_port: u16,
+}
+
 /// Structure to hold the final configuration.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ProxyAddrConfig {
     pub proxy_ip: Ipv4Addr,
     pub proxy_port: u16,

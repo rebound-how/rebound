@@ -479,17 +479,20 @@ impl<S: AsyncRead + Unpin + std::fmt::Debug> AsyncRead
                         delay: Some(delay),
                     });
             }
-            *this.applied_count += 1;
             this.read_sleep.replace(Box::pin(sleep(delay)));
         }
 
         if let Some(delay) = this.read_sleep.as_mut() {
             match delay.as_mut().poll(cx) {
                 Poll::Ready(_) => {
+                    // we are done with the delay
                     this.read_sleep.take();
+                    *this.applied_count += 1;
                     return this.stream.poll_read(cx, buf);
                 }
                 Poll::Pending => {
+                    tracing::debug!("Pending {}", *this.applied_count);
+
                     return Poll::Pending;
                 }
             }
@@ -576,7 +579,6 @@ impl<S: AsyncWrite + Unpin + std::fmt::Debug> AsyncWrite
                         delay: Some(delay),
                     });
             }
-            *this.applied_count += 1;
             this.write_sleep.replace(Box::pin(sleep(delay)));
         }
 
@@ -584,6 +586,7 @@ impl<S: AsyncWrite + Unpin + std::fmt::Debug> AsyncWrite
             match delay.as_mut().poll(cx) {
                 Poll::Ready(_) => {
                     this.write_sleep.take();
+                    *this.applied_count += 1;
                     return this.stream.poll_write(cx, buf);
                 }
                 Poll::Pending => {

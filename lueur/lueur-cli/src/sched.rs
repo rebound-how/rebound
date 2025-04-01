@@ -8,7 +8,6 @@ use tokio::sync::watch;
 use tokio::time::Instant;
 use tokio::time::sleep_until;
 
-use crate::AppState;
 use crate::cli::RunCommandOptions;
 use crate::config::FaultConfig;
 use crate::config::FaultKind;
@@ -16,6 +15,7 @@ use crate::config::ProxyConfig;
 use crate::errors::SchedulingError;
 use crate::event::FaultEvent;
 use crate::proxy::ProxyState;
+use crate::state::AppState;
 use crate::types::FaultPeriod;
 use crate::types::FaultPeriodSpec;
 use crate::types::TimeSpec; // from the 'parse_duration' crate

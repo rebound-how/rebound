@@ -260,6 +260,10 @@ impl From<&RunCommandOptions> for ProxyConfig {
             faults.push(FaultConfig::HttpError((&cli.http_error).into()));
         }
 
+        if cli.blackhole.enabled && cli.blackhole.blackhole_sched.is_none() {
+            faults.push(FaultConfig::Blackhole((&cli.blackhole).into()));
+        }
+
         ProxyConfig { faults }
     }
 }

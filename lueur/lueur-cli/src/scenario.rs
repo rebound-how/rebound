@@ -32,7 +32,6 @@ use tokio_stream::Stream;
 use url::Url;
 use walkdir::WalkDir;
 
-use crate::AppState;
 use crate::config::FaultConfig;
 use crate::config::ProxyConfig;
 use crate::errors::ProxyError;
@@ -52,6 +51,7 @@ use crate::reporting::ReportItemMetricsFaults;
 use crate::reporting::ReportItemProtocol;
 use crate::reporting::ReportItemResult;
 use crate::reporting::ReportItemTarget;
+use crate::state::AppState;
 use crate::types::FaultConfiguration;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

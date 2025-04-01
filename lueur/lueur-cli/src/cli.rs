@@ -4,7 +4,6 @@ use clap::Subcommand;
 use serde::Deserialize;
 use serde::Serialize;
 
-use crate::errors::SchedulingError;
 use crate::types::BandwidthUnit;
 use crate::types::Direction;
 use crate::types::LatencyDistribution;
@@ -56,15 +55,25 @@ pub struct Cli {
 /// Common options for all Proxy aware commands
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]
 pub struct ProxyAwareCommandCommon {
-    /// Listening address for the proxy server
+    /// Listening address for the HTTP proxy server
     #[arg(
         help_heading = "Proxy Options",
         long = "proxy-address",
         help = "Listening address for the proxy server.",
-        env = "LUEUR_PROXY_ADDRESS",
+        env = "LUEUR_HTTP_PROXY_ADDRESS",
+        default_value = "127.0.0.1:3180",
         value_parser
     )]
-    pub proxy_address: Option<String>,
+    pub http_proxy_address: Option<String>,
+
+    /// Protocols to proxy over TCP
+    #[arg(
+        help_heading = "Proxy Options",
+        long = "proxy-proto",
+        help = "Protocol to proxy over TCP.",
+        value_parser
+    )]
+    pub proxy_protocols: Vec<String>,
 
     /// gRPC plugin addresses to apply (can specify multiple)
     #[arg(

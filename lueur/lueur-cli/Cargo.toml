@@ -76,6 +76,11 @@ env_logger = "0.11.7"
 parse_duration = "2.1.1"
 chrono-humanize = "0.2.3"
 indicatif = { version = "0.17.11", features = ["tokio", "improved_unicode"] }
+tokio-rustls = "0.26.2"
+webpki-roots = "0.26.8"
+rustls-pki-types = "1.11.0"
+rustls-native-certs = "0.8.1"
+rustls-platform-verifier = "0.5.1"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 aya-ebpf = { version = "0.1.1", optional = true }
@@ -101,7 +106,9 @@ name = "lueur"
 path = "src/main.rs"
 
 [features]
-default = []
+default = [
+    "stealth"
+]
 stealth = [
     "aya-ebpf",
     "aya-log-ebpf",

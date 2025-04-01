@@ -2,4 +2,10 @@
 
 ## Added
 
-- Release for `x86_64-apple-darwin` as well
+- Support for more protocols over TCP/TLS
+- Cleaner UI
+
+## Fixed
+
+- Latency not applied when one a single poll_read took place
+
