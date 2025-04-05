@@ -1,7 +1,6 @@
 use std::collections::HashMap;
-use std::net::IpAddr;
-use std::net::SocketAddr;
 use std::path::Path;
+use std::sync::Arc;
 use std::time::Duration;
 use std::time::Instant;
 
@@ -12,28 +11,26 @@ use chrono_humanize::HumanTime;
 use chrono_humanize::Tense;
 use colorful::Color;
 use colorful::Colorful;
-use colorful::ExtraColorInterface;
 use colorful::core::color_string::CString;
 use indicatif::MultiProgress;
 use indicatif::ProgressBar;
 use indicatif::ProgressDrawTarget;
 use indicatif::ProgressStyle;
+use tokio::sync::RwLock;
 use tokio::sync::broadcast;
 use tokio::sync::broadcast::Receiver;
-use tokio::time::sleep;
 
-use crate::cli::ProxyAwareCommandCommon;
 use crate::cli::RunCommandOptions;
 use crate::config::FaultKind;
 use crate::event::FaultEvent;
 use crate::event::TaskId;
 use crate::event::TaskProgressEvent;
+use crate::plugin::rpc::RpcPluginManager;
 use crate::reporting::OutputFormat;
 use crate::sched::EventType;
 use crate::sched::FaultPeriodEvent;
 use crate::types::Direction;
 use crate::types::LatencyDistribution;
-use crate::types::ProxyAddrConfig;
 use crate::types::ProxyProtocol;
 
 /// Struct to hold information about each task
@@ -122,7 +119,8 @@ pub async fn lean_progress(
     }
     status_bar.set_style(
         ProgressStyle::with_template(
-            format!("{}{}{{msg}}", chr, base_indent).as_str(),
+            format!("{}{}{{spinner:.green}} {{msg}}", chr, base_indent)
+                .as_str(),
         )
         .unwrap()
         .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]),
@@ -240,7 +238,7 @@ pub async fn lean_progress(
                         }
 
                         let line = format!(
-                            "Total: {}, Applied Faults {}, Passthrough {}, Errors: {}",
+                            "Total Events {}, Applied Faults {}, Passthrough {}, Errors: {}",
                             format!("{}", started_count).light_cyan(),
                             format!("{}", faults_count).light_yellow(),
                             format!("{}", passthrough_count).light_blue(),
@@ -345,8 +343,6 @@ pub async fn full_progress(
                                     let u = format!("{} {}", "URL:".dim(), task_info.url.clone().light_blue());
                                     let d = format!("{} {:.3}ms", "DNS:".dim(), task_info.resolution_time);
                                     let f = fault_to_string(&task_info.faults);
-
-                                    tracing::debug!("With fault {}", f);
                                     task_info.pb.set_message(format!("{} | {} | {} | ...", u, d, f));
                                 }
                             }
@@ -629,6 +625,7 @@ fn fault_to_string(faults: &Vec<FaultEvent>) -> String {
                 format!("{} http error", side)
             }
             FaultEvent::Blackhole { side, .. } => format!("{} blackhole", side),
+            FaultEvent::Grpc { side, .. } => format!("{} grpc", side),
         };
         b.push(f);
     }
@@ -696,9 +693,10 @@ pub async fn quiet_handle_displayable_events(
     }
 }
 
-pub fn proxy_prelude(
+pub async fn proxy_prelude(
     proxy_address: String,
     proxied_protos: Vec<ProxyProtocol>,
+    plugins: Arc<RwLock<RpcPluginManager>>,
     opts: &RunCommandOptions,
     upstreams: &Vec<String>,
     events: Vec<FaultPeriodEvent>,
@@ -714,7 +712,7 @@ pub fn proxy_prelude(
             format!(
                 "{}",
                 format!(
-                    "      - {} {} {} {}",
+                    "     - {} {} {} {}",
                     format!(
                         "{}:{}",
                         p.proxy.proxy_ip.to_string(),
@@ -732,6 +730,38 @@ pub fn proxy_prelude(
             )
         })
         .collect::<Vec<_>>()
+        .join("\n");
+
+    let plugins_lock = plugins.read().await;
+    let pl = plugins_lock
+        .clone()
+        .plugins
+        .read()
+        .await
+        .iter()
+        .map(|p| match p.meta.clone() {
+            Some(meta) => {
+                format!(
+                    "{}",
+                    format!(
+                        "     - {} {}",
+                        meta.name.clone().cyan(),
+                        format!("[{} | {}]", meta.version, p.addr).dim()
+                    )
+                )
+            }
+            None => {
+                format!(
+                    "{}",
+                    format!(
+                        "     - {} {}",
+                        format!("{}", p.addr.clone().cyan()),
+                        "[not connected]".dim()
+                    )
+                )
+            }
+        })
+        .collect::<Vec<String>>()
         .join("\n");
 
     let mut hosts;
@@ -761,12 +791,11 @@ pub fn proxy_prelude(
     Welcome to {} — {}!
 
     {}
-      - {} {}
-         {} {}
-      - {} {}
-{}
-
-    {}",
+     - {} {}
+        {} {}
+     - {} {}
+        {} {}
+{}",
         g,
         r,
         "Enabled Proxies:".bold(),
@@ -776,12 +805,29 @@ pub fn proxy_prelude(
         hosts,
         a,
         "[HTTP: tunnel]".dim(),
+        "Target Upstreams:".dim(),
+        hosts,
         pp,
-        h
     );
 
+    if !pl.is_empty() {
+        println!(
+            "{}",
+            format!("    {}\n     {}", "Plugins:".bold().white(), pl)
+        );
+    } else {
+        println!(
+            "{}",
+            format!(
+                "    {}\n     {}",
+                "Plugins:".bold().white(),
+                "No plugins provided.".color(Color::Orange1).dim()
+            )
+        );
+    }
+
     // Summary header with a bit of color
-    println!("{}", "\n    Configured faults:".bold().white());
+    println!("{}", "\n    Configured Faults:".bold().white());
 
     // HTTP Response Fault
     if opts.http_error.enabled {
@@ -971,7 +1017,10 @@ pub fn proxy_prelude(
         && !opts.packet_loss.enabled
         && !opts.blackhole.enabled
     {
-        println!("    {}", " No faults configured.".dim().hsl(0.39, 1.0, 0.50));
+        println!(
+            "    {}",
+            " No faults configured.".color(Color::Orange1).dim()
+        );
     }
 
     let process_start = tokio::time::Instant::now();
@@ -1064,6 +1113,7 @@ fn fault_kind_label_and_color(kind: FaultKind) -> (&'static str, Color) {
         FaultKind::Blackhole => ("Blackhole", Color::Wheat4),
         FaultKind::Metrics => ("Metrics", Color::Pink1),
         FaultKind::Unknown => ("Unknown", Color::Grey0),
+        FaultKind::Grpc => ("Grpc", Color::IndianRed1a),
     }
 }
 

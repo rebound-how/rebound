@@ -63,13 +63,20 @@ impl FaultInjector for MetricsInjector {
         self.enabled = false
     }
 
-    fn inject(
+    fn clone_box(&self) -> Box<dyn FaultInjector> {
+        Box::new(self.clone())
+    }
+
+    async fn inject(
         &self,
         stream: Box<dyn Bidirectional + 'static>,
         event: Box<dyn ProxyTaskEvent>,
         _side: StreamSide,
-    ) -> Box<dyn Bidirectional + 'static> {
-        Box::new(WrapperStream::new(stream, self.clone(), event.clone()))
+    ) -> Result<
+        Box<dyn Bidirectional + 'static>,
+        (ProxyError, Box<dyn Bidirectional + 'static>),
+    > {
+        Ok(Box::new(WrapperStream::new(stream, self.clone(), event.clone())))
     }
 
     async fn apply_on_response(

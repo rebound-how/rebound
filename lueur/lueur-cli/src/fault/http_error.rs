@@ -52,6 +52,10 @@ impl FaultInjector for HttpResponseFaultInjector {
         self.settings.enabled = false
     }
 
+    fn clone_box(&self) -> Box<dyn FaultInjector> {
+        Box::new(self.clone())
+    }
+
     async fn apply_on_request_builder(
         &self,
         builder: ReqwestClientBuilder,
@@ -104,8 +108,6 @@ impl FaultInjector for HttpResponseFaultInjector {
             *intermediate.status_mut() = status;
             *intermediate.headers_mut() = headers;
 
-            tracing::debug!("Setting response status code {}", status);
-
             let _ = event.on_applied(FaultEvent::HttpResponseFault {
                 direction: Direction::Ingress,
                 side: StreamSide::Server,
@@ -118,15 +120,18 @@ impl FaultInjector for HttpResponseFaultInjector {
         Ok(resp)
     }
 
-    fn inject(
+    async fn inject(
         &self,
         stream: Box<dyn Bidirectional + 'static>,
         _event: Box<dyn ProxyTaskEvent>,
         _side: StreamSide,
-    ) -> Box<dyn Bidirectional + 'static> {
+    ) -> Result<
+        Box<dyn Bidirectional + 'static>,
+        (ProxyError, Box<dyn Bidirectional + 'static>),
+    > {
         // This is opaque data for us (tunneling is done over encrypted stream)
         // so we can't modify any of its content.
         // maybe someday we will...
-        stream
+        Ok(stream)
     }
 }

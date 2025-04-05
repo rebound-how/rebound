@@ -17,7 +17,6 @@ use serde::Serialize;
 use tera::Context;
 use tera::Tera;
 use tracing::error;
-use tracing::info;
 
 use crate::errors::ScenarioError;
 use crate::event::FaultEvent;
@@ -205,7 +204,7 @@ impl Report {
             return Err(ScenarioError::ReportError(err_msg));
         }
 
-        info!("Scenario results successfully saved to '{}'.", path);
+        tracing::info!("Scenario results successfully saved to '{}'.", path);
         Ok(())
     }
 }

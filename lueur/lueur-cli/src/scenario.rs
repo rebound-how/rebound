@@ -11,6 +11,7 @@ use std::task::Poll;
 use std::time::Duration;
 use std::time::Instant;
 
+use arc_swap::ArcSwap;
 use async_stream::stream;
 use bytes::Bytes;
 use bytes::BytesMut;
@@ -40,6 +41,9 @@ use crate::event::FaultEvent;
 use crate::event::TaskId;
 use crate::event::TaskProgressEvent;
 use crate::event::TaskProgressReceiver;
+use crate::fault::FaultInjector;
+use crate::plugin::load_injectors;
+use crate::proxy::ProxyState;
 use crate::reporting::DnsTiming;
 use crate::reporting::ReportItemEvent;
 use crate::reporting::ReportItemExpectation;
@@ -51,7 +55,6 @@ use crate::reporting::ReportItemMetricsFaults;
 use crate::reporting::ReportItemProtocol;
 use crate::reporting::ReportItemResult;
 use crate::reporting::ReportItemTarget;
-use crate::state::AppState;
 use crate::types::FaultConfiguration;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -122,22 +125,25 @@ pub struct Scenario {
 
 pub async fn execute_item(
     proxy_address: String,
-    config_tx: watch::Sender<ProxyConfig>,
+    config_tx: watch::Sender<(ProxyConfig, Vec<Box<dyn FaultInjector>>)>,
     item: ScenarioItem,
-    app_state: AppState,
+    proxy_state: Arc<ProxyState>,
     event_manager: Arc<ScenarioEventManager>,
 ) -> ReportItemResult {
     let upstream_hosts = item.context.upstreams.clone();
     let upstreams: Vec<String> =
         upstream_hosts.iter().map(|h| upstream_to_addr(h).unwrap()).collect();
-    app_state.proxy_state.update_upstream_hosts(upstreams).await;
+    proxy_state.set_upstream_hosts(upstreams).await;
 
     let faults = item.context.faults.clone();
     let fault_config: Vec<FaultConfig> =
         faults.iter().map(|f| f.build().unwrap()).collect();
-    let new_config = ProxyConfig { faults: fault_config };
+    let new_config =
+        ProxyConfig { faults: Arc::new(ArcSwap::from_pointee(fault_config)) };
 
-    if config_tx.send(new_config).is_err() {
+    let injectors: Vec<Box<dyn FaultInjector>> = load_injectors(&new_config);
+
+    if config_tx.send((new_config, injectors)).is_err() {
         tracing::error!("Proxy task has been shut down.");
     }
 

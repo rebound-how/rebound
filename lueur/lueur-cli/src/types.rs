@@ -12,11 +12,34 @@ use crate::config::FaultConfig;
 use crate::config::FaultKind;
 use crate::errors::ScenarioError;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq)]
 pub enum ProtocolType {
+    #[default]
+    None,
     Http,
     Https,
     Psql,
+}
+
+impl ProtocolType {
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s.to_lowercase().as_str() {
+            "http" => Some(ProtocolType::Http),
+            "https" => Some(ProtocolType::Https),
+            "psql" => Some(ProtocolType::Psql),
+            _ => None,
+        }
+    }
+
+    pub fn from_i32(s: &i32) -> Option<Self> {
+        match s {
+            0 => None,
+            1 => Some(ProtocolType::Http),
+            2 => Some(ProtocolType::Https),
+            3 => Some(ProtocolType::Psql),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -46,6 +69,7 @@ impl ProxyProtocol {
                 ProtocolType::Http => false,
                 ProtocolType::Https => true,
                 ProtocolType::Psql => false,
+                ProtocolType::None => false,
             },
             None => false,
         }

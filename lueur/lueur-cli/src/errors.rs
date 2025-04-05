@@ -1,9 +1,12 @@
 use axum::Json;
+use axum::body::Body;
+use axum::http;
 use axum::response::IntoResponse;
 use axum::response::Response;
 use hyper::StatusCode;
 use serde_json::json;
 use thiserror::Error;
+use tonic::Status;
 
 #[derive(Error, Debug)]
 pub enum DemoError {}
@@ -19,14 +22,26 @@ pub enum ProxyError {
     #[error("Hyper error: {0}")]
     HyperError(#[from] hyper::Error),
 
+    #[error("Axum error: {0}")]
+    AxumError(#[from] axum::http::Error),
+
+    #[error("HttpHeaderNameError error: {0}")]
+    HttpHeaderNameError(#[from] http::header::InvalidHeaderName),
+
+    #[error("HttpHeaderValueError error: {0}")]
+    HttpHeaderValueError(#[from] http::header::InvalidHeaderValue),
+
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),
 
     #[error("gRPC error: {0}")]
     GrpcError(#[from] tonic::Status),
 
+    #[error("aborting processing now")]
+    GrpcAbort(Response<Vec<u8>>),
+
     #[error("RPC call error to '{0}' during '{1}': {2}")]
-    RpcCallError(String, String, String),
+    RpcCallError(String, String, Status),
 
     #[error("RPC connection error to '{0}': {1}")]
     RpcConnectionError(String, String),
@@ -43,7 +58,7 @@ pub enum ProxyError {
 }
 
 impl IntoResponse for ProxyError {
-    fn into_response(self) -> Response {
+    fn into_response(self) -> Response<Body> {
         // Define the status code and error message based on the error variant
         let (status, error_message) = match self {
             ProxyError::InvalidConfiguration(msg) => (
@@ -90,6 +105,19 @@ impl IntoResponse for ProxyError {
                 StatusCode::INTERNAL_SERVER_ERROR,
                 json!({ "error": format!("Internal Server Error: {}", msg) }),
             ),
+            ProxyError::HttpHeaderNameError(invalid_header_name) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                json!({ "error": format!("Invalid HTTP header name: {}", invalid_header_name) }),
+            ),
+            ProxyError::HttpHeaderValueError(invalid_header_value) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                json!({ "error": format!("Invalid HTTP header value: {}", invalid_header_value) }),
+            ),
+            ProxyError::AxumError(error) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                json!({ "error": format!("Invalid Axum body value") }),
+            ),
+            ProxyError::GrpcAbort(response) => todo!(),
         };
 
         // Convert the JSON error message and status code into a response

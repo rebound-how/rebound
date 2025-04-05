@@ -4,18 +4,16 @@ use std::time::Duration;
 use anyhow::Result;
 use anyhow::anyhow;
 use parse_duration::parse;
-use tokio::sync::watch;
 use tokio::time::Instant;
 use tokio::time::sleep_until;
 
 use crate::cli::RunCommandOptions;
 use crate::config::FaultConfig;
 use crate::config::FaultKind;
-use crate::config::ProxyConfig;
 use crate::errors::SchedulingError;
-use crate::event::FaultEvent;
+use crate::fault::FaultInjector;
+use crate::plugin::load_injector;
 use crate::proxy::ProxyState;
-use crate::state::AppState;
 use crate::types::FaultPeriod;
 use crate::types::FaultPeriodSpec;
 use crate::types::TimeSpec; // from the 'parse_duration' crate
@@ -175,25 +173,43 @@ fn build_events_for_fault(
 pub async fn run_fault_schedule(
     mut events: Vec<FaultPeriodEvent>,
     state: Arc<ProxyState>,
+    injectors: Vec<Box<dyn FaultInjector>>,
 ) {
-    tracing::debug!("Fault events: {}", events.len());
-
     events.sort_by_key(|e| e.time);
 
     for event in events {
+        let mut injectors = injectors.clone();
+
         let now = Instant::now();
         if event.time > now {
             sleep_until(event.time).await;
         }
 
+        let fault_config = event.fault_config;
+        let fault_type = fault_config.kind();
+
         match event.event_type {
             EventType::Start => {
-                state.enable_fault(event.fault_type, event.fault_config).await;
+                if let Some(existing_injector) =
+                    injectors.iter_mut().find(|f| f.kind() == fault_type)
+                {
+                    existing_injector.enable();
+                } else {
+                    let mut injector = load_injector(&fault_config);
+                    injector.enable();
+                    injectors.push(injector);
+                }
             }
             EventType::Stop => {
-                state.disable_fault(event.fault_type, event.fault_config).await;
+                if let Some(existing_injector) =
+                    injectors.iter_mut().find(|f| f.kind() == fault_type)
+                {
+                    existing_injector.disable();
+                }
             }
         }
+
+        state.set_injectors(injectors).await;
     }
 }
 

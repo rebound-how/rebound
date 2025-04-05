@@ -455,15 +455,22 @@ impl FaultInjector for PacketLossInjector {
         self.settings.enabled = false
     }
 
+    fn clone_box(&self) -> Box<dyn FaultInjector> {
+        Box::new(self.clone())
+    }
+
     /// Injects packet loss into a bidirectional stream based on the direction.
-    fn inject(
+    async fn inject(
         &self,
         stream: Box<dyn Bidirectional + 'static>,
         event: Box<dyn ProxyTaskEvent>,
         side: StreamSide,
-    ) -> Box<dyn Bidirectional + 'static> {
+    ) -> Result<
+        Box<dyn Bidirectional + 'static>,
+        (ProxyError, Box<dyn Bidirectional + 'static>),
+    > {
         if side != self.settings.side {
-            return stream;
+            return Ok(stream);
         }
 
         let (read_half, write_half) = split(stream);
@@ -504,7 +511,7 @@ impl FaultInjector for PacketLossInjector {
         let limited_bidirectional =
             PacketLossLimitedBidirectional::new(limited_read, limited_write);
 
-        Box::new(limited_bidirectional)
+        Ok(Box::new(limited_bidirectional))
     }
 
     /// Applies packet loss to a request builder.

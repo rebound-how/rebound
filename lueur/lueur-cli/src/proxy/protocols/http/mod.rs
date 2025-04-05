@@ -32,7 +32,6 @@ async fn handle_new_connection(
 ) -> Result<hyper::Response<Body>, ProxyError> {
     let req = req.map(Body::new);
 
-    let state = state.clone();
     let method = req.method().clone();
     let scheme = req.uri().scheme_str().unwrap_or("http").to_string();
     let authority: Option<String> =
@@ -65,16 +64,13 @@ async fn handle_new_connection(
 
     let mut passthrough = true;
 
-    let hosts = state.upstream_hosts.read().await;
+    let state: Arc<ProxyState> = state.clone();
+    let hosts = state.upstream_hosts.load();
     let upstream_host = get_host(&upstream);
     if hosts.contains(&String::from("*")) {
-        tracing::debug!("All upstreams are allowed");
         passthrough = false;
     } else if hosts.contains(&upstream_host) {
-        tracing::debug!("Upstream host in allowed list");
         passthrough = false;
-    } else {
-        tracing::debug!("Upstream host {} NOT in allowed list", upstream_host);
     }
 
     let upstream_url: Url = upstream.parse().unwrap();
@@ -92,10 +88,7 @@ async fn handle_new_connection(
             .unwrap();
     }
 
-    tracing::debug!("Upstream {}", upstream_url);
-
     if method == Method::CONNECT {
-        tracing::debug!("Processing tunnel request to {}", upstream_url);
         let r = tunnel::handle_connect(
             req,
             state.clone(),
@@ -111,7 +104,6 @@ async fn handle_new_connection(
         };
         Ok(resp)
     } else {
-        tracing::debug!("Processing forward request to {}", upstream_url);
         let r = forward::handle_request(
             req,
             state.clone(),
@@ -134,7 +126,6 @@ pub async fn run_http_proxy(
     state: Arc<ProxyState>,
     mut shutdown_rx: broadcast::Receiver<()>,
     readiness_tx: Sender<()>,
-    mut config_rx: watch::Receiver<ProxyConfig>,
     task_manager: Arc<TaskManager>,
 ) -> Result<(), ProxyError> {
     let addr: SocketAddr = proxy_address.parse().map_err(|e| {
@@ -143,27 +134,6 @@ pub async fn run_http_proxy(
             proxy_address, e
         ))
     })?;
-
-    let state_cloned = state.clone();
-    let state = state_cloned.clone();
-    let config_change_handle = tokio::spawn(async move {
-        let state = state.clone();
-
-        loop {
-            match config_rx.changed().await {
-                Ok(_) => {
-                    let new_config = config_rx.borrow_and_update().clone();
-                    let faults = load_injectors(&new_config);
-                    state.update_config(new_config).await;
-                    state.set_faults(faults).await;
-                }
-                Err(e) => {
-                    tracing::debug!("Exited proxy config loop: {}", e);
-                    break;
-                }
-            };
-        }
-    });
 
     let proxy_listener =
         tokio::net::TcpListener::bind(addr).await.map_err(|e| {
@@ -181,7 +151,6 @@ pub async fn run_http_proxy(
         tokio::select! {
             _ = shutdown_rx.recv() => {
                 tracing::info!("Shutdown signal received. Stopping listener.");
-                config_change_handle.abort();
                 break;
             },
             accept_result = proxy_listener.accept() => {
@@ -190,8 +159,8 @@ pub async fn run_http_proxy(
                         tracing::debug!("Accepted connection from {}", addr);
 
                         let io = TokioIo::new(stream);
-                        let state = state_cloned.clone();
                         let task_manager = task_manager.clone();
+                        let state = state.clone();
 
                         let hyper_service =
                         hyper::service::service_fn(move |request: Request<Incoming>| {

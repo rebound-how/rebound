@@ -3,21 +3,14 @@ use std::net::IpAddr;
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use ::oneshot::Sender;
 use init::resolve_remote_host;
-use tokio::sync::Mutex;
 use tokio::sync::broadcast;
 use tokio::sync::mpsc;
-use tokio::sync::watch;
 use tokio::time::Instant;
 
-use crate::config::ProxyConfig;
 use crate::errors::ProxyError;
 use crate::event::TaskManager;
-use crate::plugin::load_injectors;
 use crate::proxy::ProxyState;
-use crate::reporting::DnsTiming;
-use crate::resolver::TimingResolver;
 use crate::types::ProxyProtocol;
 
 pub mod init;
@@ -28,7 +21,6 @@ pub async fn run_tcp_proxy(
     state: Arc<ProxyState>,
     mut shutdown_rx: broadcast::Receiver<()>,
     readiness_tx: mpsc::Sender<()>,
-    mut config_rx: watch::Receiver<ProxyConfig>,
     task_manager: Arc<TaskManager>,
 ) -> Result<(), ProxyError> {
     let addr: SocketAddr = SocketAddr::new(
@@ -37,25 +29,6 @@ pub async fn run_tcp_proxy(
     );
 
     let state_cloned = state.clone();
-    let state = state_cloned.clone();
-    let config_change_handle = tokio::spawn(async move {
-        let state = state.clone();
-
-        loop {
-            match config_rx.changed().await {
-                Ok(_) => {
-                    let new_config = config_rx.borrow_and_update().clone();
-                    let faults = load_injectors(&new_config);
-                    state.update_config(new_config).await;
-                    state.set_faults(faults).await;
-                }
-                Err(e) => {
-                    tracing::debug!("Exited proxy config loop: {}", e);
-                    break;
-                }
-            };
-        }
-    });
 
     let proxy_listener =
         tokio::net::TcpListener::bind(addr).await.map_err(|e| {
@@ -69,7 +42,7 @@ pub async fn run_tcp_proxy(
         ProxyError::Internal(format!("Failed to send readiness signal: {}", e))
     });
 
-    tracing::debug!("Listening for incoming request via eBPF redirection");
+    tracing::debug!("Listening for incoming TCP traffic on address {}", addr);
 
     let remote_host = proxied_proto.remote.remote_host.clone();
 
@@ -77,7 +50,6 @@ pub async fn run_tcp_proxy(
         tokio::select! {
             _ = shutdown_rx.recv() => {
                 tracing::info!("Shutdown signal received. Stopping listener.");
-                config_change_handle.abort();
                 break;
             },
             accept_result = proxy_listener.accept() => {
@@ -115,7 +87,7 @@ pub async fn run_tcp_proxy(
                             match stream::handle_stream(
                                 stream,
                                 connect_to.clone(),
-                                state.clone(),
+                                &state,
                                 false,
                                 event.clone(),
                                 Some(proto.clone())

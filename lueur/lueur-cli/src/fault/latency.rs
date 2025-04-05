@@ -148,12 +148,6 @@ impl LatencyInjector {
             }
         };
 
-        tracing::debug!(
-            "Latency delay: {}ms [{}]",
-            delay.as_millis_f64(),
-            self.settings.direction
-        );
-
         delay
     }
 }
@@ -238,16 +232,23 @@ impl FaultInjector for LatencyInjector {
         self.settings.enabled = false
     }
 
+    fn clone_box(&self) -> Box<dyn FaultInjector> {
+        Box::new(self.clone())
+    }
+
     /// Injects latency into a bidirectional stream.
     #[tracing::instrument]
-    fn inject(
+    async fn inject(
         &self,
         stream: Box<dyn Bidirectional + 'static>,
         event: Box<dyn ProxyTaskEvent>,
         side: StreamSide,
-    ) -> Box<dyn Bidirectional + 'static> {
+    ) -> Result<
+        Box<dyn Bidirectional + 'static>,
+        (ProxyError, Box<dyn Bidirectional + 'static>),
+    > {
         if side != self.settings.side {
-            return stream;
+            return Ok(stream);
         }
 
         let (read_half, write_half) = split(stream);
@@ -296,7 +297,7 @@ impl FaultInjector for LatencyInjector {
         let limited_bidirectional =
             LatencyBidirectional::new(limited_read, limited_write);
 
-        Box::new(limited_bidirectional)
+        Ok(Box::new(limited_bidirectional))
     }
 
     #[tracing::instrument]
@@ -491,8 +492,6 @@ impl<S: AsyncRead + Unpin + std::fmt::Debug> AsyncRead
                     return this.stream.poll_read(cx, buf);
                 }
                 Poll::Pending => {
-                    tracing::debug!("Pending {}", *this.applied_count);
-
                     return Poll::Pending;
                 }
             }

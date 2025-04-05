@@ -4,37 +4,37 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use tokio::sync::broadcast;
-use tokio::sync::watch;
 use tokio::task;
 
 use crate::cli::ProxyAwareCommandCommon;
-use crate::config::ProxyConfig;
 use crate::errors::ProxyError;
 use crate::event::TaskManager;
+use crate::proxy::ProxyState;
 use crate::proxy::protocols::http;
-use crate::state::AppState;
 use crate::types::ProxyAddrConfig;
 
 pub async fn initialize_http_proxy(
     proxy_nic_config: &ProxyAddrConfig,
-    state: AppState,
+    state: Arc<ProxyState>,
     shutdown_rx: broadcast::Receiver<()>,
-    config_rx: watch::Receiver<ProxyConfig>,
     task_manager: Arc<TaskManager>,
-) -> Result<task::JoinHandle<std::result::Result<(), ProxyError>>> {
+) -> Result<task::JoinHandle<()>> {
     let proxy_address = proxy_nic_config.proxy_address();
 
-    // Create a oneshot channel for readiness signaling
     let (readiness_tx, readiness_rx) = oneshot::channel::<()>();
 
-    let handle = tokio::spawn(http::run_http_proxy(
-        proxy_address.clone(),
-        state.proxy_state,
-        shutdown_rx,
-        readiness_tx,
-        config_rx,
-        task_manager,
-    ));
+    let handle = tokio::spawn(async move {
+        let proxy_address = proxy_address.clone();
+
+        http::run_http_proxy(
+            proxy_address,
+            state,
+            shutdown_rx,
+            readiness_tx,
+            task_manager,
+        )
+        .await;
+    });
 
     // Wait for the proxy to signal readiness
     let _ = readiness_rx.await.map_err(|e| {
@@ -44,7 +44,10 @@ pub async fn initialize_http_proxy(
         ))
     });
 
-    tracing::info!("HTTP Proxy server is listening on {}", proxy_address);
+    tracing::info!(
+        "HTTP Proxy server is listening on {}",
+        proxy_nic_config.proxy_address()
+    );
 
     Ok(handle)
 }

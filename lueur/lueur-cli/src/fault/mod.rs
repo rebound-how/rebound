@@ -12,12 +12,12 @@ use reqwest::ClientBuilder as ReqwestClientBuilder;
 use reqwest::Request as ReqwestRequest;
 use tokio::io::AsyncRead as TokioAsyncRead;
 use tokio::io::AsyncWrite as TokioAsyncWrite;
-use tokio::net::TcpStream;
 use tokio_rustls::client::TlsStream;
 
 pub mod bandwidth;
 pub mod blackhole;
 pub mod dns;
+pub mod grpc;
 pub mod http_error;
 pub mod jitter;
 pub mod latency;
@@ -72,7 +72,6 @@ impl tokio::io::AsyncRead for TlsBidirectional {
         cx: &mut std::task::Context<'_>,
         buf: &mut tokio::io::ReadBuf<'_>,
     ) -> std::task::Poll<std::io::Result<()>> {
-        tracing::debug!("reading from tls");
         Pin::new(&mut self.get_mut().inner).poll_read(cx, buf)
     }
 }
@@ -90,7 +89,6 @@ impl tokio::io::AsyncWrite for TlsBidirectional {
         self: Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> std::task::Poll<std::io::Result<()>> {
-        tracing::debug!("flushing from tls");
         Pin::new(&mut self.get_mut().inner).poll_flush(cx)
     }
 
@@ -98,7 +96,6 @@ impl tokio::io::AsyncWrite for TlsBidirectional {
         self: Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> std::task::Poll<std::io::Result<()>> {
-        tracing::debug!("shutting down from tls");
         Pin::new(&mut self.get_mut().inner).poll_shutdown(cx)
     }
 }
@@ -107,12 +104,15 @@ impl tokio::io::AsyncWrite for TlsBidirectional {
 pub trait FaultInjector:
     Send + Sync + std::fmt::Debug + std::fmt::Display
 {
-    fn inject(
+    async fn inject(
         &self,
         stream: Box<dyn Bidirectional + 'static>,
         _event: Box<dyn ProxyTaskEvent>,
         _side: StreamSide,
-    ) -> Box<dyn Bidirectional + 'static>;
+    ) -> Result<
+        Box<dyn Bidirectional + 'static>,
+        (ProxyError, Box<dyn Bidirectional + 'static>),
+    >;
 
     async fn apply_on_request_builder(
         &self,
@@ -137,6 +137,14 @@ pub trait FaultInjector:
 
     fn enable(&mut self);
     fn disable(&mut self);
+
+    fn clone_box(&self) -> Box<dyn FaultInjector>;
+}
+
+impl Clone for Box<dyn FaultInjector> {
+    fn clone(&self) -> Box<dyn FaultInjector> {
+        self.clone_box()
+    }
 }
 
 pub trait FutureDelay: Future<Output = ()> + Send + Debug {}

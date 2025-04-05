@@ -171,12 +171,6 @@ pub fn cg_connect4(ctx: SockAddrContext) -> i32 {
         (*sock_mut).user_port = u32::from(config.proxy_port4);
     }
 
-    debug!(
-        &ctx,
-        "where we go {}:{}",
-        config.proxy_ip4,
-        u16::from_be(config.proxy_port4),
-    );
     TC_ACT_RECLASSIFY
 }
 
@@ -273,17 +267,6 @@ pub fn cg_sock_opt(ctx: SockoptContext) -> i32 {
         (*sa).sin_port = orig.dst_port;
     }
     sockopt.retval = 0;
-
-    unsafe {
-        debug!(
-            &ctx,
-            "getsockopt changed to {}:{} {} {}",
-            u32::from_be((*sa).sin_addr.s_addr),
-            u16::from_be((*sa).sin_port),
-            sockopt.retval,
-            sockopt.optlen
-        );
-    }
 
     TC_ACT_RECLASSIFY
 }

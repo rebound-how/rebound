@@ -415,6 +415,10 @@ pub enum FaultEvent {
         side: StreamSide,
         direction: Direction,
     },
+    Grpc {
+        side: StreamSide,
+        direction: Direction,
+    },
 }
 
 impl FaultEvent {
@@ -427,6 +431,7 @@ impl FaultEvent {
             FaultEvent::PacketLoss { .. } => "packetloss".to_string(),
             FaultEvent::HttpResponseFault { .. } => "httperror".to_string(),
             FaultEvent::Blackhole { .. } => "blackhole".to_string(),
+            FaultEvent::Grpc { .. } => "grpc".to_string(),
         }
     }
 }

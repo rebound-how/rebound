@@ -34,7 +34,6 @@ pub async fn run_ebpf_proxy(
     state: Arc<ProxyState>,
     mut shutdown_rx: broadcast::Receiver<()>,
     readiness_tx: Sender<()>,
-    mut config_rx: watch::Receiver<ProxyConfig>,
     task_manager: Arc<TaskManager>,
 ) -> Result<(), ProxyError> {
     use tokio::time::Instant;
@@ -47,25 +46,6 @@ pub async fn run_ebpf_proxy(
     })?;
 
     let state_cloned = state.clone();
-    let state = state_cloned.clone();
-    let config_change_handle = tokio::spawn(async move {
-        let state = state.clone();
-
-        loop {
-            match config_rx.changed().await {
-                Ok(_) => {
-                    let new_config = config_rx.borrow_and_update().clone();
-                    let faults = load_injectors(&new_config);
-                    state.update_config(new_config).await;
-                    state.set_faults(faults).await;
-                }
-                Err(e) => {
-                    tracing::debug!("Exited proxy config loop: {}", e);
-                    break;
-                }
-            };
-        }
-    });
 
     let proxy_listener =
         tokio::net::TcpListener::bind(addr).await.map_err(|e| {
@@ -85,15 +65,12 @@ pub async fn run_ebpf_proxy(
         tokio::select! {
             _ = shutdown_rx.recv() => {
                 tracing::info!("Shutdown signal received. Stopping listener.");
-                config_change_handle.abort();
                 break;
             },
             accept_result = proxy_listener.accept() => {
                 match accept_result {
                     Ok((stream, addr)) => {
                         tracing::debug!("Accepted connection from {}", addr);
-
-                        let state = state_cloned.clone();
 
                         let start = Instant::now();
 
@@ -108,13 +85,16 @@ pub async fn run_ebpf_proxy(
                         // did anything
                         let _ = event.on_resolved(addr.ip().to_string(), 0.0);
 
+                        let state = state_cloned.clone();
+
                         tokio::spawn(async move {
+                            let state = state.clone();
                             let addr = addr.clone();
 
                             match handle_stream(
                                 stream,
                                 addr.clone(),
-                                state.clone(),
+                                &state,
                                 false,
                                 event.clone(),
                                 None
@@ -168,7 +148,6 @@ async fn get_connect_addr(stream: TcpStream) -> Result<Option<String>> {
 async fn get_original_dst(fd: i32) -> Result<Option<String>> {
     let mut orig_dst = MaybeUninit::<sockaddr_in>::uninit();
     let mut orig_len = std::mem::size_of::<sockaddr_in>() as socklen_t;
-    tracing::debug!("Socket fd {}", fd.clone());
     let ret = unsafe {
         getsockopt(
             fd,

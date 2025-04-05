@@ -1,11 +1,15 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::time::Duration;
+use std::usize;
 
 use axum::body::Body;
 use axum::body::to_bytes;
 use axum::http::HeaderMap as AxumHeaderMap;
 use axum::http::Request as AxumRequest;
 use axum::http::Response as AxumResponse;
+use axum::response::IntoResponse;
+use hyper::StatusCode;
 use reqwest::header::HeaderMap as ReqwestHeaderMap;
 use tokio::sync::Mutex;
 use tokio::time::Instant;
@@ -84,8 +88,7 @@ impl Forward {
         let method = request.method().clone();
         let headers = request.headers().clone();
 
-        // Clone the plugins Arc to move into the async block
-        let plugins = self.state.plugins.clone();
+        let plugins = self.state.faults_plugin.clone();
 
         // Extract the request body as bytes
         let body_bytes =
@@ -99,7 +102,8 @@ impl Forward {
 
         let request_bytes = body_bytes.len();
 
-        let mut client_builder = reqwest::Client::builder();
+        let mut client_builder = reqwest::Client::builder()
+            .pool_idle_timeout(Duration::from_secs(5));
 
         let dns_timing = Arc::new(Mutex::new(DnsTiming::new()));
         let resolver =
@@ -107,7 +111,7 @@ impl Forward {
         client_builder = client_builder.dns_resolver(resolver);
 
         if !passthrough {
-            let plugins_lock = plugins.read().await;
+            let plugins_lock = plugins.load();
             client_builder = plugins_lock
                 .prepare_client(client_builder, event.clone())
                 .await
@@ -129,72 +133,120 @@ impl Forward {
             ))
         })?;
 
+        let status;
+        let resp_headers;
+        let resp_body_bytes;
+        let mut axum_response;
+
         if !passthrough {
-            let plugins_lock = plugins.read().await;
-            upstream_req = plugins_lock
+            let plugins_lock = plugins.load();
+            axum_response = match plugins_lock
                 .process_request(upstream_req, event.clone())
                 .await
-                .unwrap();
-        }
+            {
+                Ok(req) => {
+                    // Execute the Reqwest request
+                    upstream_req = req;
+                    let response = match client.execute(upstream_req).await {
+                        Ok(resp) => resp,
+                        Err(e) => {
+                            let _ = event.on_response(500);
 
-        // Execute the Reqwest request
-        let response = match client.execute(upstream_req).await {
-            Ok(resp) => resp,
-            Err(e) => {
-                let _ = event.on_response(500);
+                            let _ = event.on_completed(
+                                start.elapsed(),
+                                request_bytes as u64,
+                                0,
+                            );
+                            tracing::error!(
+                                "Failed to execute reqwest request: {}",
+                                e
+                            );
+                            return Err(ProxyError::Internal(format!(
+                                "Failed to execute reqwest request: {}",
+                                e
+                            )));
+                        }
+                    };
 
-                let _ = event.on_completed(
-                    start.elapsed(),
-                    request_bytes as u64,
-                    0,
-                );
-                tracing::error!("Failed to execute reqwest request: {}", e);
-                return Err(ProxyError::Internal(format!(
-                    "Failed to execute reqwest request: {}",
-                    e
-                )));
-            }
-        };
+                    // Extract the response status, headers, and body
+                    status = response.status();
+                    resp_headers = response.headers().clone();
+                    resp_body_bytes = response.bytes().await.map_err(|e| {
+                        tracing::error!("Failed to read response body: {}", e);
+                        ProxyError::Internal(format!(
+                            "Failed to read response body: {}",
+                            e
+                        ))
+                    })?;
 
-        tracing::debug!("Received response with status: {}", response.status());
+                    // Build the Axum response
+                    let dummy: AxumResponse<Body> = AxumResponse::default();
+                    let (mut parts, _) = dummy.into_parts();
 
-        // Extract the response status, headers, and body
-        let status = response.status();
-        let resp_headers = response.headers().clone();
-        let resp_body_bytes = response.bytes().await.map_err(|e| {
-            tracing::error!("Failed to read response body: {}", e);
-            ProxyError::Internal(format!("Failed to read response body: {}", e))
-        })?;
+                    parts.status = status;
+                    parts.headers = convert_headers_to_axum(&resp_headers);
 
-        // Build the Axum response
-        let axum_response: AxumResponse<Body> = AxumResponse::default();
-        let (mut parts, _) = axum_response.into_parts();
+                    axum_response = AxumResponse::from_parts(
+                        parts,
+                        resp_body_bytes.to_vec(),
+                    );
 
-        parts.status = status;
-        parts.headers = convert_headers_to_axum(&resp_headers);
+                    axum_response = {
+                        let plugins_lock = plugins.load();
+                        let resp = axum_response;
+                        plugins_lock
+                            .process_response(resp, event.clone())
+                            .await
+                            .unwrap()
+                    };
 
-        let mut axum_response =
-            AxumResponse::from_parts(parts, resp_body_bytes.to_vec());
-
-        if !passthrough {
-            axum_response = {
-                let plugins_lock = plugins.read().await;
-                let resp = axum_response;
-                plugins_lock
-                    .process_response(resp, event.clone())
-                    .await
-                    .unwrap()
+                    axum_response
+                }
+                Err(e) => match e {
+                    ProxyError::GrpcAbort(response) => response,
+                    _ => {
+                        //let _ = event.on_error(Box::new(e));
+                        let resp = e.into_response();
+                        return Ok(resp);
+                    }
+                },
             };
+
+            drop(plugins_lock);
+        } else {
+            axum_response = match client.execute(upstream_req).await {
+                Ok(r) => {
+                    let dummy: AxumResponse<Body> = AxumResponse::default();
+                    let (mut parts, _) = dummy.into_parts();
+                    parts.status = r.status();
+                    resp_headers = r.headers().clone();
+                    resp_body_bytes = r.bytes().await.map_err(|e| {
+                        tracing::error!("Failed to read response body: {}", e);
+                        ProxyError::Internal(format!(
+                            "Failed to read response body: {}",
+                            e
+                        ))
+                    })?;
+
+                    parts.headers = convert_headers_to_axum(&resp_headers);
+                    AxumResponse::from_parts(parts, resp_body_bytes.to_vec())
+                }
+                Err(e) => {
+                    let _ = event.on_error(Box::new(e));
+                    let resp = (
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                        "Oops, something went wrong",
+                    )
+                        .into_response();
+                    return Ok(resp);
+                }
+            }
         }
 
         let (new_parts, new_body) = axum_response.into_parts();
 
         let new_status = &new_parts.status;
         let _ = event.on_response(new_status.as_u16());
-        tracing::debug!(
-            "Forward proxy response set with status: {}",
-            new_status
-        );
 
         let response_bytes = new_body.len();
         let axum_response =

@@ -22,6 +22,7 @@ use super::Bidirectional;
 use super::FaultInjector;
 use crate::config::FaultKind;
 use crate::config::JitterSettings;
+use crate::errors::ProxyError;
 use crate::event::FaultEvent;
 use crate::event::ProxyTaskEvent;
 use crate::types::Direction;
@@ -83,13 +84,20 @@ impl FaultInjector for JitterInjector {
         self.settings.enabled = false
     }
 
+    fn clone_box(&self) -> Box<dyn FaultInjector> {
+        Box::new(self.clone())
+    }
+
     /// Injects jitter into a bidirectional stream.
-    fn inject(
+    async fn inject(
         &self,
         stream: Box<dyn Bidirectional + 'static>,
         event: Box<dyn ProxyTaskEvent>,
         _side: StreamSide,
-    ) -> Box<dyn Bidirectional + 'static> {
+    ) -> Result<
+        Box<dyn Bidirectional + 'static>,
+        (ProxyError, Box<dyn Bidirectional + 'static>),
+    > {
         let direction = self.settings.direction.clone();
 
         let _ = event.with_fault(FaultEvent::Jitter {
@@ -99,14 +107,14 @@ impl FaultInjector for JitterInjector {
             frequency: Some(self.settings.frequency),
         });
 
-        Box::new(JitterStream::new(stream, self.clone(), &direction))
+        Ok(Box::new(JitterStream::new(stream, self.clone(), &direction)))
     }
 
     async fn apply_on_response(
         &self,
         resp: http::Response<Vec<u8>>,
         _event: Box<dyn ProxyTaskEvent>,
-    ) -> Result<http::Response<Vec<u8>>, crate::errors::ProxyError> {
+    ) -> Result<http::Response<Vec<u8>>, ProxyError> {
         Ok(resp)
     }
 
@@ -114,7 +122,7 @@ impl FaultInjector for JitterInjector {
         &self,
         builder: reqwest::ClientBuilder,
         _event: Box<dyn ProxyTaskEvent>,
-    ) -> Result<reqwest::ClientBuilder, crate::errors::ProxyError> {
+    ) -> Result<reqwest::ClientBuilder, ProxyError> {
         Ok(builder)
     }
 
@@ -122,7 +130,7 @@ impl FaultInjector for JitterInjector {
         &self,
         request: reqwest::Request,
         _event: Box<dyn ProxyTaskEvent>,
-    ) -> Result<reqwest::Request, crate::errors::ProxyError> {
+    ) -> Result<reqwest::Request, ProxyError> {
         Ok(request)
     }
 }

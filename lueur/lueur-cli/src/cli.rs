@@ -33,7 +33,7 @@ pub struct Cli {
     #[arg(
         help_heading = "Logging Options",
         long,
-        default_value = "info,tower_http=debug",
+        default_value = "info",
         env = "LUEUR_LOG_LEVEL"
     )]
     pub log_level: Option<String>,

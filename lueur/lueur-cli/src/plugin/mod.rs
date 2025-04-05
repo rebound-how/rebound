@@ -1,6 +1,5 @@
 use std::fmt;
 use std::sync::Arc;
-use std::sync::Mutex;
 
 use async_trait::async_trait;
 use axum::http;
@@ -74,45 +73,13 @@ pub trait ProxyPlugin: Send + Sync + std::fmt::Debug + fmt::Display {
 /// CompositePlugin that aggregates multiple FaultInjectors.
 #[derive(Debug)]
 pub struct CompositePlugin {
-    injectors: Vec<Box<dyn FaultInjector>>,
+    pub injectors: Arc<Vec<Box<dyn FaultInjector>>>,
 }
 
 impl CompositePlugin {
-    /// Adds new FaultInjectors to the CompositePlugin after clearing the
-    /// existing set
-    pub fn set_injectors(&mut self, injectors: Vec<Box<dyn FaultInjector>>) {
-        self.injectors.clear();
-        for inj in injectors {
-            self.injectors.push(inj);
-        }
-        self.injectors.push(Box::new(MetricsInjector::new()));
-    }
-
-    pub fn add_injector(&mut self, injector: Box<dyn FaultInjector>) {
-        self.injectors.insert(self.injectors.len() - 1, injector);
-    }
-
-    pub fn disable_injector(&mut self, kind: FaultKind) {
-        for injector in self.injectors.iter_mut() {
-            if injector.kind() == kind {
-                injector.disable();
-                break;
-            }
-        }
-    }
-
-    pub fn enable_injector(&mut self, kind: FaultKind) {
-        for injector in self.injectors.iter_mut() {
-            if injector.kind() == kind {
-                injector.enable();
-                break;
-            }
-        }
-    }
-
     /// Creates a new CompositePlugin with no FaultInjectors.
     pub fn empty() -> Self {
-        Self { injectors: Vec::new() }
+        Self { injectors: Arc::new(Vec::new()) }
     }
 }
 
@@ -124,7 +91,7 @@ impl fmt::Display for CompositePlugin {
 
 impl From<&ProxyConfig> for CompositePlugin {
     fn from(config: &ProxyConfig) -> Self {
-        CompositePlugin { injectors: load_injectors(config) }
+        CompositePlugin { injectors: Arc::new(load_injectors(config)) }
     }
 }
 
@@ -133,6 +100,7 @@ pub fn load_injectors(config: &ProxyConfig) -> Vec<Box<dyn FaultInjector>> {
     let mut injectors: Vec<Box<dyn FaultInjector>> = Vec::new();
     let _: Vec<()> = config
         .faults
+        .load()
         .iter()
         .map(|fault| match fault {
             FaultConfig::Dns(settings) => {
@@ -198,7 +166,7 @@ impl ProxyPlugin for CompositePlugin {
         event: Box<dyn ProxyTaskEvent>,
     ) -> Result<ClientBuilder, ProxyError> {
         let mut current_builder = builder;
-        for injector in &self.injectors {
+        for injector in self.injectors.iter() {
             if injector.is_enabled() {
                 current_builder = injector
                     .apply_on_request_builder(current_builder, event.clone())
@@ -215,7 +183,7 @@ impl ProxyPlugin for CompositePlugin {
         event: Box<dyn ProxyTaskEvent>,
     ) -> Result<ReqwestRequest, ProxyError> {
         let mut current_req = req;
-        for injector in &self.injectors {
+        for injector in self.injectors.iter() {
             if injector.is_enabled() {
                 current_req = injector
                     .apply_on_request(current_req, event.clone())
@@ -232,7 +200,7 @@ impl ProxyPlugin for CompositePlugin {
         event: Box<dyn ProxyTaskEvent>,
     ) -> Result<http::Response<Vec<u8>>, ProxyError> {
         let mut current_resp = resp;
-        for injector in &self.injectors {
+        for injector in self.injectors.iter() {
             if injector.is_enabled() {
                 current_resp = injector
                     .apply_on_response(current_resp, event.clone())
@@ -255,15 +223,19 @@ impl ProxyPlugin for CompositePlugin {
         let mut modified_client_stream = client_stream;
         let mut modified_server_stream = server_stream;
 
-        for injector in &self.injectors {
+        for injector in self.injectors.iter() {
             if injector.is_enabled() {
                 let mut client = modified_client_stream;
                 let mut server = modified_server_stream;
 
-                client =
-                    injector.inject(client, event.clone(), StreamSide::Client);
-                server =
-                    injector.inject(server, event.clone(), StreamSide::Server);
+                client = injector
+                    .inject(client, event.clone(), StreamSide::Client)
+                    .await
+                    .map_err(|(e, _)| e)?;
+                server = injector
+                    .inject(server, event.clone(), StreamSide::Server)
+                    .await
+                    .map_err(|(e, _)| e)?;
 
                 modified_client_stream = client;
                 modified_server_stream = server;

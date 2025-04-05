@@ -31,7 +31,7 @@ use crate::types::ProxyProtocol;
 pub async fn handle_stream(
     stream: TcpStream,
     connect_to: SocketAddr,
-    state: Arc<ProxyState>,
+    state: &ProxyState,
     passthrough: bool,
     event: Box<dyn ProxyTaskEvent>,
     protocol: Option<ProxyProtocol>,
@@ -162,15 +162,13 @@ async fn bidirectional_copy(
 async fn process_tcp_stream(
     stream: TcpStream,
     connect_to: SocketAddr,
-    state: Arc<ProxyState>,
+    state: &ProxyState,
     passthrough: bool,
     event: Box<dyn ProxyTaskEvent>,
     remote_with_tls: bool,
     hostname: String,
 ) -> Result<(u64, u64), ProxyError> {
-    tracing::info!("Connecting to destination: {:?}", connect_to);
-
-    let plugins = state.plugins.clone();
+    let plugins = state.faults_plugin.load();
 
     stream.set_nodelay(true)?;
 
@@ -197,7 +195,7 @@ async fn process_stream(
     client_stream: Box<dyn Bidirectional + 'static>,
     server_stream: Box<dyn Bidirectional + 'static>,
     passthrough: bool,
-    plugins: Arc<tokio::sync::RwLock<crate::plugin::CompositePlugin>>,
+    plugins: arc_swap::Guard<Arc<crate::plugin::CompositePlugin>>,
     event: Box<dyn ProxyTaskEvent>,
     remote_with_tls: bool,
     hostname: String,
@@ -206,8 +204,7 @@ async fn process_stream(
     let mut modified_server_stream = server_stream;
 
     if !passthrough {
-        let plugins_lock = plugins.read().await;
-        match plugins_lock
+        match plugins
             .inject_tunnel_faults(
                 modified_client_stream,
                 modified_server_stream,
@@ -224,7 +221,6 @@ async fn process_stream(
                 return Ok((0, 0));
             }
         }
-        drop(plugins_lock);
     }
 
     if remote_with_tls {
@@ -235,12 +231,6 @@ async fn process_stream(
     let (bytes_from_client, bytes_to_server) =
         bidirectional_copy(modified_client_stream, modified_server_stream)
             .await?;
-
-    tracing::debug!(
-        "Connection closed. Bytes from client: {}, bytes to server: {}",
-        bytes_from_client,
-        bytes_to_server
-    );
 
     Ok((bytes_from_client, bytes_to_server))
 }

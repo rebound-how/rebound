@@ -1,5 +1,7 @@
 use std::fmt;
+use std::sync::Arc;
 
+use arc_swap::ArcSwap;
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -16,6 +18,7 @@ use crate::types::BandwidthUnit;
 use crate::types::Direction;
 use crate::types::FaultConfiguration;
 use crate::types::LatencyDistribution;
+use crate::types::ProtocolType;
 use crate::types::StreamSide;
 
 /// Internal Configuration for Latency Fault
@@ -101,6 +104,24 @@ pub struct BlackholeSettings {
     pub kind: FaultKind,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq)]
+pub struct GrpcCapabilities {
+    pub forward: bool,
+    pub tunnel: bool,
+    pub protocols: Vec<ProtocolType>,
+}
+
+/// Internal Configuration for Grpc plugins
+#[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
+pub struct GrpcSettings {
+    pub name: String,
+    pub kind: FaultKind,
+    pub enabled: bool,
+    pub direction: Direction,
+    pub side: StreamSide,
+    pub capabilities: Option<GrpcCapabilities>,
+}
+
 /// Fault Configuration Enum
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub enum FaultConfig {
@@ -136,24 +157,6 @@ impl fmt::Display for FaultConfig {
             FaultConfig::Blackhole(_) => write!(f, "blackhole"),
         }
     }
-}
-
-/// A simpler enum for "kind" of fault.
-#[derive(
-    Default, Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash,
-)]
-pub enum FaultKind {
-    #[default]
-    Unknown,
-    Dns,
-    Latency,
-    PacketLoss,
-    Bandwidth,
-    Jitter,
-    PacketDuplication,
-    HttpError,
-    Blackhole,
-    Metrics,
 }
 
 impl FaultConfig {
@@ -201,23 +204,46 @@ impl FaultConfig {
     }
 }
 
-/// Proxy Configuration Struct
-#[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
-pub struct ProxyConfig {
-    pub faults: Vec<FaultConfig>,
+#[derive(
+    Default, Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash,
+)]
+pub enum FaultKind {
+    #[default]
+    Unknown,
+    Dns,
+    Latency,
+    PacketLoss,
+    Bandwidth,
+    Jitter,
+    PacketDuplication,
+    HttpError,
+    Blackhole,
+    Metrics,
+    Grpc,
 }
 
-impl ProxyConfig {
-    pub fn find_mut_by_kind(
-        &mut self,
-        kind: FaultKind,
-    ) -> Option<&mut FaultConfig> {
-        self.faults.iter_mut().find(|f| f.kind() == kind)
+impl fmt::Display for FaultKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            FaultKind::Unknown => write!(f, "unknown"),
+            FaultKind::Dns => write!(f, "dns"),
+            FaultKind::Latency => write!(f, "latency"),
+            FaultKind::PacketLoss => write!(f, "packet-loss"),
+            FaultKind::Bandwidth => write!(f, "bandwidth"),
+            FaultKind::Jitter => write!(f, "jitter"),
+            FaultKind::PacketDuplication => write!(f, "packet-duplication"),
+            FaultKind::HttpError => write!(f, "http-error"),
+            FaultKind::Blackhole => write!(f, "blackhole"),
+            FaultKind::Metrics => write!(f, "metrics"),
+            FaultKind::Grpc => write!(f, "grpc"),
+        }
     }
+}
 
-    pub fn add_fault(&mut self, fault_config: FaultConfig) {
-        self.faults.push(fault_config);
-    }
+/// Proxy Configuration Struct
+#[derive(Clone, Debug, Default)]
+pub struct ProxyConfig {
+    pub faults: Arc<ArcSwap<Vec<FaultConfig>>>,
 }
 
 impl From<&RunCommandOptions> for ProxyConfig {
@@ -264,7 +290,7 @@ impl From<&RunCommandOptions> for ProxyConfig {
             faults.push(FaultConfig::Blackhole((&cli.blackhole).into()));
         }
 
-        ProxyConfig { faults }
+        ProxyConfig { faults: Arc::new(ArcSwap::from_pointee(faults)) }
     }
 }
 

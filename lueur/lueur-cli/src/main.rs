@@ -29,15 +29,12 @@ mod types;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
-use std::net::IpAddr;
-use std::net::SocketAddr;
 use std::path::Path;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::time::Duration;
 use std::time::Instant;
 
-use ::oneshot;
 use anyhow::Result;
 #[cfg(all(
     target_os = "linux",
@@ -48,19 +45,15 @@ use clap::Parser;
 use cli::Cli;
 use cli::Commands;
 use cli::DemoCommands;
-use cli::ProxyAwareCommandCommon;
 use cli::RunCommandOptions;
 use cli::ScenarioCommands;
-use colorful::Color;
 use colorful::Colorful;
 use colorful::ExtraColorInterface;
-use config::FaultKind;
 use config::ProxyConfig;
-use errors::ProxyError;
 use event::TaskManager;
+use fault::FaultInjector;
 use indicatif::MultiProgress;
 use indicatif::ProgressBar;
-use indicatif::ProgressDrawTarget;
 use indicatif::ProgressStyle;
 use logging::init_meter_provider;
 use logging::init_subscriber;
@@ -70,7 +63,8 @@ use logging::shutdown_tracer;
 use opentelemetry_sdk::metrics::SdkMeterProvider;
 use opentelemetry_sdk::trace::SdkTracerProvider;
 use parse_duration::parse;
-use proxy::ProxyState;
+use plugin::load_injectors;
+use proxy::monitor_and_update_proxy_config;
 #[cfg(all(
     target_os = "linux",
     any(feature = "stealth", feature = "stealth-auto-build")
@@ -80,7 +74,6 @@ use proxy::protocols::http::init::get_http_proxy_address;
 use proxy::protocols::http::init::initialize_http_proxy;
 use proxy::protocols::tcp::init::initialize_tcp_proxies;
 use proxy::protocols::tcp::init::parse_proxy_protocols;
-use reporting::OutputFormat;
 use reporting::Report;
 use reporting::ReportItem;
 use reporting::ReportItemExpectation;
@@ -97,11 +90,9 @@ use scenario::count_scenario_items;
 use scenario::execute_item;
 use scenario::handle_scenario_events;
 use scenario::load_scenarios;
-use sched::EventType;
-use sched::FaultPeriodEvent;
 use sched::build_schedule_events;
 use sched::run_fault_schedule;
-use state::initialize_application_state;
+use state::initialize_proxy_state;
 use termui::demo_prelude;
 use termui::full_progress;
 use termui::get_output_format_result;
@@ -114,10 +105,6 @@ use tokio::task;
 use tokio::time::sleep;
 use tokio_stream::StreamExt;
 use tracing::error;
-use types::EbpfProxyAddrConfig;
-use types::LatencyDistribution;
-use types::ProxyAddrConfig;
-use url::Url;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -137,8 +124,11 @@ async fn main() -> Result<()> {
     let _ = init_subscriber(log_layers, &tracer_provider, &meter_provider);
 
     let (proxy_shutdown_tx, proxy_shutdown_rx) = broadcast::channel::<()>(5);
-    let (task_manager, receiver) = TaskManager::new(1000);
-    let (config_tx, config_rx) = watch::channel(ProxyConfig::default());
+    let (task_manager, receiver) = TaskManager::new(5000);
+    let (config_tx, config_rx) = watch::channel((
+        ProxyConfig::default(),
+        Vec::<Box<dyn FaultInjector>>::new(),
+    ));
 
     let _fault_schedule_handle;
     let _progress_guard;
@@ -153,9 +143,7 @@ async fn main() -> Result<()> {
         target_os = "linux",
         any(feature = "stealth", feature = "stealth-auto-build")
     ))]
-    let mut _ebpf_proxy_guard: task::JoinHandle<
-        std::result::Result<(), ProxyError>,
-    >;
+    let mut _ebpf_proxy_guard: task::JoinHandle<()>;
 
     #[cfg(all(
         target_os = "linux",
@@ -166,34 +154,69 @@ async fn main() -> Result<()> {
 
     match &cli.command {
         Commands::Run { options } => {
+            // if we are in stealth mode, we'll start the ebpf layer as well
             let stealth_mode = is_stealth(&options);
-            let app_state = state::initialize_application_state(
-                &options.common,
-                stealth_mode,
-            )
-            .await;
 
+            // initiliaze a default state
+            // By default we mean that it doesn't know yet about the user
+            // input and therefore has no faults configured
+            let proxy_state =
+                state::initialize_proxy_state(&options.common, stealth_mode)
+                    .await?;
+
+            // we keep an eye on changes in the fault configuration
+            // so we set the proxy state accordingly
+            tokio::spawn(monitor_and_update_proxy_config(
+                proxy_state.clone(),
+                config_rx,
+            ));
+
+            // if the user configured remote plugins, let's connect and
+            // initialize them as if they were fault injectors as
+            // well
+            if !options.common.grpc_plugins.clone().is_empty() {
+                let manager = proxy_state.rpc_manager.clone();
+
+                // remote plugins may come and go. We adjust the proxy state
+                // accordingly every 10s or so
+                tokio::spawn(async move {
+                    let mut interval =
+                        tokio::time::interval(Duration::from_secs(10));
+
+                    loop {
+                        interval.tick().await;
+                        let mut manager = manager.write().await;
+                        manager.supervise_remote_plugins().await;
+                    }
+                });
+            }
+
+            // it's time to start our HTTP proxies
             let http_proxy_nic_config = get_http_proxy_address(&options.common);
             let _http_proxy_guard = initialize_http_proxy(
                 &http_proxy_nic_config,
-                app_state.clone(),
+                proxy_state.clone(),
                 proxy_shutdown_tx.subscribe(),
-                config_rx.clone(),
                 task_manager.clone(),
             )
             .await;
 
-            let proxied_protos =
-                parse_proxy_protocols(options.common.proxy_protocols.clone())
-                    .await?;
-            let _tcp_proxy_guard = initialize_tcp_proxies(
-                proxied_protos.clone(),
-                app_state.clone(),
-                proxy_shutdown_tx.clone(),
-                config_tx.clone(),
-                task_manager.clone(),
-            )
-            .await;
+            // we now also start any other proxy that the user has requested us
+            // to setup
+            let mut proxied_protos = Vec::new();
+            if !options.common.proxy_protocols.is_empty() {
+                proxied_protos = parse_proxy_protocols(
+                    options.common.proxy_protocols.clone(),
+                )
+                .await?;
+                let _tcp_proxy_guard = initialize_tcp_proxies(
+                    proxied_protos.clone(),
+                    proxy_state.clone(),
+                    proxy_shutdown_tx.clone(),
+                    task_manager.clone(),
+                )
+                .await;
+            }
 
             #[cfg(all(
                 target_os = "linux",
@@ -215,9 +238,8 @@ async fn main() -> Result<()> {
                             Ok(Some(ebpf_proxy_config)) => {
                                 _ebpf_proxy_guard = initialize_ebpf_proxy(
                                     &ebpf_proxy_config,
-                                    app_state.clone(),
+                                    proxy_state.clone(),
                                     ebpf_proxy_shutdown_rx,
-                                    config_rx.clone(),
                                     task_manager.clone(),
                                 )
                                 .await
@@ -244,42 +266,52 @@ async fn main() -> Result<()> {
                 }
             }
 
-            let cmd_config: ProxyConfig = options.into();
+            // let's turn the cli flags into a proxy configuration we can work
+            // with
+            let proxy_config = options.into();
 
-            if config_tx.send(cmd_config).is_err() {
+            // load the configured injectors
+            let injectors: Vec<Box<dyn FaultInjector>> =
+                load_injectors(&proxy_config);
+
+            // send the whole thing so the state can record them
+            if config_tx.send((proxy_config, injectors.clone())).is_err() {
                 error!("Proxy configuration listener has been shut down.");
             }
 
-            let hosts = app_state.proxy_state.upstream_hosts.read().await;
-            let upstreams = (*hosts).clone();
-
+            // Let's get some data ready for the UI
             let total_duration = if let Some(ref s) = options.common.duration {
                 Some(parse(s).unwrap())
             } else {
                 None
             };
-            let proxy_state = app_state.proxy_state.clone();
             let fault_schedule =
                 build_schedule_events(&options, total_duration)?;
 
             let schedule_for_prelude = fault_schedule.clone();
-            _fault_schedule_handle = tokio::spawn(async move {
-                let state = proxy_state.clone();
-                run_fault_schedule(fault_schedule, state).await
-            });
+            _fault_schedule_handle = tokio::spawn(run_fault_schedule(
+                fault_schedule,
+                proxy_state.clone(),
+                injectors,
+            ));
 
             let faults_scheduled = !schedule_for_prelude.is_empty();
 
             if !options.ui.no_ui {
+                let hosts = proxy_state.upstream_hosts.load_full();
+                let upstreams = (*hosts).clone();
+
                 proxy_prelude(
                     http_proxy_nic_config.proxy_address(),
                     proxied_protos.clone(),
+                    proxy_state.clone().rpc_manager.clone(),
                     &options,
                     &upstreams,
                     schedule_for_prelude,
                     total_duration,
                     options.ui.tail,
-                );
+                )
+                .await;
             }
 
             if options.ui.no_ui {
@@ -299,6 +331,11 @@ async fn main() -> Result<()> {
                 ));
             }
 
+            // okay at this stage, we have now displayed our UI
+            // and told the user they can start using the proxy
+
+            // if the user gave us a duration, let's wait until it completes
+            // otherwise, let's wait for a sigint signal
             match total_duration {
                 Some(d) => {
                     tokio::select! {
@@ -313,7 +350,7 @@ async fn main() -> Result<()> {
                 }
                 None => {
                     if let Err(e) = tokio::signal::ctrl_c().await {
-                        tracing::debug!(
+                        tracing::warn!(
                             "Error listening for shutdown signal: {}",
                             e
                         );
@@ -343,14 +380,17 @@ async fn main() -> Result<()> {
 
                 let m = MultiProgress::new();
 
-                let app_state =
-                    initialize_application_state(&common, false).await;
+                let app_state = initialize_proxy_state(&common, false).await?;
+
+                tokio::spawn(monitor_and_update_proxy_config(
+                    app_state.clone(),
+                    config_rx,
+                ));
 
                 let _proxy_guard = initialize_http_proxy(
                     &proxy_nic_config,
                     app_state.clone(),
                     proxy_shutdown_rx,
-                    config_rx,
                     task_manager.clone(),
                 )
                 .await;

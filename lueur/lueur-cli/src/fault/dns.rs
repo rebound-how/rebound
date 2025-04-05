@@ -20,6 +20,7 @@ use super::Bidirectional;
 use super::FaultInjector;
 use crate::config::DnsSettings;
 use crate::config::FaultKind;
+use crate::errors::ProxyError;
 use crate::event::FaultEvent;
 use crate::event::ProxyTaskEvent;
 use crate::types::Direction;
@@ -71,7 +72,7 @@ impl Resolve for FaultyResolverInjector {
         Box::pin(async move {
             let host = hostname.as_str();
             let apply_fault = self_clone.should_apply_fault_resolver();
-            tracing::info!("Apply a dns resolver {}", apply_fault);
+            tracing::debug!("Apply a dns resolver {}", apply_fault);
 
             if apply_fault {
                 let _ = match self_clone.event {
@@ -112,20 +113,23 @@ impl Resolve for FaultyResolverInjector {
 #[async_trait]
 impl FaultInjector for FaultyResolverInjector {
     /// Injects latency into a bidirectional stream.
-    fn inject(
+    async fn inject(
         &self,
         stream: Box<dyn Bidirectional + 'static>,
         _event: Box<dyn ProxyTaskEvent>,
         _side: StreamSide,
-    ) -> Box<dyn Bidirectional + 'static> {
-        stream
+    ) -> Result<
+        Box<dyn Bidirectional + 'static>,
+        (ProxyError, Box<dyn Bidirectional + 'static>),
+    > {
+        Ok(stream)
     }
 
     async fn apply_on_response(
         &self,
         resp: http::Response<Vec<u8>>,
         _event: Box<dyn ProxyTaskEvent>,
-    ) -> Result<http::Response<Vec<u8>>, crate::errors::ProxyError> {
+    ) -> Result<http::Response<Vec<u8>>, ProxyError> {
         Ok(resp)
     }
 
@@ -133,7 +137,7 @@ impl FaultInjector for FaultyResolverInjector {
         &self,
         builder: reqwest::ClientBuilder,
         event: Box<dyn ProxyTaskEvent>,
-    ) -> Result<reqwest::ClientBuilder, crate::errors::ProxyError> {
+    ) -> Result<reqwest::ClientBuilder, ProxyError> {
         let mut cloned = self.clone();
         cloned.with_event(event);
 
@@ -147,7 +151,7 @@ impl FaultInjector for FaultyResolverInjector {
         &self,
         request: reqwest::Request,
         _event: Box<dyn ProxyTaskEvent>,
-    ) -> Result<reqwest::Request, crate::errors::ProxyError> {
+    ) -> Result<reqwest::Request, ProxyError> {
         Ok(request)
     }
 
@@ -165,5 +169,9 @@ impl FaultInjector for FaultyResolverInjector {
 
     fn disable(&mut self) {
         self.settings.enabled = false
+    }
+
+    fn clone_box(&self) -> Box<dyn FaultInjector> {
+        Box::new(self.clone())
     }
 }

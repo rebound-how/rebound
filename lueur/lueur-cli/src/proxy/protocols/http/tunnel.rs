@@ -36,20 +36,16 @@ pub async fn handle_connect(
     passthrough: bool,
     event: Box<dyn ProxyTaskEvent>,
 ) -> Result<AxumResponse<Body>, ProxyError> {
-    let upstream_str = upstream.to_string();
-
     let target_host = upstream.host().unwrap().to_string();
     let target_port = upstream.port_or_known_default().unwrap();
 
     let connect_request =
         ConnectRequest { target_host: target_host.clone(), target_port };
 
-    // Acquire a read lock for plugins
-    let plugins = app_state.plugins.clone();
-
     let host = connect_request.target_host;
 
-    let plugins = plugins.clone();
+    // Acquire a read lock for plugins
+    let faults_plugins = app_state.faults_plugin.clone();
 
     tokio::spawn(async move {
         let event = event.clone();
@@ -61,14 +57,11 @@ pub async fn handle_connect(
         let dns_resolution_time = start.elapsed().as_millis_f64();
 
         let addr: SocketAddr = SocketAddr::new(addresses[0], port);
-        tracing::debug!("Connecting to {}", &addr);
 
         match hyper::upgrade::on(req).await {
             Ok(upgraded) => {
                 match TcpStream::connect(addr).await {
                     Ok(raw_server_stream) => {
-                        tracing::debug!("Tunnel to {} created", &upstream_str);
-
                         let start = Instant::now();
                         let _ = event.on_started(upstream_str);
                         let _ = event
@@ -84,8 +77,8 @@ pub async fn handle_connect(
                         let mut modified_server_stream = server_stream;
 
                         if !passthrough {
-                            let plugins_lock = plugins.read().await;
-                            match plugins_lock
+                            let faults = faults_plugins.load();
+                            match faults
                                 .inject_tunnel_faults(
                                     modified_client_stream,
                                     modified_server_stream,
@@ -105,7 +98,7 @@ pub async fn handle_connect(
                                     return;
                                 }
                             }
-                            drop(plugins_lock);
+                            drop(faults);
                         }
 
                         match bidirectional_copy(
@@ -121,11 +114,6 @@ pub async fn handle_connect(
                                     bytes_from_client,
                                     bytes_to_server,
                                 );
-                                tracing::debug!(
-                                    "Connection closed. Bytes from client: {}, bytes to server: {}",
-                                    bytes_from_client,
-                                    bytes_to_server
-                                );
                             }
                             Err(e) => {
                                 tracing::error!(
@@ -134,8 +122,6 @@ pub async fn handle_connect(
                                     e
                                 );
                                 let _ = event.on_error(e);
-                                //let _ = event.on_completed(start.elapsed(),
-                                // 0, 0);
                             }
                         };
                     }
@@ -152,12 +138,10 @@ pub async fn handle_connect(
             Err(e) => {
                 error!("Upgrade error: {}", e);
                 let _ = event.on_error(Box::new(e));
-                // Handle upgrade error if necessary
             }
         }
     });
 
-    tracing::debug!("Responding to tunnel request for {}", &upstream_str);
     Ok(AxumResponse::new(Body::empty()))
 }
 

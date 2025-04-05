@@ -151,31 +151,6 @@ pub fn init_subscriber(
     Ok(())
 }
 
-/// Initialize logger
-///
-/// # Arguments
-/// - `log_layers`: Layers for logging.
-///
-/// # Returns
-/// A combined `tracing_subscriber` ready to be set as the global default.
-pub fn init_subscriber_without_opentelemetry(
-    log_layers: Vec<Box<dyn tracing_subscriber::Layer<Registry> + Send + Sync>>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let registry = tracing_subscriber::registry();
-
-    let mut layers = Vec::new();
-    layers.extend(log_layers);
-
-    let subscriber = registry.with(layers);
-
-    tracing::subscriber::set_global_default(subscriber)?;
-
-    // required so the messages from the ebpf programs get logged properly
-    LogTracer::init()?;
-
-    Ok(())
-}
-
 /// Sets up file and stdout logging layers.
 ///
 /// # Arguments
@@ -201,9 +176,8 @@ pub fn setup_logging(
     let mut stdoutguard: Option<WorkerGuard> = None;
     let mut layers = Vec::new();
 
-    let log_level = log_level.unwrap_or_else(|| {
-        "debug,tower_http=debug,otel::tracing=info".to_string()
-    });
+    // fopr instance: "debug,tower_http=debug,otel::tracing=info"
+    let log_level = log_level.unwrap_or_else(|| "info".to_string());
 
     if let Some(log_file) = log_file {
         let path = log_file.as_str();

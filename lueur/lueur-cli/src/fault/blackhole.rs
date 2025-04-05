@@ -230,22 +230,29 @@ impl FaultInjector for BlackholeInjector {
         self.settings.enabled = false;
     }
 
+    fn clone_box(&self) -> Box<dyn FaultInjector> {
+        Box::new(self.clone())
+    }
+
     /// The main hook to wrap the underlying stream in blackhole read/write if
     /// enabled.
-    fn inject(
+    async fn inject(
         &self,
         stream: Box<dyn Bidirectional + 'static>,
         event: Box<dyn ProxyTaskEvent>,
         side: StreamSide,
-    ) -> Box<dyn Bidirectional + 'static> {
+    ) -> Result<
+        Box<dyn Bidirectional + 'static>,
+        (ProxyError, Box<dyn Bidirectional + 'static>),
+    > {
         // If fault not enabled, pass through
         if !self.settings.enabled {
-            return stream;
+            return Ok(stream);
         }
 
         // If the side doesn't match (Client vs Server, etc.), pass through
         if side != self.settings.side {
-            return stream;
+            return Ok(stream);
         }
 
         let direction = self.settings.direction.clone();
@@ -281,7 +288,7 @@ impl FaultInjector for BlackholeInjector {
 
         let combined =
             BlackholeBidirectional::new(blackhole_read, blackhole_write);
-        Box::new(combined)
+        Ok(Box::new(combined))
     }
 
     async fn apply_on_request_builder(

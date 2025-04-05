@@ -6,21 +6,16 @@ use std::sync::Arc;
 use anyhow::Result;
 use async_std_resolver::resolver_from_system_conf;
 use futures::future::join_all;
-use hickory_resolver::TokioResolver;
-use hickory_resolver::name_server::TokioConnectionProvider;
 use rand;
 use rand::seq::IndexedRandom;
-use tokio::runtime::Runtime;
 use tokio::sync::broadcast;
 use tokio::sync::mpsc;
-use tokio::sync::watch;
 use tokio::task;
 
-use crate::config::ProxyConfig;
 use crate::errors::ProxyError;
 use crate::event::TaskManager;
+use crate::proxy::ProxyState;
 use crate::proxy::protocols::tcp;
-use crate::state::AppState;
 use crate::types::ProtocolType;
 use crate::types::ProxyAddrConfig;
 use crate::types::ProxyProtocol;
@@ -28,12 +23,15 @@ use crate::types::RemoteAddrConfig;
 
 pub async fn initialize_tcp_proxies(
     proxied_protos: Vec<ProxyProtocol>,
-    state: AppState,
+    state: Arc<ProxyState>,
     shutdown_tx: broadcast::Sender<()>,
-    config_tx: watch::Sender<ProxyConfig>,
     task_manager: Arc<TaskManager>,
 ) -> Result<Vec<task::JoinHandle<std::result::Result<(), ProxyError>>>> {
     let count = proxied_protos.len();
+
+    if count == 0 {
+        return Ok(Vec::new());
+    }
 
     // Create a oneshot channel for readiness signaling
     let (readiness_tx, mut readiness_rx) = mpsc::channel::<()>(count);
@@ -43,10 +41,9 @@ pub async fn initialize_tcp_proxies(
     for proto in proxied_protos {
         let handle = tokio::spawn(tcp::run_tcp_proxy(
             proto,
-            state.proxy_state.clone(),
+            state.clone(),
             shutdown_tx.subscribe(),
             readiness_tx.clone(),
-            config_tx.subscribe(),
             task_manager.clone(),
         ));
         handles.push(handle);
@@ -147,6 +144,7 @@ fn parse_host_port(
             ProtocolType::Http => "80",
             ProtocolType::Https => "443",
             ProtocolType::Psql => "5432",
+            ProtocolType::None => "",
         },
         None => "",
     })?;
@@ -181,6 +179,7 @@ fn parse_right(
                     ProtocolType::Http => "80",
                     ProtocolType::Https => "443",
                     ProtocolType::Psql => "5432",
+                    ProtocolType::None => "",
                 },
                 None => "",
             })?;
