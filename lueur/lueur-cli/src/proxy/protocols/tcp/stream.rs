@@ -1,7 +1,3 @@
-#[cfg(all(
-    target_os = "linux",
-    any(feature = "stealth", feature = "stealth-auto-build")
-))]
 use std::io::ErrorKind;
 use std::net::SocketAddr;
 use std::sync::Arc;
