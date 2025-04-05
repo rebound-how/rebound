@@ -23,7 +23,7 @@ use crate::types::StreamSide;
 
 // Include the generated protobuf code.
 pub mod service {
-    tonic::include_proto!("service");
+    tonic::include_proto!("plugin");
 }
 
 use service::plugin_service_client::PluginServiceClient;

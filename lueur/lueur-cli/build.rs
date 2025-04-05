@@ -8,7 +8,7 @@ fn main() -> anyhow::Result<()> {
         .build_server(true)
         .build_client(true)
         .compile_protos(
-            &["src/plugin/rpc/protos/service.proto"],
+            &["src/plugin/rpc/protos/plugin.proto"],
             &["src/plugin/rpc"],
         )?;
 
