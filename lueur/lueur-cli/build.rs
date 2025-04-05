@@ -1,4 +1,3 @@
-use anyhow::Context as _;
 #[cfg(all(target_os = "linux", feature = "stealth-auto-build"))]
 use anyhow::anyhow;
 #[cfg(all(target_os = "linux", feature = "stealth-auto-build"))]

@@ -59,31 +59,26 @@ async fn handle_new_connection(
         }
     };
 
-    let mut passthrough = true;
-
     let state: Arc<ProxyState> = state.clone();
     let hosts = state.upstream_hosts.load();
     let upstream_host = get_host(&upstream);
-    if hosts.contains(&String::from("*")) {
-        passthrough = false;
-    } else if hosts.contains(&upstream_host) {
-        passthrough = false;
-    }
+    let passthrough = if hosts.contains(&String::from("*")) {
+        false
+    } else { !hosts.contains(&upstream_host) };
 
     let upstream_url: Url = upstream.parse().unwrap();
-    let event;
 
-    if !passthrough {
-        event = task_manager
+    let event = if !passthrough {
+        task_manager
             .new_fault_event(upstream_url.to_string())
             .await
-            .unwrap();
+            .unwrap()
     } else {
-        event = task_manager
+        task_manager
             .new_passthrough_event(upstream_url.to_string())
             .await
-            .unwrap();
-    }
+            .unwrap()
+    };
 
     if method == Method::CONNECT {
         let r = tunnel::handle_connect(
@@ -194,8 +189,9 @@ pub async fn run_http_proxy(
     Ok(())
 }
 
-///
-/// -------------------- Private functions -----------------------------------
+//
+// -------------------- Private functions -----------------------------------
+//
 
 async fn determine_upstream(
     scheme: String,

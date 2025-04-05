@@ -81,8 +81,7 @@ impl Resolve for FaultyResolverInjector {
                     }),
                     None => Ok(()),
                 };
-                let io_error = std::io::Error::new(
-                    std::io::ErrorKind::Other,
+                let io_error = std::io::Error::other(
                     "Simulated DNS resolution failure",
                 );
                 return Err(io_error.into());
@@ -158,7 +157,7 @@ impl FaultInjector for FaultyResolverInjector {
     }
 
     fn kind(&self) -> FaultKind {
-        return self.settings.kind;
+        self.settings.kind
     }
 
     fn enable(&mut self) {

@@ -236,7 +236,7 @@ pub fn count_scenario_items(scenario: &Scenario) -> u64 {
         let strategy = item.context.strategy.clone();
         if let Some(strategy) = strategy {
             count += strategy.count;
-            if strategy.add_baseline_call.is_some_and(|x| x == true) {
+            if strategy.add_baseline_call.is_some_and(|x| x) {
                 count += 1;
             }
         } else {
@@ -255,7 +255,7 @@ pub fn build_item_list(source: ScenarioItem) -> Vec<ScenarioItem> {
     items.push(source.clone());
 
     if let Some(strategy) = strategy {
-        if strategy.add_baseline_call.is_some_and(|x| x == true) {
+        if strategy.add_baseline_call.is_some_and(|x| x) {
             tracing::debug!("Add first call as a baseline without any faults");
             let mut next_item = source.clone();
             next_item.context.faults = Vec::new();
@@ -528,7 +528,7 @@ pub fn load_scenarios(
                                 Err(e) => {
                                     yield Err(ScenarioError::ReadError(
                                         path_clone.to_string_lossy().to_string(),
-                                        std::io::Error::new(std::io::ErrorKind::Other, e.to_string()),
+                                        std::io::Error::other(e.to_string()),
                                     ));
                                 }
                             }

@@ -1,6 +1,5 @@
 use std::sync::Arc;
 use std::time::Duration;
-use std::usize;
 
 use axum::body::Body;
 use axum::body::to_bytes;

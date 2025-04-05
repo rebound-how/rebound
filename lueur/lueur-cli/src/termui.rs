@@ -1,3 +1,4 @@
+#![allow(clippy::format_in_format_args)]
 use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Arc;
@@ -92,12 +93,11 @@ pub async fn lean_progress(
     let turtle_start = tokio::time::Instant::now();
     let turtle_lane_width = 52;
     let step_sec = total_run / turtle_lane_width as f64;
-    let step;
-    if total_duration.is_some() {
-        step = Duration::from_secs_f64(step_sec);
+    let step = if total_duration.is_some() {
+        Duration::from_secs_f64(step_sec)
     } else {
-        step = Duration::from_secs_f64(1.0);
-    }
+        Duration::from_secs_f64(1.0)
+    };
     let mut turtle_move_interval = tokio::time::interval(step);
 
     elapsed_bar.set_style(
@@ -203,9 +203,9 @@ pub async fn lean_progress(
                         }
 
                         if finished {
-                            line.push_str("🏆");
+                            line.push('🏆');
                         } else {
-                            line.push_str("🏁");
+                            line.push('🏁');
                         }
                     }
                 }
@@ -536,7 +536,7 @@ pub async fn full_progress(
                                     }
 
                                     if fault_results.is_empty() {
-                                        fault_results.push_str(&format!("{}", format!("{}", "No Faults Applied").light_blue()));
+                                        fault_results.push_str(&format!("{}", "No Faults Applied".to_string().light_blue()));
                                     }
 
                                     let ttfb = match task_info.ttfb {
@@ -662,12 +662,13 @@ pub async fn quiet_handle_displayable_events(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn proxy_prelude(
     proxy_address: String,
     proxied_protos: Vec<ProxyProtocol>,
     plugins: Arc<RwLock<RpcPluginManager>>,
     opts: &RunCommandOptions,
-    upstreams: &Vec<String>,
+    upstreams: &[String],
     events: Vec<FaultPeriodEvent>,
     total_duration: Option<Duration>,
     tailing: bool,
@@ -679,12 +680,10 @@ pub async fn proxy_prelude(
         .iter()
         .map(|p| {
             format!(
-                "{}",
-                format!(
                     "     - {} {} {} {}",
                     format!(
                         "{}:{}",
-                        p.proxy.proxy_ip.to_string(),
+                        p.proxy.proxy_ip,
                         p.proxy.proxy_port
                     )
                     .cyan(),
@@ -695,8 +694,7 @@ pub async fn proxy_prelude(
                     )
                     .cyan(),
                     "[tcp: tunnel]".dim()
-                )
-            )
+                ).to_string()
         })
         .collect::<Vec<_>>()
         .join("\n");
@@ -711,23 +709,17 @@ pub async fn proxy_prelude(
         .map(|p| match p.meta.clone() {
             Some(meta) => {
                 format!(
-                    "{}",
-                    format!(
                         "     - {} {}",
                         meta.name.clone().cyan(),
                         format!("[{} | {}]", meta.version, p.addr).dim()
-                    )
-                )
+                    ).to_string()
             }
             None => {
                 format!(
-                    "{}",
-                    format!(
                         "     - {} {}",
                         format!("{}", p.addr.clone().cyan()),
                         "[not connected]".dim()
-                    )
-                )
+                    ).to_string()
             }
         })
         .collect::<Vec<String>>()
@@ -736,14 +728,8 @@ pub async fn proxy_prelude(
     let mut hosts;
 
     if !upstreams.is_empty() {
-        hosts = format!(
-            "{}",
-            upstreams
-                .iter()
-                .map(|h| h.clone())
-                .collect::<Vec<String>>()
-                .join(", ")
-        );
+        hosts = upstreams.to_vec()
+                .join(", ").to_string();
         if hosts == "*" {
             hosts = "All Hosts".to_string();
         }
@@ -1008,10 +994,8 @@ pub async fn proxy_prelude(
         let total_secs = computed_total_duration.as_secs_f64();
         println!("\n    {}", "Faults Schedule:".bold().white());
         schedule_timeline(&schedules, total_secs);
-    } else if total_duration.is_none() && schedules.is_empty() {
-        if !tailing {
-            println!("{}", "\n    Status:".bold().white());
-        }
+    } else if total_duration.is_none() && schedules.is_empty() && !tailing {
+        println!("{}", "\n    Status:".bold().white());
     }
 }
 

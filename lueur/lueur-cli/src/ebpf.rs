@@ -57,7 +57,7 @@ pub fn get_ebpf_proxy(
     ebpf_proxy_port: Option<u16>,
 ) -> anyhow::Result<Option<EbpfProxyAddrConfig>> {
     let interfaces = get_all_interfaces()?;
-    if interfaces.len() == 0 {
+    if interfaces.is_empty() {
         tracing::warn!(
             "Could not find any suitable interfaces to bind our ebpf program to"
         );
@@ -72,7 +72,7 @@ pub fn get_ebpf_proxy(
             Some(it) => it,
             None => return Ok(None),
         };
-        iface_ip = proxy_iface.1.clone();
+        iface_ip = proxy_iface.1;
         iface_name = proxy_iface.0.clone();
     } else if let Some(ebpf_ip) = ebpf_proxy_ip {
         let proxy_iface =
@@ -80,14 +80,14 @@ pub fn get_ebpf_proxy(
                 Some(it) => it,
                 None => return Ok(None),
             };
-        iface_ip = proxy_iface.1.clone();
+        iface_ip = proxy_iface.1;
         iface_name = proxy_iface.0.clone();
     } else {
         let proxy_ip4: u32 = proxy_nic_config.proxy_ip.into();
 
         if Ipv4Addr::from(proxy_ip4) == Ipv4Addr::new(0, 0, 0, 0) {
             let proxy_iface = find_non_loopback_interface(&interfaces).unwrap();
-            iface_ip = proxy_iface.1.clone(); // Ipv4Addr::new(0, 0, 0, 0);
+            iface_ip = proxy_iface.1; // Ipv4Addr::new(0, 0, 0, 0);
             iface_name = proxy_iface.0.clone();
         } else {
             let proxy_iface =
@@ -95,7 +95,7 @@ pub fn get_ebpf_proxy(
                     Some(it) => it,
                     None => return Ok(None),
                 };
-            iface_ip = proxy_iface.1.clone();
+            iface_ip = proxy_iface.1;
             iface_name = proxy_iface.0.clone();
         }
     }
@@ -109,7 +109,7 @@ pub fn get_ebpf_proxy(
 
     Ok(Some(EbpfProxyAddrConfig {
         ip: iface_ip,
-        port: port,
+        port,
         ifname: iface_name,
     }))
 }
@@ -158,14 +158,14 @@ pub fn install_and_run(
         config.proxy_pid
     );
 
-    let _ = tc::qdisc_add_clsact(&iface);
+    let _ = tc::qdisc_add_clsact(iface);
 
     // Attach the cgroup_sock program to a cgroup.
     // This program will tag connections for the target process.
     let cgroup_path = "/sys/fs/cgroup/"; // Adjust as needed.
-    let cgroup = std::fs::File::open(&cgroup_path).unwrap();
+    let cgroup = std::fs::File::open(cgroup_path).unwrap();
 
-    let _ = tc::qdisc_add_clsact(&iface);
+    let _ = tc::qdisc_add_clsact(iface);
 
     let cgroup_prog_v4: &mut CgroupSockAddr =
         ebpf.program_mut("cg_connect4").unwrap().try_into()?;
@@ -197,8 +197,9 @@ pub fn install_and_run(
     Ok(())
 }
 
-///
-/// -------------------- Private functions -----------------------------------
+//
+// -------------------- Private functions -----------------------------------
+//
 
 // Function to find interface by IP.
 fn find_interface_by_ip(
@@ -279,7 +280,7 @@ pub fn initialize_stealth(
     #[allow(unused_variables)]
     let ebpf_guard = match stealth_options.ebpf {
         true => {
-            let cargo_bin_dir = get_programs_bin_dir(&stealth_options);
+            let cargo_bin_dir = get_programs_bin_dir(stealth_options);
             if cargo_bin_dir.is_none() {
                 tracing::warn!(
                     "No cargo bin directory could be detected, please set CARGO_HOME"
@@ -308,7 +309,7 @@ pub fn initialize_stealth(
                 tracing::warn!("failed to initialize eBPF logger: {}", e);
             }
 
-            let _ = install_and_run(&mut bpf, &ebpf_proxy_config, proc_name);
+            let _ = install_and_run(&mut bpf, ebpf_proxy_config, proc_name);
 
             tracing::info!("Ebpf has been loaded");
 
@@ -344,9 +345,9 @@ fn get_programs_bin_dir(cli: &StealthCommandCommon) -> Option<PathBuf> {
         match env::home_dir() {
             Some(mut path) => {
                 path.push(".cargo/bin");
-                return Some(path);
+                Some(path)
             }
-            None => return None,
+            None => None,
         }
     }
 }

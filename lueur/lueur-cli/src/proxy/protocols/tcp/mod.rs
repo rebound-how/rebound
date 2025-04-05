@@ -87,7 +87,7 @@ pub async fn run_tcp_proxy(
 
                             match stream::handle_stream(
                                 stream,
-                                connect_to.clone(),
+                                connect_to,
                                 &state,
                                 false,
                                 event.clone(),

@@ -41,7 +41,7 @@ impl FaultInjector for HttpResponseFaultInjector {
     }
 
     fn kind(&self) -> FaultKind {
-        return self.settings.kind;
+        self.settings.kind
     }
 
     fn enable(&mut self) {
@@ -88,7 +88,7 @@ impl FaultInjector for HttpResponseFaultInjector {
             let _ = event.with_fault(FaultEvent::HttpResponseFault {
                 direction: Direction::Ingress,
                 side: StreamSide::Server,
-                status_code: status_code,
+                status_code,
                 response_body: new_body.clone(),
             });
 

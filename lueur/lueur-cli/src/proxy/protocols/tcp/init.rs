@@ -50,8 +50,8 @@ pub async fn initialize_tcp_proxies(
 
     let mut pending = count;
 
-    while let Some(_) = readiness_rx.recv().await {
-        pending = pending - 1;
+    while readiness_rx.recv().await.is_some() {
+        pending -= 1;
 
         if pending == 0 {
             break;
@@ -138,7 +138,7 @@ fn parse_host_port(
     let mut parts = input.splitn(2, ':');
     let host =
         parts.next().ok_or_else(|| format!("Invalid host in '{}'", input))?;
-    let port = parts.next().ok_or_else(|| match proto_type {
+    let port = parts.next().ok_or(match proto_type {
         Some(p) => match p {
             ProtocolType::Http => "80",
             ProtocolType::Https => "443",
@@ -183,7 +183,7 @@ fn parse_right(
                 None => "",
             })?;
 
-            if port == "" {
+            if port.is_empty() {
                 return Err(format!(
                     "Invalid remote side (missing host:port after protocol): {}",
                     right

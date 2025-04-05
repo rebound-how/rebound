@@ -86,14 +86,14 @@ pub async fn run_ebpf_proxy(
 
                         tokio::spawn(async move {
                             let state = state.clone();
-                            let addr = addr.clone();
+                            let addr = addr;
 
                             match get_connect_addr(&stream).await {
                                 Ok(candidate) =>  match candidate {
                                     Some(connect_to) => {
                                         match handle_stream(
                                             stream,
-                                            connect_to.clone(),
+                                            connect_to,
                                             &state,
                                             false,
                                             event.clone(),
@@ -119,11 +119,11 @@ pub async fn run_ebpf_proxy(
                                         Ok(())
                                     }
                                     None => {
-                                        return Err(
+                                        Err(
                                             ProxyError::Internal(
                                                 "failed to locate a target address to on the socket".to_string()
                                             )
-                                        );
+                                        )
                                     }
                                 }
                                 Err(e) => Err(e)
@@ -152,7 +152,7 @@ async fn get_connect_addr(
     stream: &TcpStream,
 ) -> Result<Option<SocketAddr>, ProxyError> {
     let fd = stream.as_raw_fd();
-    Ok(get_original_dst(fd).await?)
+    get_original_dst(fd).await
 }
 
 #[cfg(all(

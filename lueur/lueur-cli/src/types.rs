@@ -44,7 +44,7 @@ impl fmt::Display for ProxyProtocol {
         write!(
             f,
             "{}:{} => {}:{}",
-            self.proxy.proxy_ip.to_string(),
+            self.proxy.proxy_ip,
             self.proxy.proxy_port,
             self.remote.remote_host,
             self.remote.remote_port,

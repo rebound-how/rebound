@@ -172,7 +172,7 @@ impl FaultConfig {
         }
     }
 
-    pub fn enable(&mut self) -> () {
+    pub fn enable(&mut self) {
         match self {
             FaultConfig::Dns(settings) => settings.enabled = true,
             FaultConfig::Latency(settings) => settings.enabled = true,
@@ -183,10 +183,10 @@ impl FaultConfig {
             FaultConfig::HttpError(settings) => settings.enabled = true,
             FaultConfig::Blackhole(settings) => settings.enabled = true,
         };
-        ()
+        
     }
 
-    pub fn disable(&mut self) -> () {
+    pub fn disable(&mut self) {
         match self {
             FaultConfig::Dns(settings) => settings.enabled = false,
             FaultConfig::Latency(settings) => settings.enabled = false,
@@ -199,7 +199,7 @@ impl FaultConfig {
             FaultConfig::HttpError(settings) => settings.enabled = false,
             FaultConfig::Blackhole(settings) => settings.enabled = false,
         };
-        ()
+        
     }
 }
 
@@ -245,8 +245,8 @@ pub struct ProxyConfig {
     pub faults: Arc<ArcSwap<Vec<FaultConfig>>>,
 }
 
-impl From<&RunCommandOptions> for ProxyConfig {
-    fn from(cli: &RunCommandOptions) -> Self {
+impl From<&Box<RunCommandOptions>> for ProxyConfig {
+    fn from(cli: &Box<RunCommandOptions>) -> Self {
         let mut faults = Vec::new();
 
         if cli.latency.enabled && cli.latency.latency_sched.is_none() {

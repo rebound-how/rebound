@@ -22,14 +22,14 @@ pub async fn initialize_ebpf_proxy(
     let (readiness_tx, readiness_rx) = oneshot::channel::<()>();
 
     let handle = tokio::spawn(async move {
-        return ebpf::run_ebpf_proxy(
+        ebpf::run_ebpf_proxy(
             proxy_address.clone(),
             state.clone(),
             shutdown_rx,
             readiness_tx,
             task_manager,
         )
-        .await;
+        .await
     });
 
     // Wait for the proxy to signal readiness

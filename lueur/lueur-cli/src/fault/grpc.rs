@@ -142,7 +142,7 @@ impl GrpcPluginStream {
             plugin
                 .process_tunnel_data(tonic::Request::new(req))
                 .await
-                .map_err(|e| ProxyError::GrpcError(e))
+                .map_err(ProxyError::GrpcError)
         };
         self.processing_future = Some(Box::pin(GrpcResultWrapper::new(fut)));
 
@@ -188,8 +188,7 @@ impl AsyncRead for GrpcPluginStream {
                     return self.poll_read(cx, buf);
                 }
                 Poll::Ready(Err(e)) => {
-                    return Poll::Ready(Err(io::Error::new(
-                        io::ErrorKind::Other,
+                    return Poll::Ready(Err(io::Error::other(
                         e.to_string(),
                     )));
                 }
@@ -212,7 +211,7 @@ impl AsyncRead for GrpcPluginStream {
                 }
                 let chunk = read_buf.filled().to_vec();
                 self.process_chunk(chunk).map_err(|e| {
-                    io::Error::new(io::ErrorKind::Other, e.to_string())
+                    io::Error::other(e.to_string())
                 })?;
                 cx.waker().wake_by_ref();
                 Poll::Pending
@@ -275,7 +274,7 @@ impl FaultInjector for GrpcInjector {
     }
 
     fn kind(&self) -> FaultKind {
-        return FaultKind::Grpc;
+        FaultKind::Grpc
     }
 
     fn enable(&mut self) {
@@ -300,13 +299,10 @@ impl FaultInjector for GrpcInjector {
         Box<dyn Bidirectional + 'static>,
         (ProxyError, Box<dyn Bidirectional + 'static>),
     > {
-        match self.settings.clone().capabilities {
-            Some(c) => {
-                if !c.tunnel {
-                    return Ok(stream);
-                }
+        if let Some(c) = self.settings.clone().capabilities {
+            if !c.tunnel {
+                return Ok(stream);
             }
-            None => {}
         };
 
         if side != self.settings.side {
@@ -333,13 +329,10 @@ impl FaultInjector for GrpcInjector {
         resp: http::Response<Vec<u8>>,
         _event: Box<dyn ProxyTaskEvent>,
     ) -> Result<http::Response<Vec<u8>>, crate::errors::ProxyError> {
-        match self.settings.clone().capabilities {
-            Some(c) => {
-                if !c.forward {
-                    return Ok(resp);
-                }
+        if let Some(c) = self.settings.clone().capabilities {
+            if !c.forward {
+                return Ok(resp);
             }
-            None => {}
         };
 
         // Extract status, version, and headers
@@ -426,13 +419,10 @@ impl FaultInjector for GrpcInjector {
         request: reqwest::Request,
         _event: Box<dyn ProxyTaskEvent>,
     ) -> Result<reqwest::Request, crate::errors::ProxyError> {
-        match self.settings.clone().capabilities {
-            Some(c) => {
-                if !c.forward {
-                    return Ok(request);
-                }
+        if let Some(c) = self.settings.clone().capabilities {
+            if !c.forward {
+                return Ok(request);
             }
-            None => {}
         };
 
         // Extract method, URL, and headers from the request before consuming

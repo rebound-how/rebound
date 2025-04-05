@@ -26,14 +26,14 @@ pub async fn initialize_http_proxy(
     let handle = tokio::spawn(async move {
         let proxy_address = proxy_address.clone();
 
-        return http::run_http_proxy(
+        http::run_http_proxy(
             proxy_address,
             state,
             shutdown_rx,
             readiness_tx,
             task_manager,
         )
-        .await;
+        .await
     });
 
     // Wait for the proxy to signal readiness

@@ -444,7 +444,7 @@ impl FaultInjector for PacketLossInjector {
     }
 
     fn kind(&self) -> FaultKind {
-        return self.settings.kind;
+        self.settings.kind
     }
 
     fn enable(&mut self) {

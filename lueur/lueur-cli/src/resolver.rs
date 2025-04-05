@@ -27,10 +27,10 @@ impl TimingResolver {
         timing: Arc<Mutex<DnsTiming>>,
         event: Box<dyn ProxyTaskEvent>,
     ) -> Self {
-        let resolver;
+        
 
         // Initialize the resolver with default system configuration.
-        resolver = TokioResolver::builder_tokio().unwrap().build();
+        let resolver = TokioResolver::builder_tokio().unwrap().build();
 
         TimingResolver {
             resolver: Arc::new(RwLock::new(resolver)),

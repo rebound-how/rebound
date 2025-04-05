@@ -160,6 +160,7 @@ pub fn init_subscriber(
 ///
 /// # Returns
 /// A tuple containing optional guards for file and stdout logging layers.
+#[allow(clippy::type_complexity)]
 pub fn setup_logging(
     log_file: Option<String>,
     enable_stdout: bool,

@@ -206,7 +206,7 @@ pub enum Commands {
     /// Run the lueur proxy and apply network faults to traffic
     Run {
         #[command(flatten)]
-        options: RunCommandOptions,
+        options: Box<RunCommandOptions>,
     },
 
     /// Execute a scenario

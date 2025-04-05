@@ -24,9 +24,9 @@ fn fraction_to_duration(frac: f64, total: Duration) -> Duration {
 
 fn parse_time_spec(s: &str) -> Result<TimeSpec, SchedulingError> {
     let s = s.trim();
-    if s.ends_with('%') {
+    if let Some(pct_str) = s.strip_suffix('%') {
         // e.g. "5%"
-        let pct_str = &s[..s.len() - 1]; // remove '%'
+        // remove '%'
         let fraction = pct_str
             .parse::<f64>()
             .map_err(|_| SchedulingError::InvalidFraction(s.to_string()))?
@@ -151,7 +151,7 @@ fn build_events_for_fault(
         let start_time = base_instant + p.start;
         events.push(FaultPeriodEvent {
             time: start_time,
-            fault_type: fault_type.clone(),
+            fault_type,
             fault_config: fault_config.clone(),
             event_type: EventType::Start,
         });
@@ -159,7 +159,7 @@ fn build_events_for_fault(
         if let Some(d) = p.duration {
             events.push(FaultPeriodEvent {
                 time: start_time + d,
-                fault_type: fault_type.clone(),
+                fault_type,
                 fault_config: fault_config.clone(),
                 event_type: EventType::Stop,
             });
@@ -245,7 +245,7 @@ pub fn build_schedule_events(
         };
 
         if !period.is_empty() {
-            let specs = parse_periods(&period)?;
+            let specs = parse_periods(period)?;
             let periods = resolve_periods(&specs, total_duration)?;
             let fault_config = FaultConfig::Bandwidth((&cli.bandwidth).into());
             let fault_events = build_events_for_fault(
@@ -269,7 +269,7 @@ pub fn build_schedule_events(
         };
 
         if !period.is_empty() {
-            let specs = parse_periods(&period)?;
+            let specs = parse_periods(period)?;
             let periods = resolve_periods(&specs, total_duration)?;
             let fault_config = FaultConfig::Latency((&cli.latency).into());
             let fault_events = build_events_for_fault(
@@ -293,7 +293,7 @@ pub fn build_schedule_events(
         };
 
         if !period.is_empty() {
-            let specs = parse_periods(&period)?;
+            let specs = parse_periods(period)?;
             let periods = resolve_periods(&specs, total_duration)?;
             let fault_config = FaultConfig::Dns((&cli.dns).into());
             let fault_events = build_events_for_fault(
@@ -317,7 +317,7 @@ pub fn build_schedule_events(
         };
 
         if !period.is_empty() {
-            let specs = parse_periods(&period)?;
+            let specs = parse_periods(period)?;
             let periods = resolve_periods(&specs, total_duration)?;
             let fault_config =
                 FaultConfig::PacketLoss((&cli.packet_loss).into());
@@ -342,7 +342,7 @@ pub fn build_schedule_events(
         };
 
         if !period.is_empty() {
-            let specs = parse_periods(&period)?;
+            let specs = parse_periods(period)?;
             let periods = resolve_periods(&specs, total_duration)?;
             let fault_config = FaultConfig::Jitter((&cli.jitter).into());
             let fault_events = build_events_for_fault(
@@ -366,7 +366,7 @@ pub fn build_schedule_events(
         };
 
         if !period.is_empty() {
-            let specs = parse_periods(&period)?;
+            let specs = parse_periods(period)?;
             let periods = resolve_periods(&specs, total_duration)?;
             let fault_config = FaultConfig::HttpError((&cli.http_error).into());
             let fault_events = build_events_for_fault(
@@ -390,7 +390,7 @@ pub fn build_schedule_events(
         };
 
         if !period.is_empty() {
-            let specs = parse_periods(&period)?;
+            let specs = parse_periods(period)?;
             let periods = resolve_periods(&specs, total_duration)?;
             let fault_config = FaultConfig::Blackhole((&cli.blackhole).into());
             let fault_events = build_events_for_fault(

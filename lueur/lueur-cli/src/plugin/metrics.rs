@@ -53,7 +53,7 @@ impl FaultInjector for MetricsInjector {
     }
 
     fn kind(&self) -> FaultKind {
-        return FaultKind::Metrics;
+        FaultKind::Metrics
     }
 
     fn enable(&mut self) {}

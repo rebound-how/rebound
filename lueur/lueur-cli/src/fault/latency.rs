@@ -66,7 +66,9 @@ impl Clone for LatencyInjector {
 impl LatencyInjector {
     #[tracing::instrument]
     fn get_delay(&self, rng: &mut SmallRng) -> Duration {
-        let delay = match &self.settings.distribution {
+        
+
+        match &self.settings.distribution {
             LatencyDistribution::Normal => {
                 let normal = Normal::new(
                     self.settings.latency_mean,
@@ -146,9 +148,7 @@ impl LatencyInjector {
                 Duration::from_millis(millis)
                     + Duration::from_nanos(nanos as u64)
             }
-        };
-
-        delay
+        }
     }
 }
 
@@ -221,7 +221,7 @@ impl FaultInjector for LatencyInjector {
     }
 
     fn kind(&self) -> FaultKind {
-        return self.settings.kind;
+        self.settings.kind
     }
 
     fn enable(&mut self) {

@@ -148,7 +148,7 @@ impl ReportItem {
         result: ReportItemResult,
     ) -> Self {
         ReportItem {
-            title: title,
+            title,
             target: result.target,
             expect: result.expect,
             faults: result.faults,

@@ -156,7 +156,7 @@ async fn main() -> Result<()> {
     match &cli.command {
         Commands::Run { options } => {
             // if we are in stealth mode, we'll start the ebpf layer as well
-            let stealth_mode = is_stealth(&options);
+            let stealth_mode = is_stealth(options);
 
             // initiliaze a default state
             // By default we mean that it doesn't know yet about the user
@@ -280,13 +280,9 @@ async fn main() -> Result<()> {
             }
 
             // Let's get some data ready for the UI
-            let total_duration = if let Some(ref s) = options.common.duration {
-                Some(parse(s).unwrap())
-            } else {
-                None
-            };
+            let total_duration = options.common.duration.as_ref().map(|s| parse(s).unwrap());
             let fault_schedule =
-                build_schedule_events(&options, total_duration)?;
+                build_schedule_events(options, total_duration)?;
 
             let schedule_for_prelude = fault_schedule.clone();
             _fault_schedule_handle = tokio::spawn(run_fault_schedule(
@@ -305,7 +301,7 @@ async fn main() -> Result<()> {
                     http_proxy_nic_config.proxy_address(),
                     proxied_protos.clone(),
                     proxy_state.clone().rpc_manager.clone(),
-                    &options,
+                    options,
                     &upstreams,
                     schedule_for_prelude,
                     total_duration,
@@ -380,7 +376,7 @@ async fn main() -> Result<()> {
 
                 let m = MultiProgress::new();
 
-                let app_state = initialize_proxy_state(&common, false).await?;
+                let app_state = initialize_proxy_state(common, false).await?;
 
                 tokio::spawn(monitor_and_update_proxy_config(
                     app_state.clone(),

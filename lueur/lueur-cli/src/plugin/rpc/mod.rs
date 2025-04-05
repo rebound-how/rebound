@@ -399,15 +399,15 @@ pub async fn load_plugin_capabilities(
     })?;
 
     let c = caps.into_inner();
-    return Ok(Some(GrpcCapabilities {
+    Ok(Some(GrpcCapabilities {
         forward: c.can_handle_http_forward,
         tunnel: c.can_handle_tunnel,
         protocols: c
             .protocols
             .iter()
-            .filter_map(|p| ProtocolType::from_i32(p))
+            .filter_map(ProtocolType::from_i32)
             .collect::<Vec<ProtocolType>>(),
-    }));
+    }))
 }
 
 async fn update_plugin_info(plugin: &mut RemotePlugin) {
