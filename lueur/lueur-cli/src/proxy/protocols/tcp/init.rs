@@ -210,19 +210,7 @@ fn parse_right(
 pub async fn resolve_remote_host(host: String) -> Result<IpAddr, String> {
     let dns_resolver;
 
-    #[cfg(unix)]
-    {
-        dns_resolver = resolver_from_system_conf().await.unwrap();
-    }
-    #[cfg(target_os = "windows")]
-    {
-        dns_resolver = resolver(
-            config::ResolverConfig::default(),
-            config::ResolverOpts::default(),
-        )
-        .await;
-    }
-
+    dns_resolver = resolver_from_system_conf().await.unwrap();
     let response = dns_resolver.lookup_ip(host.clone()).await.unwrap();
     let candidates = response.into_iter().collect::<Vec<_>>();
 
