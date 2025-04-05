@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
 import time
-import threading
 from concurrent import futures
 import grpc
 
@@ -8,13 +6,10 @@ import grpc
 import plugin_pb2
 import plugin_pb2_grpc
 
-COUNT = 0
-LOCK = threading.Lock()
 
 class PluginService(plugin_pb2_grpc.PluginServiceServicer):
     def HealthCheck(self, request, context):
         """Returns the current status of the plugin."""
-        print("health")
         return plugin_pb2.HealthCheckResponse(
             healthy=True,
             message=""
@@ -22,18 +17,16 @@ class PluginService(plugin_pb2_grpc.PluginServiceServicer):
 
     def GetPluginInfo(self, request, context):
         """Returns plugin metadata."""
-        print("info")
         return plugin_pb2.GetPluginInfoResponse(
-            name="MyAdvancedPlugin",
+            name="EchoPlugin",
             version="1.0.0",
             author="John Doe",
-            url="https://github.com/johndoe/myadvancedplugin",
+            url="https://github.com/johndoe/echoplugin",
             platform="python",
         )
 
     def GetPluginCapabilities(self, request, context):
         """Returns the capabilities of this plugin."""
-        print("capabilities")
         return plugin_pb2.GetPluginCapabilitiesResponse(
             can_handle_http_forward=True,
             can_handle_tunnel=True,
@@ -46,10 +39,6 @@ class PluginService(plugin_pb2_grpc.PluginServiceServicer):
         In this example we simply echo the request back,
         indicating no modification.
         """
-        global COUNT, LOCK
-        with LOCK:
-            COUNT = COUNT + 1
-            print(COUNT)
         return plugin_pb2.ProcessHttpRequestResponse(
             action=plugin_pb2.ProcessHttpRequestResponse.Action.CONTINUE,
             modified_request=request.request,
