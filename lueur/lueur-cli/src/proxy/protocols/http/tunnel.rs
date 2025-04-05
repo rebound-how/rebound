@@ -4,8 +4,6 @@ use std::net::IpAddr;
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use async_std_resolver::config;
-use async_std_resolver::resolver;
 use async_std_resolver::resolver_from_system_conf;
 use axum::body::Body;
 use axum::http::Request as AxumRequest;
@@ -59,82 +57,80 @@ pub async fn handle_connect(
         let addr: SocketAddr = SocketAddr::new(addresses[0], port);
 
         match hyper::upgrade::on(req).await {
-            Ok(upgraded) => {
-                match TcpStream::connect(addr).await {
-                    Ok(raw_server_stream) => {
-                        let start = Instant::now();
-                        let _ = event.on_started(upstream_str);
-                        let _ = event
-                            .on_resolved(host.clone(), dns_resolution_time);
+            Ok(upgraded) => match TcpStream::connect(addr).await {
+                Ok(raw_server_stream) => {
+                    let start = Instant::now();
+                    let _ = event.on_started(upstream_str);
+                    let _ =
+                        event.on_resolved(host.clone(), dns_resolution_time);
 
-                        let client_stream: Box<dyn Bidirectional + 'static> =
-                            Box::new(TokioIo::new(upgraded));
+                    let client_stream: Box<dyn Bidirectional + 'static> =
+                        Box::new(TokioIo::new(upgraded));
 
-                        let server_stream: Box<dyn Bidirectional + 'static> =
-                            Box::new(raw_server_stream);
+                    let server_stream: Box<dyn Bidirectional + 'static> =
+                        Box::new(raw_server_stream);
 
-                        let mut modified_client_stream = client_stream;
-                        let mut modified_server_stream = server_stream;
+                    let mut modified_client_stream = client_stream;
+                    let mut modified_server_stream = server_stream;
 
-                        if !passthrough {
-                            let faults = faults_plugins.load();
-                            match faults
-                                .inject_tunnel_faults(
-                                    modified_client_stream,
-                                    modified_server_stream,
-                                    event.clone(),
-                                )
-                                .await
-                            {
-                                Ok((client, server)) => {
-                                    modified_client_stream = client;
-                                    modified_server_stream = server;
-                                }
-                                Err(e) => {
-                                    tracing::error!(
-                                        "Plugin failed to inject tunnel faults: {}",
-                                        e
-                                    );
-                                    return;
-                                }
-                            }
-                            drop(faults);
-                        }
-
-                        match bidirectional_copy(
-                            modified_client_stream,
-                            modified_server_stream,
-                        )
-                        .await
+                    if !passthrough {
+                        let faults = faults_plugins.load();
+                        match faults
+                            .inject_tunnel_faults(
+                                modified_client_stream,
+                                modified_server_stream,
+                                event.clone(),
+                            )
+                            .await
                         {
-                            Ok((bytes_from_client, bytes_to_server)) => {
-                                let _ = event.on_response(0);
-                                let _ = event.on_completed(
-                                    start.elapsed(),
-                                    bytes_from_client,
-                                    bytes_to_server,
-                                );
+                            Ok((client, server)) => {
+                                modified_client_stream = client;
+                                modified_server_stream = server;
                             }
                             Err(e) => {
                                 tracing::error!(
-                                    "Error in bidirectional copy (Host {}): {}",
-                                    host,
+                                    "Plugin failed to inject tunnel faults: {}",
                                     e
                                 );
-                                let _ = event.on_error(e);
+                                return;
                             }
-                        };
+                        }
+                        drop(faults);
                     }
-                    Err(e) => {
-                        error!(
-                            "Failed to connect to target {}:{} - {}",
-                            target_host, target_port, e
-                        );
 
-                        let _ = event.on_error(Box::new(e));
-                    }
+                    match bidirectional_copy(
+                        modified_client_stream,
+                        modified_server_stream,
+                    )
+                    .await
+                    {
+                        Ok((bytes_from_client, bytes_to_server)) => {
+                            let _ = event.on_response(0);
+                            let _ = event.on_completed(
+                                start.elapsed(),
+                                bytes_from_client,
+                                bytes_to_server,
+                            );
+                        }
+                        Err(e) => {
+                            tracing::error!(
+                                "Error in bidirectional copy (Host {}): {}",
+                                host,
+                                e
+                            );
+                            let _ = event.on_error(e);
+                        }
+                    };
                 }
-            }
+                Err(e) => {
+                    error!(
+                        "Failed to connect to target {}:{} - {}",
+                        target_host, target_port, e
+                    );
+
+                    let _ = event.on_error(Box::new(e));
+                }
+            },
             Err(e) => {
                 error!("Upgrade error: {}", e);
                 let _ = event.on_error(Box::new(e));

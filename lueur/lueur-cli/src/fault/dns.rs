@@ -4,9 +4,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use axum::http;
-use hickory_resolver::TokioAsyncResolver;
 use hickory_resolver::TokioResolver;
-use hickory_resolver::config::*;
 use rand::Rng;
 use rand::SeedableRng;
 use rand::rngs::SmallRng;

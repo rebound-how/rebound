@@ -15,14 +15,14 @@ pub async fn initialize_ebpf_proxy(
     state: Arc<ProxyState>,
     shutdown_rx: broadcast::Receiver<()>,
     task_manager: Arc<TaskManager>,
-) -> Result<task::JoinHandle<()>> {
+) -> Result<task::JoinHandle<Result<(), ProxyError>>> {
     let proxy_address = ebpf_proxy_config.proxy_address();
 
     // Create a oneshot channel for readiness signaling
     let (readiness_tx, readiness_rx) = oneshot::channel::<()>();
 
     let handle = tokio::spawn(async move {
-        ebpf::run_ebpf_proxy(
+        return ebpf::run_ebpf_proxy(
             proxy_address.clone(),
             state.clone(),
             shutdown_rx,

@@ -3,8 +3,6 @@ use std::sync::Arc;
 use std::time::Instant;
 
 use hickory_resolver::TokioResolver;
-use hickory_resolver::config::*;
-use hickory_resolver::name_server::TokioConnectionProvider;
 use local_ip_address::local_ip;
 use reqwest::dns::Addrs;
 use reqwest::dns::Resolve;

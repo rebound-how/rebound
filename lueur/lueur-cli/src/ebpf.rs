@@ -17,10 +17,8 @@ use aya::programs::CgroupSockopt;
 use aya::programs::SockOps;
 use aya::programs::tc;
 use local_ip_address::list_afinet_netifas;
-use nix::net::if_::if_nametoindex;
 use rand::Rng;
 
-use crate::cli::ProxyAwareCommandCommon;
 use crate::cli::StealthCommandCommon;
 use crate::types::EbpfProxyAddrConfig;
 use crate::types::ProxyAddrConfig;
@@ -86,7 +84,6 @@ pub fn get_ebpf_proxy(
         iface_name = proxy_iface.0.clone();
     } else {
         let proxy_ip4: u32 = proxy_nic_config.proxy_ip.into();
-        //let proxy_ip6 = ipv4_to_mapped_ipv6_bytes(proxy_ip4);
 
         if Ipv4Addr::from(proxy_ip4) == Ipv4Addr::new(0, 0, 0, 0) {
             let proxy_iface = find_non_loopback_interface(&interfaces).unwrap();
@@ -105,7 +102,7 @@ pub fn get_ebpf_proxy(
 
     let port: u16 = match ebpf_proxy_port {
         Some(p) => p,
-        None => rand::thread_rng().gen_range(1024..=65535),
+        None => rand::rng().random_range(1024..=65535),
     };
 
     tracing::debug!("eBPF proxy detected address {}:{}", iface_ip, port);
@@ -123,12 +120,11 @@ pub fn install_and_run(
     ebpf_process: String,
 ) -> anyhow::Result<()> {
     let proxy_ip4 = ebpf_proxy_config.ip;
-    let ebpf_proxy_port = ebpf_proxy_config.port;
     let iface = ebpf_proxy_config.ifname.as_str();
 
     tracing::debug!("Using interface {} {}", proxy_ip4, iface);
 
-    for (name, map) in ebpf.maps() {
+    for (name, ..) in ebpf.maps() {
         tracing::info!("found map `{}`", name,);
     }
 
@@ -204,16 +200,6 @@ pub fn install_and_run(
 ///
 /// -------------------- Private functions -----------------------------------
 
-// Helper function to get interface index from name.
-fn get_ifindex(interface_name: &str) -> Result<u32, String> {
-    Ok(if_nametoindex(interface_name).map_err(|e| {
-        format!(
-            "Failed to get ifindex for interface '{}': {}",
-            interface_name, e
-        )
-    })? as u32)
-}
-
 // Function to find interface by IP.
 fn find_interface_by_ip(
     interfaces: &[(String, Ipv4Addr)],
@@ -252,31 +238,6 @@ fn get_all_interfaces() -> anyhow::Result<Vec<(String, Ipv4Addr)>> {
     Ok(interfaces)
 }
 
-/// Converts a host‐order `u32` IPv4 address into an IPv4‐mapped IPv6 `[u8;
-/// 16]`.
-///
-/// For example, `0xC0A80001` (192.168.0.1) becomes `::ffff:192.168.0.1`
-/// i.e. `[0,0,0,0,0,0,0,0,0,0,0xff,0xff,192,168,0,1]`.
-#[inline]
-pub fn ipv4_to_mapped_ipv6_bytes(ip4_host: u32) -> [u8; 16] {
-    // Convert the host-order IPv4 to big-endian bytes
-    let ip4_be = ip4_host.to_be();
-    let ip4_bytes = ip4_be.to_be_bytes();
-
-    // Construct the 16-byte array for ::ffff:x.x.x.x
-    let mut v6 = [0u8; 16];
-    // The mapped IPv4 prefix is 0000:0000:0000:0000:0000:FFFF
-    v6[10] = 0xff;
-    v6[11] = 0xff;
-    // Copy the 4 IPv4 bytes into the last 4 bytes of the IPv6 address
-    v6[12] = ip4_bytes[0];
-    v6[13] = ip4_bytes[1];
-    v6[14] = ip4_bytes[2];
-    v6[15] = ip4_bytes[3];
-
-    v6
-}
-
 #[cfg(all(target_os = "linux", feature = "stealth-auto-build"))]
 pub fn initialize_stealth(
     cli: &ProxyAwareCommandCommon,
@@ -310,13 +271,10 @@ pub fn initialize_stealth(
 
 #[cfg(all(target_os = "linux", feature = "stealth"))]
 pub fn initialize_stealth(
-    cli: &ProxyAwareCommandCommon,
     stealth_options: &StealthCommandCommon,
     ebpf_proxy_config: &EbpfProxyAddrConfig,
 ) -> Option<Ebpf> {
     let proc_name = stealth_options.ebpf_process_name.clone().unwrap();
-
-    let upstream_hosts = cli.upstream_hosts.clone();
 
     #[allow(unused_variables)]
     let ebpf_guard = match stealth_options.ebpf {
@@ -391,6 +349,4 @@ fn get_programs_bin_dir(cli: &StealthCommandCommon) -> Option<PathBuf> {
             None => return None,
         }
     }
-
-    None
 }

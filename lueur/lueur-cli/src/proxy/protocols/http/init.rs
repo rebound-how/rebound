@@ -18,7 +18,7 @@ pub async fn initialize_http_proxy(
     state: Arc<ProxyState>,
     shutdown_rx: broadcast::Receiver<()>,
     task_manager: Arc<TaskManager>,
-) -> Result<task::JoinHandle<()>> {
+) -> Result<task::JoinHandle<Result<(), ProxyError>>> {
     let proxy_address = proxy_nic_config.proxy_address();
 
     let (readiness_tx, readiness_rx) = oneshot::channel::<()>();
@@ -26,7 +26,7 @@ pub async fn initialize_http_proxy(
     let handle = tokio::spawn(async move {
         let proxy_address = proxy_address.clone();
 
-        http::run_http_proxy(
+        return http::run_http_proxy(
             proxy_address,
             state,
             shutdown_rx,

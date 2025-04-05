@@ -4,15 +4,10 @@ use arc_swap::ArcSwap;
 use tokio::sync::RwLock;
 use tokio::sync::watch;
 
-use crate::config::FaultConfig;
-use crate::config::FaultKind;
 use crate::config::ProxyConfig;
 use crate::fault::FaultInjector;
 use crate::plugin::CompositePlugin;
-use crate::plugin::load_injector;
-use crate::plugin::load_injectors;
 use crate::plugin::metrics::MetricsInjector;
-use crate::plugin::rpc::RemotePlugin;
 use crate::plugin::rpc::RpcPluginManager;
 
 pub mod protocols;

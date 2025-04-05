@@ -1,5 +1,6 @@
 use std::io::ErrorKind;
 use std::mem::MaybeUninit;
+use std::net::IpAddr;
 use std::net::Ipv4Addr;
 use std::net::SocketAddr;
 use std::os::fd::AsRawFd;
@@ -14,12 +15,10 @@ use libc::sockaddr_in;
 use libc::socklen_t;
 use tokio::net::TcpStream;
 use tokio::sync::broadcast;
-use tokio::sync::watch;
+use tokio::time::Instant;
 
-use crate::config::ProxyConfig;
 use crate::errors::ProxyError;
 use crate::event::TaskManager;
-use crate::plugin::load_injectors;
 use crate::proxy::ProxyState;
 use crate::proxy::protocols::tcp::stream::handle_stream;
 
@@ -36,8 +35,6 @@ pub async fn run_ebpf_proxy(
     readiness_tx: Sender<()>,
     task_manager: Arc<TaskManager>,
 ) -> Result<(), ProxyError> {
-    use tokio::time::Instant;
-
     let addr: SocketAddr = ebpf_proxy_address.parse().map_err(|e| {
         ProxyError::Internal(format!(
             "Failed to parse eBpf proxy address {}: {}",
@@ -91,30 +88,46 @@ pub async fn run_ebpf_proxy(
                             let state = state.clone();
                             let addr = addr.clone();
 
-                            match handle_stream(
-                                stream,
-                                addr.clone(),
-                                &state,
-                                false,
-                                event.clone(),
-                                None
-                            ).await {
-                                Ok((bytes_from_client, bytes_to_server)) => {
-                                    let _ = event.on_response(0);
-                                    let _ = event.on_completed(
-                                        start.elapsed(),
-                                        bytes_from_client,
-                                        bytes_to_server,
-                                    );
-                                },
-                                Err(e) if is_unexpected_eof(&e) => {
-                                    tracing::debug!("EOF reached on stream: {}", e);
+                            match get_connect_addr(&stream).await {
+                                Ok(candidate) =>  match candidate {
+                                    Some(connect_to) => {
+                                        match handle_stream(
+                                            stream,
+                                            connect_to.clone(),
+                                            &state,
+                                            false,
+                                            event.clone(),
+                                            None
+                                        ).await {
+                                            Ok((bytes_from_client, bytes_to_server)) => {
+                                                let _ = event.on_response(0);
+                                                let _ = event.on_completed(
+                                                    start.elapsed(),
+                                                    bytes_from_client,
+                                                    bytes_to_server,
+                                                );
+                                            },
+                                            Err(e) if is_unexpected_eof(&e) => {
+                                                tracing::debug!("EOF reached on stream: {}", e);
+                                            }
+                                            Err(e) => {
+                                                tracing::error!("Error handling stream from {}: {:?}", addr, e);
+                                                let _ = event.on_error(Box::new(e));
+                                            }
+                                        };
+
+                                        Ok(())
+                                    }
+                                    None => {
+                                        return Err(
+                                            ProxyError::Internal(
+                                                "failed to locate a target address to on the socket".to_string()
+                                            )
+                                        );
+                                    }
                                 }
-                                Err(e) => {
-                                    tracing::error!("Error handling stream from {}: {:?}", addr, e);
-                                    let _ = event.on_error(Box::new(e));
-                                }
-                            };
+                                Err(e) => Err(e)
+                            }
                         });
                     }
                     Err(e) => {
@@ -135,7 +148,9 @@ pub async fn run_ebpf_proxy(
     target_os = "linux",
     any(feature = "stealth", feature = "stealth-auto-build")
 ))]
-async fn get_connect_addr(stream: TcpStream) -> Result<Option<String>> {
+async fn get_connect_addr(
+    stream: &TcpStream,
+) -> Result<Option<SocketAddr>, ProxyError> {
     let fd = stream.as_raw_fd();
     Ok(get_original_dst(fd).await?)
 }
@@ -145,7 +160,7 @@ async fn get_connect_addr(stream: TcpStream) -> Result<Option<String>> {
     any(feature = "stealth", feature = "stealth-auto-build")
 ))]
 /// Retrieve the original destination using getsockopt(SO_ORIGINAL_DST)
-async fn get_original_dst(fd: i32) -> Result<Option<String>> {
+async fn get_original_dst(fd: i32) -> Result<Option<SocketAddr>, ProxyError> {
     let mut orig_dst = MaybeUninit::<sockaddr_in>::uninit();
     let mut orig_len = std::mem::size_of::<sockaddr_in>() as socklen_t;
     let ret = unsafe {
@@ -159,17 +174,13 @@ async fn get_original_dst(fd: i32) -> Result<Option<String>> {
     };
 
     if ret != 0 {
-        tracing::error!(
-            "getsockopt failed: {:?}",
-            std::io::Error::last_os_error()
-        );
-        Ok(None)
+        Err(ProxyError::IoError(std::io::Error::last_os_error()))
     } else {
         let sa = unsafe { orig_dst.assume_init() };
         // sockaddr_in fields are in network byte order.
         let ip = Ipv4Addr::from(u32::from_be(sa.sin_addr.s_addr));
         let port = u16::from_be(sa.sin_port);
-        Ok(Some(format!("{}:{}", ip.to_string(), port)))
+        Ok(Some(SocketAddr::new(IpAddr::V4(ip), port)))
     }
 }
 

@@ -3,14 +3,12 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use axum::http;
-use metrics::MetricsInjector;
 use reqwest::ClientBuilder;
 use reqwest::Request as ReqwestRequest;
 use serde::Deserialize;
 use serde::Serialize;
 
 use crate::config::FaultConfig;
-use crate::config::FaultKind;
 use crate::config::ProxyConfig;
 use crate::errors::ProxyError;
 use crate::event::ProxyTaskEvent;
@@ -117,7 +115,7 @@ pub fn load_injectors(config: &ProxyConfig) -> Vec<Box<dyn FaultInjector>> {
             FaultConfig::Jitter(settings) => {
                 injectors.push(Box::new(JitterInjector::from(settings)))
             }
-            FaultConfig::PacketDuplication(settings) => {}
+            FaultConfig::PacketDuplication(..) => {}
             FaultConfig::HttpError(settings) => injectors
                 .push(Box::new(HttpResponseFaultInjector::from(settings))),
             FaultConfig::Blackhole(settings) => {
@@ -147,7 +145,7 @@ pub fn load_injector(fault: &FaultConfig) -> Box<dyn FaultInjector> {
         FaultConfig::Jitter(settings) => {
             Box::new(JitterInjector::from(settings))
         }
-        FaultConfig::PacketDuplication(settings) => todo!(),
+        FaultConfig::PacketDuplication(..) => todo!(),
         FaultConfig::HttpError(settings) => {
             Box::new(HttpResponseFaultInjector::from(settings))
         }

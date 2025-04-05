@@ -1,10 +1,8 @@
 use std::fmt;
 use std::fmt::Debug;
 use std::io;
-use std::marker::Unpin;
 use std::pin::Pin;
 use std::str::FromStr;
-use std::sync::Arc;
 use std::task::Context;
 use std::task::Poll;
 
@@ -17,7 +15,6 @@ use pin_project::pin_project;
 use tokio::io::AsyncRead;
 use tokio::io::AsyncWrite;
 use tokio::io::ReadBuf;
-use tokio::sync::RwLock;
 use tonic::transport::Channel;
 
 use super::Bidirectional;
@@ -27,17 +24,9 @@ use crate::config::GrpcSettings;
 use crate::errors::ProxyError;
 use crate::event::FaultEvent;
 use crate::event::ProxyTaskEvent;
-use crate::plugin::rpc::RpcPluginManager;
 use crate::plugin::rpc::service;
 use crate::plugin::rpc::service::plugin_service_client::PluginServiceClient;
-use crate::types::Direction;
 use crate::types::StreamSide;
-
-// Result type from processing a tunnel data chunk.
-struct TunnelProcessResult {
-    action: ProcessAction,
-    modified_chunk: Vec<u8>,
-}
 
 // Plugin instructions about the chunk
 enum ProcessAction {
@@ -342,7 +331,7 @@ impl FaultInjector for GrpcInjector {
     async fn apply_on_response(
         &self,
         resp: http::Response<Vec<u8>>,
-        event: Box<dyn ProxyTaskEvent>,
+        _event: Box<dyn ProxyTaskEvent>,
     ) -> Result<http::Response<Vec<u8>>, crate::errors::ProxyError> {
         match self.settings.clone().capabilities {
             Some(c) => {
@@ -435,7 +424,7 @@ impl FaultInjector for GrpcInjector {
     async fn apply_on_request(
         &self,
         request: reqwest::Request,
-        event: Box<dyn ProxyTaskEvent>,
+        _event: Box<dyn ProxyTaskEvent>,
     ) -> Result<reqwest::Request, crate::errors::ProxyError> {
         match self.settings.clone().capabilities {
             Some(c) => {
@@ -489,7 +478,6 @@ impl FaultInjector for GrpcInjector {
             request: Some(new_request.clone()),
         };
 
-        let c = self.client.clone();
         let response = self
             .client
             .clone()

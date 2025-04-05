@@ -7,9 +7,7 @@ use std::time::Duration;
 
 use chrono::DateTime;
 use chrono::Utc;
-use colorful::Color;
 use colorful::Colorful;
-use colorful::ExtraColorInterface;
 use prettytable::Table;
 use prettytable::row;
 use serde::Deserialize;
@@ -364,7 +362,7 @@ pub fn build_report_output(
         let total_requests =
             *endpoint_request_counts.get(endpoint).unwrap_or(&0);
         let error_requests = *endpoint_error_counts.get(endpoint).unwrap_or(&0);
-        for &(slo, threshold) in ERROR_RATE_SLOS {
+        for &(_, threshold) in ERROR_RATE_SLOS {
             let (status, breached, breach_info) = evaluate_error_rate_slo(
                 item,
                 threshold,

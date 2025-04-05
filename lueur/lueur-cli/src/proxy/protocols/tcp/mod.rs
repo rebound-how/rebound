@@ -3,6 +3,7 @@ use std::net::IpAddr;
 use std::net::SocketAddr;
 use std::sync::Arc;
 
+use anyhow::Result;
 use init::resolve_remote_host;
 use tokio::sync::broadcast;
 use tokio::sync::mpsc;

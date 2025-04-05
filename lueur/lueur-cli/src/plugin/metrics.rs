@@ -16,7 +16,6 @@ use tokio::io::AsyncWrite;
 use tokio::io::ReadBuf;
 use tokio_util::io::ReaderStream;
 
-use crate::config::FaultConfig;
 use crate::config::FaultKind;
 use crate::errors::ProxyError;
 use crate::event::ProxyTaskEvent;

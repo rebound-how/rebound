@@ -1,4 +1,3 @@
-use std::collections::VecDeque;
 use std::net::IpAddr;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -51,7 +50,7 @@ pub async fn initialize_tcp_proxies(
 
     let mut pending = count;
 
-    while let Some(msg) = readiness_rx.recv().await {
+    while let Some(_) = readiness_rx.recv().await {
         pending = pending - 1;
 
         if pending == 0 {

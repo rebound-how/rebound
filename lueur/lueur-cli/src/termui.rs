@@ -4,14 +4,12 @@ use std::sync::Arc;
 use std::time::Duration;
 use std::time::Instant;
 
-use ::oneshot;
 use chrono::TimeDelta;
 use chrono_humanize::Accuracy;
 use chrono_humanize::HumanTime;
 use chrono_humanize::Tense;
 use colorful::Color;
 use colorful::Colorful;
-use colorful::core::color_string::CString;
 use indicatif::MultiProgress;
 use indicatif::ProgressBar;
 use indicatif::ProgressDrawTarget;
@@ -29,7 +27,6 @@ use crate::plugin::rpc::RpcPluginManager;
 use crate::reporting::OutputFormat;
 use crate::sched::EventType;
 use crate::sched::FaultPeriodEvent;
-use crate::types::Direction;
 use crate::types::LatencyDistribution;
 use crate::types::ProxyProtocol;
 
@@ -380,7 +377,7 @@ pub async fn full_progress(
                                     task_info.pb.set_message(format!("{} | {} | {} | {}", u, d, f, s));
                                 }
                             }
-                            TaskProgressEvent::Passthrough {id, ts, time_taken, from_downstream_length, from_upstream_length } => {
+                            TaskProgressEvent::Passthrough {id, time_taken, from_downstream_length, from_upstream_length, .. } => {
                                 if let Some(task_info) = task_map.remove(&id) {
                                     passthrough_count += 1;
 
@@ -633,26 +630,6 @@ fn fault_to_string(faults: &Vec<FaultEvent>) -> String {
     b.join(", ")
 }
 
-/// Maps a latency duration to a colored Unicode character for the sparkline.
-/// The mapping is based on latency thresholds in milliseconds.
-fn latency_to_sparkline_char(latency: Duration) -> CString {
-    let millis = latency.as_secs_f64() * 1000.0;
-
-    if millis < 50.0 {
-        '▁'.to_string().green()
-    } else if millis < 100.0 {
-        '▂'.to_string().green()
-    } else if millis < 200.0 {
-        '▃'.to_string().yellow()
-    } else if millis < 400.0 {
-        '▄'.to_string().yellow()
-    } else if millis < 800.0 {
-        '▅'.to_string().red()
-    } else {
-        '▆'.to_string().red()
-    }
-}
-
 /// Helper function to format bandwidth rate into human-readable string.
 fn format_bandwidth(bps: usize) -> String {
     if bps >= 1_000_000_000 {
@@ -663,14 +640,6 @@ fn format_bandwidth(bps: usize) -> String {
         format!("{:.2} KBps", bps as f64 / 1_000.0)
     } else {
         format!("{} Bps", bps)
-    }
-}
-
-fn direction_character(direction: Direction) -> String {
-    match direction {
-        Direction::Ingress => "⭭".to_string(),
-        Direction::Egress => "⭫".to_string(),
-        Direction::Both => "⭭⭫".to_string(),
     }
 }
 
@@ -685,7 +654,7 @@ pub async fn quiet_handle_displayable_events(
                     Err(broadcast::error::RecvError::Closed) => {
                         break;
                     }
-                    Err(broadcast::error::RecvError::Lagged(count)) => {
+                    Err(broadcast::error::RecvError::Lagged(_)) => {
                     }
                 }
             }
@@ -782,9 +751,6 @@ pub async fn proxy_prelude(
     } else {
         hosts = format!("💡 {}", "No upstream hosts configured for the HTTP proxy. No faults will be applied.".color(Color::Orange1).dim());
     }
-
-    let h = "As you route traffic through these proxies, lueur will simulate network
-    conditions so you can see how your application copes.".dim();
 
     println!(
         "

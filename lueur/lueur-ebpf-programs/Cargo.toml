@@ -18,7 +18,6 @@ rustdoc-args = ["--cfg", "docsrs", "--generate-link-to-definition"]
 [dependencies]
 aya-ebpf = "0.1.1"
 aya-log-ebpf = "0.1.1"
-memoffset = "0.9.1"
 network-types = "0.0.7"
 
 [build-dependencies]

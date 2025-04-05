@@ -16,7 +16,6 @@ use crate::cli::PacketLossOptions;
 use crate::cli::RunCommandOptions;
 use crate::types::BandwidthUnit;
 use crate::types::Direction;
-use crate::types::FaultConfiguration;
 use crate::types::LatencyDistribution;
 use crate::types::ProtocolType;
 use crate::types::StreamSide;

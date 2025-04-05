@@ -2,7 +2,6 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use anyhow::Result;
-use anyhow::anyhow;
 use parse_duration::parse;
 use tokio::time::Instant;
 use tokio::time::sleep_until;

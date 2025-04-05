@@ -1,19 +1,11 @@
 use std::error::Error;
 use std::fmt;
-use std::ops::DerefMut;
-use std::slice::Iter;
-use std::str::FromStr;
 use std::sync::Arc;
-use std::time::Duration;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use axum::body::Body;
 use axum::http;
-use reqwest::ClientBuilder;
-use tokio::sync::Mutex;
 use tokio::sync::RwLock;
-use tokio::sync::RwLockWriteGuard;
 use tonic::Request;
 use tonic::transport::Channel;
 
@@ -25,7 +17,6 @@ use crate::event::ProxyTaskEvent;
 use crate::fault::Bidirectional;
 use crate::fault::grpc::GrpcInjector;
 use crate::plugin::FaultInjector;
-use crate::proxy::ProxyState;
 use crate::types::Direction;
 use crate::types::ProtocolType;
 use crate::types::StreamSide;

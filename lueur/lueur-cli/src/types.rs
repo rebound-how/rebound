@@ -1,5 +1,4 @@
 use std::fmt;
-use std::net::IpAddr;
 use std::net::Ipv4Addr;
 use std::time::Duration;
 
@@ -22,15 +21,6 @@ pub enum ProtocolType {
 }
 
 impl ProtocolType {
-    pub fn from_str(s: &str) -> Option<Self> {
-        match s.to_lowercase().as_str() {
-            "http" => Some(ProtocolType::Http),
-            "https" => Some(ProtocolType::Https),
-            "psql" => Some(ProtocolType::Psql),
-            _ => None,
-        }
-    }
-
     pub fn from_i32(s: &i32) -> Option<Self> {
         match s {
             0 => None,
@@ -251,15 +241,6 @@ impl Default for PacketLossType {
     }
 }
 
-impl PacketLossType {
-    pub fn from_str(s: &str) -> Option<Self> {
-        match s.to_lowercase().as_str() {
-            "multistatemarkov" => Some(PacketLossType::MultiStateMarkov),
-            _ => None,
-        }
-    }
-}
-
 impl fmt::Display for PacketLossType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -373,7 +354,7 @@ impl FaultConfiguration {
                 unit,
                 direction,
                 side,
-                period,
+                ..
             } => {
                 let settings = config::BandwidthSettings {
                     enabled: true,
@@ -397,7 +378,7 @@ impl FaultConfiguration {
                 scale,
                 shape,
                 direction,
-                period,
+                ..
             } => {
                 let settings = config::LatencySettings {
                     enabled: true,
@@ -422,7 +403,7 @@ impl FaultConfiguration {
 
                 Ok(FaultConfig::Latency(settings))
             }
-            FaultConfiguration::PacketLoss { direction, side, period } => {
+            FaultConfiguration::PacketLoss { direction, side, .. } => {
                 let settings = config::PacketLossSettings {
                     enabled: true,
                     kind: FaultKind::PacketLoss,
@@ -436,7 +417,7 @@ impl FaultConfiguration {
                 amplitude: jitter_amplitude,
                 frequency: jitter_frequency,
                 direction,
-                period,
+                ..
             } => {
                 let settings = config::JitterSettings {
                     enabled: true,
@@ -448,7 +429,7 @@ impl FaultConfiguration {
 
                 Ok(FaultConfig::Jitter(settings))
             }
-            FaultConfiguration::Dns { rate: dns_rate, period } => {
+            FaultConfiguration::Dns { rate: dns_rate, .. } => {
                 let settings = config::DnsSettings {
                     enabled: true,
                     kind: FaultKind::Dns,
@@ -461,7 +442,7 @@ impl FaultConfiguration {
                 status_code,
                 body,
                 probability,
-                period,
+                ..
             } => {
                 let settings = config::HttpResponseSettings {
                     enabled: true,
@@ -496,7 +477,7 @@ impl fmt::Display for FaultConfiguration {
                 shape,
                 scale,
                 direction,
-                period,
+                ..
             } => {
                 write!(f, "Latency Fault")?;
                 let mut details = Vec::new();
@@ -540,7 +521,7 @@ impl fmt::Display for FaultConfiguration {
 
                 Ok(())
             }
-            FaultConfiguration::PacketLoss { direction, side: _, period } => {
+            FaultConfiguration::PacketLoss { direction, side: _, .. } => {
                 write!(f, "Packet Loss Fault - Direction: {}", direction)
             }
             FaultConfiguration::Bandwidth {
@@ -548,7 +529,7 @@ impl fmt::Display for FaultConfiguration {
                 unit,
                 direction,
                 side,
-                period,
+                ..
             } => {
                 write!(
                     f,
@@ -563,7 +544,7 @@ impl fmt::Display for FaultConfiguration {
                 amplitude: jitter_amplitude,
                 frequency: jitter_frequency,
                 direction,
-                period,
+                ..
             } => {
                 write!(
                     f,
@@ -571,14 +552,14 @@ impl fmt::Display for FaultConfiguration {
                     jitter_amplitude, jitter_frequency, direction
                 )
             }
-            FaultConfiguration::Dns { rate: dns_rate, period } => {
+            FaultConfiguration::Dns { rate: dns_rate, .. } => {
                 write!(f, "DNS Fault - Rate: {}%", dns_rate * 100.0)
             }
             FaultConfiguration::HttpError {
                 status_code,
                 body: _,
                 probability,
-                period,
+                ..
             } => {
                 write!(
                     f,

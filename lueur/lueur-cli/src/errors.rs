@@ -113,11 +113,11 @@ impl IntoResponse for ProxyError {
                 StatusCode::INTERNAL_SERVER_ERROR,
                 json!({ "error": format!("Invalid HTTP header value: {}", invalid_header_value) }),
             ),
-            ProxyError::AxumError(error) => (
+            ProxyError::AxumError(..) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 json!({ "error": format!("Invalid Axum body value") }),
             ),
-            ProxyError::GrpcAbort(response) => todo!(),
+            ProxyError::GrpcAbort(..) => todo!(),
         };
 
         // Convert the JSON error message and status code into a response

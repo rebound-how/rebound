@@ -2,7 +2,6 @@
     target_os = "linux",
     any(feature = "stealth", feature = "stealth-auto-build")
 ))]
-use std::error::Error;
 use std::io::ErrorKind;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -15,7 +14,6 @@ use tokio::io::split;
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 use tokio_rustls::TlsConnector;
-use tokio_rustls::client::TlsStream;
 use tokio_rustls::rustls::ClientConfig;
 use tracing::error;
 

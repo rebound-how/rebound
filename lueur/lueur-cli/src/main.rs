@@ -50,6 +50,7 @@ use cli::ScenarioCommands;
 use colorful::Colorful;
 use colorful::ExtraColorInterface;
 use config::ProxyConfig;
+use errors::ProxyError;
 use event::TaskManager;
 use fault::FaultInjector;
 use indicatif::MultiProgress;
@@ -143,7 +144,7 @@ async fn main() -> Result<()> {
         target_os = "linux",
         any(feature = "stealth", feature = "stealth-auto-build")
     ))]
-    let mut _ebpf_proxy_guard: task::JoinHandle<()>;
+    let mut _ebpf_proxy_guard: task::JoinHandle<Result<(), ProxyError>>;
 
     #[cfg(all(
         target_os = "linux",
@@ -246,7 +247,6 @@ async fn main() -> Result<()> {
                                 .unwrap();
 
                                 _guard = ebpf::initialize_stealth(
-                                    &options.common,
                                     &options.stealth,
                                     &ebpf_proxy_config,
                                 );

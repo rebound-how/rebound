@@ -10,13 +10,10 @@ use hyper::body::Incoming;
 use hyper::server::conn::http1;
 use hyper_util::rt::TokioIo;
 use tokio::sync::broadcast;
-use tokio::sync::watch;
 use url::Url;
 
-use crate::config::ProxyConfig;
 use crate::errors::ProxyError;
 use crate::event::TaskManager;
-use crate::plugin::load_injectors;
 use crate::proxy::ProxyState;
 use crate::resolver::map_localhost_to_nic;
 
