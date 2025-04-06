@@ -129,8 +129,8 @@ in a Kubernetes cluster.
         app: lueur-proxy
       ports:
         - protocol: TCP
-          port: 8080
-          targetPort: 8080
+          port: 3180
+          targetPort: 3180
 
     ---
     apiVersion: apps/v1
@@ -168,9 +168,9 @@ in a Kubernetes cluster.
                 - run
                 - --no-ui  # (4)!
                 - --proxy-address
-                - "0.0.0.0:8080"  # (5)!
+                - "0.0.0.0:3180"  # (5)!
               ports:
-                - containerPort: 8080
+                - containerPort: 3180
                   name: http
               envFrom:
                 - configMapRef:
@@ -208,7 +208,7 @@ in a Kubernetes cluster.
     command from it:
 
     ```bash
-    curl -w "\nConnected IP: %{remote_ip}\nTotal time: %{time_total}s\n" -x http://lueur-proxy:8080 http://lueur-demo:7070
+    curl -w "\nConnected IP: %{remote_ip}\nTotal time: %{time_total}s\n" -x http://lueur-proxy:3180 http://lueur-demo:7070
     <h1>Hello, World!</h1>
     Connected IP: 10.152.183.146
     Total time: 0.315056s

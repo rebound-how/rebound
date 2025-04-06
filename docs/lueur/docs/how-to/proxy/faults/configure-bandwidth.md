@@ -1,6 +1,6 @@
 # How to Simulate Bandwidth Constraints Using lueur
 
-his guide shows you how to reduce or throttle network bandwidth in your
+This guide shows you how to reduce or throttle network bandwidth in your
 application flow with lueur. You’ll see examples of slowing traffic on the
 server side, client side, or both directions.
 

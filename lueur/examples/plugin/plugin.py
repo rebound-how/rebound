@@ -6,7 +6,8 @@ import grpc
 import plugin_pb2
 import plugin_pb2_grpc
 
-
+# typing is not yet supported by the gRPC library
+# see https://github.com/grpc/grpc/issues/29041
 class PluginService(plugin_pb2_grpc.PluginServiceServicer):
     def HealthCheck(self, request, context):
         """Returns the current status of the plugin."""

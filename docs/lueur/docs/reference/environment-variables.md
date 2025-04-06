@@ -22,7 +22,7 @@ be simpler to populate these options via environment variables.
 | **Name**                         | **Default Value**   | **Explanation**                                                                                  |
 |----------------------------------|---------------------|--------------------------------------------------------------------------------------------------|
 | `LUEUR_PROXY_NO_UI`                  | (none)    | Disables the terminal UI and make the output fully silent.                                                 |
-| `LUEUR_PROXY_ADDRESS`                  | `127.0.0.1:8080`    | The address on which the proxy server listens.                                                 |
+| `LUEUR_PROXY_ADDRESS`                  | `127.0.0.1:3180`    | The address on which the proxy server listens.                                                 |
 | `LUEUR_ENABLE_STEALTH`                   | `false`             | Whether stealth mode (using eBPF) is enabled.                                                    |
 | `LUEUR_EBPF_PROCESS_NAME`                 | (none)              | The name of a process to intercept traffic from (used when stealth mode is enabled).           |
 | `LUEUR_EBPF_PROGRAMS_DIR`                 | `"$HOME/cargo/bin"`              | The directory where eBPF programs for lueur can be found (used when stealth mode is enabled).           |
@@ -63,7 +63,7 @@ be simpler to populate these options via environment variables.
 | **Name**                         | **Default Value**   | **Explanation**                                                                                  |
 |----------------------------------|---------------------|--------------------------------------------------------------------------------------------------|
 | `LUEUR_SCENARIO_REPORT_PATH`                  | (none)    | The file path to a scenario file or a directory path to a folder containing scenario files.                                                 |
-| `LUEUR_SCENARIO_PROXY_ADDR`                  | `127.0.0.1:8080`    | Address of the proxy the secanrio command will run during the tests                                |
+| `LUEUR_SCENARIO_PROXY_ADDR`                  | `127.0.0.1:3180`    | Address of the proxy the secanrio command will run during the tests                                |
 
 
 ## `demo` Command Variables

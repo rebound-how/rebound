@@ -25,13 +25,8 @@ Before diving in, make sure you have the following:
 
 ## Step 1: Installation
 
-If you haven’t installed lueur yet, here’s a quick way to do it:
-
-1. Head over to the [lueur Releases page](https://github.com/lueurdev/lueur/releases)
-   and download the binary for your platform.  
-2. Extract the binary and place it in a directory included in your `$PATH`
-   (like `/usr/local/bin` on Linux/macOS or in a PATH-enabled directory on
-   Windows).
+If you haven’t installed lueur yet, please follow the
+[installation guide](../how-to/install.md).
 
 ## Step 2: Starting the Local Proxy
 
@@ -44,7 +39,7 @@ lueur run --upstream http://localhost:7070 --with-latency --latency-mean 300
 ```
 
 This command launches the lueur proxy on a local port
-(by default, `127.0.0.1:8080`) and injects an average of `300ms` latency into
+(by default, `127.0.0.1:3180`) and injects an average of `300ms` latency into
 outgoing requests. You can adjust the `--latency-mean` value to experiment with
 different latencies.
 
@@ -66,24 +61,7 @@ traffic from and to this host.
 
 Once started, the proxy should issue the following message:
 
-```text
-Welcome to lueur — Your Resiliency Exploration Tool!
-
-To get started, route your HTTP/HTTPS requests through:
-http://127.0.0.1:8080
-
-As you send requests, lueur will simulate network conditions
-so you can see how your application copes.
-
-Ready when you are — go ahead and make some requests!
-    
-
-Configured faults:
-  - Latency: per packet: false, side: Server, direction: Ingress, distribution: Normal, mean: 300ms
-
-Hosts Covered By The Faults:
-  - localhost:7070
-```
+<img srcset="/assets/screenshots/run-default.svg" src="/assets/screenshots/run-default.webp">
 
 Notice how the output tells you the address of the proxy server to use from
 your clients.
@@ -106,20 +84,8 @@ This will start an application and listen for HTTP requests on
 
 This will output the following prelude:
 
-```text
+<img srcset="/assets/screenshots/demo-default.svg" src="/assets/screenshots/demo-default.webp">
 
-Welcome to lueur, this demo application is here to let you explore lueur's capabilities.
-
-Here are a few examples:
-
-export HTTP_PROXY=http://localhost:8080
-export HTTPS_PROXY=http://localhost:8080
-
-curl -x ${HTTP_PROXY} http://127.0.0.1:7070/
-curl -x ${HTTP_PROXY} http://127.0.0.1:7070/ping
-curl -x ${HTTP_PROXY} http://127.0.0.1:7070/ping/myself
-curl -x ${HTTP_PROXY} --json '{"content": "hello"}' http://127.0.0.1:7070/uppercase
-```
 
 The demo describes which endpoints are available and how to call them.
 
@@ -175,11 +141,11 @@ For example, if you’re using `curl`, you might do:
 ```bash hl_lines="3"
 curl -I -o /dev/null -s \
   -w "Connected IP: %{remote_ip}:%{remote_port}\nTotal time: %{time_total}s\n" \
-  -x http://127.0.0.1:8080 \
+  -x http://127.0.0.1:3180 \
   http://localhost:7070
 ```
 
-With `-x http://127.0.0.1:8080` set, all requests made via `curl` will flow
+With `-x http://127.0.0.1:3180` set, all requests made via `curl` will flow
 through lueur, experiencing the specified latency. By observing your
 application’s behavior (whether it’s a command-line tool, a local service, or
 a browser hitting a test endpoint), you’ll gain first-hand insight into how
@@ -188,13 +154,13 @@ network slowdowns affect it.
 !!! tip
     Most of the time, you can set either the `HTTP_PROXY` or `HTTPS_PROXY`
     environment variables to let your client know it needs to go through
-    a proxy: `export HTTP_PROXY=http://127.0.0.1:8080`.
+    a proxy: `export HTTP_PROXY=http://127.0.0.1:3180`.
 
 Once you have executed that command, you should see a much higher response
 time:
 
 ```json
-Connected IP: 127.0.0.1:8080
+Connected IP: 127.0.0.1:3180
 Total time: 0.333350s
 ```
 

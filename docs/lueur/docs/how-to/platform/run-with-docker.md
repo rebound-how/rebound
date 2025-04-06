@@ -23,12 +23,12 @@ Docker containers.
 
     ```bash
     docker run \
-        -p 8080:8080 \  # (1)!
+        -p 3180:3180 \  # (1)!
         --rm \  # (2)!
         -it \  # (3)!
         ghcr.io/rebound-how/lueur \ 
             run \
-            --proxy-address 0.0.0.0:8080  \ # (4)!
+            --proxy-address 0.0.0.0:3180  \ # (4)!
             --upstream http://192.168.1.3:7070 \  # (5)!
             --with-latency --latency-mean 300
     ```
@@ -56,7 +56,7 @@ Docker containers.
     ```bash
     curl \
         -w "\nConnected IP: %{remote_ip}\nTotal time: %{time_total}s\n" \
-        -x http://localhost:8080 \
+        -x http://localhost:3180 \
         http://192.168.1.3:7070
 
     <h1>Hello, World!</h1>
@@ -91,7 +91,7 @@ Docker containers.
 
     ```bash
     docker run \
-        -p 8080:8080 \  # (1)!
+        -p 3180:3180 \  # (1)!
         --rm \  # (2)!
         -it \  # (3)!
         --pid=host \ # (4)!
@@ -103,7 +103,7 @@ Docker containers.
             run \
             --stealth \  # (10)!
             --capture-process curl \  # (11)!
-            --proxy-address 0.0.0.0:8080  \  # (12)!
+            --proxy-address 0.0.0.0:3180  \  # (12)!
             --with-latency --latency-mean 300
     ```
 
@@ -145,4 +145,4 @@ Docker containers.
     ```
 
     Notice how we do not need to be explicit about routing traffic to the
-    proxy by omitting setting `-x http://localhost:8080`
+    proxy by omitting setting `-x http://localhost:3180`

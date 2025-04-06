@@ -200,22 +200,22 @@ environment variable to point to lueur's proxy endpoint.
 - **On Linux/MacOS/Windows (WSL):**
 
   ```bash
-  export HTTP_PROXY=http://127.0.0.1:8080
-  export HTTPS_PROXY=http://127.0.0.1:8080
+  export HTTP_PROXY=http://127.0.0.1:3180
+  export HTTPS_PROXY=http://127.0.0.1:3180
   ```
 
 - **On Windows:**
 
   ```command
-  set HTTP_PROXY=http://127.0.0.1:8080
-  set HTTPS_PROXY=http://127.0.0.1:8080
+  set HTTP_PROXY=http://127.0.0.1:3180
+  set HTTPS_PROXY=http://127.0.0.1:3180
   ```
 
   or using Powershell:
 
   ```powershell
-  $env:HTTP_PROXY = "http://127.0.0.1:8080"
-  $env:HTTPS_PROXY = "http://127.0.0.1:8080"
+  $env:HTTP_PROXY = "http://127.0.0.1:3180"
+  $env:HTTPS_PROXY = "http://127.0.0.1:3180"
   ```
 
 ## Step 4: Running the Scenario
@@ -261,7 +261,7 @@ Report saved as report.json
 
 **Proxy Launch:**
 
-- lueur starts a local proxy server (by default at `http://127.0.0.1:8080`) to
+- lueur starts a local proxy server (by default at `http://127.0.0.1:3180`) to
 intercept and manipulate network traffic.
 
 **Fault Injection:**

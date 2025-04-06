@@ -64,15 +64,14 @@ async fn handle_new_connection(
     let upstream_host = get_host(&upstream);
     let passthrough = if hosts.contains(&String::from("*")) {
         false
-    } else { !hosts.contains(&upstream_host) };
+    } else {
+        !hosts.contains(&upstream_host)
+    };
 
     let upstream_url: Url = upstream.parse().unwrap();
 
     let event = if !passthrough {
-        task_manager
-            .new_fault_event(upstream_url.to_string())
-            .await
-            .unwrap()
+        task_manager.new_fault_event(upstream_url.to_string()).await.unwrap()
     } else {
         task_manager
             .new_passthrough_event(upstream_url.to_string())

@@ -5,6 +5,8 @@ use std::pin::Pin;
 use std::str::FromStr;
 use std::task::Context;
 use std::task::Poll;
+use std::time::Duration;
+use futures::ready;
 
 use async_trait::async_trait;
 use axum::body::Body;
@@ -26,6 +28,7 @@ use crate::event::FaultEvent;
 use crate::event::ProxyTaskEvent;
 use crate::plugin::rpc::service;
 use crate::plugin::rpc::service::plugin_service_client::PluginServiceClient;
+use crate::types::Direction;
 use crate::types::StreamSide;
 
 // Plugin instructions about the chunk
@@ -110,11 +113,16 @@ impl<F> FutureGrpcResult for GrpcResultWrapper<F> where
 #[derive(Debug)]
 #[pin_project]
 pub struct GrpcPluginStream {
+    #[pin]
     inner: Box<dyn Bidirectional + 'static>,
     plugin: PluginServiceClient<Channel>,
     side: StreamSide,
-    pending: Vec<u8>,
-    processing_future: Option<Pin<Box<dyn FutureGrpcResult>>>,
+    direction: Direction,
+    pending_read: Vec<u8>,
+    processing_future_read: Option<Pin<Box<dyn FutureGrpcResult>>>,
+    pending_write: Vec<u8>,
+    #[pin]
+    processing_future_write: Option<Pin<Box<dyn FutureGrpcResult>>>,
 }
 
 impl GrpcPluginStream {
@@ -122,30 +130,78 @@ impl GrpcPluginStream {
         inner: Box<dyn Bidirectional + 'static>,
         plugin: PluginServiceClient<Channel>,
         side: StreamSide,
+        direction: Direction,
     ) -> Self {
         Self {
             inner,
             plugin,
             side,
-            pending: Vec::new(),
-            processing_future: None,
+            direction,
+            pending_read: Vec::new(),
+            processing_future_read: None,
+            pending_write: Vec::new(),
+            processing_future_write: None,
         }
     }
 
     /// Initiate asynchronous processing of the given chunk via the plugin.
-    fn process_chunk(&mut self, chunk: Vec<u8>) -> Result<(), ProxyError> {
+    pub fn process_read_chunk(&mut self, chunk: Vec<u8>) -> Result<(), ProxyError> {
         let mut plugin = self.plugin.clone();
+        let d = 0;
+
+        let s = match self.side {
+            StreamSide::Client => 0,
+            StreamSide::Server => 1,
+        };
 
         let fut = async move {
-            let req = service::ProcessTunnelDataRequest { direction: 1, chunk };
+            tracing::warn!("read chunk is: {}", chunk.len());
+            let req = service::ProcessTunnelDataRequest {
+                direction: d,
+                side: s,
+                chunk,
+            };
 
-            plugin
-                .process_tunnel_data(tonic::Request::new(req))
-                .await
-                .map_err(ProxyError::GrpcError)
+            plugin.process_tunnel_data(tonic::Request::new(req)).await.map_err(
+                |e| {
+                    tracing::error!("Failed processing read tunneled data {}", e);
+                    return ProxyError::GrpcError(e);
+                },
+            )
         };
-        self.processing_future = Some(Box::pin(GrpcResultWrapper::new(fut)));
+        self.processing_future_read = Some(Box::pin(GrpcResultWrapper::new(fut)));
 
+        Ok(())
+    }
+
+    /// Initiate asynchronous processing of the given chunk for writes via the plugin.
+    pub fn process_write_chunk(&mut self, chunk: Vec<u8>) -> Result<(), ProxyError> {
+        let mut plugin = self.plugin.clone();
+        let d = 1;
+
+        let s = match self.side {
+            StreamSide::Client => 0,
+            StreamSide::Server => 1,
+        };
+
+        let fut = async move {
+            tracing::warn!("write chunk is: {}", chunk.len());
+            let req = service::ProcessTunnelDataRequest {
+                direction: d,
+                side: s,
+                chunk,
+            };
+
+            plugin.process_tunnel_data(tonic::Request::new(req))
+                .await
+                .map_err(|e| {
+                    tracing::error!("Failed processing write tunneled data: {}", e);
+                    ProxyError::GrpcError(e)
+                })
+        };
+
+        // Notice we assign the future to the write-specific field.
+        self.processing_future_write = Some(Box::pin(GrpcResultWrapper::new(fut)));
         Ok(())
     }
 }
@@ -157,40 +213,53 @@ impl AsyncRead for GrpcPluginStream {
         buf: &mut ReadBuf<'_>,
     ) -> Poll<io::Result<()>> {
         // If we have pending data from a previous plugin call, deliver it.
-        if !self.pending.is_empty() {
-            let to_copy = std::cmp::min(buf.remaining(), self.pending.len());
-            buf.put_slice(&self.pending[..to_copy]);
-            self.pending.drain(..to_copy);
+        if !self.pending_read.is_empty() {
+            let to_copy = std::cmp::min(buf.remaining(), self.pending_read.len());
+            buf.put_slice(&self.pending_read[..to_copy]);
+            self.pending_read.drain(..to_copy);
             return Poll::Ready(Ok(()));
         }
 
         // If we already initiated a plugin call, poll it.
-        if let Some(fut) = &mut self.processing_future {
+        if let Some(fut) = &mut self.processing_future_read {
             match fut.as_mut().poll(cx) {
                 Poll::Ready(Ok(result)) => {
-                    self.processing_future = None;
+                    self.processing_future_read = None;
                     let resp = result.into_inner();
-                    match ProcessAction::from_i32(resp.action) {
-                        ProcessAction::PassThrough | ProcessAction::Replace => {
+                    match resp.action {
+                        Some(service::process_tunnel_data_response::Action::PassThrough(r)) => {
                             // Buffer the processed data so we can deliver it.
-                            self.pending.extend(resp.modified_chunk);
+                            self.pending_read.extend(r.chunk);
                         }
-                        ProcessAction::Buffer => {
-                            // The plugin indicates more data is needed; do
-                            // nothing.
+                        Some(service::process_tunnel_data_response::Action::Replace(r)) => {
+                            self.pending_read.extend(r.modified_chunk);
                         }
-                        ProcessAction::Close => {
+                        Some(service::process_tunnel_data_response::Action::Buffer(m)) => {
+                            // the plugin may have told us roughly how long we may need
+                            // before it might release its held data buffer
+                            if let Some(delay_ms) = Some(m.estimated_time_to_release_ms) {
+                                let delay = tokio::time::sleep(Duration::from_millis(delay_ms as u64));
+                                tokio::spawn(async move { delay.await; });
+                            }
+
+                            return Poll::Pending;
+                        }
+                        Some(service::process_tunnel_data_response::Action::Close(_)) => {
                             // Indicate end-of-stream by returning 0 bytes.
                             return Poll::Ready(Ok(()));
+                        }
+                        None => {
+                            return Poll::Ready(Err(io::Error::new(
+                                io::ErrorKind::Other,
+                                "Missing action in plugin response",
+                            )));
                         }
                     }
                     // Try again now that we may have pending data.
                     return self.poll_read(cx, buf);
                 }
                 Poll::Ready(Err(e)) => {
-                    return Poll::Ready(Err(io::Error::other(
-                        e.to_string(),
-                    )));
+                    return Poll::Ready(Err(io::Error::other(e.to_string())));
                 }
                 Poll::Pending => {
                     // The plugin call is still pending.
@@ -210,9 +279,8 @@ impl AsyncRead for GrpcPluginStream {
                     return Poll::Ready(Ok(()));
                 }
                 let chunk = read_buf.filled().to_vec();
-                self.process_chunk(chunk).map_err(|e| {
-                    io::Error::other(e.to_string())
-                })?;
+                self.process_read_chunk(chunk)
+                    .map_err(|e| io::Error::other(e.to_string()))?;
                 cx.waker().wake_by_ref();
                 Poll::Pending
             }
@@ -227,22 +295,101 @@ impl AsyncWrite for GrpcPluginStream {
         cx: &mut Context<'_>,
         buf: &[u8],
     ) -> Poll<Result<usize, io::Error>> {
-        // For writes, simply pass through to the underlying stream.
-        Pin::new(&mut self.inner).poll_write(cx, buf)
+        {
+            let mut this = self.as_mut().project();
+
+            // 1) If there's pending data, flush it first.
+            if !this.pending_write.is_empty() {
+                let inner = this.inner.as_mut();
+                let n = ready!(inner.poll_write(cx, &this.pending_write))?;
+                this.pending_write.drain(..n);
+                // If still not empty, we need another poll to flush the rest
+                if !this.pending_write.is_empty() {
+                    return Poll::Pending;
+                }
+                // If fully flushed, from the caller's perspective we've "written" its buf.
+                return Poll::Ready(Ok(buf.len()));
+            }
+
+            // 2) If there's an active plugin future, poll it.
+            if let Some(fut) = this.processing_future_write.as_mut().as_pin_mut() {
+                match fut.poll(cx) {
+                    Poll::Ready(Ok(resp)) => {
+                        // Future is done, remove it
+                        this.processing_future_write.set(None);
+                        let resp = resp.into_inner();
+
+                        // Check the oneof action in the response
+                        match resp.action {
+                            Some(service::process_tunnel_data_response::Action::Replace(r)) => {
+                                // Store the plugin output in `pending_write`.
+                                this.pending_write.extend(r.modified_chunk);
+                            }
+                            Some(service::process_tunnel_data_response::Action::PassThrough(r)) => {
+                                // If plugin returns an empty chunk in pass-through,
+                                // assume we should forward the original data.
+                                if r.chunk.is_empty() {
+                                    this.pending_write.extend(buf);
+                                } else {
+                                    this.pending_write.extend(r.chunk);
+                                }
+                            }
+                            Some(service::process_tunnel_data_response::Action::Buffer(_)) => {
+                                // Plugin wants more data, so we do nothing except wait.
+                                return Poll::Pending;
+                            }
+                            Some(service::process_tunnel_data_response::Action::Close(_)) => {
+                                // The plugin signals to close. Treat that as 0 bytes written.
+                                return Poll::Ready(Ok(0));
+                            }
+                            None => {
+                                return Poll::Ready(Err(io::Error::new(
+                                    io::ErrorKind::Other,
+                                    "Missing action in plugin response",
+                                )));
+                            }
+                        }
+
+                        // We now have data in `pending_write`, so schedule another poll
+                        // to actually write it to the inner stream
+                        cx.waker().wake_by_ref();
+                        return Poll::Pending;
+                    }
+                    Poll::Ready(Err(e)) => {
+                        return Poll::Ready(Err(io::Error::new(io::ErrorKind::Other, e.to_string())));
+                    }
+                    Poll::Pending => {
+                        return Poll::Pending;
+                    }
+                }
+            }
+        }
+
+        // 3) If there's no pending data and no active plugin future, we initiate a new plugin call.
+        // We'll store that future in `processing_future_write`. 
+        // In your real code, you'd do something like:
+        match self.as_mut().get_mut().process_write_chunk(buf.to_vec()) {
+            Ok(()) => {
+                // Now that the plugin future is set up, re-poll.
+                cx.waker().wake_by_ref();
+                Poll::Pending
+            }
+            Err(e) => Poll::Ready(Err(io::Error::new(io::ErrorKind::Other, e.to_string()))),
+        }
     }
 
     fn poll_flush(
         mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<Result<(), io::Error>> {
-        Pin::new(&mut self.inner).poll_flush(cx)
+        self.project().inner.poll_flush(cx)
     }
 
     fn poll_shutdown(
         mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<Result<(), io::Error>> {
-        Pin::new(&mut self.inner).poll_shutdown(cx)
+        self.project().inner.poll_shutdown(cx)
     }
 }
 
@@ -299,11 +446,11 @@ impl FaultInjector for GrpcInjector {
         Box<dyn Bidirectional + 'static>,
         (ProxyError, Box<dyn Bidirectional + 'static>),
     > {
-        if let Some(c) = self.settings.clone().capabilities {
+        /*if let Some(c) = self.settings.clone().capabilities {
             if !c.tunnel {
                 return Ok(stream);
             }
-        };
+        };*/
 
         if side != self.settings.side {
             return Ok(stream);
@@ -319,7 +466,8 @@ impl FaultInjector for GrpcInjector {
         Ok(Box::new(GrpcPluginStream::new(
             stream,
             self.client.clone(),
-            self.settings.side.clone(),
+            side.clone(),
+            self.settings.direction.clone(),
         )))
     }
 

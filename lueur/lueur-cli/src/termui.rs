@@ -680,21 +680,14 @@ pub async fn proxy_prelude(
         .iter()
         .map(|p| {
             format!(
-                    "     - {} {} {} {}",
-                    format!(
-                        "{}:{}",
-                        p.proxy.proxy_ip,
-                        p.proxy.proxy_port
-                    )
+                "     - {} {} {} {}",
+                format!("{}:{}", p.proxy.proxy_ip, p.proxy.proxy_port).cyan(),
+                "=>".dim(),
+                format!("{}:{}", p.remote.remote_host, p.remote.remote_port)
                     .cyan(),
-                    "=>".dim(),
-                    format!(
-                        "{}:{}",
-                        p.remote.remote_host, p.remote.remote_port
-                    )
-                    .cyan(),
-                    "[tcp: tunnel]".dim()
-                ).to_string()
+                "[tcp: tunnel]".dim()
+            )
+            .to_string()
         })
         .collect::<Vec<_>>()
         .join("\n");
@@ -707,20 +700,18 @@ pub async fn proxy_prelude(
         .await
         .iter()
         .map(|p| match p.meta.clone() {
-            Some(meta) => {
-                format!(
-                        "     - {} {}",
-                        meta.name.clone().cyan(),
-                        format!("[{} | {}]", meta.version, p.addr).dim()
-                    ).to_string()
-            }
-            None => {
-                format!(
-                        "     - {} {}",
-                        format!("{}", p.addr.clone().cyan()),
-                        "[not connected]".dim()
-                    ).to_string()
-            }
+            Some(meta) => format!(
+                "     - {} {}",
+                meta.name.clone().cyan(),
+                format!("[{} | {}]", meta.version, p.addr).dim()
+            )
+            .to_string(),
+            None => format!(
+                "     - {} {}",
+                format!("{}", p.addr.clone().cyan()),
+                "[not connected]".dim()
+            )
+            .to_string(),
         })
         .collect::<Vec<String>>()
         .join("\n");
@@ -728,8 +719,7 @@ pub async fn proxy_prelude(
     let mut hosts;
 
     if !upstreams.is_empty() {
-        hosts = upstreams.to_vec()
-                .join(", ").to_string();
+        hosts = upstreams.to_vec().join(", ").to_string();
         if hosts == "*" {
             hosts = "All Hosts".to_string();
         }

@@ -15,6 +15,11 @@ in your Chaos Engineering experiments.
         If you haven’t installed Lueur yet, follow the
         [installation instructions](../../install.md).
 
+    -   [X] Install Chaos Toolkit
+
+        If you haven’t installed Chaos Toolkit yet, follow the
+        [installation instructions](https://chaostoolkit.org/reference/usage/install/).
+
 ## Run with the Chaos Toolkit Lueur Extension
 
 -   [X] Install the {==chaostoolkit-lueur==} extension

@@ -32,6 +32,8 @@ pub async fn handle_stream(
 ) -> Result<(u64, u64), ProxyError> {
     if protocol.is_some() {
         let proxy_protocol = protocol.unwrap();
+        let remote_host = proxy_protocol.remote.remote_host.clone();
+
         if proxy_protocol.remote_requires_tls() {
             process_tcp_stream(
                 stream,
@@ -40,7 +42,7 @@ pub async fn handle_stream(
                 passthrough,
                 event,
                 true,
-                proxy_protocol.remote.remote_host,
+                remote_host,
             )
             .await
         } else {
@@ -51,7 +53,7 @@ pub async fn handle_stream(
                 passthrough,
                 event,
                 false,
-                "".to_string(),
+                remote_host,
             )
             .await
         }

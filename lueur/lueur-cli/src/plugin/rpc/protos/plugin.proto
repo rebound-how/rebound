@@ -49,9 +49,16 @@ message HealthCheckResponse {
 message GetPluginInfoRequest {}
 
 message GetPluginInfoResponse {
+    enum Side {
+        CLIENT = 0;
+        SERVER = 1;
+        ANY    = 2;
+    }
+
     enum Direction {
         INGRESS = 0;
-        EGRESS    = 1;
+        EGRESS  = 1;
+        BOTH    = 2;
     }
 
     string name = 1;      // Required
@@ -59,7 +66,8 @@ message GetPluginInfoResponse {
     string author = 3;    // Optional
     string url = 4;       // Optional
     string platform = 5;  // Optional
-    Direction direction = 6;
+    Direction direction = 6; // Optional
+    Side side = 7; // Optional
 }
 
 message GetPluginCapabilitiesRequest {}
@@ -145,41 +153,50 @@ message ProcessHttpResponseResponse {
 }
 
 // ------------------------------------------------
-// Tunnel (TCP/TLS) Processing
+// TCP Stream Processing
 // ------------------------------------------------
 
 message ProcessTunnelDataRequest {
-    // Identify direction so the plugin knows which side data is coming from.
-    enum Direction {
-        CLIENT_TO_SERVER = 0;
-        SERVER_TO_CLIENT = 1;
+    enum Side {
+        CLIENT = 0;
+        SERVER = 1;
     }
-    Direction direction = 1;
-
-    // A chunk of raw bytes from the tunnel.
-    bytes chunk = 2;
+    enum Direction {
+        INGRESS = 0;
+        EGRESS = 1;
+        BOTH = 2;
+    }
+    Side side = 1;
+    Direction direction = 2;
+    bytes chunk = 3;
 }
 
-// This response informs the proxy how to handle the chunk, and possibly future chunks.
 message ProcessTunnelDataResponse {
-    // The plugin’s decision for handling the data chunk and/or future behavior.
-    enum Action {
-        // Forward the chunk as-is (unchanged).
-        PASS_THROUGH = 0;
-
-        // Replace the chunk with new data. The data to send is in `modified_chunk`.
-        REPLACE = 1;
-
-        // Buffer/hold the chunk for potential delayed processing. 
-        // The plugin is responsible for buffering and holding the data as it
-        // sees fit
-        BUFFER = 2;
-
-        // Close the tunnel immediately (e.g., deny). No more data flows.
-        CLOSE = 3;
+    oneof action {
+        PassThrough pass_through = 1;
+        Replace replace = 2;
+        Buffer buffer = 3;
+        Close close = 4;
     }
-    Action action = 1;
+}
 
-    // The plugin-supplied replacement chunk if action == REPLACE.
-    bytes modified_chunk = 2;
+// Indicates that the plugin did not modify the chunk.
+message PassThrough {
+    bytes chunk = 1;
+}
+
+// Indicates that the plugin replaced the chunk with a modified version.
+message Replace {
+    bytes modified_chunk = 1;
+}
+
+// Indicates that the plugin is buffering this data
+message Buffer {
+    int32 estimated_time_to_release_ms = 1;
+}
+
+// Indicates that the plugin wants to close the tunnel immediately.
+message Close {
+    // Optionally include a reason.
+    string reason = 1;
 }

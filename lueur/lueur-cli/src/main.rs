@@ -280,7 +280,8 @@ async fn main() -> Result<()> {
             }
 
             // Let's get some data ready for the UI
-            let total_duration = options.common.duration.as_ref().map(|s| parse(s).unwrap());
+            let total_duration =
+                options.common.duration.as_ref().map(|s| parse(s).unwrap());
             let fault_schedule =
                 build_schedule_events(options, total_duration)?;
 

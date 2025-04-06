@@ -29,6 +29,8 @@ nav:
     - "Configure HTTP Error": how-to/proxy/faults/configure-http-error.md
     - "Configure Jitter": how-to/proxy/faults/configure-jitter.md
     - "Configure Blackhole": how-to/proxy/faults/configure-blackhole.md
+    - "Impact Any TCP Stream": how-to/proxy/protocols/tcp.md
+    - "Man in The Middle Proxying (MITM)": how-to/proxy/mitm.md
     - "Run In Stealth Mode": how-to/proxy/stealth/configure-stealth-mode.md
     - "Enable Open Telemetry Observability": how-to/observability/traces.md
     - "Integrate GitHub Actions": how-to/ci/github.md
@@ -42,6 +44,7 @@ nav:
     - "Scenario File Format": reference/scenario-file-format.md
     - "Environment Variables": reference/environment-variables.md
     - "Scheduling Intervals": reference/schedule-intervals-syntax.md
+    - "TCP Proxy Protocols": reference/proto-syntax.md
     - "Architecture": reference/architecture-overview.md
   - Explanations:
     - "Why lueur?": explanations/why-lueur.md

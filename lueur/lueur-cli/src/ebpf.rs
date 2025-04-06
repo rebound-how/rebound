@@ -107,11 +107,7 @@ pub fn get_ebpf_proxy(
 
     tracing::debug!("eBPF proxy detected address {}:{}", iface_ip, port);
 
-    Ok(Some(EbpfProxyAddrConfig {
-        ip: iface_ip,
-        port,
-        ifname: iface_name,
-    }))
+    Ok(Some(EbpfProxyAddrConfig { ip: iface_ip, port, ifname: iface_name }))
 }
 
 pub fn install_and_run(

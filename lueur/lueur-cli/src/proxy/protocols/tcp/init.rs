@@ -142,7 +142,7 @@ fn parse_host_port(
         Some(p) => match p {
             ProtocolType::Http => "80",
             ProtocolType::Https => "443",
-            ProtocolType::Psql => "5432",
+            ProtocolType::Psql | ProtocolType::Psqls => "5432",
             ProtocolType::None => "",
         },
         None => "",
@@ -166,6 +166,7 @@ fn parse_right(
         // Parse the protocol enum, or ignore if unknown
         let proto = match proto_str {
             "psql" => Some(ProtocolType::Psql),
+            "psqls" => Some(ProtocolType::Psqls),
             "http" => Some(ProtocolType::Http),
             "https" => Some(ProtocolType::Https),
             _ => None,
@@ -177,7 +178,7 @@ fn parse_right(
                 Some(p) => match p {
                     ProtocolType::Http => "80",
                     ProtocolType::Https => "443",
-                    ProtocolType::Psql => "5432",
+                    ProtocolType::Psql | ProtocolType::Psqls => "5432",
                     ProtocolType::None => "",
                 },
                 None => "",

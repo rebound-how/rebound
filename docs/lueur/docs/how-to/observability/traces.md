@@ -40,7 +40,7 @@ This guide will walk you sending traces to an Open Telemetry aware stack.
 -   [X] Send a request to the demo application routed via the proxy
 
     ```bash
-    curl -x http://localhost:8080 http://localhost:7070
+    curl -x http://localhost:3180 http://localhost:7070
     ```
 
 -   [X] View lueur traces

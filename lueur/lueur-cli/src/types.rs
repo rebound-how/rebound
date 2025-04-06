@@ -18,6 +18,7 @@ pub enum ProtocolType {
     Http,
     Https,
     Psql,
+    Psqls,
 }
 
 impl ProtocolType {
@@ -27,6 +28,7 @@ impl ProtocolType {
             1 => Some(ProtocolType::Http),
             2 => Some(ProtocolType::Https),
             3 => Some(ProtocolType::Psql),
+            4 => Some(ProtocolType::Psqls),
             _ => None,
         }
     }
@@ -59,6 +61,7 @@ impl ProxyProtocol {
                 ProtocolType::Http => false,
                 ProtocolType::Https => true,
                 ProtocolType::Psql => false,
+                ProtocolType::Psqls => true,
                 ProtocolType::None => false,
             },
             None => false,
@@ -213,6 +216,16 @@ impl fmt::Display for Direction {
 pub enum StreamSide {
     Client,
     Server,
+}
+
+impl StreamSide {
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s.to_lowercase().as_str() {
+            "client" => Some(StreamSide::Client),
+            "server" => Some(StreamSide::Server),
+            _ => None,
+        }
+    }
 }
 
 impl Default for StreamSide {

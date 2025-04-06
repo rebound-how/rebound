@@ -183,7 +183,6 @@ impl FaultConfig {
             FaultConfig::HttpError(settings) => settings.enabled = true,
             FaultConfig::Blackhole(settings) => settings.enabled = true,
         };
-        
     }
 
     pub fn disable(&mut self) {
@@ -199,7 +198,6 @@ impl FaultConfig {
             FaultConfig::HttpError(settings) => settings.enabled = false,
             FaultConfig::Blackhole(settings) => settings.enabled = false,
         };
-        
     }
 }
 

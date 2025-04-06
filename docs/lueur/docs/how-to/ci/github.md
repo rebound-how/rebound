@@ -18,7 +18,7 @@ and use the result to fail a GitHub job.
         run: RUNNER_TRACKING_ID="" && (nohup ./my-app &)
     ```
 
-## Run lueur's scenario - Step-by-Step
+## Run lueur's scenario
 
 The basic approach to run lueur scenarios in your GitHub workflows is to
 use the dedicated [action](https://github.com/rebound-how/actions).
@@ -45,7 +45,7 @@ use the dedicated [action](https://github.com/rebound-how/actions).
     1. Add the lueur [action](https://github.com/rebound-how/actions)
     2. Path to a [scenario file](../../tutorials/create-scenario.md) or a directory containing scenario files
 
-## Create an issue when at least one test failed - Step-by-Step
+## Create an issue when at least one test failed
 
 -   [X] Run lueur's scenario
 

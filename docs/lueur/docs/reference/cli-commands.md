@@ -75,7 +75,7 @@ These options define how the UI is setup on lueur's output:
 
 ### Proxy Configuration Options
 
-These options define how to comnfigure the proxy started by lueur:
+These options define how to configure the proxy started by lueur:
 
 - **`--duration <value>`**  
   _How long to run the proxy process for. See [here](https://docs.rs/parse_duration/latest/parse_duration/#syntax) for the supported syntax_  
@@ -85,18 +85,34 @@ These options define how to comnfigure the proxy started by lueur:
 
 - **`--proxy-address <address>`**  
   _Listening address for the proxy server._  
-  _Default:_ `127.0.0.1:8080`  
+  _Default:_ `127.0.0.1:3180`  
   **Example:** `--proxy-address 192.168.12.45:8090`
 
-- **`--upstream <host>`**  
+- **`--proxy-proto <proto-def>`**  
   _Target host(s) to proxy (can be specified multiple times). You may also set `*` to tell lueur you want to impact any upstream._  
   **Example:** `--upstream example.com`
   **Example:** `--upstream '*'`
   **Example:** `--upstream=*`
 
+!!! note
+
+    Upstream hosts are currently ignored by TCP proxies.
+
+### Upstream Hosts Options
+
+- **`--upstream <host>`**  
+  _Target host(s) for HTTP proxying (can be specified multiple times). You may also set `*` to tell lueur you want to impact any upstream._  
+  **Example:** `--upstream example.com`
+  **Example:** `--upstream '*'`
+  **Example:** `--upstream=*`
+
+### Remote Plugins Options
+
+These options define the remote plugins to forward traffic to.
+
 - **`--grpc-plugin <address>`**  
-  _Specify one or more gRPC plugin addresses._  
-  **Example:** `--grpc-plugin 192.168.1.100:50051`
+  _The address of a gRPC plugin. This can be set multiple times._  
+  **Example:** `--duration http://0.0.0.0:50051`
 
 ### Stealth Configuration Options
 
@@ -328,7 +344,7 @@ These options configure the stealth mode of the lueur's proxy.
 
 ```bash
 lueur run \
-  --proxy-address "127.0.0.1:8080" \
+  --proxy-address "127.0.0.1:3180" \
   --with-latency --latency-mean 120.0 --latency-stddev 30.0 \
   --with-bandwidth --bandwidth-rate 2000 --bandwidth-unit KBps
 ```
@@ -342,7 +358,7 @@ by lueur generating report and result files for further analysis.
 
 - **`--proxy-address <address>`**  
   _Listening address for the proxy server._  
-  _Default:_ `127.0.0.1:8080`  
+  _Default:_ `127.0.0.1:3180`  
   **Example:** `--proxy-address 192.168.12.45:8090`
 
 ### Scenario Options

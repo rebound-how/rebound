@@ -137,6 +137,14 @@ impl RpcPluginManager {
                     load_plugin_capabilities(&info.name, client.clone())
                         .await?;
 
+                let side = StreamSide::from_str(match &info.side {
+                    0 => "client",
+                    1 => "server",
+                    2 => "server",  // ANY is treated as server
+                    _ => "server",
+                })
+                .unwrap();
+
                 let direction = Direction::from_str(match &info.direction {
                     0 => "ingress",
                     1 => "egress",
@@ -149,7 +157,7 @@ impl RpcPluginManager {
                         kind: FaultKind::Grpc,
                         enabled: true,
                         direction: direction.clone(),
-                        side: StreamSide::Client,
+                        side: side.clone(),
                         name: info.name.clone(),
                         capabilities,
                     },
@@ -423,16 +431,24 @@ async fn update_plugin_info(plugin: &mut RemotePlugin) {
 
             match capabilities {
                 Ok(c) => {
-                    let direction =
-                        Direction::from_str(match &info.direction {
-                            0 => "ingress",
-                            1 => "egress",
-                            _ => "both",
-                        })
-                        .unwrap();
-
+                    let side = StreamSide::from_str(match &info.side {
+                        0 => "client",
+                        1 => "server",
+                        2 => "server",  // ANY is treated as server
+                        _ => "server",
+                    })
+                    .unwrap();
+    
+                    let direction = Direction::from_str(match &info.direction {
+                        0 => "ingress",
+                        1 => "egress",
+                        _ => "both",
+                    })
+                    .unwrap();
+    
                     plugin.injector.settings.name = info.name.clone();
                     plugin.injector.settings.direction = direction.clone();
+                    plugin.injector.settings.side = side.clone();
                     plugin.injector.settings.capabilities = c;
 
                     plugin.meta = Some(RemotePluginMeta {

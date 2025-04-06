@@ -3,21 +3,21 @@
 This guide will walk you through enabling lueur's {==stealth mode==} to capture
 network traffic without modifying your application.
 
-!!! info
+!!! warning "This feature requires eBPF and a Linux host"
 
     This feature is only available on Linux as it relies on a kernel
-    advanaced capability called
+    advanced capability called
     [ebpf](../../../explanations/understanding-ebpf.md).
 
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install lueur
+    -   [X] Install lueur with Stealth mode support
 
         If you haven’t installed lueur yet, follow the
         [installation instructions](../../install.md#stealth-dependencies).
 
-## Capture HTTPS Traffic
+## Capture HTTPS Traffic
 
 -   [X] Start the proxy in stealth mode with a normal distribution latency
 
@@ -50,8 +50,7 @@ network traffic without modifying your application.
     3.  Discard any returned output
     4.  Display statistics about the call
 
-
-## Apply Latency to a PostgreSQL Connection
+## Apply Latency to a PostgreSQL Connection
 
 -   [X] Install lueur's ebpf dependencies
     
