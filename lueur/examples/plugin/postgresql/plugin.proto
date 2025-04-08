@@ -1,0 +1,202 @@
+syntax = "proto3";
+
+package plugin;
+
+// Main service that plugin providers implement.
+service PluginService {
+    // Home made health check endpoint to verify the plugin is running.
+    rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse);
+
+    // Retrieves basic plugin info like name, version, etc.
+    rpc GetPluginInfo (GetPluginInfoRequest) returns (GetPluginInfoResponse);
+
+    // Retrieves the plugin's capabilities (e.g., can handle HTTP, can handle tunnels).
+    rpc GetPluginCapabilities (GetPluginCapabilitiesRequest) 
+        returns (GetPluginCapabilitiesResponse);
+
+    // Processes an HTTP request, potentially modifying it or aborting.
+    rpc ProcessHttpRequest (ProcessHttpRequestRequest) 
+        returns (ProcessHttpRequestResponse);
+
+    // Processes an HTTP response, potentially modifying it or aborting.
+    rpc ProcessHttpResponse (ProcessHttpResponseRequest) 
+        returns (ProcessHttpResponseResponse);
+
+    // Processes a chunk of data in a tunneled connection (TCP or TLS).
+    // You can call this repeatedly as data flows from client to server or server to client.
+    // The plugin can choose to pass through, modify, buffer, or close the connection.
+    rpc ProcessTunnelData (ProcessTunnelDataRequest) 
+        returns (ProcessTunnelDataResponse);
+}
+
+// ------------------------------------------------
+// Healthcheck message
+// ------------------------------------------------
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+    // Indicates whether the service is healthy.
+    bool healthy = 1;
+    // Optional message providing additional status details.
+    string message = 2;
+}
+
+// ------------------------------------------------
+// Metadata & Capability Messages
+// ------------------------------------------------
+
+message GetPluginInfoRequest {}
+
+message GetPluginInfoResponse {
+    enum Side {
+        CLIENT = 0;
+        SERVER = 1;
+        ANY    = 2;
+    }
+
+    enum Direction {
+        INGRESS = 0;
+        EGRESS  = 1;
+        BOTH    = 2;
+    }
+
+    string name = 1;      // Required
+    string version = 2;   // Required
+    string author = 3;    // Optional
+    string url = 4;       // Optional
+    string platform = 5;  // Optional
+    Direction direction = 6; // Optional
+    Side side = 7; // Optional
+}
+
+message GetPluginCapabilitiesRequest {}
+
+message GetPluginCapabilitiesResponse {
+    enum SupportedProtocol {
+        NONE = 0;
+        HTTP = 1;
+        HTTPS = 2;
+        POSTGRESQL = 3;
+    }
+
+    // Indicates whether this plugin can handle HTTP forward proxying
+    bool can_handle_http_forward = 1;
+
+    // Indicates whether this plugin can handle tunnel-based (TCP/TLS) modifications
+    bool can_handle_tunnel = 2;
+
+    // Protocols the plugin is capable of handling
+    repeated SupportedProtocol protocols = 3;
+}
+
+// ------------------------------------------------
+// HTTP Processing
+// ------------------------------------------------
+
+message HttpHeader {
+    string name = 1;
+    string value = 2;
+}
+
+message HttpRequest {
+    string method = 1;
+    string path = 2;
+    repeated HttpHeader headers = 3;
+    bytes body = 4;
+}
+
+message HttpResponse {
+    uint32 status_code = 1;
+    repeated HttpHeader headers = 2;
+    bytes body = 3;
+}
+
+message ProcessHttpRequestRequest {
+    HttpRequest request = 1;
+}
+
+message ProcessHttpRequestResponse {
+    // Plugin can choose an action to take.
+    enum Action {
+        CONTINUE = 0;  // continue processing with optional modifications
+        ABORT    = 1;  // stop all further processing and return a direct response to client
+    }
+    Action action = 1;
+
+    // If action == CONTINUE, the plugin may provide a modified request.
+    // If not set, the proxy should assume no change to the HTTP request.
+    HttpRequest modified_request = 2;
+
+    // If action == ABORT, the plugin must provide an http_response to send immediately
+    // back to the client.
+    HttpResponse abort_response = 3;
+}
+
+message ProcessHttpResponseRequest {
+    HttpResponse response = 1;
+}
+
+message ProcessHttpResponseResponse {
+    enum Action {
+        CONTINUE = 0;  
+        ABORT    = 1; // Rarely used for response, but let's keep consistent
+    }
+    Action action = 1;
+
+    // If action == CONTINUE, the plugin may provide a modified response.
+    HttpResponse modified_response = 2;
+
+    // If action == ABORT, the plugin must provide an http_response to send immediately
+    // back to the client, short-circuiting normal flow.
+    HttpResponse abort_response = 3;
+}
+
+// ------------------------------------------------
+// TCP Stream Processing
+// ------------------------------------------------
+
+message ProcessTunnelDataRequest {
+    enum Side {
+        CLIENT = 0;
+        SERVER = 1;
+    }
+    enum Direction {
+        INGRESS = 0;
+        EGRESS = 1;
+        BOTH = 2;
+    }
+    Side side = 1;
+    Direction direction = 2;
+    bytes chunk = 3;
+}
+
+message ProcessTunnelDataResponse {
+    oneof action {
+        PassThrough pass_through = 1;
+        Replace replace = 2;
+        Buffer buffer = 3;
+        Close close = 4;
+    }
+}
+
+// Indicates that the plugin did not modify the chunk.
+message PassThrough {
+    bytes chunk = 1;
+}
+
+// Indicates that the plugin replaced the chunk with a modified version.
+message Replace {
+    bytes modified_chunk = 1;
+}
+
+// Indicates that the plugin is buffering this data
+message Buffer {
+    int32 estimated_time_to_release_ms = 1;
+}
+
+// Indicates that the plugin wants to close the tunnel immediately.
+message Close {
+    // Optionally include a reason.
+    string reason = 1;
+}

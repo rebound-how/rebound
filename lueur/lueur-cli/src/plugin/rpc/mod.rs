@@ -140,7 +140,7 @@ impl RpcPluginManager {
                 let side = StreamSide::from_str(match &info.side {
                     0 => "client",
                     1 => "server",
-                    2 => "server",  // ANY is treated as server
+                    2 => "server", // ANY is treated as server
                     _ => "server",
                 })
                 .unwrap();
@@ -434,18 +434,19 @@ async fn update_plugin_info(plugin: &mut RemotePlugin) {
                     let side = StreamSide::from_str(match &info.side {
                         0 => "client",
                         1 => "server",
-                        2 => "server",  // ANY is treated as server
+                        2 => "server", // ANY is treated as server
                         _ => "server",
                     })
                     .unwrap();
-    
-                    let direction = Direction::from_str(match &info.direction {
-                        0 => "ingress",
-                        1 => "egress",
-                        _ => "both",
-                    })
-                    .unwrap();
-    
+
+                    let direction =
+                        Direction::from_str(match &info.direction {
+                            0 => "ingress",
+                            1 => "egress",
+                            _ => "both",
+                        })
+                        .unwrap();
+
                     plugin.injector.settings.name = info.name.clone();
                     plugin.injector.settings.direction = direction.clone();
                     plugin.injector.settings.side = side.clone();

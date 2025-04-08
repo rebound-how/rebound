@@ -6,12 +6,12 @@ use std::str::FromStr;
 use std::task::Context;
 use std::task::Poll;
 use std::time::Duration;
-use futures::ready;
 
 use async_trait::async_trait;
 use axum::body::Body;
 use axum::http;
 use futures::Future;
+use futures::ready;
 use hyper::StatusCode;
 use pin_project::pin_project;
 use tokio::io::AsyncRead;
@@ -145,7 +145,10 @@ impl GrpcPluginStream {
     }
 
     /// Initiate asynchronous processing of the given chunk via the plugin.
-    pub fn process_read_chunk(&mut self, chunk: Vec<u8>) -> Result<(), ProxyError> {
+    pub fn process_read_chunk(
+        &mut self,
+        chunk: Vec<u8>,
+    ) -> Result<(), ProxyError> {
         let mut plugin = self.plugin.clone();
         let d = 0;
 
@@ -164,18 +167,26 @@ impl GrpcPluginStream {
 
             plugin.process_tunnel_data(tonic::Request::new(req)).await.map_err(
                 |e| {
-                    tracing::error!("Failed processing read tunneled data {}", e);
+                    tracing::error!(
+                        "Failed processing read tunneled data {}",
+                        e
+                    );
                     return ProxyError::GrpcError(e);
                 },
             )
         };
-        self.processing_future_read = Some(Box::pin(GrpcResultWrapper::new(fut)));
+        self.processing_future_read =
+            Some(Box::pin(GrpcResultWrapper::new(fut)));
 
         Ok(())
     }
 
-    /// Initiate asynchronous processing of the given chunk for writes via the plugin.
-    pub fn process_write_chunk(&mut self, chunk: Vec<u8>) -> Result<(), ProxyError> {
+    /// Initiate asynchronous processing of the given chunk for writes via the
+    /// plugin.
+    pub fn process_write_chunk(
+        &mut self,
+        chunk: Vec<u8>,
+    ) -> Result<(), ProxyError> {
         let mut plugin = self.plugin.clone();
         let d = 1;
 
@@ -192,16 +203,20 @@ impl GrpcPluginStream {
                 chunk,
             };
 
-            plugin.process_tunnel_data(tonic::Request::new(req))
-                .await
-                .map_err(|e| {
-                    tracing::error!("Failed processing write tunneled data: {}", e);
+            plugin.process_tunnel_data(tonic::Request::new(req)).await.map_err(
+                |e| {
+                    tracing::error!(
+                        "Failed processing write tunneled data: {}",
+                        e
+                    );
                     ProxyError::GrpcError(e)
-                })
+                },
+            )
         };
 
         // Notice we assign the future to the write-specific field.
-        self.processing_future_write = Some(Box::pin(GrpcResultWrapper::new(fut)));
+        self.processing_future_write =
+            Some(Box::pin(GrpcResultWrapper::new(fut)));
         Ok(())
     }
 }
@@ -214,7 +229,8 @@ impl AsyncRead for GrpcPluginStream {
     ) -> Poll<io::Result<()>> {
         // If we have pending data from a previous plugin call, deliver it.
         if !self.pending_read.is_empty() {
-            let to_copy = std::cmp::min(buf.remaining(), self.pending_read.len());
+            let to_copy =
+                std::cmp::min(buf.remaining(), self.pending_read.len());
             buf.put_slice(&self.pending_read[..to_copy]);
             self.pending_read.drain(..to_copy);
             return Poll::Ready(Ok(()));
@@ -307,12 +323,15 @@ impl AsyncWrite for GrpcPluginStream {
                 if !this.pending_write.is_empty() {
                     return Poll::Pending;
                 }
-                // If fully flushed, from the caller's perspective we've "written" its buf.
+                // If fully flushed, from the caller's perspective we've
+                // "written" its buf.
                 return Poll::Ready(Ok(buf.len()));
             }
 
             // 2) If there's an active plugin future, poll it.
-            if let Some(fut) = this.processing_future_write.as_mut().as_pin_mut() {
+            if let Some(fut) =
+                this.processing_future_write.as_mut().as_pin_mut()
+            {
                 match fut.poll(cx) {
                     Poll::Ready(Ok(resp)) => {
                         // Future is done, remove it
@@ -350,13 +369,17 @@ impl AsyncWrite for GrpcPluginStream {
                             }
                         }
 
-                        // We now have data in `pending_write`, so schedule another poll
-                        // to actually write it to the inner stream
+                        // We now have data in `pending_write`, so schedule
+                        // another poll to actually
+                        // write it to the inner stream
                         cx.waker().wake_by_ref();
                         return Poll::Pending;
                     }
                     Poll::Ready(Err(e)) => {
-                        return Poll::Ready(Err(io::Error::new(io::ErrorKind::Other, e.to_string())));
+                        return Poll::Ready(Err(io::Error::new(
+                            io::ErrorKind::Other,
+                            e.to_string(),
+                        )));
                     }
                     Poll::Pending => {
                         return Poll::Pending;
@@ -365,8 +388,9 @@ impl AsyncWrite for GrpcPluginStream {
             }
         }
 
-        // 3) If there's no pending data and no active plugin future, we initiate a new plugin call.
-        // We'll store that future in `processing_future_write`. 
+        // 3) If there's no pending data and no active plugin future, we
+        //    initiate a new plugin call.
+        // We'll store that future in `processing_future_write`.
         // In your real code, you'd do something like:
         match self.as_mut().get_mut().process_write_chunk(buf.to_vec()) {
             Ok(()) => {
@@ -374,7 +398,10 @@ impl AsyncWrite for GrpcPluginStream {
                 cx.waker().wake_by_ref();
                 Poll::Pending
             }
-            Err(e) => Poll::Ready(Err(io::Error::new(io::ErrorKind::Other, e.to_string()))),
+            Err(e) => Poll::Ready(Err(io::Error::new(
+                io::ErrorKind::Other,
+                e.to_string(),
+            ))),
         }
     }
 
