@@ -70,24 +70,6 @@ Each fault type has a distinct role in helping you simulate and analyze adverse 
 - **Engineering Focus:**  
   Strengthen error-handling routines, validate user-friendly error messages, and implement effective retry or fallback mechanisms.
 
-## Combining Fault Injection with Different Distributions
-
-Beyond the fault types, how you model the injection of these faults is equally important:
-
-- **Uniform Distribution:**  
-  Simulates a consistent and predictable range of delays or errors.
-  
-- **Normal Distribution:**  
-  Reflects real-world conditions where most delays cluster around an average value with few extremes.
-  
-- **Pareto Distribution:**  
-  Mimics scenarios with rare but severe latency spikes or errors.
-  
-- **Pareto Normal Distribution:**  
-  Offers a hybrid approach where typical conditions are normal but with occasional heavy-tailed anomalies.
-
-By choosing the right fault type and distribution model, you can tailor your testing to match realistic conditions that your system might encounter. This granular approach lets you focus on specific reliability challenges and iteratively improve your system’s resilience.
-
 ## In Summary
 
 Fault injection is a powerful tool in your reliability engineering toolkit. It not only helps you detect vulnerabilities but also guides you in making informed improvements. By understanding the purpose behind each fault type and how to apply different distribution models, you can build robust systems that continue to perform even under duress.

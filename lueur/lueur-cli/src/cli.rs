@@ -66,14 +66,14 @@ pub struct ProxyAwareCommandCommon {
     )]
     pub http_proxy_address: Option<String>,
 
-    /// Protocols to proxy over TCP
+    /// Mapping to proxy over TCP
     #[arg(
         help_heading = "Proxy Options",
-        long = "proxy-proto",
-        help = "Protocol to proxy over TCP.",
+        long = "proxy",
+        help = "Start a dedicated proxy for the given mapping.",
         value_parser
     )]
-    pub proxy_protocols: Vec<String>,
+    pub proxy_map: Vec<String>,
 
     /// gRPC plugin addresses to apply (can specify multiple)
     #[arg(

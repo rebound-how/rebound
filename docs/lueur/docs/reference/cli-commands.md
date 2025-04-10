@@ -88,7 +88,7 @@ These options define how to configure the proxy started by lueur:
   _Default:_ `127.0.0.1:3180`  
   **Example:** `--proxy-address 192.168.12.45:8090`
 
-- **`--proxy-proto <proto-def>`**  
+- **`--proxy <proto-def>`**  
   _Target host(s) to proxy (can be specified multiple times). You may also set `*` to tell lueur you want to impact any upstream._  
   **Example:** `--upstream example.com`
   **Example:** `--upstream '*'`
@@ -153,6 +153,8 @@ These options configure the stealth mode of the lueur's proxy.
 
 ### Latency Options
 
+Learn more about the [latency fault](./builtin-faults.md#latency).
+
 - **`--with-latency`**  
   Enable latency fault injection.  
   _Default:_ Disabled
@@ -206,6 +208,8 @@ These options configure the stealth mode of the lueur's proxy.
 
 ### Bandwidth Options
 
+Learn more about the [bandwidth fault](./builtin-faults.md#bandwidth).
+
 - **`--with-bandwidth`**  
   Enable bandwidth fault injection.  
   _Default:_ Disabled
@@ -234,6 +238,8 @@ These options configure the stealth mode of the lueur's proxy.
 ---
 
 ### Jitter Options
+
+Learn more about the [Jitter fault](./builtin-faults.md#jitter).
 
 - **`--with-jitter`**  
   Enable jitter fault injection.  
@@ -277,6 +283,8 @@ These options configure the stealth mode of the lueur's proxy.
 
 ### Packet Loss Options
 
+Learn more about the [Packet Loss fault](./builtin-faults.md#packet-loss).
+
 - **`--with-packet-loss`**  
   Enable packet loss fault injection.  
   _Default:_ Disabled
@@ -293,6 +301,8 @@ These options configure the stealth mode of the lueur's proxy.
 ---
 
 ### HTTP Response Options
+
+Learn more about the [HTTP Error fault](./builtin-faults.md#http-error).
 
 - **`--with-http-response`**  
   Enable HTTP response fault injection (return a predefined response).  
@@ -322,6 +332,8 @@ These options configure the stealth mode of the lueur's proxy.
 ---
 
 ### Blackhole Options
+
+Learn more about the [Blackhole fault](./builtin-faults.md#blackhole).
 
 - **`--with-blackhole`**  
   Enable blackhole fault injection.  

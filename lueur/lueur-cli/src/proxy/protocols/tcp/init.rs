@@ -17,11 +17,11 @@ use crate::proxy::ProxyState;
 use crate::proxy::protocols::tcp;
 use crate::types::ProtocolType;
 use crate::types::ProxyAddrConfig;
-use crate::types::ProxyProtocol;
+use crate::types::ProxyMap;
 use crate::types::RemoteAddrConfig;
 
 pub async fn initialize_tcp_proxies(
-    proxied_protos: Vec<ProxyProtocol>,
+    proxied_protos: Vec<ProxyMap>,
     state: Arc<ProxyState>,
     shutdown_tx: broadcast::Sender<()>,
     task_manager: Arc<TaskManager>,
@@ -61,7 +61,7 @@ pub async fn initialize_tcp_proxies(
     Ok(handles)
 }
 
-impl ProxyProtocol {
+impl ProxyMap {
     pub async fn parse(input: &str) -> Result<Self, String> {
         let mut parts = input.splitn(2, '=');
         let left = parts.next().ok_or_else(|| {
@@ -84,11 +84,11 @@ impl ProxyProtocol {
 
 pub async fn parse_proxy_protocols(
     protocols: Vec<String>,
-) -> Result<Vec<ProxyProtocol>> {
+) -> Result<Vec<ProxyMap>> {
     let result = join_all(
         protocols
             .iter()
-            .map(async |p| ProxyProtocol::parse(p.as_str()).await.unwrap()),
+            .map(async |p| ProxyMap::parse(p.as_str()).await.unwrap()),
     )
     .await;
     Ok(result)
@@ -143,6 +143,7 @@ fn parse_host_port(
             ProtocolType::Http => "80",
             ProtocolType::Https => "443",
             ProtocolType::Psql | ProtocolType::Psqls => "5432",
+            ProtocolType::Tls => "",
             ProtocolType::None => "",
         },
         None => "",
@@ -169,6 +170,7 @@ fn parse_right(
             "psqls" => Some(ProtocolType::Psqls),
             "http" => Some(ProtocolType::Http),
             "https" => Some(ProtocolType::Https),
+            "tls" => Some(ProtocolType::Tls),
             _ => None,
         };
 
@@ -179,6 +181,7 @@ fn parse_right(
                     ProtocolType::Http => "80",
                     ProtocolType::Https => "443",
                     ProtocolType::Psql | ProtocolType::Psqls => "5432",
+                    ProtocolType::Tls => "",
                     ProtocolType::None => "",
                 },
                 None => "",

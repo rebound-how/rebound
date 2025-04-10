@@ -43,9 +43,9 @@ nav:
     - "CLI Commands": reference/cli-commands.md
     - "Scenario File Format": reference/scenario-file-format.md
     - "Environment Variables": reference/environment-variables.md
+    - "Builtin Faults": reference/builtin-faults.md
     - "Scheduling Intervals": reference/schedule-intervals-syntax.md
-    - "TCP Proxy Protocols": reference/proto-syntax.md
-    - "Architecture": reference/architecture-overview.md
+    - "TCP Proxy Mapping": reference/proxy-mapping-syntax.md
   - Explanations:
     - "Why lueur?": explanations/why-lueur.md
     - "Fault Injection Basics": explanations/fault-injection-basics.md
@@ -107,7 +107,11 @@ markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
       pygments_lang_class: true
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
       slugify: !!python/object/apply:pymdownx.slugs.slugify

@@ -23,6 +23,12 @@ to a more advanced use case by analyzing SQL queries on the fly.
 
 ## Create a Basic Plugin with Python
 
+!!! question "Are plugins only written in Python?"
+
+    lueur's plugins are gRPC servers so you can write plugins in any languages
+    that [support gRPC](https://grpc.io/docs/#official-support). 
+    We use Python here but feel free to adjust to your own personal preferences.
+
 -   [X] Get the lueur gRPC protocol file
 
     Download the [gRPC protocol file](https://github.com/rebound-how/rebound/blob/main/lueur/lueur-cli/src/plugin/rpc/protos/plugin.proto)
@@ -426,7 +432,7 @@ returned by the database and observe the impacts on your application.
 
     def parse_row_data(data: bytes) -> dict:
         """
-        Parse a PostgreSQL DataRpw (type 'B') message from raw bytes.
+        Parse a PostgreSQL DataRow (type 'D') message from raw bytes.
         Returns a dictionary with keys:
         {
             "field_count": int,
@@ -604,7 +610,7 @@ returned by the database and observe the impacts on your application.
 
     ```bash
     lueur run --grpc-plugin http://localhost:50051 \   # (1)!
-        --proxy-proto "9098=psql://192.168.1.45:5432"   # (2)!
+        --proxy "9098=psql://192.168.1.45:5432"   # (2)!
     ```
 
     1. Connect to the plugin

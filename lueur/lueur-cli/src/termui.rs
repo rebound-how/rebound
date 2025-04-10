@@ -29,7 +29,7 @@ use crate::reporting::OutputFormat;
 use crate::sched::EventType;
 use crate::sched::FaultPeriodEvent;
 use crate::types::LatencyDistribution;
-use crate::types::ProxyProtocol;
+use crate::types::ProxyMap;
 
 /// Struct to hold information about each task
 struct TaskInfo {
@@ -665,7 +665,7 @@ pub async fn quiet_handle_displayable_events(
 #[allow(clippy::too_many_arguments)]
 pub async fn proxy_prelude(
     proxy_address: String,
-    proxied_protos: Vec<ProxyProtocol>,
+    proxied_protos: Vec<ProxyMap>,
     plugins: Arc<RwLock<RpcPluginManager>>,
     opts: &RunCommandOptions,
     upstreams: &[String],

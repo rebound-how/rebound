@@ -12,13 +12,13 @@ use tokio::time::Instant;
 use crate::errors::ProxyError;
 use crate::event::TaskManager;
 use crate::proxy::ProxyState;
-use crate::types::ProxyProtocol;
+use crate::types::ProxyMap;
 
 pub mod init;
 pub mod stream;
 
 pub async fn run_tcp_proxy(
-    proxied_proto: ProxyProtocol,
+    proxied_proto: ProxyMap,
     state: Arc<ProxyState>,
     mut shutdown_rx: broadcast::Receiver<()>,
     readiness_tx: mpsc::Sender<()>,

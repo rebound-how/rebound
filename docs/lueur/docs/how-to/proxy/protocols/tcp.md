@@ -43,14 +43,14 @@ your applications to experiment with network fault impacts.
 
     ```bash
     lueur run \
-        --proxy-proto "9098=www.google.com:443" \ # (1)!
+        --proxy "9098=www.google.com:443" \ # (1)!
         --with-latency \
         --latency-mean 300
     ```
 
     1. Make sure to set a host and its port. lueur cannot figure it out.
 
-    You can use as many `--proxy-proto` flags as needed. lueur will start
+    You can use as many `--proxy` flags as needed. lueur will start
     listening on port {==9098==} for TCP connections. Any network going to that
     the address {==0.0.0.0:9098==} will be transmitted to the endpoint, here
     `https://www.google.com`. lueur will apply any faults you have setup to the
@@ -86,7 +86,7 @@ dependencies such as traffic between your application and its database.
 
     ```bash
     lueur run \
-        --proxy-proto "35432=localhost:5432" \ # (1)!
+        --proxy "35432=localhost:5432" \ # (1)!
         --with-latency \
         --latency-mean 800 \  # (2)!
         --latency-per-read-write  # (3)!

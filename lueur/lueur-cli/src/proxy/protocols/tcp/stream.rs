@@ -19,7 +19,7 @@ use crate::fault::Bidirectional;
 use crate::fault::TlsBidirectional;
 use crate::plugin::ProxyPlugin;
 use crate::proxy::ProxyState;
-use crate::types::ProxyProtocol;
+use crate::types::ProxyMap;
 
 #[tracing::instrument]
 pub async fn handle_stream(
@@ -28,7 +28,7 @@ pub async fn handle_stream(
     state: &ProxyState,
     passthrough: bool,
     event: Box<dyn ProxyTaskEvent>,
-    protocol: Option<ProxyProtocol>,
+    protocol: Option<ProxyMap>,
 ) -> Result<(u64, u64), ProxyError> {
     if protocol.is_some() {
         let proxy_protocol = protocol.unwrap();

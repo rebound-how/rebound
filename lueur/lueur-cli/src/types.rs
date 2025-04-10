@@ -19,6 +19,7 @@ pub enum ProtocolType {
     Https,
     Psql,
     Psqls,
+    Tls,
 }
 
 impl ProtocolType {
@@ -35,13 +36,13 @@ impl ProtocolType {
 }
 
 #[derive(Debug, Clone)]
-pub struct ProxyProtocol {
+pub struct ProxyMap {
     pub proxy: ProxyAddrConfig,
     pub remote: RemoteAddrConfig,
     pub proto: Option<ProtocolType>,
 }
 
-impl fmt::Display for ProxyProtocol {
+impl fmt::Display for ProxyMap {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
@@ -54,7 +55,7 @@ impl fmt::Display for ProxyProtocol {
     }
 }
 
-impl ProxyProtocol {
+impl ProxyMap {
     pub fn remote_requires_tls(&self) -> bool {
         match &self.proto {
             Some(t) => match t {
@@ -62,6 +63,7 @@ impl ProxyProtocol {
                 ProtocolType::Https => true,
                 ProtocolType::Psql => false,
                 ProtocolType::Psqls => true,
+                ProtocolType::Tls => true,
                 ProtocolType::None => false,
             },
             None => false,

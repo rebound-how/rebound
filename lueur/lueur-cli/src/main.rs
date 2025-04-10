@@ -205,9 +205,9 @@ async fn main() -> Result<()> {
             // we now also start any other proxy that the user has requested us
             // to setup
             let mut proxied_protos = Vec::new();
-            if !options.common.proxy_protocols.is_empty() {
+            if !options.common.proxy_map.is_empty() {
                 proxied_protos = parse_proxy_protocols(
-                    options.common.proxy_protocols.clone(),
+                    options.common.proxy_map.clone(),
                 )
                 .await?;
                 let _tcp_proxy_guard = initialize_tcp_proxies(

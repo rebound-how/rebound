@@ -1,15 +1,27 @@
 # tl;dr
 
-## The one-liner lueur proxy
+## The one-liner lueur HTTP proxy
 
-The following command starts the proxy impacting any requests to any upstream
-server with a `300ms` latency on average.
+The following command starts the proxy impacting any HTTP requests to any
+upstream host with a `300ms` latency on average.
 
 ```console
 lueur run --with-latency --latency-mean=300 --upstream=* 
 ```
 
-That's it!
+Send your HTTP/HTTPS traffic to `<proxy ip>:3180` and observe the latency
+impacting the response time.
+
+## The one-liner lueur TCP proxy
+
+The following command starts the proxy impacting any TCP stream to host
+`remote.com:9000` with a `300ms` latency on average.
+
+```console
+lueur run --with-latency --latency-mean=300 --proxy "7878:remote.com:9000"
+```
+
+Replace `remote.com:9000` with `<proxy ip>:7878` in your application.
 
 ## Next Steps
 
