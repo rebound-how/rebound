@@ -287,6 +287,7 @@ returned by the database and observe the impacts on your application.
     import struct
     import time
     from concurrent import futures
+    import uuid
 
     import grpc
 
@@ -341,7 +342,10 @@ returned by the database and observe the impacts on your application.
             trigger a fault from your application)
             """
             try:
-                print(parse_messages(request.chunk))
+                # you can use this id to discriminate streams later on
+                stream_id = parse_stream_id(request.id)
+                print(f"Stream id {stream_id}")
+                print(parse_messages(stream_id, request.chunk))
             except Exception as x:
                 print(x)
 
@@ -357,6 +361,9 @@ returned by the database and observe the impacts on your application.
     # to read from the PostgreSQL wire format
     # https://www.postgresql.org/docs/current/protocol-message-formats.html
     ###############################################################################
+    def parse_stream_id(stream_id: str) -> uuid.UUID:
+        return uuid.UUID(stream_id, version=4)
+
     def parse_row_description(data: bytes) -> dict:
         """
         Parse a PostgreSQL RowDescription (type 'T') message from raw bytes.
@@ -432,7 +439,7 @@ returned by the database and observe the impacts on your application.
 
     def parse_row_data(data: bytes) -> dict:
         """
-        Parse a PostgreSQL DataRow (type 'D') message from raw bytes.
+        Parse a PostgreSQL DataRpw (type 'B') message from raw bytes.
         Returns a dictionary with keys:
         {
             "field_count": int,
@@ -512,7 +519,7 @@ returned by the database and observe the impacts on your application.
         raise ValueError("Missing null terminator in field name")
 
 
-    def parse_messages(data: bytes):
+    def parse_messages(stream_id: uuid.UUID, data: bytes):
         offset = 0
         messages = []
 
@@ -578,7 +585,6 @@ returned by the database and observe the impacts on your application.
         serve()
 
     ```
-
 
 -   [X] Run your plugin
 

@@ -753,10 +753,7 @@ pub async fn proxy_prelude(
     );
 
     if !pl.is_empty() {
-        println!(
-            "{}",
-            format!("    {}\n     {}", "Plugins:".bold().white(), pl)
-        );
+        println!("{}", format!("\n    {}\n{}", "Plugins:".bold().white(), pl));
     } else {
         println!(
             "{}",

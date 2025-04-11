@@ -106,6 +106,7 @@ use tokio::task;
 use tokio::time::sleep;
 use tokio_stream::StreamExt;
 use tracing::error;
+use uuid::Uuid;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -206,10 +207,9 @@ async fn main() -> Result<()> {
             // to setup
             let mut proxied_protos = Vec::new();
             if !options.common.proxy_map.is_empty() {
-                proxied_protos = parse_proxy_protocols(
-                    options.common.proxy_map.clone(),
-                )
-                .await?;
+                proxied_protos =
+                    parse_proxy_protocols(options.common.proxy_map.clone())
+                        .await?;
                 let _tcp_proxy_guard = initialize_tcp_proxies(
                     proxied_protos.clone(),
                     proxy_state.clone(),
@@ -587,7 +587,7 @@ async fn main() -> Result<()> {
 }
 
 fn map_faults(
-    original_faults: &HashMap<usize, ScenarioItemLifecycleFaults>,
+    original_faults: &HashMap<Uuid, ScenarioItemLifecycleFaults>,
 ) -> Vec<ReportItemMetricsFaults> {
     original_faults
         .iter()

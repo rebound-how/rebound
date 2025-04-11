@@ -36,7 +36,7 @@ class PacketLoss(Struct):
 class Bandwidth(Struct):
     rate: PositiveInteger = 1000
     unit: BandwidthUnit = "bps"
-    direction: Direction = "server"
+    direction: Direction = "egress"
     side: StreamSide | None = "server"
 
 
@@ -54,6 +54,11 @@ class HttpError(Struct):
     body: str | None
     status_code: HTTPStatus = HTTPStatus.INTERNAL_SERVER_ERROR
     probability: Probability = 1.0
+
+
+class Blackhole(Struct):
+    direction: Direction = "egress"
+    side: StreamSide | None = "server"
 
 
 class FaultConfiguration(Struct):

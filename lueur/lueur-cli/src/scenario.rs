@@ -348,6 +348,13 @@ pub fn build_item_list(source: ScenarioItem) -> Vec<ScenarioItem> {
                                 probability,
                                 period,
                             },
+                            FaultConfiguration::Blackhole {
+                                direction,
+                                side,
+                            } => FaultConfiguration::Blackhole {
+                                direction,
+                                side,
+                            },
                         })
                     }
                     next_faults

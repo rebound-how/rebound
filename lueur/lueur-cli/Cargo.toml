@@ -76,6 +76,7 @@ rustls-pki-types = "1.11.0"
 rustls-native-certs = "0.8.1"
 rustls-platform-verifier = "0.5.1"
 arc-swap = "1.7.1"
+uuid = { version = "1.16.0", features = ["fast-rng", "serde", "v4"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 aya-ebpf = { version = "0.1.1", optional = true }

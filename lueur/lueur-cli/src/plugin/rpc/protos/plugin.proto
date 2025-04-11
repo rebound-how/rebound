@@ -166,9 +166,10 @@ message ProcessTunnelDataRequest {
         EGRESS = 1;
         BOTH = 2;
     }
-    Side side = 1;
-    Direction direction = 2;
-    bytes chunk = 3;
+    string id = 1;
+    Side side = 2;
+    Direction direction = 3;
+    bytes chunk = 4;
 }
 
 message ProcessTunnelDataResponse {

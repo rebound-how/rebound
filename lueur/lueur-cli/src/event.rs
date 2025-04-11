@@ -12,6 +12,7 @@ use tokio::sync::broadcast;
 use tokio::sync::broadcast::Receiver;
 use tokio::sync::broadcast::Sender;
 use tokio::sync::broadcast::error::SendError;
+use uuid::Uuid;
 
 use crate::types::Direction;
 use crate::types::StreamSide;
@@ -69,7 +70,7 @@ pub enum TaskProgressEvent {
     },
 }
 
-pub type TaskId = usize;
+pub type TaskId = Uuid;
 pub type TaskProgressSender = Sender<TaskProgressEvent>;
 pub type TaskProgressReceiver = Receiver<TaskProgressEvent>;
 
@@ -115,6 +116,8 @@ pub trait ProxyTaskEvent: Send + Sync + std::fmt::Debug {
     ) -> Result<(), SendError<TaskProgressEvent>>;
 
     fn clone_me(&self) -> Box<dyn ProxyTaskEvent>;
+
+    fn get_id(&self) -> TaskId;
 }
 
 impl Clone for Box<dyn ProxyTaskEvent> {
@@ -242,6 +245,10 @@ impl ProxyTaskEvent for FaultTaskEvent {
         let _ = sender.send(event);
         Ok(())
     }
+
+    fn get_id(&self) -> TaskId {
+        self.id
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -324,21 +331,21 @@ impl ProxyTaskEvent for PassthroughTaskEvent {
         tracing::error!("Tracing error in bypass mode: {}", error);
         Ok(())
     }
+
+    fn get_id(&self) -> TaskId {
+        self.id
+    }
 }
 
 #[derive(Debug)]
 pub struct TaskManager {
-    counter: AtomicUsize,
     pub sender: TaskProgressSender,
 }
 
 impl TaskManager {
     pub fn new(capacity: usize) -> (Arc<Self>, TaskProgressReceiver) {
         let (sender, receiver) = broadcast::channel(capacity);
-        (
-            Arc::new(TaskManager { counter: AtomicUsize::new(1), sender }),
-            receiver,
-        )
+        (Arc::new(TaskManager { sender }), receiver)
     }
 
     pub fn get_sender(&self) -> TaskProgressSender {
@@ -350,7 +357,7 @@ impl TaskManager {
     }
 
     pub fn next_id(&self) -> TaskId {
-        self.counter.fetch_add(1, Ordering::SeqCst)
+        Uuid::new_v4()
     }
 
     pub async fn new_fault_event(

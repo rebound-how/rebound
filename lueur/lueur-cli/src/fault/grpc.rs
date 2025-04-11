@@ -118,6 +118,7 @@ pub struct GrpcPluginStream {
     plugin: PluginServiceClient<Channel>,
     side: StreamSide,
     direction: Direction,
+    event: Box<dyn ProxyTaskEvent>,
     pending_read: Vec<u8>,
     processing_future_read: Option<Pin<Box<dyn FutureGrpcResult>>>,
     pending_write: Vec<u8>,
@@ -131,12 +132,14 @@ impl GrpcPluginStream {
         plugin: PluginServiceClient<Channel>,
         side: StreamSide,
         direction: Direction,
+        event: Box<dyn ProxyTaskEvent>,
     ) -> Self {
         Self {
             inner,
             plugin,
             side,
             direction,
+            event,
             pending_read: Vec::new(),
             processing_future_read: None,
             pending_write: Vec::new(),
@@ -157,9 +160,12 @@ impl GrpcPluginStream {
             StreamSide::Server => 1,
         };
 
+        let id = self.event.get_id().to_string();
+
         let fut = async move {
             tracing::warn!("read chunk is: {}", chunk.len());
             let req = service::ProcessTunnelDataRequest {
+                id,
                 direction: d,
                 side: s,
                 chunk,
@@ -185,6 +191,7 @@ impl GrpcPluginStream {
     /// plugin.
     pub fn process_write_chunk(
         &mut self,
+
         chunk: Vec<u8>,
     ) -> Result<(), ProxyError> {
         let mut plugin = self.plugin.clone();
@@ -195,9 +202,12 @@ impl GrpcPluginStream {
             StreamSide::Server => 1,
         };
 
+        let id = self.event.get_id().to_string();
+
         let fut = async move {
             tracing::warn!("write chunk is: {}", chunk.len());
             let req = service::ProcessTunnelDataRequest {
+                id,
                 direction: d,
                 side: s,
                 chunk,
@@ -495,6 +505,7 @@ impl FaultInjector for GrpcInjector {
             self.client.clone(),
             side.clone(),
             self.settings.direction.clone(),
+            event,
         )))
     }
 

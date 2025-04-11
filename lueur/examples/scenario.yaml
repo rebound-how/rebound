@@ -4,7 +4,7 @@ description: ""
 scenarios:
   - call:
       method: GET
-      url: http://lueur-demo:7070/ping
+      url: http://localhost:7070/ping
     context:
       upstreams:
         - https://postman-echo.com

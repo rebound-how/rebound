@@ -359,6 +359,10 @@ pub enum FaultConfiguration {
         probability: f64,
         period: Option<FaultPeriodSpec>,
     },
+    Blackhole {
+        direction: String,
+        side: Option<StreamSide>,
+    },
 }
 
 impl FaultConfiguration {
@@ -468,6 +472,16 @@ impl FaultConfiguration {
                 };
 
                 Ok(FaultConfig::HttpError(settings))
+            }
+            FaultConfiguration::Blackhole { direction, side } => {
+                let settings = config::BlackholeSettings {
+                    enabled: true,
+                    kind: FaultKind::Blackhole,
+                    side: side.clone().unwrap_or_default(),
+                    direction: Direction::from_str(direction).unwrap(),
+                };
+
+                Ok(FaultConfig::Blackhole(settings))
             }
         }
     }
@@ -580,6 +594,14 @@ impl fmt::Display for FaultConfiguration {
                     f,
                     "HTTP Error Fault - Status: {}, Probablility: {}",
                     status_code, probability
+                )
+            }
+            FaultConfiguration::Blackhole { direction, side } => {
+                write!(
+                    f,
+                    "Blackhole Fault - Side {}, Direction: {}",
+                    side.clone().unwrap_or_default(),
+                    direction
                 )
             }
         }
