@@ -1,7 +1,7 @@
 ---
 title: "Latency Increase By 30ms Steps From Downstream"
 description: ""
-scenarios:
+items:
   - call:
       method: GET
       url: http://localhost:7070/ping
@@ -12,13 +12,180 @@ scenarios:
         - type: latency
           mean: 80
           stddev: 5
-          direction: ingress
-          side: client
-      strategy:
-        mode: Repeat
-        step: 30
-        count: 3
-        add_baseline_call: true
     expect:
       status: 200
       response_time_under: 490
+
+  - call:
+      method: GET
+      url: http://localhost:7070/ping
+    context:
+      upstreams:
+        - https://postman-echo.com
+      faults:
+        - type: latency
+          mean: 80
+          stddev: 5
+      strategy:
+        mode: repeat
+        step: 30
+        count: 3
+        add_baseline_call: true
+      slo:
+        - type: latency
+          title: "P95 < 300ms"
+          objective: 95
+          threshold: 300.0
+    expect:
+      status: 200
+      response_time_under: 390
+
+  - call:
+      method: GET
+      url: http://localhost:7070/
+      timeout: 500
+      headers:
+        Authorization: "boom"
+        X-Whatever: "blah"
+    context:
+      upstreams:
+        - http://localhost:7070
+      faults:
+        - type: latency
+          global: false
+          mean: 90
+        - type: blackhole
+          period: "start:10%,duration:20%"
+      strategy:
+        mode: load
+        duration: 10s
+        clients: 5
+        rps: 20
+      slo:
+        - type: latency
+          title: "P95 Latency < 110ms"
+          objective: 95
+          threshold: 110.0
+        - type: latency
+          title: "P99 Latency < 200ms"
+          objective: 99
+          threshold: 200.0
+        - type: error
+          title: "P98 Error Rate < 1%"
+          objective: 98
+          threshold: 1
+
+
+
+
+---
+title: "Single high latency spike"
+description: "Evaluate how we tolerate one single high latency spike"
+items:
+  - call:
+      method: GET
+      url: http://localhost:7070/
+    context:
+      upstreams:
+        - http://localhost:7070
+      faults:
+        - type: latency
+          mean: 800
+          stddev: 100
+    expect:
+      status: 200
+
+---
+title: "Gradual moderate latency increase"
+description: "Evaluate how we tolerate latency incrementally growing"
+items:
+  - call:
+      method: GET
+      url: http://localhost:7070/
+    context:
+      upstreams:
+        - http://localhost:7070
+      faults:
+        - type: latency
+          mean: 100
+          stddev: 30
+      strategy:
+        mode: repeat
+        step: 100
+        count: 5
+        add_baseline_call: true
+    expect:
+      status: 200
+
+---
+title: "Repeated mild latencies periods over a 10s stretch"
+description: "Evaluate how we deal with periods of moderate latencies over a period of time"
+items:
+  - call:
+      method: GET
+      url: http://localhost:7070/
+    context:
+      upstreams:
+        - http://localhost:7070
+      faults:
+        - type: latency
+          mean: 150
+          period: "start:10%,duration:20%"
+        - type: latency
+          mean: 250
+          period: "start:40%,duration:20%"
+        - type: latency
+          mean: 150
+          period: "start:70%,duration:20%"
+      strategy:
+        mode: load
+        duration: 10s
+        clients: 3
+        rps: 2
+      slo:
+        - type: latency
+          title: "P95 Latency < 110ms"
+          objective: 95
+          threshold: 110.0
+        - type: latency
+          title: "P99 Latency < 200ms"
+          objective: 99
+          threshold: 200.0
+        - type: error
+          title: "P98 Error Rate < 1%"
+          objective: 98
+          threshold: 1
+
+
+---
+title: "Simulate continuous network degradation and reduced bandwidth"
+description: "Evaluate how we manage limited bandwidth"
+items:
+  - call:
+      method: GET
+      url: http://localhost:7070/
+    context:
+      upstreams:
+        - http://localhost:7070
+      faults:
+        - type: bandwidth
+          rate: 512
+          unit: kbps
+      strategy:
+        mode: load
+        duration: 10s
+        clients: 3
+        rps: 2
+      slo:
+        - type: latency
+          title: "P95 Latency < 110ms"
+          objective: 95
+          threshold: 110.0
+        - type: latency
+          title: "P99 Latency < 200ms"
+          objective: 99
+          threshold: 200.0
+        - type: error
+          title: "P98 Error Rate < 1%"
+          objective: 98
+          threshold: 1

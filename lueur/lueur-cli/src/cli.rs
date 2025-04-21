@@ -446,6 +446,17 @@ pub struct JitterOptions {
     )]
     pub jitter_direction: Direction,
 
+    /// Side to apply the jitter on
+    #[arg(
+        help_heading = "Jitter Options",
+        long,
+        default_value_t = StreamSide::Server,
+        value_enum,
+        help = "Fault's side.",
+        env = "LUEUR_JITTER_SIDE",
+    )]
+    pub jitter_side: StreamSide,
+
     /// Maximum jitter delay in milliseconds
     #[arg(
         help_heading = "Jitter Options",
@@ -760,7 +771,10 @@ pub struct RunCommandOptions {
 #[derive(Subcommand, Debug)]
 pub enum ScenarioCommands {
     /// Execute a scenario from a file
-    Run(ScenarioConfig),
+    Run(ScenarioRunConfig),
+
+    /// Generate a new scenario from an OpenAPIv3 specification
+    Generate(ScenarioGenerateConfig),
 }
 
 /// Subcommands for executing a demo server
@@ -772,7 +786,7 @@ pub enum DemoCommands {
 
 /// Configuration for executing scenarios
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]
-pub struct ScenarioConfig {
+pub struct ScenarioRunConfig {
     /// Path to the scenario file (YAML)
     #[arg(
         short,
@@ -786,8 +800,8 @@ pub struct ScenarioConfig {
     #[arg(
         short,
         long,
-        help = "File to save the generated report. The extension determines the format: .json, .yaml, .html and .md are supported.",
-        default_value = "report.json",
+        help = "File to save the generated report.",
+        default_value = "report.md",
         env = "LUEUR_SCENARIO_REPORT_PATH"
     )]
     pub report: String,
@@ -800,6 +814,34 @@ pub struct ScenarioConfig {
         env = "LUEUR_SCENARIO_RESULTS_PATH"
     )]
     pub result: String,
+}
+
+/// Configuration for generating scenarios
+#[derive(Args, Clone, Debug, Serialize, Deserialize)]
+pub struct ScenarioGenerateConfig {
+    /// Path to the scenario file (YAML)
+    #[arg(
+        long,
+        help = "Path to the generated scenario file",
+        env = "LUEUR_SCENARIO_PATH"
+    )]
+    pub scenario: String,
+
+    /// Path to a OpenAPI v3 specification file
+    #[arg(
+        long,
+        help = "Path to a OpenAPI v3 specification file",
+        env = "LUEUR_SCENARIO_OPENAPI_V3_SPEC_FILE"
+    )]
+    pub spec_file: Option<String>,
+
+    /// URL to a OpenAPI v3 specification resource
+    #[arg(
+        long,
+        help = "URL to a OpenAPI v3 specification resource",
+        env = "LUEUR_SCENARIO_OPENAPI_V3_SPEC_URL"
+    )]
+    pub spec_url: Option<String>,
 }
 
 /// Configuration for executing the demo server

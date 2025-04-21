@@ -7,7 +7,6 @@ use async_std_resolver::resolver_from_system_conf;
 use futures::future::join_all;
 use rand;
 use rand::seq::IndexedRandom;
-use tokio::sync::broadcast;
 use tokio::sync::mpsc;
 use tokio::task;
 
@@ -23,7 +22,7 @@ use crate::types::RemoteAddrConfig;
 pub async fn initialize_tcp_proxies(
     proxied_protos: Vec<ProxyMap>,
     state: Arc<ProxyState>,
-    shutdown_tx: broadcast::Sender<()>,
+    shutdown_rx: kanal::AsyncReceiver<()>,
     task_manager: Arc<TaskManager>,
 ) -> Result<Vec<task::JoinHandle<std::result::Result<(), ProxyError>>>> {
     let count = proxied_protos.len();
@@ -41,7 +40,7 @@ pub async fn initialize_tcp_proxies(
         let handle = tokio::spawn(tcp::run_tcp_proxy(
             proto,
             state.clone(),
-            shutdown_tx.subscribe(),
+            shutdown_rx.clone(),
             readiness_tx.clone(),
             task_manager.clone(),
         ));
@@ -156,7 +155,7 @@ fn parse_host_port(
 
 /// Parses the right side ("TYPE://HOST:PORT" with TYPE optional).
 /// Returns (Option<ProtocolType>, "HOST:PORT").
-fn parse_right(
+pub fn parse_right(
     right: &str,
 ) -> Result<(Option<ProtocolType>, String, u16), String> {
     if let Some(idx) = right.find("://") {

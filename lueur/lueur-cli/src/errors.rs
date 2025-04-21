@@ -4,6 +4,8 @@ use axum::http;
 use axum::response::IntoResponse;
 use axum::response::Response;
 use hyper::StatusCode;
+use serde::Deserialize;
+use serde::Serialize;
 use serde_json::json;
 use thiserror::Error;
 use tonic::Status;
@@ -125,25 +127,28 @@ impl IntoResponse for ProxyError {
     }
 }
 
-#[derive(Error, Debug)]
+#[derive(Clone, Error, Debug, Serialize, Deserialize)]
 pub enum ScenarioError {
     #[error("IO error: {0}")]
-    IoError(#[from] std::io::Error),
+    IoError(String),
 
     #[error("Report error: {0}")]
     ReportError(String),
 
-    #[error("Request error: {0}")]
-    UriParseError(#[from] url::ParseError),
-
     #[error("Failed to read file {0}: {1}")]
-    ReadError(String, #[source] std::io::Error),
+    ReadError(String, String),
 
     #[error("Failed to parse YAML in file {0}: {1}")]
-    ParseError(String, #[source] serde_yaml::Error),
+    ParseError(String, String),
 
     #[error("WalkDir error: {0}")]
     WalkDirError(String),
+
+    #[error("Invalid HTTP method header: {0}")]
+    HTTPMethodError(String),
+
+    #[error("HTTP error: {0}")]
+    HTTPError(String),
 }
 
 #[derive(Error, Debug)]

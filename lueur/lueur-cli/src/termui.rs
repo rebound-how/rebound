@@ -2,6 +2,7 @@
 use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Arc;
+use std::sync::Mutex;
 use std::time::Duration;
 use std::time::Instant;
 
@@ -17,18 +18,24 @@ use indicatif::ProgressDrawTarget;
 use indicatif::ProgressStyle;
 use tokio::sync::RwLock;
 use tokio::sync::broadcast;
-use tokio::sync::broadcast::Receiver;
 
 use crate::cli::RunCommandOptions;
 use crate::config::FaultKind;
 use crate::event::FaultEvent;
 use crate::event::TaskId;
 use crate::event::TaskProgressEvent;
+use crate::event::TaskProgressReceiver;
 use crate::plugin::rpc::RpcPluginManager;
-use crate::reporting::OutputFormat;
+use crate::scenario;
+use crate::scenario::event::ScenarioEventPhase;
+use crate::scenario::event::ScenarioEventReceiver;
+use crate::scenario::event::ScenarioItemLifecycle;
+use crate::scenario::types::ItemExpectation;
+use crate::scenario::types::ItemExpectationDecision;
 use crate::sched::EventType;
 use crate::sched::FaultPeriodEvent;
 use crate::types::LatencyDistribution;
+use crate::types::OutputFormat;
 use crate::types::ProxyMap;
 
 /// Struct to hold information about each task
@@ -44,8 +51,8 @@ struct TaskInfo {
 }
 
 pub async fn lean_progress(
-    mut receiver: Receiver<TaskProgressEvent>,
-    mut shutdown_rx: Receiver<()>,
+    receiver: kanal::AsyncReceiver<TaskProgressEvent>,
+    shutdown_rx: kanal::AsyncReceiver<()>,
     total_duration: Option<Duration>,
     has_scheduled_faults: bool,
 ) {
@@ -244,11 +251,8 @@ pub async fn lean_progress(
 
                         status_bar.set_message(line);
                     },
-                    Err(broadcast::error::RecvError::Closed) => {
+                    Err(_) => {
                         break;
-                    }
-                    Err(broadcast::error::RecvError::Lagged(count)) => {
-                        tracing::debug!("Missed {} events that couldn't be part of the output", count);
                     }
                 }
             }
@@ -274,8 +278,8 @@ pub async fn lean_progress(
 }
 
 pub async fn full_progress(
-    mut shutdown_rx: Receiver<()>,
-    mut receiver: Receiver<TaskProgressEvent>,
+    shutdown_rx: kanal::AsyncReceiver<()>,
+    mut receiver: kanal::AsyncReceiver<TaskProgressEvent>,
 ) {
     let multi = MultiProgress::with_draw_target(ProgressDrawTarget::stdout());
 
@@ -307,7 +311,7 @@ pub async fn full_progress(
                 match event {
                     Ok(event) => {
                         match event {
-                            TaskProgressEvent::Started { id, ts, url } => {
+                            TaskProgressEvent::Started { id, ts, url, src_addr } => {
                                 started_count += 1;
 
                                 let pb = multi.add(ProgressBar::new_spinner());
@@ -577,11 +581,8 @@ pub async fn full_progress(
                             }
                         }
                     }
-                    Err(broadcast::error::RecvError::Closed) => {
+                    Err(_) => {
                         break;
-                    }
-                    Err(broadcast::error::RecvError::Lagged(count)) => {
-                        tracing::debug!("Missed {} events that couldn't be part of the output", count);
                     }
                 }
             }
@@ -644,17 +645,15 @@ fn format_bandwidth(bps: usize) -> String {
 }
 
 pub async fn quiet_handle_displayable_events(
-    mut receiver: Receiver<TaskProgressEvent>,
+    receiver: kanal::AsyncReceiver<TaskProgressEvent>,
 ) {
     loop {
         tokio::select! {
             event = receiver.recv() => {
                 match event {
                     Ok(_) => {}
-                    Err(broadcast::error::RecvError::Closed) => {
+                    Err(_) => {
                         break;
-                    }
-                    Err(broadcast::error::RecvError::Lagged(_)) => {
                     }
                 }
             }
@@ -1195,5 +1194,108 @@ pub fn schedule_timeline(faults: &[FaultSchedule], total_run_seconds: f64) {
             }
         }
         println!("{}", line);
+    }
+}
+
+pub async fn scenario_ui(mut scenario_event_receiver: ScenarioEventReceiver) {
+    let m = MultiProgress::new();
+    let mut progress: Option<ProgressBar> = None;
+    let mut progress_state = String::new();
+    let mut scenario_title: String = "".to_string();
+
+    loop {
+        tokio::select! {
+            scenario_event = scenario_event_receiver.recv() => {
+                match scenario_event {
+                    Ok(event) => {
+                        match event {
+                            ScenarioEventPhase::ItemStarted{ id: _, url, item } => {
+                                match progress {
+                                    Some(ref pb) => {
+                                        pb.inc(1);
+                                        pb.set_message(format!(
+                                            "{} {}{} {}",
+                                            scenario_title.clone(),
+                                            progress_state,
+                                            "▮".to_string().dim().blink(),
+                                            format!("[{} {}]", item.call.method.light_yellow(), url.light_blue())
+                                        ))
+                                    }
+                                    None => {}
+                                };
+                            },
+                            ScenarioEventPhase::ItemTerminated { id: _, expectation } => {
+                                match expectation {
+                                    Some(ItemExpectation::Http { wanted: _, got }) => {
+                                        match got {
+                                            Some(status) => {
+                                                if status.decision == ItemExpectationDecision::Failure {
+                                                    progress_state = format!("{}{}", progress_state, "▮".to_string().red());
+                                                } else if status.decision == ItemExpectationDecision::Success {
+                                                    progress_state = format!("{}{}", progress_state, "▮".to_string().green());
+                                                } else {
+                                                    progress_state = format!("{}{}", progress_state, "▮".to_string().green().dim());
+                                                }
+                                            },
+                                            None => progress_state = format!("{}{}", progress_state, "▮".to_string().green().dim())
+                                        }
+                                    },
+                                    None => {
+                                        progress_state = format!("{}{}", progress_state, "▮".to_string().green().dim())
+                                    }
+                                }
+
+                                match progress {
+                                    Some(ref pb) => pb.set_message(format!(
+                                        "{} {}",
+                                        scenario_title.clone(),
+                                        progress_state
+                                    )),
+                                    None => {}
+                                };
+                            }
+                            ScenarioEventPhase::Started { id: _, scenario } => {
+                                let n = scenario::count_scenario_items(&scenario);
+
+                                let title = scenario.title;
+                                scenario_title = title.clone();
+
+                                let pb = m.add(ProgressBar::new(n));
+                                pb.enable_steady_tick(Duration::from_millis(80));
+                                pb.set_style(
+                                    ProgressStyle::with_template(
+                                        "{spinner:.green} {pos:>2}/{len:2} {msg}",
+                                    )
+                                    .unwrap()
+                                    .tick_strings(
+                                        &[
+                                            "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧",
+                                            "⠇", "⠏",
+                                        ],
+                                    ),
+                                );
+                                pb.set_message(title.clone());
+
+                                progress = Some(pb);
+                            }
+                            ScenarioEventPhase::Terminated { id: _ } => {
+                                match progress {
+                                    Some(ref pb) => pb.finish(),
+                                    None => {}
+                                };
+
+                                break;
+                            }
+                        }
+                    }
+                    Err(broadcast::error::RecvError::Closed) => {
+                        break;
+                    }
+                    Err(broadcast::error::RecvError::Lagged(count)) => {
+                        tracing::warn!("Missed {} scenario messages", count);
+                    }
+                }
+            }
+        }
     }
 }

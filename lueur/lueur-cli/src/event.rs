@@ -1,7 +1,5 @@
 use std::error::Error;
 use std::sync::Arc;
-use std::sync::atomic::AtomicUsize;
-use std::sync::atomic::Ordering;
 use std::time::Duration;
 use std::time::Instant;
 
@@ -23,6 +21,7 @@ pub enum TaskProgressEvent {
         id: TaskId,
         ts: Instant,
         url: String,
+        src_addr: String,
     },
     WithFault {
         id: TaskId,
@@ -71,13 +70,14 @@ pub enum TaskProgressEvent {
 }
 
 pub type TaskId = Uuid;
-pub type TaskProgressSender = Sender<TaskProgressEvent>;
-pub type TaskProgressReceiver = Receiver<TaskProgressEvent>;
+pub type TaskProgressSender = kanal::AsyncSender<TaskProgressEvent>;
+pub type TaskProgressReceiver = kanal::AsyncReceiver<TaskProgressEvent>;
 
 pub trait ProxyTaskEvent: Send + Sync + std::fmt::Debug {
     fn on_started(
         &self,
         url: String,
+        src_addr: String,
     ) -> Result<(), SendError<TaskProgressEvent>>;
 
     fn with_fault(
@@ -136,11 +136,16 @@ impl ProxyTaskEvent for FaultTaskEvent {
     fn on_started(
         &self,
         url: String,
+        src_addr: String,
     ) -> Result<(), SendError<TaskProgressEvent>> {
-        let event: TaskProgressEvent =
-            TaskProgressEvent::Started { id: self.id, ts: Instant::now(), url };
+        let event: TaskProgressEvent = TaskProgressEvent::Started {
+            id: self.id,
+            ts: Instant::now(),
+            url,
+            src_addr,
+        };
         let sender = self.sender.clone();
-        let _ = sender.send(event);
+        let _ = sender.as_sync().send(event);
         Ok(())
     }
 
@@ -154,7 +159,7 @@ impl ProxyTaskEvent for FaultTaskEvent {
             fault,
         };
         let sender = self.sender.clone();
-        let _ = sender.send(event);
+        let _ = sender.as_sync().send(event);
         Ok(())
     }
 
@@ -170,7 +175,7 @@ impl ProxyTaskEvent for FaultTaskEvent {
             time_taken,
         };
         let sender = self.sender.clone();
-        let _ = sender.send(event);
+        let _ = sender.as_sync().send(event);
         Ok(())
     }
 
@@ -188,7 +193,7 @@ impl ProxyTaskEvent for FaultTaskEvent {
             from_upstream_length,
         };
         let sender = self.sender.clone();
-        let _ = sender.send(event);
+        let _ = sender.as_sync().send(event);
         Ok(())
     }
 
@@ -196,7 +201,7 @@ impl ProxyTaskEvent for FaultTaskEvent {
         let event: TaskProgressEvent =
             TaskProgressEvent::Ttfb { id: self.id, ts: Instant::now() };
         let sender = self.sender.clone();
-        let _ = sender.send(event);
+        let _ = sender.as_sync().send(event);
         Ok(())
     }
 
@@ -210,7 +215,7 @@ impl ProxyTaskEvent for FaultTaskEvent {
             fault,
         };
         let sender = self.sender.clone();
-        let _ = sender.send(event);
+        let _ = sender.as_sync().send(event);
         Ok(())
     }
 
@@ -224,7 +229,7 @@ impl ProxyTaskEvent for FaultTaskEvent {
             status_code,
         };
         let sender = self.sender.clone();
-        let _ = sender.send(event);
+        let _ = sender.as_sync().send(event);
         Ok(())
     }
 
@@ -242,7 +247,7 @@ impl ProxyTaskEvent for FaultTaskEvent {
             error: error.to_string(),
         };
         let sender = self.sender.clone();
-        let _ = sender.send(event);
+        let _ = sender.as_sync().send(event);
         Ok(())
     }
 
@@ -261,11 +266,16 @@ impl ProxyTaskEvent for PassthroughTaskEvent {
     fn on_started(
         &self,
         url: String,
+        src_addr: String,
     ) -> Result<(), SendError<TaskProgressEvent>> {
-        let event: TaskProgressEvent =
-            TaskProgressEvent::Started { id: self.id, ts: Instant::now(), url };
+        let event: TaskProgressEvent = TaskProgressEvent::Started {
+            id: self.id,
+            ts: Instant::now(),
+            url,
+            src_addr,
+        };
         let sender = self.sender.clone();
-        let _ = sender.send(event);
+        let _ = sender.as_sync().send(event);
         Ok(())
     }
 
@@ -298,7 +308,7 @@ impl ProxyTaskEvent for PassthroughTaskEvent {
             from_upstream_length,
         };
         let sender = self.sender.clone();
-        let _ = sender.send(event);
+        let _ = sender.as_sync().send(event);
         Ok(())
     }
 
@@ -340,12 +350,13 @@ impl ProxyTaskEvent for PassthroughTaskEvent {
 #[derive(Debug)]
 pub struct TaskManager {
     pub sender: TaskProgressSender,
+    pub receiver: TaskProgressReceiver,
 }
 
 impl TaskManager {
-    pub fn new(capacity: usize) -> (Arc<Self>, TaskProgressReceiver) {
-        let (sender, receiver) = broadcast::channel(capacity);
-        (Arc::new(TaskManager { sender }), receiver)
+    pub fn new() -> Arc<Self> {
+        let (sender, receiver) = kanal::bounded_async(500);
+        Arc::new(TaskManager { sender, receiver: receiver.clone() })
     }
 
     pub fn get_sender(&self) -> TaskProgressSender {
@@ -353,7 +364,7 @@ impl TaskManager {
     }
 
     pub fn new_subscriber(&self) -> TaskProgressReceiver {
-        self.sender.subscribe()
+        self.receiver.clone()
     }
 
     pub fn next_id(&self) -> TaskId {

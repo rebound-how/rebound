@@ -2,14 +2,19 @@ use std::fmt;
 use std::net::Ipv4Addr;
 use std::time::Duration;
 
+use anyhow::Result;
 use clap::ValueEnum;
 use serde::Deserialize;
+use serde::Deserializer;
 use serde::Serialize;
+use serde::Serializer;
+use serde::de::Error as DeError;
 
 use crate::config;
 use crate::config::FaultConfig;
 use crate::config::FaultKind;
 use crate::errors::ScenarioError;
+use crate::sched;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq)]
 pub enum ProtocolType {
@@ -319,49 +324,98 @@ impl BandwidthUnit {
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum FaultConfiguration {
     Latency {
+        #[serde(skip_serializing_if = "Option::is_none")]
         distribution: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         global: Option<bool>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         side: Option<StreamSide>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         mean: Option<f64>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         stddev: Option<f64>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         min: Option<f64>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         max: Option<f64>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         shape: Option<f64>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         scale: Option<f64>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         direction: Option<String>,
+        #[serde(default)]
+        #[serde(deserialize_with = "derialize_period")]
+        #[serde(serialize_with = "serialize_period")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         period: Option<FaultPeriodSpec>,
     },
     PacketLoss {
-        direction: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        direction: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         side: Option<StreamSide>,
+        #[serde(default)]
+        #[serde(deserialize_with = "derialize_period")]
+        #[serde(serialize_with = "serialize_period")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         period: Option<FaultPeriodSpec>,
     },
     Bandwidth {
         rate: u32,
         unit: BandwidthUnit,
-        direction: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        direction: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         side: Option<StreamSide>,
+        #[serde(default)]
+        #[serde(deserialize_with = "derialize_period")]
+        #[serde(serialize_with = "serialize_period")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         period: Option<FaultPeriodSpec>,
     },
     Jitter {
         amplitude: f64,
         frequency: f64,
-        direction: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        direction: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        side: Option<StreamSide>,
+        #[serde(default)]
+        #[serde(deserialize_with = "derialize_period")]
+        #[serde(serialize_with = "serialize_period")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         period: Option<FaultPeriodSpec>,
     },
     Dns {
         rate: f64,
+        #[serde(default)]
+        #[serde(deserialize_with = "derialize_period")]
+        #[serde(serialize_with = "serialize_period")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         period: Option<FaultPeriodSpec>,
     },
     HttpError {
         status_code: u16,
+        #[serde(skip_serializing_if = "Option::is_none")]
         body: Option<String>,
         probability: f64,
+        #[serde(default)]
+        #[serde(deserialize_with = "derialize_period")]
+        #[serde(serialize_with = "serialize_period")]
+        #[serde(skip_serializing_if = "Option::is_none")]
         period: Option<FaultPeriodSpec>,
     },
     Blackhole {
-        direction: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        direction: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         side: Option<StreamSide>,
+        #[serde(default)]
+        #[serde(deserialize_with = "derialize_period")]
+        #[serde(serialize_with = "serialize_period")]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        period: Option<FaultPeriodSpec>,
     },
 }
 
@@ -378,7 +432,10 @@ impl FaultConfiguration {
                 let settings = config::BandwidthSettings {
                     enabled: true,
                     kind: FaultKind::Bandwidth,
-                    direction: Direction::from_str(direction).unwrap(),
+                    direction: Direction::from_str(
+                        &direction.clone().unwrap_or("ingress".to_string()),
+                    )
+                    .unwrap(),
                     side: side.clone().unwrap_or_default(),
                     bandwidth_rate: *rate as usize,
                     bandwidth_unit: *unit,
@@ -415,7 +472,7 @@ impl FaultConfiguration {
                     latency_shape: shape.unwrap_or(20.0),
                     latency_scale: scale.unwrap_or(20.0),
                     direction: Direction::from_str(
-                        &direction.clone().unwrap_or("egress".to_string()),
+                        &direction.clone().unwrap_or("ingress".to_string()),
                     )
                     .unwrap(),
                 };
@@ -426,7 +483,10 @@ impl FaultConfiguration {
                 let settings = config::PacketLossSettings {
                     enabled: true,
                     kind: FaultKind::PacketLoss,
-                    direction: Direction::from_str(direction).unwrap(),
+                    direction: Direction::from_str(
+                        &direction.clone().unwrap_or("ingress".to_string()),
+                    )
+                    .unwrap(),
                     side: side.clone().unwrap_or_default(),
                 };
 
@@ -436,12 +496,17 @@ impl FaultConfiguration {
                 amplitude: jitter_amplitude,
                 frequency: jitter_frequency,
                 direction,
+                side,
                 ..
             } => {
                 let settings = config::JitterSettings {
                     enabled: true,
                     kind: FaultKind::Jitter,
-                    direction: Direction::from_str(direction).unwrap(),
+                    direction: Direction::from_str(
+                        &direction.clone().unwrap_or("ingress".to_string()),
+                    )
+                    .unwrap(),
+                    side: side.clone().unwrap_or_default(),
                     amplitude: *jitter_amplitude,
                     frequency: *jitter_frequency,
                 };
@@ -473,16 +538,43 @@ impl FaultConfiguration {
 
                 Ok(FaultConfig::HttpError(settings))
             }
-            FaultConfiguration::Blackhole { direction, side } => {
+            FaultConfiguration::Blackhole { direction, side, .. } => {
                 let settings = config::BlackholeSettings {
                     enabled: true,
                     kind: FaultKind::Blackhole,
                     side: side.clone().unwrap_or_default(),
-                    direction: Direction::from_str(direction).unwrap(),
+                    direction: Direction::from_str(
+                        &direction.clone().unwrap_or("ingress".to_string()),
+                    )
+                    .unwrap(),
                 };
 
                 Ok(FaultConfig::Blackhole(settings))
             }
+        }
+    }
+
+    pub fn get_period(&self) -> &Option<FaultPeriodSpec> {
+        match self {
+            FaultConfiguration::Latency { period, .. } => period,
+            FaultConfiguration::PacketLoss { period, .. } => period,
+            FaultConfiguration::Bandwidth { period, .. } => period,
+            FaultConfiguration::Jitter { period, .. } => period,
+            FaultConfiguration::Dns { period, .. } => period,
+            FaultConfiguration::HttpError { period, .. } => period,
+            FaultConfiguration::Blackhole { period, .. } => period,
+        }
+    }
+
+    pub fn kind(&self) -> FaultKind {
+        match self {
+            FaultConfiguration::Latency { .. } => FaultKind::Latency,
+            FaultConfiguration::PacketLoss { .. } => FaultKind::PacketLoss,
+            FaultConfiguration::Bandwidth { .. } => FaultKind::Bandwidth,
+            FaultConfiguration::Jitter { .. } => FaultKind::Jitter,
+            FaultConfiguration::Dns { .. } => FaultKind::Dns,
+            FaultConfiguration::HttpError { .. } => FaultKind::HttpError,
+            FaultConfiguration::Blackhole { .. } => FaultKind::Blackhole,
         }
     }
 }
@@ -490,122 +582,6 @@ impl FaultConfiguration {
 pub struct ConnectRequest {
     pub target_host: String,
     pub target_port: u16,
-}
-
-impl fmt::Display for FaultConfiguration {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            FaultConfiguration::Latency {
-                distribution,
-                global,
-                side,
-                mean,
-                stddev,
-                min,
-                max,
-                shape,
-                scale,
-                direction,
-                ..
-            } => {
-                write!(f, "Latency Fault")?;
-                let mut details = Vec::new();
-
-                details.push(format!("Global: {}", global.unwrap_or(true)));
-                details.push(format!(
-                    "Side: {}",
-                    side.clone().unwrap_or_default()
-                ));
-
-                if let Some(dist) = distribution {
-                    details.push(format!("Distribution: {}", dist));
-                }
-                if let Some(m) = mean {
-                    details.push(format!("Mean: {:.2} ms", m));
-                }
-                if let Some(s) = stddev {
-                    details.push(format!("Stddev: {:.2} ms", s));
-                }
-                if let Some(min) = min {
-                    details.push(format!("Min: {:.2} ms", min));
-                }
-                if let Some(max) = max {
-                    details.push(format!("Max: {:.2} ms", max));
-                }
-                if let Some(shape) = shape {
-                    details.push(format!("Shape: {:.2}", shape));
-                }
-                if let Some(scale) = scale {
-                    details.push(format!("Scale: {:.2}", scale));
-                }
-                if let Some(dir) = direction {
-                    details.push(format!("Direction: {}", dir));
-                }
-
-                if !details.is_empty() {
-                    write!(f, " [")?;
-                    write!(f, "{}", details.join(", "))?;
-                    write!(f, "]")?;
-                }
-
-                Ok(())
-            }
-            FaultConfiguration::PacketLoss { direction, side: _, .. } => {
-                write!(f, "Packet Loss Fault - Direction: {}", direction)
-            }
-            FaultConfiguration::Bandwidth {
-                rate,
-                unit,
-                direction,
-                side,
-                ..
-            } => {
-                write!(
-                    f,
-                    "Bandwidth Fault - Side {}, Rate: {} {}, Direction: {}",
-                    side.clone().unwrap_or_default(),
-                    rate,
-                    unit,
-                    direction
-                )
-            }
-            FaultConfiguration::Jitter {
-                amplitude: jitter_amplitude,
-                frequency: jitter_frequency,
-                direction,
-                ..
-            } => {
-                write!(
-                    f,
-                    "Jitter Fault - Amplitude: {:.2} ms, Frequency: {:.2} Hz, Direction: {}",
-                    jitter_amplitude, jitter_frequency, direction
-                )
-            }
-            FaultConfiguration::Dns { rate: dns_rate, .. } => {
-                write!(f, "DNS Fault - Rate: {}%", dns_rate * 100.0)
-            }
-            FaultConfiguration::HttpError {
-                status_code,
-                body: _,
-                probability,
-                ..
-            } => {
-                write!(
-                    f,
-                    "HTTP Error Fault - Status: {}, Probablility: {}",
-                    status_code, probability
-                )
-            }
-            FaultConfiguration::Blackhole { direction, side } => {
-                write!(
-                    f,
-                    "Blackhole Fault - Side {}, Direction: {}",
-                    side.clone().unwrap_or_default(),
-                    direction
-                )
-            }
-        }
-    }
 }
 
 /// A time specification: "30s" / "5m" / "120" / "50%" etc.
@@ -621,6 +597,17 @@ impl Default for TimeSpec {
     }
 }
 
+impl fmt::Display for TimeSpec {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            TimeSpec::Absolute(duration) => {
+                write!(f, "{}s", duration.as_secs())
+            }
+            TimeSpec::Fraction(v) => write!(f, "{}%", (v * 100 as f64) as u64),
+        }
+    }
+}
+
 /// A single period: "start:...,duration:..."
 #[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct FaultPeriodSpec {
@@ -628,8 +615,94 @@ pub struct FaultPeriodSpec {
     pub duration: Option<TimeSpec>,
 }
 
+impl fmt::Display for FaultPeriodSpec {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.duration {
+            Some(d) => write!(f, "start:{},duration:{}", self.start, d),
+            None => write!(f, "start:{}%", self.start),
+        }
+    }
+}
+
 #[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct FaultPeriod {
     pub start: Duration,
     pub duration: Option<Duration>,
+}
+
+impl TimeSpec {
+    pub fn as_fraction(&self, total: Duration) -> f64 {
+        if total.is_zero() {
+            return 0.0;
+        }
+
+        tracing::info!("frac {:?}", self);
+
+        match self {
+            TimeSpec::Absolute(abs) => {
+                let sec = abs.as_secs_f64();
+                (sec / total.as_secs_f64()).clamp(0.0, 1.0)
+            }
+            TimeSpec::Fraction(frac) => frac.clamp(0.0, 1.0),
+        }
+    }
+}
+
+impl FaultPeriodSpec {
+    pub fn as_period(&self, total: Duration) -> (f64, f64) {
+        let start_frac = self.start.as_fraction(total);
+
+        let dur_frac = if let Some(d) = &self.duration {
+            d.as_fraction(total)
+        } else {
+            1.0 - start_frac
+        };
+
+        let end_frac = (start_frac + dur_frac).clamp(0.0, 1.0);
+        (start_frac, end_frac)
+    }
+
+    pub fn parse(period: &str) -> Result<Option<Self>> {
+        sched::parse_period(period)
+    }
+}
+
+fn derialize_period<'de, D>(
+    deserializer: D,
+) -> Result<Option<FaultPeriodSpec>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    match Option::<String>::deserialize(deserializer) {
+        Ok(period_str) => match period_str {
+            Some(s) => match FaultPeriodSpec::parse(&s) {
+                Ok(spec) => Ok(spec),
+                Err(e) => Err(D::Error::custom(format!(
+                    "invalid fault period '{}': {}",
+                    s, e
+                ))),
+            },
+            None => Ok(None),
+        },
+        Err(_) => Ok(None),
+    }
+}
+
+pub fn serialize_period<S>(
+    period: &Option<FaultPeriodSpec>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    let s: Option<String> = period.as_ref().map(|p| p.to_string());
+    s.serialize(serializer)
+}
+
+pub enum OutputFormat {
+    Markdown,
+    Text,
+    Html,
+    Json,
+    Yaml,
 }

@@ -23,6 +23,7 @@ mod tunnel;
 
 #[tracing::instrument]
 async fn handle_new_connection(
+    source_addr: SocketAddr,
     req: Request<Body>,
     state: Arc<ProxyState>,
     task_manager: Arc<TaskManager>,
@@ -81,6 +82,7 @@ async fn handle_new_connection(
 
     if method == Method::CONNECT {
         let r = tunnel::handle_connect(
+            source_addr,
             req,
             state.clone(),
             upstream_url,
@@ -96,6 +98,7 @@ async fn handle_new_connection(
         Ok(resp)
     } else {
         let r = forward::handle_request(
+            source_addr,
             req,
             state.clone(),
             upstream_url,
@@ -115,7 +118,7 @@ async fn handle_new_connection(
 pub async fn run_http_proxy(
     proxy_address: String,
     state: Arc<ProxyState>,
-    mut shutdown_rx: broadcast::Receiver<()>,
+    shutdown_rx: kanal::AsyncReceiver<()>,
     readiness_tx: Sender<()>,
     task_manager: Arc<TaskManager>,
 ) -> Result<(), ProxyError> {
@@ -156,6 +159,7 @@ pub async fn run_http_proxy(
                         let hyper_service =
                         hyper::service::service_fn(move |request: Request<Incoming>| {
                             handle_new_connection(
+                                addr,
                                 request.map(Body::new),
                                 state.clone(),
                                 task_manager.clone()

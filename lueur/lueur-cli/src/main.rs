@@ -18,7 +18,7 @@ mod fault;
 mod logging;
 mod plugin;
 mod proxy;
-mod reporting;
+mod report;
 mod resolver;
 mod scenario;
 mod sched;
@@ -26,12 +26,8 @@ mod state;
 mod termui;
 mod types;
 
-use std::collections::HashMap;
-use std::fs::File;
-use std::io::Write;
 use std::path::Path;
 use std::sync::Arc;
-use std::sync::Mutex;
 use std::time::Duration;
 use std::time::Instant;
 
@@ -41,6 +37,7 @@ use anyhow::Result;
     any(feature = "stealth", feature = "stealth-auto-build")
 ))]
 use aya::Ebpf;
+use chrono::Utc;
 use clap::Parser;
 use cli::Cli;
 use cli::Commands;
@@ -48,14 +45,9 @@ use cli::DemoCommands;
 use cli::RunCommandOptions;
 use cli::ScenarioCommands;
 use colorful::Colorful;
-use colorful::ExtraColorInterface;
 use config::ProxyConfig;
-use errors::ProxyError;
 use event::TaskManager;
 use fault::FaultInjector;
-use indicatif::MultiProgress;
-use indicatif::ProgressBar;
-use indicatif::ProgressStyle;
 use logging::init_meter_provider;
 use logging::init_subscriber;
 use logging::init_tracer_provider;
@@ -75,32 +67,20 @@ use proxy::protocols::http::init::get_http_proxy_address;
 use proxy::protocols::http::init::initialize_http_proxy;
 use proxy::protocols::tcp::init::initialize_tcp_proxies;
 use proxy::protocols::tcp::init::parse_proxy_protocols;
-use reporting::Report;
-use reporting::ReportItem;
-use reporting::ReportItemExpectation;
-use reporting::ReportItemExpectationDecision;
-use reporting::ReportItemMetrics;
-use reporting::ReportItemMetricsFaults;
-use reporting::build_report_output;
-use reporting::pretty_report;
-use scenario::ScenarioEventManager;
-use scenario::ScenarioItemLifecycle;
-use scenario::ScenarioItemLifecycleFaults;
-use scenario::build_item_list;
-use scenario::count_scenario_items;
-use scenario::execute_item;
-use scenario::handle_scenario_events;
-use scenario::load_scenarios;
+use scenario::event::ScenarioEventManager;
+use scenario::event::ScenarioItemLifecycle;
+use scenario::event::capture_request_events;
+use scenario::executor::execute_item;
+use scenario::generator::openapi;
+use scenario::types::ScenarioResult;
+use scenario::types::ScenariosResults;
 use sched::build_schedule_events;
 use sched::run_fault_schedule;
-use state::initialize_proxy_state;
 use termui::demo_prelude;
 use termui::full_progress;
-use termui::get_output_format_result;
 use termui::lean_progress;
 use termui::proxy_prelude;
 use termui::quiet_handle_displayable_events;
-use tokio::sync::broadcast;
 use tokio::sync::watch;
 use tokio::task;
 use tokio::time::sleep;
@@ -125,8 +105,8 @@ async fn main() -> Result<()> {
 
     let _ = init_subscriber(log_layers, &tracer_provider, &meter_provider);
 
-    let (proxy_shutdown_tx, proxy_shutdown_rx) = broadcast::channel::<()>(5);
-    let (task_manager, receiver) = TaskManager::new(5000);
+    let (proxy_shutdown_tx, proxy_shutdown_rx) = kanal::bounded_async(5);
+    let task_manager = TaskManager::new();
     let (config_tx, config_rx) = watch::channel((
         ProxyConfig::default(),
         Vec::<Box<dyn FaultInjector>>::new(),
@@ -134,6 +114,7 @@ async fn main() -> Result<()> {
 
     let _fault_schedule_handle;
     let _progress_guard;
+    let _scenario_event_capture_guard;
 
     #[cfg(all(
         target_os = "linux",
@@ -198,7 +179,7 @@ async fn main() -> Result<()> {
             let _http_proxy_guard = initialize_http_proxy(
                 &http_proxy_nic_config,
                 proxy_state.clone(),
-                proxy_shutdown_tx.subscribe(),
+                proxy_shutdown_rx.clone(),
                 task_manager.clone(),
             )
             .await;
@@ -213,7 +194,7 @@ async fn main() -> Result<()> {
                 let _tcp_proxy_guard = initialize_tcp_proxies(
                     proxied_protos.clone(),
                     proxy_state.clone(),
-                    proxy_shutdown_tx.clone(),
+                    proxy_shutdown_rx.clone(),
                     task_manager.clone(),
                 )
                 .await;
@@ -312,17 +293,18 @@ async fn main() -> Result<()> {
             }
 
             if options.ui.no_ui {
-                _progress_guard =
-                    task::spawn(quiet_handle_displayable_events(receiver));
+                _progress_guard = task::spawn(quiet_handle_displayable_events(
+                    task_manager.new_subscriber(),
+                ));
             } else if options.ui.tail {
                 _progress_guard = task::spawn(full_progress(
-                    proxy_shutdown_tx.subscribe(),
-                    receiver,
+                    proxy_shutdown_rx.clone(),
+                    task_manager.new_subscriber(),
                 ));
             } else {
                 _progress_guard = task::spawn(lean_progress(
                     task_manager.new_subscriber(),
-                    proxy_shutdown_tx.subscribe(),
+                    proxy_shutdown_rx.clone(),
                     total_duration,
                     faults_scheduled,
                 ));
@@ -371,163 +353,79 @@ async fn main() -> Result<()> {
         },
         Commands::Scenario { scenario, common } => match scenario {
             ScenarioCommands::Run(config) => {
-                let start = Instant::now();
+                let start_instant = Instant::now();
+                let start = Utc::now();
 
-                let proxy_nic_config = get_http_proxy_address(common);
+                let addr_id_map: Arc<scc::HashMap<String, Uuid>> =
+                    Arc::new(scc::HashMap::default());
+                let id_events_map: Arc<
+                    scc::HashMap<Uuid, ScenarioItemLifecycle>,
+                > = Arc::new(scc::HashMap::default());
 
-                let m = MultiProgress::new();
-
-                let app_state = initialize_proxy_state(common, false).await?;
-
-                tokio::spawn(monitor_and_update_proxy_config(
-                    app_state.clone(),
-                    config_rx,
-                ));
-
-                let _proxy_guard = initialize_http_proxy(
-                    &proxy_nic_config,
-                    app_state.clone(),
-                    proxy_shutdown_rx,
-                    task_manager.clone(),
-                )
-                .await;
-
-                let mut scenarios = load_scenarios(Path::new(&config.scenario));
+                _scenario_event_capture_guard =
+                    tokio::spawn(capture_request_events(
+                        proxy_shutdown_rx,
+                        task_manager.new_subscriber(),
+                        addr_id_map.clone(),
+                        id_events_map.clone(),
+                    ));
 
                 println!(
                     "\n{}\n",
                     "================ Running Scenarios ================".dim()
                 );
 
-                let queue =
-                    Arc::new(Mutex::new(Vec::<ScenarioItemLifecycle>::new()));
-
-                let (event_manager, scenario_event_receiver) =
-                    ScenarioEventManager::new(500);
-
-                let _scenario_event_progress_guard =
-                    tokio::spawn(handle_scenario_events(
-                        scenario_event_receiver,
-                        receiver,
-                        queue.clone(),
-                    ));
+                let mut scenarios =
+                    scenario::load_scenarios(Path::new(&config.scenario));
 
                 let mut results = Vec::new();
 
                 while let Some(candidate) = scenarios.next().await {
                     match candidate {
                         Ok(scenario) => {
-                            let mut progress_state = String::new();
+                            let (event_manager, scenario_event_receiver) =
+                                ScenarioEventManager::new(500);
 
-                            let title = scenario.clone().title;
+                            tokio::spawn(termui::scenario_ui(
+                                scenario_event_receiver,
+                            ));
 
-                            let n = count_scenario_items(&scenario); //scenario.scenarios.len() as u64;
-
-                            let pb = m.add(ProgressBar::new(n));
-                            pb.enable_steady_tick(Duration::from_millis(80));
-                            pb.set_style(
-                                ProgressStyle::with_template(
-                                    "{spinner:.green} {pos:>2}/{len:2} {msg}",
-                                )
-                                .unwrap()
-                                .tick_strings(
-                                    &[
-                                        "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧",
-                                        "⠇", "⠏",
-                                    ],
-                                ),
+                            let event = Arc::new(
+                                event_manager.new_event().await.unwrap(),
                             );
-                            pb.set_message(title.clone());
+                            let _ = event.on_started(scenario.clone());
 
-                            let key = title.clone();
-                            let msg = format!("{} ", key.clone());
+                            let mut item_results = Vec::new();
 
-                            for item in scenario.scenarios.into_iter() {
-                                let items = build_item_list(item);
+                            let cloned_scenario = scenario.clone();
 
-                                for i in items {
-                                    let report = execute_item(
-                                        proxy_nic_config.proxy_address(),
-                                        config_tx.clone(),
-                                        i,
-                                        app_state.clone(),
-                                        event_manager.clone(),
-                                    )
-                                    .await;
-
-                                    let mut events = queue.lock().unwrap();
-                                    let event = events.pop();
-
-                                    let metrics = match event {
-                                        Some(e) => {
-                                            match report.metrics.clone() {
-                                                Some(m) => {
-                                                    Some(ReportItemMetrics {
-                                                        dns: e.dns_timing,
-                                                        protocol: m.protocol,
-                                                        ttfb: m.ttfb,
-                                                        total_time: m
-                                                            .total_time,
-                                                        faults: map_faults(
-                                                            &e.faults,
-                                                        ),
-                                                    })
-                                                }
-                                                None => None,
-                                            }
-                                        }
-                                        None => None,
-                                    };
-
-                                    match &report.expect {
-                                        Some(expect) => {
-                                            match expect {
-                                                ReportItemExpectation::Http { wanted: _, got } => {
-                                                    match got {
-                                                        Some(status) => {
-                                                            if status.decision == ReportItemExpectationDecision::Failure {
-                                                                progress_state = format!("{}{}", progress_state, "▮".to_string().red());
-                                                            } else if status.decision == ReportItemExpectationDecision::Success {
-                                                                progress_state = format!("{}{}", progress_state, "▮".to_string().green());
-                                                            } else {
-                                                                progress_state = format!("{}{}", progress_state, "▮".to_string().grey0());
-                                                            }
-                                                        },
-                                                        None => progress_state = format!("{}{}", progress_state, "▮".to_string().grey0())
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        None => progress_state = format!("{} {}", progress_state, "▮".to_string().grey0())
-                                    }
-
-                                    results.push(ReportItem::new(
-                                        title.clone(),
-                                        metrics,
-                                        report,
-                                    ));
-
-                                    pb.inc(1);
-                                    pb.set_message(format!(
-                                        "{} {}",
-                                        msg.clone(),
-                                        progress_state
-                                    ));
-                                }
+                            for i in scenario.items.into_iter() {
+                                let result = execute_item(
+                                    i,
+                                    event.clone(),
+                                    addr_id_map.clone(),
+                                    id_events_map.clone(),
+                                    task_manager.clone(),
+                                )
+                                .await?;
+                                item_results.push(result);
                             }
 
-                            pb.finish();
+                            results.push(ScenarioResult {
+                                scenario: cloned_scenario,
+                                results: item_results,
+                            });
+
+                            let _ = event.on_terminated();
                         }
                         Err(e) => error!("Failed to load scenario: {:?}", e),
                     }
                 }
 
-                let final_report =
-                    Report { plugins: Vec::new(), items: results };
+                let final_results =
+                    ScenariosResults { start, end: Utc::now(), results };
 
-                final_report.save(&config.result).unwrap();
-
-                let report_output = build_report_output(&final_report).unwrap();
+                let final_report = report::builder::to_report(&final_results);
 
                 println!("\n");
                 println!(
@@ -537,33 +435,59 @@ async fn main() -> Result<()> {
 
                 println!(
                     "Tests run: {}, Tests failed: {}",
-                    report_output.summary.total_tests.to_string().cyan(),
-                    report_output.summary.total_failures.to_string().red()
+                    final_report
+                        .scenario_summaries
+                        .iter()
+                        .map(|s| s.item_count)
+                        .sum::<usize>()
+                        .to_string()
+                        .cyan(),
+                    final_report
+                        .scenario_summaries
+                        .iter()
+                        .map(|s| s
+                            .item_summaries
+                            .iter()
+                            .map(|i| i.failure_count)
+                            .sum::<usize>())
+                        .sum::<usize>()
+                        .to_string()
+                        .light_red(),
                 );
-                println!("Total time: {:.1}s", start.elapsed().as_secs_f64());
+                println!(
+                    "Total time: {:.1}s",
+                    start_instant.elapsed().as_secs_f64()
+                );
+                println!("");
 
-                match get_output_format_result(config.report.as_str()) {
-                    Ok(fmt) => match pretty_report(&report_output, &fmt) {
-                        Ok(computed_report) => {
-                            let path = &config.report;
-                            let mut file = File::create(path).unwrap();
-                            let _ = write!(file, "{}", computed_report);
-                            println!(
-                                "\nReport saved as {}",
-                                config.report.clone().yellow()
-                            );
+                final_results.save(&config.result)?;
+                final_report.save(&config.report)?;
+            }
+            ScenarioCommands::Generate(config) => {
+                if let Some(spec_file) = &config.spec_file {
+                    match openapi::build_from_file(spec_file, None) {
+                        Ok(scenarios) => {
+                            openapi::save(&scenarios, &config.scenario)?
                         }
                         Err(e) => {
-                            tracing::error!("Failed to generated report: {}", e)
+                            tracing::error!("Failed to generate scenario {}", e)
                         }
-                    },
-                    Err(_) => tracing::error!("Unsupported report format"),
+                    }
+                } else if let Some(spec_url) = &config.spec_url {
+                    match openapi::build_from_url(spec_url, None).await {
+                        Ok(scenarios) => {
+                            openapi::save(&scenarios, &config.scenario)?
+                        }
+                        Err(e) => {
+                            tracing::error!("Failed to generate scenario {}", e)
+                        }
+                    }
                 }
             }
         },
     };
 
-    match proxy_shutdown_tx.send(()) {
+    match proxy_shutdown_tx.send(()).await {
         Ok(_) => tracing::debug!("Shutdown notified."),
         Err(e) => tracing::warn!("Failed to notify shutdown {}", e),
     };
@@ -584,15 +508,6 @@ async fn main() -> Result<()> {
     shutdown_tracer(tracer_provider, meter_provider);
 
     Ok(())
-}
-
-fn map_faults(
-    original_faults: &HashMap<Uuid, ScenarioItemLifecycleFaults>,
-) -> Vec<ReportItemMetricsFaults> {
-    original_faults
-        .iter()
-        .map(|(_key, value)| value.to_report_metrics_faults())
-        .collect()
 }
 
 #[cfg(all(target_os = "linux", feature = "stealth"))]

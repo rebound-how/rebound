@@ -37,7 +37,7 @@ impl ProxyState {
         }
     }
 
-    /// Update the faults
+    /// Update the fault injectors
     pub async fn set_injectors(&self, new_faults: Vec<Box<dyn FaultInjector>>) {
         let grpc_plugins = self.rpc_manager.read().await;
 
@@ -49,6 +49,10 @@ impl ProxyState {
         let mut new_plugins = CompositePlugin::empty();
         new_plugins.injectors = Arc::new(injectors);
 
+        tracing::debug!(
+            "Applying proxy fault injectors: {:?}",
+            new_plugins.injectors
+        );
         self.faults_plugin.store(Arc::new(new_plugins));
     }
 

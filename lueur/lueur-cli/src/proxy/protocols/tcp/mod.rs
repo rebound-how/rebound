@@ -5,7 +5,6 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use init::resolve_remote_host;
-use tokio::sync::broadcast;
 use tokio::sync::mpsc;
 use tokio::time::Instant;
 
@@ -20,7 +19,7 @@ pub mod stream;
 pub async fn run_tcp_proxy(
     proxied_proto: ProxyMap,
     state: Arc<ProxyState>,
-    mut shutdown_rx: broadcast::Receiver<()>,
+    shutdown_rx: kanal::AsyncReceiver<()>,
     readiness_tx: mpsc::Sender<()>,
     task_manager: Arc<TaskManager>,
 ) -> Result<(), ProxyError> {
@@ -68,7 +67,7 @@ pub async fn run_tcp_proxy(
                             .await
                             .unwrap();
 
-                        let _ = event.on_started(host);
+                        let _ = event.on_started(host, addr.to_string());
 
                         let start = Instant::now();
                         let remote_addr = resolve_remote_host(remote_host.clone()).await.unwrap();
@@ -126,7 +125,11 @@ pub async fn run_tcp_proxy(
         }
     }
 
-    tracing::debug!("ebpf proxy is now finished, bye bye");
+    tracing::debug!(
+        "TCP proxy {}:{} is now finished, bye bye",
+        proxied_proto.proxy.proxy_ip,
+        proxied_proto.proxy.proxy_port
+    );
 
     Ok(())
 }

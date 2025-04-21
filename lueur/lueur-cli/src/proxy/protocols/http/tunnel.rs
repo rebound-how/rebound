@@ -28,6 +28,7 @@ use crate::types::ConnectRequest;
 /// injecting any configured network faults, and applying plugin middleware.
 #[tracing::instrument]
 pub async fn handle_connect(
+    source_addr: SocketAddr,
     req: AxumRequest<Body>,
     app_state: Arc<ProxyState>,
     upstream: Url,
@@ -60,7 +61,8 @@ pub async fn handle_connect(
             Ok(upgraded) => match TcpStream::connect(addr).await {
                 Ok(raw_server_stream) => {
                     let start = Instant::now();
-                    let _ = event.on_started(upstream_str);
+                    let _ =
+                        event.on_started(upstream_str, source_addr.to_string());
                     let _ =
                         event.on_resolved(host.clone(), dns_resolution_time);
 

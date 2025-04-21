@@ -222,6 +222,7 @@ impl ProxyPlugin for CompositePlugin {
         let mut modified_server_stream = server_stream;
 
         for injector in self.injectors.iter() {
+            tracing::warn!("injector {:?} {}", injector, injector.is_enabled());
             if injector.is_enabled() {
                 let mut client = modified_client_stream;
                 let mut server = modified_server_stream;

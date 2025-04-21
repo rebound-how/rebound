@@ -16,6 +16,7 @@ use crate::cli::PacketLossOptions;
 use crate::cli::RunCommandOptions;
 use crate::types::BandwidthUnit;
 use crate::types::Direction;
+use crate::types::FaultConfiguration;
 use crate::types::LatencyDistribution;
 use crate::types::ProtocolType;
 use crate::types::StreamSide;
@@ -63,6 +64,7 @@ pub struct JitterSettings {
     pub kind: FaultKind,
     pub enabled: bool,
     pub direction: Direction,
+    pub side: StreamSide,
     pub amplitude: f64, // in milliseconds
     pub frequency: f64, // in Hertz
 }
@@ -331,6 +333,7 @@ impl From<&JitterOptions> for JitterSettings {
             direction: cli.jitter_direction.clone(),
             amplitude: cli.jitter_amplitude,
             frequency: cli.jitter_frequency,
+            side: cli.jitter_side.clone(),
         }
     }
 }

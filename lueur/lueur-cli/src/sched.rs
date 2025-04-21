@@ -13,6 +13,7 @@ use crate::errors::SchedulingError;
 use crate::fault::FaultInjector;
 use crate::plugin::load_injector;
 use crate::proxy::ProxyState;
+use crate::types::FaultConfiguration;
 use crate::types::FaultPeriod;
 use crate::types::FaultPeriodSpec;
 use crate::types::TimeSpec; // from the 'parse_duration' crate
@@ -93,6 +94,19 @@ fn parse_periods(s: &str) -> Result<Vec<FaultPeriodSpec>, SchedulingError> {
     }
 
     Ok(specs)
+}
+
+pub fn parse_period(period: &str) -> Result<Option<FaultPeriodSpec>> {
+    match parse_periods(period) {
+        Ok(periods) => {
+            if periods.is_empty() {
+                Ok(None)
+            } else {
+                Ok(Some(periods[0].clone()))
+            }
+        }
+        Err(_) => Ok(None),
+    }
 }
 
 /// Convert the parse result (FaultPeriodSpec) into final (FaultPeriod).
@@ -405,4 +419,46 @@ pub fn build_schedule_events(
     }
 
     Ok(events)
+}
+
+pub fn build_schedule_events_from_scenario_item(
+    faults: &Vec<FaultConfiguration>,
+    starting_point: Instant,
+    total_duration: Duration,
+) -> Vec<FaultPeriodEvent> {
+    let mut events: Vec<FaultPeriodEvent> = Vec::<FaultPeriodEvent>::new();
+
+    let total_run = Some(total_duration);
+
+    for f in faults {
+        let p = f.get_period();
+
+        let mut periods = Vec::new();
+
+        if let Some(period) = p {
+            // these expect() shouldn't happen because at this point, we have
+            // already parsed the period spec
+            periods.extend(
+                resolve_periods(&[period.clone()], total_run)
+                    .expect("failed to resolve period"),
+            );
+        } else {
+            periods.push(FaultPeriod {
+                start: Duration::from_millis(0),
+                duration: None,
+            });
+        }
+
+        let fault_config = f.build().expect("invalid fault config");
+        let fault_events = build_events_for_fault(
+            fault_config.kind(),
+            fault_config,
+            periods.as_ref(),
+            starting_point,
+        );
+
+        events.extend(fault_events);
+    }
+
+    events
 }

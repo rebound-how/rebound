@@ -245,6 +245,11 @@ impl FaultInjector for LatencyInjector {
         Box<dyn Bidirectional + 'static>,
         (ProxyError, Box<dyn Bidirectional + 'static>),
     > {
+        tracing::debug!(
+            "Stream side {} - Configured side {}",
+            side,
+            self.settings.side
+        );
         if side != self.settings.side {
             return Ok(stream);
         }
@@ -414,6 +419,8 @@ pub struct LatencyStreamRead<S> {
     event: Option<Box<dyn ProxyTaskEvent>>,
     side: StreamSide,
     read_sleep: Option<Pin<Box<Sleep>>>,
+    #[pin]
+    delay: Duration,
     applied_count: usize,
 }
 
@@ -442,6 +449,7 @@ where
             event: event.clone(),
             side,
             read_sleep: None,
+            delay: Duration::new(0, 0),
             applied_count: 0,
         })
     }
@@ -469,15 +477,7 @@ impl<S: AsyncRead + Unpin + std::fmt::Debug> AsyncRead
         let mut rng = this.rng;
         if this.read_sleep.is_none() {
             let delay = injector.get_delay(&mut rng);
-            let event = this.event;
-            if event.is_some() {
-                let _ =
-                    event.clone().unwrap().on_applied(FaultEvent::Latency {
-                        direction: Direction::Ingress,
-                        side: this.side.clone(),
-                        delay: Some(delay),
-                    });
-            }
+            *this.delay = delay;
             this.read_sleep.replace(Box::pin(sleep(delay)));
         }
 
@@ -486,6 +486,16 @@ impl<S: AsyncRead + Unpin + std::fmt::Debug> AsyncRead
                 Poll::Ready(_) => {
                     // we are done with the delay
                     this.read_sleep.take();
+                    let event = this.event;
+                    if event.is_some() {
+                        let _ = event.clone().unwrap().on_applied(
+                            FaultEvent::Latency {
+                                direction: Direction::Ingress,
+                                side: this.side.clone(),
+                                delay: Some(*this.delay),
+                            },
+                        );
+                    }
                     *this.applied_count += 1;
                     return this.stream.poll_read(cx, buf);
                 }

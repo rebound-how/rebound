@@ -16,7 +16,7 @@ use crate::types::ProxyAddrConfig;
 pub async fn initialize_http_proxy(
     proxy_nic_config: &ProxyAddrConfig,
     state: Arc<ProxyState>,
-    shutdown_rx: broadcast::Receiver<()>,
+    shutdown_rx: kanal::AsyncReceiver<()>,
     task_manager: Arc<TaskManager>,
 ) -> Result<task::JoinHandle<Result<(), ProxyError>>> {
     let proxy_address = proxy_nic_config.proxy_address();

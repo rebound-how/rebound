@@ -1,3 +1,4 @@
+use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -17,7 +18,7 @@ use super::ProxyState;
 use crate::errors::ProxyError;
 use crate::event::ProxyTaskEvent;
 use crate::plugin::ProxyPlugin;
-use crate::reporting::DnsTiming;
+use crate::report::types::DnsTiming;
 use crate::resolver::TimingResolver;
 
 /// Converts Axum's HeaderMap to Reqwest's HeaderMap.
@@ -44,6 +45,7 @@ fn convert_headers_to_axum(
 }
 
 pub async fn handle_request(
+    source_addr: SocketAddr,
     req: AxumRequest<Body>,
     state: Arc<ProxyState>,
     upstream: Url,
@@ -51,7 +53,7 @@ pub async fn handle_request(
     event: Box<dyn ProxyTaskEvent>,
 ) -> Result<AxumResponse<Body>, ProxyError> {
     let forward = Forward::new(state.clone());
-    forward.execute(req, upstream, passthrough, event).await
+    forward.execute(source_addr, req, upstream, passthrough, event).await
 }
 
 /// Struct responsible for forwarding requests.
@@ -75,13 +77,14 @@ impl Forward {
     #[tracing::instrument]
     pub async fn execute(
         &self,
+        source_addr: SocketAddr,
         request: AxumRequest<Body>,
         upstream: Url,
         passthrough: bool,
         event: Box<dyn ProxyTaskEvent>,
     ) -> Result<AxumResponse<Body>, ProxyError> {
         let start = Instant::now();
-        let _ = event.on_started(upstream.to_string());
+        let _ = event.on_started(upstream.to_string(), source_addr.to_string());
 
         let method = request.method().clone();
         let headers = request.headers().clone();
