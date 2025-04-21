@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use anyhow::Result;
-use tokio::sync::broadcast;
 use tokio::task;
 
 use crate::errors::ProxyError;
@@ -13,7 +12,7 @@ use crate::types::EbpfProxyAddrConfig;
 pub async fn initialize_ebpf_proxy(
     ebpf_proxy_config: &EbpfProxyAddrConfig,
     state: Arc<ProxyState>,
-    shutdown_rx: broadcast::Receiver<()>,
+    shutdown_rx: kanal::AsyncReceiver<()>,
     task_manager: Arc<TaskManager>,
 ) -> Result<task::JoinHandle<Result<(), ProxyError>>> {
     let proxy_address = ebpf_proxy_config.proxy_address();

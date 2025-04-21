@@ -46,6 +46,7 @@ use cli::RunCommandOptions;
 use cli::ScenarioCommands;
 use colorful::Colorful;
 use config::ProxyConfig;
+use errors::ProxyError;
 use event::TaskManager;
 use fault::FaultInjector;
 use logging::init_meter_provider;
@@ -133,7 +134,7 @@ async fn main() -> Result<()> {
         any(feature = "stealth", feature = "stealth-auto-build")
     ))]
     let (ebpf_proxy_shutdown_tx, ebpf_proxy_shutdown_rx) =
-        broadcast::channel::<()>(1);
+        kanal::bounded_async(1);
 
     match &cli.command {
         Commands::Run { options } => {
@@ -221,7 +222,7 @@ async fn main() -> Result<()> {
                                 _ebpf_proxy_guard = initialize_ebpf_proxy(
                                     &ebpf_proxy_config,
                                     proxy_state.clone(),
-                                    ebpf_proxy_shutdown_rx,
+                                    ebpf_proxy_shutdown_rx.clone(),
                                     task_manager.clone(),
                                 )
                                 .await
@@ -497,7 +498,7 @@ async fn main() -> Result<()> {
         any(feature = "stealth", feature = "stealth-auto-build")
     ))]
     {
-        match ebpf_proxy_shutdown_tx.send(()) {
+        match ebpf_proxy_shutdown_tx.send(()).await {
             Ok(_) => tracing::debug!("Shutdown of ebpf notified."),
             Err(e) => tracing::warn!("Failed to notify ebpf shutdown {}", e),
         };

@@ -3,7 +3,6 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 
 use anyhow::Result;
-use tokio::sync::broadcast;
 use tokio::task;
 
 use crate::cli::ProxyAwareCommandCommon;

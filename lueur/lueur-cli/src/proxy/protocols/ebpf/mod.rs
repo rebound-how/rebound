@@ -31,7 +31,7 @@ pub mod init;
 pub async fn run_ebpf_proxy(
     ebpf_proxy_address: String,
     state: Arc<ProxyState>,
-    mut shutdown_rx: broadcast::Receiver<()>,
+    shutdown_rx: kanal::AsyncReceiver<()>,
     readiness_tx: Sender<()>,
     task_manager: Arc<TaskManager>,
 ) -> Result<(), ProxyError> {
@@ -76,7 +76,7 @@ pub async fn run_ebpf_proxy(
                             .await
                             .unwrap();
 
-                        let _ = event.on_started(addr.to_string());
+                        let _ = event.on_started(addr.to_string(), addr.to_string());
 
                         // we already have an IP, so let's not pretend we
                         // did anything
