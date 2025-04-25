@@ -7,6 +7,7 @@ use serde::Serialize;
 
 use super::render;
 use crate::scenario::types::ScenarioItemCall;
+use crate::scenario::types::ScenarioItemCallOpenAPIMeta;
 use crate::scenario::types::ScenarioItemCallStrategy;
 use crate::scenario::types::ScenarioItemExpectation;
 use crate::types::FaultConfiguration;
@@ -47,6 +48,7 @@ pub struct ItemSummary {
     pub faults: Vec<FaultConfiguration>,
     pub strategy_mode: ScenarioItemCallStrategy,
     pub expectation: Option<ScenarioItemExpectation>,
+    pub meta: Option<ScenarioItemCallOpenAPIMeta>,
     pub run_overview: Vec<RunOverview>,
     pub slo_impact_table: Vec<SloImpactRow>,
     pub failure_count: usize,
@@ -114,11 +116,10 @@ pub struct SloImpactRow {
 }
 
 impl Report {
-    pub fn save(&self, path: &str) -> Result<()> {
+    pub fn save(&self, path: &str) -> Result<String> {
         let md = render::render(&self, ReportFormat::Markdown);
-        fs::write(path, md)?;
-
-        Ok(())
+        fs::write(path, md.clone())?;
+        Ok(md)
     }
 }
 

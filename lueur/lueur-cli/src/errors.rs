@@ -169,3 +169,9 @@ pub enum SchedulingError {
     #[error("Invalid time fraction ('{0}') in time spec.")]
     InvalidFraction(String),
 }
+
+#[derive(Error, Debug)]
+pub enum SuggestionError {
+    #[error("Invalid diff hunk: {0}")]
+    InvalidHunk(String),
+}

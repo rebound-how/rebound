@@ -204,6 +204,7 @@ fn build_item_summary(item: &ScenarioItem, result: &ItemResult) -> ItemSummary {
         call: item.call.clone(),
         faults: item.context.faults.clone(),
         expectation: item.expect.clone(),
+        meta: item.call.meta.clone(),
         strategy_mode,
         run_overview,
         slo_impact_table,

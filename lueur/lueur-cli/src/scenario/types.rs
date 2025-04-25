@@ -37,6 +37,13 @@ pub struct ScenarioItemCall {
     pub body: Option<String>, // Optional request body
     #[serde(skip_serializing_if = "Option::is_none")]
     pub timeout: Option<u64>, // Optional timeout in ms to fail the request
+    pub meta: Option<ScenarioItemCallOpenAPIMeta>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ScenarioItemCallOpenAPIMeta {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub operation_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

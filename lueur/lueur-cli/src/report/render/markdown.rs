@@ -44,6 +44,11 @@ pub fn render(report: &Report) -> String {
             md.push_str("**Call**:\n\n");
 
             let r = item.call.clone();
+            if let Some(meta) = &item.call.meta {
+                if let Some(op) = &meta.operation_id {
+                    md.push_str(&format!("- Operation ID: `{}`\n", op));
+                }
+            }
             md.push_str(&format!("- Method: `{}`\n", r.method));
             md.push_str(&format!(
                 "- Timeout: {}\n",

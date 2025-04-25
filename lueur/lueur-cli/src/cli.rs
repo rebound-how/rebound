@@ -866,6 +866,9 @@ pub struct DemoConfig {
     pub port: u16,
 }
 
+#[derive(Args, Clone, Debug, Serialize, Deserialize)]
+pub struct AICommandOptions {}
+
 /// Validator for positive f64 values
 fn validate_positive_f64(val: &str) -> Result<f64, String> {
     match val.parse::<f64>() {

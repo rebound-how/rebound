@@ -4,6 +4,8 @@
 // https://github.com/rust-lang/rust/issues/27709
 #![feature(ip)]
 
+#[cfg(feature = "ai")]
+mod ai;
 mod cli;
 mod config;
 mod demo;
@@ -462,7 +464,21 @@ async fn main() -> Result<()> {
                 println!("");
 
                 final_results.save(&config.result)?;
-                final_report.save(&config.report)?;
+                let md = final_report.save(&config.report)?;
+
+                #[cfg(feature = "ai")]
+                ai::source::index(
+                    "/home/sylvain/dev/misc/dummysvc",
+                    "python",
+                    "/tmp/cache.db",
+                )
+                .await?;
+                ai::insight::analyze(&final_report).await?;
+                ai::suggestion::make(
+                    &final_report,
+                    "/home/sylvain/dev/misc/dummysvc",
+                )
+                .await?;
             }
             ScenarioCommands::Generate(config) => {
                 if let Some(spec_file) = &config.spec_file {

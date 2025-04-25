@@ -34,6 +34,8 @@ items:
   - call:
       method: {{ method }}
       url: "{{ url }}"
+      meta:
+        operation_id: {{ opid }}
     context:
       upstreams: [ "{{ url }}" ]
       faults:
@@ -50,7 +52,11 @@ const T_GRADUAL_LATENCY: &str = r#"---
 title: "Stair-step latency growth (5 x 100 ms)"
 description: "Latency increases 100 ms per call; emulate slow congestion build-up or head-of-line blocking."
 items:
-  - call: { method: {{ method }}, url: "{{ url }}" }
+  - call:
+      method: {{ method }}
+      url: "{{ url }}"
+      meta:
+        operation_id: {{ opid }}
     context:
       upstreams: [ "{{ url }}" ]
       faults:
@@ -72,7 +78,11 @@ const T_PERIODIC_PULSES: &str = r#"---
 title: "Periodic 150-250 ms latency pulses during load"
 description: "Three latency bursts at 10-40-70% of a 10s window; good for P95 drift tracking."
 items:
-  - call: { method: {{ method }}, url: "{{ url }}" }
+  - call:
+      method: {{ method }}
+      url: "{{ url }}"
+      meta:
+        operation_id: {{ opid }}
     context:
       upstreams: [ "{{ url }}" ]
       faults:
@@ -90,7 +100,12 @@ const T_PACKET_LOSS: &str = r#"---
 title: "5% packet loss for 4s"
 description: "Simulates flaky Wi-Fi or cellular interference."
 items:
-  - call: { method: {{ method }}, url: "{{ url }}" }
+  - call:
+      method: {{ method }}
+      url: "{{ url }}"
+      timeout: 500
+      meta:
+        operation_id: {{ opid }}
     context:
       upstreams: [ "{{ url }}" ]
       faults:
@@ -105,7 +120,11 @@ const T_JITTER: &str = r#"---
 title: "High jitter (±80ms @ 8Hz)"
 description: "Emulates bursty uplink, measuring buffering robustness."
 items:
-  - call: { method: {{ method }}, url: "{{ url }}" }
+  - call:
+      method: {{ method }}
+      url: "{{ url }}"
+      meta:
+        operation_id: {{ opid }}
     context:
       upstreams: [ "{{ url }}" ]
       faults:
@@ -122,7 +141,11 @@ const T_BANDWIDTH: &str = r#"---
 title: "512 KBps bandwidth cap"
 description: "Models throttled 3G link; validates handling of large payloads."
 items:
-  - call: { method: {{ method }}, url: "{{ url }}" }
+  - call:
+      method: {{ method }}
+      url: "{{ url }}"
+      meta:
+        operation_id: {{ opid }}
     context:
       upstreams: [ "{{ url }}" ]
       faults:
@@ -136,7 +159,11 @@ const T_HTTP_500: &str = r#"---
 title: "Random 500 errors (5% of calls)"
 description: "Backend flakiness under load; ensures retry / circuit-breaker logic."
 items:
-  - call: { method: {{ method }}, url: "{{ url }}" }
+  - call:
+      method: {{ method }}
+      url: "{{ url }}"
+      meta:
+        operation_id: {{ opid }}
     context:
       upstreams: [ "{{ url }}" ]
       faults:
@@ -150,7 +177,12 @@ const T_BLACKHOLE: &str = r#"---
 title: "Full black-hole for 1 s"
 description: "Simulates router drop / Pod eviction causing 100% packet loss for a second."
 items:
-  - call: { method: {{ method }}, url: "{{ url }}", timeout: 200 }
+  - call:
+      method: {{ method }}
+      url: "{{ url }}"
+      timeout: 500
+      meta:
+        operation_id: {{ opid }}
     context:
       upstreams: [ "{{ url }}" ]
       faults:
@@ -218,21 +250,26 @@ pub fn generate_scenarios(
         .get(0)
         .map(|s| s.url.clone())
         .unwrap_or_else(|| "http://localhost".into());
+
     for (p, item) in &spec.paths.paths {
         if let openapiv3::ReferenceOr::Item(it) = item {
-            if it.get.is_some() {
-                let url = format!("{}{}", base, p);
-                let ctx = context! { method => "GET", url => url };
-                for n in TEMPLATE_NAMES {
-                    tracing::debug!(
-                        "Generate scenario {} with context {}",
-                        n,
-                        ctx
-                    );
-                    let rendered = env.get_template(n)?.render(ctx.clone())?;
-                    scenarios
-                        .push(serde_yaml::from_str::<Scenario>(&rendered)?);
+            match &it.get {
+                Some(op) => {
+                    let url = format!("{}{}", base, p);
+                    let ctx = context! { method => "GET", url => url, opid => op.operation_id };
+                    for n in TEMPLATE_NAMES {
+                        tracing::debug!(
+                            "Generate scenario {} with context {}",
+                            n,
+                            ctx
+                        );
+                        let rendered =
+                            env.get_template(n)?.render(ctx.clone())?;
+                        scenarios
+                            .push(serde_yaml::from_str::<Scenario>(&rendered)?);
+                    }
                 }
+                None => {}
             }
         }
     }
