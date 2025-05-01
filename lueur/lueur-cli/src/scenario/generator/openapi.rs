@@ -351,7 +351,9 @@ pub fn save(
     scenarios: &Vec<Scenario>,
     path: &str,
     split: bool,
-) -> Result<(), ScenarioError> {
+) -> Result<usize, ScenarioError> {
+    let mut count = 0usize;
+
     let p = Path::new(path);
     if split && !p.is_dir() {
         return Err(ScenarioError::ExpectedDirectoryError());
@@ -371,15 +373,18 @@ pub fn save(
                 let decoded =
                     percent_decode_str(url_path.path().trim_start_matches('/'))
                         .decode_utf8_lossy();
-                let key = decoded
-                    .replace('/', "_");
+                let key = decoded.replace('/', "_");
 
                 let fpath = format!("{}.yaml", key);
 
-                save_batch(&batch, &format!("{}", p.join(fpath).as_os_str().display()))?;
+                save_batch(
+                    &batch,
+                    &format!("{}", p.join(fpath).as_os_str().display()),
+                )?;
 
                 batch.clear();
                 current_url = url;
+                count += 1;
             } else if current_url.is_empty() {
                 current_url = url;
             }
@@ -388,7 +393,7 @@ pub fn save(
         }
     }
 
-    Ok(())
+    Ok(count)
 }
 
 fn save_batch(

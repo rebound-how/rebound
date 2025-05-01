@@ -48,6 +48,7 @@ use cli::Commands;
 use cli::DemoCommands;
 use cli::RunCommandOptions;
 use cli::ScenarioCommands;
+use colorful::Color;
 use colorful::Colorful;
 use config::ProxyConfig;
 use errors::ProxyError;
@@ -357,7 +358,7 @@ async fn main() -> Result<()> {
                 let _ = demo::run((*demo_config).clone()).await;
             }
         },
-        Commands::Scenario { scenario, common } => match scenario {
+        Commands::Scenario { scenario, .. } => match scenario {
             ScenarioCommands::Run(config) => {
                 let start_instant = Instant::now();
                 let start = Utc::now();
@@ -473,22 +474,36 @@ async fn main() -> Result<()> {
             ScenarioCommands::Generate(config) => {
                 if let Some(spec_file) = &config.spec_file {
                     match openapi::build_from_file(spec_file, None) {
-                        Ok(scenarios) => openapi::save(
-                            &scenarios,
-                            &config.scenario,
-                            config.split_files,
-                        )?,
+                        Ok(scenarios) => {
+                            let count = openapi::save(
+                                &scenarios,
+                                &config.scenario,
+                                config.split_files,
+                            )?;
+                            println!(
+                                "Generated {} reliability scenarios across {} endpoints!",
+                                format!("{}", scenarios.len()).color(Color::Turquoise2),
+                                format!("{}", count).color(Color::IndianRed1b)
+                            );
+                        }
                         Err(e) => {
                             tracing::error!("Failed to generate scenario {}", e)
                         }
                     }
                 } else if let Some(spec_url) = &config.spec_url {
                     match openapi::build_from_url(spec_url, None).await {
-                        Ok(scenarios) => openapi::save(
-                            &scenarios,
-                            &config.scenario,
-                            config.split_files,
-                        )?,
+                        Ok(scenarios) => {
+                            let count = openapi::save(
+                                &scenarios,
+                                &config.scenario,
+                                config.split_files,
+                            )?;
+                            println!(
+                                "Generated {} reliability scenarios across {} endpoints!",
+                                format!("{}", scenarios.len()).color(Color::Turquoise2),
+                                format!("{}", count).color(Color::IndianRed1b)
+                            );
+                        }
                         Err(e) => {
                             tracing::error!("Failed to generate scenario {}", e)
                         }
@@ -506,8 +521,6 @@ async fn main() -> Result<()> {
 
                 let metas = ai::meta::get_metas(&final_report);
 
-                println!("metas: {:?}", metas);
-
                 ai::source::index(
                     &advice_config.repo,
                     "python",
@@ -516,11 +529,7 @@ async fn main() -> Result<()> {
                 )
                 .await?;
 
-                println!("indexed");
-
                 ai::insight::analyze(&final_report).await?;
-
-                println!("analyzed");
 
                 ai::suggestion::make(
                     &final_report,
@@ -528,8 +537,6 @@ async fn main() -> Result<()> {
                     &advice_config.repo,
                 )
                 .await?;
-
-                println!("suggested");
             }
         },
     };
