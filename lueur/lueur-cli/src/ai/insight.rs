@@ -1,6 +1,7 @@
 use std::fmt;
 
 use anyhow::Result;
+use swiftide::indexing::EmbeddedField;
 use swiftide::indexing::LanguageModelWithBackOff;
 use swiftide::integrations::qdrant::Qdrant;
 use swiftide::integrations::{self};
@@ -8,6 +9,7 @@ use swiftide::query::answers;
 use swiftide::query::query_transformers;
 use swiftide::query::{self};
 
+use super::CODE_COLLECTION;
 use crate::report::types::Report;
 
 pub async fn analyze(report: &Report) -> Result<ReportReviews> {
@@ -21,7 +23,9 @@ pub async fn analyze(report: &Report) -> Result<ReportReviews> {
     let qdrant = Qdrant::builder()
         .batch_size(50)
         .vector_size(3072)
-        .collection_name("swiftide-examples")
+        .with_vector(EmbeddedField::Combined)
+        .with_sparse_vector(EmbeddedField::Combined)
+        .collection_name(CODE_COLLECTION)
         .build()?;
 
     let pipeline = query::Pipeline::default()

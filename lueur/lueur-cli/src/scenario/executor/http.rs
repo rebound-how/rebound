@@ -27,6 +27,7 @@ use crate::errors::ScenarioError;
 use crate::scenario::event::ScenarioItemLifecycle;
 use crate::scenario::types::ItemMetrics;
 use crate::scenario::types::ItemProtocol;
+use crate::scenario::types::ScenarioGlobalConfig;
 use crate::scenario::types::ScenarioItemCall;
 
 // Define a custom stream wrapper to measure TTFB
@@ -69,6 +70,7 @@ where
 
 pub async fn execute_request(
     call: ScenarioItemCall,
+    global_config: Option<ScenarioGlobalConfig>,
     proxy_address: String,
     addr_id_map: Arc<scc::HashMap<String, Uuid>>,
     id_events_map: Arc<scc::HashMap<Uuid, ScenarioItemLifecycle>>,
@@ -85,7 +87,7 @@ pub async fn execute_request(
             .map_err(|e| ScenarioError::HTTPError(e.to_string()))?,
     );
 
-    let reqwest_request = build_request(&client, &call)?
+    let reqwest_request = build_request(&client, &call, global_config)?
         .build()
         .map_err(|e| ScenarioError::HTTPError(e.to_string()))?;
 
@@ -189,12 +191,34 @@ pub async fn execute_request(
 fn build_request(
     client: &Arc<Client>,
     call: &ScenarioItemCall,
+    global_config: Option<ScenarioGlobalConfig>,
 ) -> Result<RequestBuilder, ScenarioError> {
+    let mut url = call.url.clone();
+
+    if let Some(gc) = global_config.clone() {
+        if let Some(http) = gc.http {
+            if let Some(paths) = http.paths {
+                for (key, value) in paths.segments.iter() {
+                    let segment = &format!("{{{}}}", key);
+                    url = url.replace(segment, value);
+                }
+            }
+        }
+    }
+
     let mut req_builder = client.request(
         reqwest::Method::from_bytes(call.method.as_bytes())
             .map_err(|_| ScenarioError::HTTPMethodError(call.method.clone()))?,
-        &call.url,
+        &url,
     );
+
+    if let Some(gc) = global_config {
+        if let Some(http) = gc.http {
+            for (key, value) in http.headers.iter() {
+                req_builder = req_builder.header(key, value);
+            }
+        }
+    }
 
     if let Some(headers) = &call.headers {
         for (key, value) in headers.iter() {

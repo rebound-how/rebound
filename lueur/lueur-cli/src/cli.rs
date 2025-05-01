@@ -203,19 +203,25 @@ pub struct StealthCommandCommon {
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    /// Run the lueur proxy and apply network faults to traffic
+    /// Resilience proxy
     Run {
         #[command(flatten)]
         options: Box<RunCommandOptions>,
     },
 
-    /// Execute a scenario
+    /// Resilience automation
     Scenario {
         #[command(subcommand)]
         scenario: ScenarioCommands,
 
         #[command(flatten)]
         common: ProxyAwareCommandCommon,
+    },
+
+    /// Resilience Agentic Buddy
+    Agent {
+        #[command(subcommand)]
+        agent: AgentCommands,
     },
 
     /// Run a simple demo server for learning purpose
@@ -777,6 +783,13 @@ pub enum ScenarioCommands {
     Generate(ScenarioGenerateConfig),
 }
 
+/// Subcommands for the agent
+#[derive(Subcommand, Debug)]
+pub enum AgentCommands {
+    /// Offer suggestions from a scenario's report
+    Advise(AgentAdviceConfig),
+}
+
 /// Subcommands for executing a demo server
 #[derive(Subcommand, Debug)]
 pub enum DemoCommands {
@@ -819,10 +832,10 @@ pub struct ScenarioRunConfig {
 /// Configuration for generating scenarios
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]
 pub struct ScenarioGenerateConfig {
-    /// Path to the scenario file (YAML)
+    /// Directory or file where to save the scenarios
     #[arg(
         long,
-        help = "Path to the generated scenario file",
+        help = "Directory or file where to save the scenarios",
         env = "LUEUR_SCENARIO_PATH"
     )]
     pub scenario: String,
@@ -842,6 +855,44 @@ pub struct ScenarioGenerateConfig {
         env = "LUEUR_SCENARIO_OPENAPI_V3_SPEC_URL"
     )]
     pub spec_url: Option<String>,
+
+    /// Split scenario files per url
+    #[arg(
+        long,
+        default_value_t = false,
+        help = "Split scenarios per-url",
+        env = "LUEUR_SCENARIO_SPLIT_PER_URL"
+    )]
+    pub split_files: bool,
+}
+
+/// Configuration for generating advice on a report
+#[derive(Args, Clone, Debug, Serialize, Deserialize)]
+pub struct AgentAdviceConfig {
+    /// Path to the scenario results file (JSON)
+    #[arg(
+        long,
+        help = "Path to the generated json results file",
+        env = "LUEUR_AGENT_ADVICE_RESULTS_PATH"
+    )]
+    pub results: String,
+
+    /// Project source code repository directory
+    #[arg(
+        long = "repo-dir",
+        help = "Path to the repository source code directory",
+        env = "LUEUR_AGENT_ADVICE_REPO_PATH"
+    )]
+    pub repo: String,
+
+    /// Source index path
+    #[arg(
+        long,
+        help = "Path to the index cache",
+        default_value = "/tmp/index.db",
+        env = "LUEUR_AGENT_ADVICE_INDEX_PATH"
+    )]
+    pub index: String,
 }
 
 /// Configuration for executing the demo server

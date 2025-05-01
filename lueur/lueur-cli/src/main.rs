@@ -28,6 +28,8 @@ mod state;
 mod termui;
 mod types;
 
+use std::fs::File;
+use std::io::BufReader;
 use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
@@ -79,6 +81,7 @@ use scenario::types::ScenarioResult;
 use scenario::types::ScenariosResults;
 use sched::build_schedule_events;
 use sched::run_fault_schedule;
+use serde_json::from_reader;
 use termui::demo_prelude;
 use termui::full_progress;
 use termui::lean_progress;
@@ -406,6 +409,7 @@ async fn main() -> Result<()> {
                                 let result = execute_item(
                                     i,
                                     event.clone(),
+                                    scenario.config.clone(),
                                     addr_id_map.clone(),
                                     id_events_map.clone(),
                                     task_manager.clone(),
@@ -464,42 +468,68 @@ async fn main() -> Result<()> {
                 println!("");
 
                 final_results.save(&config.result)?;
-                let md = final_report.save(&config.report)?;
-
-                #[cfg(feature = "ai")]
-                ai::source::index(
-                    "/home/sylvain/dev/misc/dummysvc",
-                    "python",
-                    "/tmp/cache.db",
-                )
-                .await?;
-                ai::insight::analyze(&final_report).await?;
-                ai::suggestion::make(
-                    &final_report,
-                    "/home/sylvain/dev/misc/dummysvc",
-                )
-                .await?;
+                final_report.save(&config.report)?;
             }
             ScenarioCommands::Generate(config) => {
                 if let Some(spec_file) = &config.spec_file {
                     match openapi::build_from_file(spec_file, None) {
-                        Ok(scenarios) => {
-                            openapi::save(&scenarios, &config.scenario)?
-                        }
+                        Ok(scenarios) => openapi::save(
+                            &scenarios,
+                            &config.scenario,
+                            config.split_files,
+                        )?,
                         Err(e) => {
                             tracing::error!("Failed to generate scenario {}", e)
                         }
                     }
                 } else if let Some(spec_url) = &config.spec_url {
                     match openapi::build_from_url(spec_url, None).await {
-                        Ok(scenarios) => {
-                            openapi::save(&scenarios, &config.scenario)?
-                        }
+                        Ok(scenarios) => openapi::save(
+                            &scenarios,
+                            &config.scenario,
+                            config.split_files,
+                        )?,
                         Err(e) => {
                             tracing::error!("Failed to generate scenario {}", e)
                         }
                     }
                 }
+            }
+        },
+        #[cfg(feature = "ai")]
+        Commands::Agent { agent } => match agent {
+            cli::AgentCommands::Advise(advice_config) => {
+                let file = File::open(&advice_config.results)?;
+                let reader = BufReader::new(file);
+                let final_results: ScenariosResults = from_reader(reader)?;
+                let final_report = report::builder::to_report(&final_results);
+
+                let metas = ai::meta::get_metas(&final_report);
+
+                println!("metas: {:?}", metas);
+
+                ai::source::index(
+                    &advice_config.repo,
+                    "python",
+                    &metas,
+                    &advice_config.index,
+                )
+                .await?;
+
+                println!("indexed");
+
+                ai::insight::analyze(&final_report).await?;
+
+                println!("analyzed");
+
+                ai::suggestion::make(
+                    &final_report,
+                    &metas,
+                    &advice_config.repo,
+                )
+                .await?;
+
+                println!("suggested");
             }
         },
     };

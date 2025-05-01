@@ -17,11 +17,13 @@ use crate::scenario::executor::update_proxy_from_fault_schedule;
 use crate::scenario::types::ItemResult;
 use crate::scenario::types::ItemResultData;
 use crate::scenario::types::ItemTarget;
+use crate::scenario::types::ScenarioGlobalConfig;
 use crate::scenario::types::ScenarioItem;
 
 pub async fn execute(
     proxy_address: String,
     item: ScenarioItem,
+    global_config: Option<ScenarioGlobalConfig>,
     event: Arc<ScenarioEvent>,
     proxy_state: Arc<ProxyState>,
     addr_id_map: Arc<scc::HashMap<String, Uuid>>,
@@ -33,6 +35,7 @@ pub async fn execute(
     run_load_test(
         proxy_address,
         item,
+        global_config,
         event,
         proxy_state,
         addr_id_map,
@@ -50,6 +53,7 @@ pub async fn execute(
 pub async fn run_load_test(
     proxy_address: String,
     item: ScenarioItem,
+    global_config: Option<ScenarioGlobalConfig>,
     event: Arc<ScenarioEvent>,
     proxy_state: Arc<ProxyState>,
     addr_id_map: Arc<scc::HashMap<String, Uuid>>,
@@ -80,6 +84,7 @@ pub async fn run_load_test(
     for _ in 0..clients {
         let cloned_item = cloned_item.clone();
         let proxy_address = proxy_address.clone();
+        let global_config = global_config.clone();
         let addr_id_map = addr_id_map.clone();
         let id_events_map = id_events_map.clone();
 
@@ -98,6 +103,7 @@ pub async fn run_load_test(
                 let start = Utc::now();
                 let res = execute_request(
                     item.call.clone(),
+                    global_config.clone(),
                     proxy_address.clone(),
                     addr_id_map.clone(),
                     id_events_map.clone(),

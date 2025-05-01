@@ -88,11 +88,15 @@ tree-sitter-python = { version = "0.23.6", optional = true }
 k8s-openapi = { version = "0.24.0", default-features = false, optional = true, features = ["latest"] }
 ignore = { version = "0.4.23", optional = true }
 similar = { version = "2.7.0", optional = true }
-inquire = "0.7.5"
-swiftide-macros = "0.25.1"
-swiftide-core = "0.25.1"
-derive_builder = "0.20.2"
-diffy = "0.4.2"
+inquire = { version = "0.7.5", optional = true }
+swiftide-macros = { version = "0.25.1", optional = true }
+swiftide-core = { version = "0.25.1", optional = true }
+derive_builder = { version = "0.20.2", optional = true }
+diffy = { version = "0.4.2", optional = true }
+swiftide-agents = { version = "0.25.1", optional = true }
+similar-string = { version = "1.4.3", optional = true }
+oas3 = { version = "0.16.1", optional = true }
+percent-encoding = "2.3.1"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 aya-ebpf = { version = "0.1.1", optional = true }
@@ -140,5 +144,13 @@ ai = [
     "dep:tree-sitter-python",
     "dep:k8s-openapi",
     "dep:ignore",
-    "dep:similar"
+    "dep:similar",
+    "dep:inquire",
+    "dep:swiftide-macros",
+    "dep:swiftide-core",
+    "dep:derive_builder",
+    "dep:swiftide-agents",
+    "dep:diffy",
+    "dep:similar-string",
+    "dep:oas3"
 ]

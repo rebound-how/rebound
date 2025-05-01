@@ -22,6 +22,7 @@ use super::strategy::load;
 use super::strategy::repeat;
 use super::strategy::single;
 use super::types::ItemResult;
+use super::types::ScenarioGlobalConfig;
 use crate::config::FaultConfig;
 use crate::config::ProxyConfig;
 use crate::errors::ProxyError;
@@ -44,6 +45,7 @@ pub(crate) mod http;
 pub async fn execute_item(
     item: ScenarioItem,
     event: Arc<ScenarioEvent>,
+    global_config: Option<ScenarioGlobalConfig>,
     addr_id_map: Arc<scc::HashMap<String, Uuid>>,
     id_events_map: Arc<scc::HashMap<Uuid, ScenarioItemLifecycle>>,
     task_manager: Arc<TaskManager>,
@@ -109,6 +111,7 @@ pub async fn execute_item(
             } => Ok(repeat::execute(
                 proxy_address,
                 item,
+                global_config,
                 event,
                 config_tx,
                 addr_id_map,
@@ -131,6 +134,7 @@ pub async fn execute_item(
                 Ok(load::execute(
                     proxy_address,
                     item,
+                    global_config,
                     event,
                     proxy_state.clone(),
                     addr_id_map,
@@ -145,6 +149,7 @@ pub async fn execute_item(
                 Ok(single::execute(
                     proxy_address,
                     item,
+                    global_config,
                     config_tx,
                     addr_id_map,
                     id_events_map,
@@ -157,6 +162,7 @@ pub async fn execute_item(
         result = Ok(single::execute(
             proxy_address,
             item,
+            global_config,
             config_tx,
             addr_id_map,
             id_events_map,

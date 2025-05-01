@@ -149,6 +149,18 @@ pub enum ScenarioError {
 
     #[error("HTTP error: {0}")]
     HTTPError(String),
+
+    #[error("Missing OpenAPI version")]
+    MissingOpenAPIVersion(),
+
+    #[error("Unsupported OpenAPI version: {0}")]
+    UnsupportedOpenAPIVersion(String),
+
+    #[error("Failed to parse OpenAPI: {0}")]
+    OpenAPIParsingError(String),
+
+    #[error("Expected a directory to store multiple scenarios")]
+    ExpectedDirectoryError(),
 }
 
 #[derive(Error, Debug)]
@@ -174,4 +186,7 @@ pub enum SchedulingError {
 pub enum SuggestionError {
     #[error("Invalid diff hunk: {0}")]
     InvalidHunk(String),
+
+    #[error("Failed to retrieve: {0}")]
+    Retrieval(String),
 }

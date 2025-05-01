@@ -116,6 +116,25 @@ pub struct ScenarioItem {
     pub expect: Option<ScenarioItemExpectation>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HTTPPathsConfig {
+    pub segments: HashMap<String, String>,
+}
+
+/// Global HTTP configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ScenarioHTTPGlobalConfig {
+    pub headers: HashMap<String, String>,
+    pub paths: Option<HTTPPathsConfig>,
+}
+
+/// Global configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ScenarioGlobalConfig {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub http: Option<ScenarioHTTPGlobalConfig>,
+}
+
 /// The overall scenario containing multiple entries
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Scenario {
@@ -123,6 +142,8 @@ pub struct Scenario {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     pub items: Vec<ScenarioItem>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub config: Option<ScenarioGlobalConfig>,
 }
 
 ///
@@ -239,8 +260,10 @@ pub struct ScenarioResult {
 pub struct ScenariosResults {
     #[serde(with = "chrono::serde::ts_seconds")]
     pub start: DateTime<Utc>,
+
     #[serde(with = "chrono::serde::ts_seconds")]
     pub end: DateTime<Utc>,
+
     pub results: Vec<ScenarioResult>,
 }
 

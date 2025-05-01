@@ -22,11 +22,13 @@ use crate::scenario::types::ItemProtocol;
 use crate::scenario::types::ItemResult;
 use crate::scenario::types::ItemResultData;
 use crate::scenario::types::ItemTarget;
+use crate::scenario::types::ScenarioGlobalConfig;
 use crate::scenario::types::ScenarioItem;
 
 pub async fn execute(
     proxy_address: String,
     item: ScenarioItem,
+    global_config: Option<ScenarioGlobalConfig>,
     config_tx: watch::Sender<(ProxyConfig, Vec<Box<dyn FaultInjector>>)>,
     addr_id_map: Arc<scc::HashMap<String, Uuid>>,
     id_events_map: Arc<scc::HashMap<Uuid, ScenarioItemLifecycle>>,
@@ -47,6 +49,7 @@ pub async fn execute(
 
     match execute_request(
         item.call.clone(),
+        global_config.clone(),
         proxy_address.clone(),
         addr_id_map.clone(),
         id_events_map.clone(),

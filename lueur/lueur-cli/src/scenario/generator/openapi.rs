@@ -15,12 +15,17 @@ use std::path::Path;
 use anyhow::Result;
 use minijinja::Environment;
 use minijinja::context;
-use openapiv3::OpenAPI;
+use percent_encoding::percent_decode_str;
 use serde::Serialize;
 use serde_yaml;
+use url::Url;
 
+use super::types::ParsedSpec;
+use super::v30x;
+use super::v31x;
 use crate::errors::ScenarioError;
 use crate::scenario::Scenario;
+use crate::scenario::generator::types::Api;
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Template definitions
@@ -238,7 +243,7 @@ const TEMPLATE_NAMES: &[&str] = &[
 ];
 
 pub fn generate_scenarios(
-    spec: &OpenAPI,
+    spec: &Api,
     user_dir: Option<&Path>,
 ) -> Result<Vec<Scenario>> {
     let mut env = Environment::new();
@@ -247,30 +252,17 @@ pub fn generate_scenarios(
 
     let base = spec
         .servers
-        .get(0)
-        .map(|s| s.url.clone())
-        .unwrap_or_else(|| "http://localhost".into());
+        .first()
+        .cloned()
+        .unwrap_or_else(|| "http://localhost".to_string());
 
-    for (p, item) in &spec.paths.paths {
-        if let openapiv3::ReferenceOr::Item(it) = item {
-            match &it.get {
-                Some(op) => {
-                    let url = format!("{}{}", base, p);
-                    let ctx = context! { method => "GET", url => url, opid => op.operation_id };
-                    for n in TEMPLATE_NAMES {
-                        tracing::debug!(
-                            "Generate scenario {} with context {}",
-                            n,
-                            ctx
-                        );
-                        let rendered =
-                            env.get_template(n)?.render(ctx.clone())?;
-                        scenarios
-                            .push(serde_yaml::from_str::<Scenario>(&rendered)?);
-                    }
-                }
-                None => {}
-            }
+    for api_op in &spec.operations {
+        let url = format!("{}{}", base, api_op.path);
+        let ctx = context! { method => api_op.method.to_string(), url => url, opid => api_op.operation_id };
+        for n in TEMPLATE_NAMES {
+            tracing::debug!("Generate scenario {} with context {}", n, ctx);
+            let rendered = env.get_template(n)?.render(ctx.clone())?;
+            scenarios.push(serde_yaml::from_str::<Scenario>(&rendered)?);
         }
     }
     Ok(scenarios)
@@ -282,8 +274,8 @@ pub fn build_from_file(
     template_dir: Option<&Path>,
 ) -> Result<Vec<Scenario>> {
     let raw = std::fs::read_to_string(path)?;
-    let spec: OpenAPI =
-        serde_yaml::from_str(&raw).or_else(|_| serde_json::from_str(&raw))?;
+    let spec = load_yaml_by_version(&raw)?;
+
     generate_scenarios(&spec, template_dir)
 }
 
@@ -296,24 +288,115 @@ pub async fn build_from_url(
     let resp = reqwest::get(url).await?;
     let body = resp.text().await?;
 
-    let spec: OpenAPI = if response
+    let spec = if response
         .headers()
         .get(reqwest::header::CONTENT_TYPE)
         .and_then(|ct| ct.to_str().ok())
         .map(|ct| ct.contains("json"))
         .unwrap_or(false)
     {
-        serde_json::from_str(&body)?
+        load_json_by_version(&body)?
     } else {
-        serde_yaml::from_str(&body).or_else(|_| serde_json::from_str(&body))?
+        load_yaml_by_version(&body)?
     };
 
     generate_scenarios(&spec, template_dir)
 }
 
-pub fn save(scenarios: &Vec<Scenario>, path: &str) -> Result<()> {
+fn load_yaml_by_version(spec: &String) -> Result<Api, ScenarioError> {
+    let v: serde_yaml::Value = serde_yaml::from_str(&spec)
+        .map_err(|e| ScenarioError::OpenAPIParsingError(e.to_string()))?;
+
+    let parsed = ParsedSpec { json: None, yaml: Some(v.clone()) };
+
+    let ver = v
+        .get("openapi")
+        .and_then(serde_yaml::Value::as_str)
+        .ok_or_else(|| ScenarioError::MissingOpenAPIVersion())?;
+
+    if ver.starts_with("3.0") {
+        return Ok(v30x::load_v3(&parsed)
+            .map_err(|e| ScenarioError::OpenAPIParsingError(e.to_string()))?);
+    } else if ver.starts_with("3.1") {
+        return Ok(v31x::load_v31(&parsed)
+            .map_err(|e| ScenarioError::OpenAPIParsingError(e.to_string()))?);
+    }
+
+    Err(ScenarioError::UnsupportedOpenAPIVersion(ver.to_string()))
+}
+
+fn load_json_by_version(spec: &String) -> Result<Api, ScenarioError> {
+    let v: serde_json::Value = serde_json::from_str(&spec)
+        .map_err(|e| ScenarioError::OpenAPIParsingError(e.to_string()))?;
+
+    let parsed = ParsedSpec { yaml: None, json: Some(v.clone()) };
+
+    let ver = v
+        .get("openapi")
+        .and_then(serde_json::Value::as_str)
+        .ok_or_else(|| ScenarioError::MissingOpenAPIVersion())?;
+
+    if ver.starts_with("3.0") {
+        return Ok(v30x::load_v3(&parsed)
+            .map_err(|e| ScenarioError::OpenAPIParsingError(e.to_string()))?);
+    } else if ver.starts_with("3.1") {
+        return Ok(v31x::load_v31(&parsed)
+            .map_err(|e| ScenarioError::OpenAPIParsingError(e.to_string()))?);
+    }
+
+    Err(ScenarioError::UnsupportedOpenAPIVersion(ver.to_string()))
+}
+
+pub fn save(
+    scenarios: &Vec<Scenario>,
+    path: &str,
+    split: bool,
+) -> Result<(), ScenarioError> {
+    let p = Path::new(path);
+    if split && !p.is_dir() {
+        return Err(ScenarioError::ExpectedDirectoryError());
+    } else if !split {
+        save_batch(scenarios, path)?;
+    } else {
+        let mut batch = Vec::new();
+        let mut current_url = "".to_string();
+
+        for s in scenarios {
+            let url = s.items[0].call.url.clone();
+            if !current_url.is_empty() && url != current_url {
+                let url_path = Url::parse(&current_url).map_err(|_| {
+                    ScenarioError::IoError("failed to parse url".to_string())
+                })?;
+
+                let decoded =
+                    percent_decode_str(url_path.path().trim_start_matches('/'))
+                        .decode_utf8_lossy();
+                let key = decoded
+                    .replace('/', "_");
+
+                let fpath = format!("{}.yaml", key);
+
+                save_batch(&batch, &format!("{}", p.join(fpath).as_os_str().display()))?;
+
+                batch.clear();
+                current_url = url;
+            } else if current_url.is_empty() {
+                current_url = url;
+            }
+
+            batch.push(s.clone());
+        }
+    }
+
+    Ok(())
+}
+
+fn save_batch(
+    scenarios: &Vec<Scenario>,
+    path: &str,
+) -> Result<(), ScenarioError> {
     let file = File::create(path).map_err(|e| {
-        tracing::error!("Failed to create report file '{}': {}", path, e);
+        tracing::error!("Failed to create scenario file '{}': {}", path, e);
         ScenarioError::IoError(e.to_string())
     })?;
     let mut writer = BufWriter::new(file);
@@ -322,10 +405,11 @@ pub fn save(scenarios: &Vec<Scenario>, path: &str) -> Result<()> {
     let mut serializer = serde_yaml::Serializer::new(&mut buffer);
 
     for s in scenarios {
-        s.serialize(&mut serializer)?;
+        s.serialize(&mut serializer)
+            .map_err(|e| ScenarioError::IoError(e.to_string()))?;
     }
 
-    writer.write(&buffer)?;
+    writer.write(&buffer).map_err(|e| ScenarioError::IoError(e.to_string()))?;
 
     Ok(())
 }

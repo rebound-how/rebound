@@ -5,10 +5,9 @@ use std::time::Instant;
 
 use serde::Deserialize;
 use serde::Serialize;
+use serde::de::Deserializer;
+use serde::de::{self};
 use serde::ser::Serializer;
-use tokio::sync::broadcast;
-use tokio::sync::broadcast::Receiver;
-use tokio::sync::broadcast::Sender;
 use tokio::sync::broadcast::error::SendError;
 use uuid::Uuid;
 
@@ -398,7 +397,10 @@ pub enum FaultEvent {
         direction: Direction,
         side: StreamSide,
 
-        #[serde(serialize_with = "serialize_duration_as_millis_f64")]
+        #[serde(
+            serialize_with = "serialize_duration_as_millis_f64",
+            deserialize_with = "deserialize_duration_from_millis_f64"
+        )]
         delay: Option<Duration>,
     },
     Dns {
@@ -468,4 +470,30 @@ where
         Some(d) => serializer.serialize_f64(d.as_millis_f64()),
         None => serializer.serialize_none(),
     }
+}
+
+pub fn deserialize_duration_from_millis_f64<'de, D>(
+    deserializer: D,
+) -> Result<Option<Duration>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum Milli {
+        Float(f64),
+        Str(String),
+    }
+
+    let opt = Option::<Milli>::deserialize(deserializer)?;
+    let dur = match opt {
+        None => None,
+        Some(Milli::Float(ms)) => Some(Duration::from_secs_f64(ms / 1000.0)),
+        Some(Milli::Str(s)) => {
+            let ms: f64 = s.parse().map_err(de::Error::custom)?;
+            Some(Duration::from_secs_f64(ms / 1000.0))
+        }
+    };
+
+    Ok(dur)
 }
