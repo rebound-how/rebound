@@ -74,7 +74,9 @@ async def execute_plan(
 
     async with SessionLocal() as db:
         experiment_summary = await experiment.crud.get_experiment_summary(
-            db, org_id, plan.definition.experiments[0]  # type: ignore
+            db,
+            org_id,  # type: ignore
+            plan.definition.experiments[0],
         )
         await notification.tasks.notify_event(
             notification.schemas.PlanEvent(

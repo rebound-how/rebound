@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, Dict, List
 
 import orjson
-from pydantic import UUID4, ConfigDict, Json, field_validator
+from pydantic import UUID4, ConfigDict, Json, RootModel, field_validator
 
 from reliably_app.schemas import BaseSchema
 
@@ -102,3 +102,8 @@ class ExperimentImport(BaseSchema):
 
 class ExperimentEdit(BaseSchema):
     experiment: Json[Dict[str, Any]]
+
+
+ExperimentIds = RootModel[List[UUID4]]
+
+ChaosToolkitExperiment = RootModel[Dict[str, Any]]

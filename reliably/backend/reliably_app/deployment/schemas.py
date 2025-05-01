@@ -10,6 +10,7 @@ from pydantic import (
     ConfigDict,
     Field,
     HttpUrl,
+    RootModel,
     SecretStr,
     field_validator,
 )
@@ -160,10 +161,6 @@ class DeploymentBase(BaseSchema):  # pragma: no cover
 
 
 class Deployment(DeploymentBase):
-    model_config = ConfigDict(
-        from_attributes=True,
-    )
-
     id: UUID4
     org_id: UUID4
     created_date: datetime
@@ -202,3 +199,6 @@ def dump_to_dict(dep: Deployment | DeploymentCreate) -> Dict[str, Any]:
                 dump["definition"]["token"] = None
 
     return cast(dict[str, Any], dump)
+
+
+DeploymentIds = RootModel[list[UUID4]]

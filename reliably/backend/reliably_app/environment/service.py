@@ -76,9 +76,9 @@ async def index(
     "/simple",
     response_model=schemas.SimpleEnvironments,
     status_code=status.HTTP_200_OK,
-    description="Retrieve all organization's environments",
+    description="Retrieve a simplified version of an environment",
     tags=["Environment"],
-    summary="Retrieve all organization's environments",
+    summary="Retrieve a simplified version of an organization's environments",
     responses={
         status.HTTP_200_OK: {
             "model": schemas.SimpleEnvironments,
@@ -263,7 +263,7 @@ async def get_clear(
 
 @router.get(
     "/{env_id}/plans",
-    response_model=List[UUID4],
+    response_model=schemas.PlanIds,
     status_code=status.HTTP_200_OK,
     description="Retrieve all plans using a environment",
     tags=["Environment", "Plan"],

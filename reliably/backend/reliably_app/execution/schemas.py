@@ -2,7 +2,15 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Literal
 
 import orjson
-from pydantic import UUID4, ConfigDict, Field, Json, conint, field_validator
+from pydantic import (
+    UUID4,
+    ConfigDict,
+    Field,
+    Json,
+    RootModel,
+    conint,
+    field_validator,
+)
 
 from reliably_app.schemas import BaseSchema
 
@@ -133,3 +141,6 @@ class ExecutionWithoutLogNorJournal(BaseSchema):
         | ExecutionResumeState
         | None
     ) = None
+
+
+ChaosToolkitResults = RootModel[Dict[str, Any]]

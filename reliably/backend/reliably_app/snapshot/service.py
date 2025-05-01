@@ -156,7 +156,9 @@ async def current_config(
     org: organization.models.Organization = Depends(valid_org),
 ) -> dict[str, environment.models.Environment] | None:
     current_job = await job.crud.get_most_recent_job_by_type(
-        db, org.id, "snapshot"  # type: ignore
+        db,
+        org.id,  # type: ignore
+        "snapshot",
     )
     if not current_job:
         return None
@@ -204,7 +206,10 @@ async def refresh_snapshot(
 
     try:
         await tasks.schedule_discovery(
-            j.definition.integration_id, j.org_id, user.id, None  # type: ignore
+            j.definition.integration_id,
+            j.org_id,  # type: ignore
+            user.id,  # type: ignore
+            None,
         )
     except Exception:
         logger.error(
@@ -259,14 +264,14 @@ async def get_data(
 
 @router.get(
     "/current",
-    response_model=List[Any],
+    response_model=schemas.ResourceValue,
     status_code=status.HTTP_200_OK,
     description="Query the latest snapshot",
     tags=["Snapshot"],
     summary="Query the latest snapshot",
     responses={
         status.HTTP_200_OK: {
-            "model": List[Any],
+            "model": schemas.ResourceValue,
             "description": "Ok Response",
         }
     },
@@ -328,14 +333,14 @@ async def create(
 
 
 @router.put(
-    "/{integration_id}",
+    "/from/{integration_id}",
     response_model=None,
-    status_code=status.HTTP_201_CREATED,
-    description="Update a snapshot configuration",
+    status_code=status.HTTP_200_OK,
+    description="Update a snapshot configuration froman integration",
     tags=["Snapshot"],
-    summary="Update a snapshot configuration",
+    summary="Update a snapshot configuration froman integration",
     responses={
-        status.HTTP_201_CREATED: {
+        status.HTTP_200_OK: {
             "model": None,
             "description": "Created",
         },
@@ -356,7 +361,10 @@ async def update_config(
 
     async with SessionLocal() as d:
         await integration.crud.set_integration_name(
-            d, intg.org_id, intg.id, env.name  # type: ignore
+            d,
+            intg.org_id,  # type: ignore
+            intg.id,  # type: ignore
+            env.name,
         )
 
     async with SessionLocal() as d:
@@ -385,12 +393,11 @@ async def update_config(
 
 @router.get(
     "/{snapshot_id}",
-    name="get_snapshot",
     response_model=schemas.Snapshot,
     status_code=status.HTTP_200_OK,
-    description="Retrieve an snapshot in an organinzation",
+    description="Retrieve a snapshot in an organization",
     tags=["Snapshot"],
-    summary="Retrieve an snapshot",
+    summary="Retrieve a snapshot",
     responses={
         status.HTTP_200_OK: {
             "model": schemas.Snapshot,
@@ -401,7 +408,7 @@ async def update_config(
         },
     },
 )
-async def get(
+async def get_snapshot(
     snapshot: models.Snapshot = Depends(validators.valid_snapshot),
 ) -> models.Snapshot:
     return snapshot
@@ -540,7 +547,10 @@ async def get_resource_links(
     link_ids = list(set([str(l["id"]) for l in linked]))  # noqa: E741
 
     r = await crud.get_snapshot_resource_links_info(
-        db, org.id, resource["id"], link_ids  # type: ignore
+        db,
+        org.id,  # type: ignore
+        resource["id"],
+        link_ids,
     )
 
     return {"count": count, "items": r}

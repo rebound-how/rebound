@@ -4,7 +4,7 @@ from typing import List, Literal, cast
 
 import pytz
 from cron_validator import CronValidator
-from pydantic import UUID4, ConfigDict, field_validator
+from pydantic import UUID4, ConfigDict, RootModel, field_validator
 
 from reliably_app.schemas import BaseSchema
 
@@ -146,3 +146,6 @@ class Plans(BaseSchema):
 class PlanNewStatus(BaseSchema):
     status: PlanStatus
     error: str | None = None
+
+
+PlanStatusResponse = RootModel[dict[str, bool]]

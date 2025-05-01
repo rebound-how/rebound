@@ -177,16 +177,18 @@ async def get(
     )
 
 
+
+
 @router.get(
     "/{dep_id}/plans",
-    response_model=List[UUID4],
+    response_model=schemas.DeploymentIds,
     status_code=status.HTTP_200_OK,
     description="Retrieve all plans using a deployment",
     tags=["Deployment", "Plan"],
     summary="Retrieve the deployment's plans",
     responses={
         status.HTTP_200_OK: {
-            "content": List[UUID4],
+            "model": schemas.DeploymentIds,
             "description": "Ok Response",
         },
         status.HTTP_404_NOT_FOUND: {
@@ -198,7 +200,7 @@ async def get_plans(
     dep_id: UUID4,
     org: organization.models.Organization = Depends(valid_org),
     db: AsyncSession = Depends(get_db),
-) -> List[UUID4]:
+) -> list[UUID4]:
     return await plan.crud.get_plans_using_deployment(
         db,
         org.id,  # type: ignore
@@ -262,9 +264,9 @@ async def delete(
     "/{dep_id}",
     response_model=None,
     status_code=status.HTTP_200_OK,
-    description="Delete the given deployment",
+    description="Set an updated deployment",
     tags=["Deployment"],
-    summary="Delete the given deployment",
+    summary="Set an updated deployment",
     responses={
         status.HTTP_200_OK: {
             "model": None,
@@ -306,7 +308,7 @@ async def update(
     summary="Clone a deployment",
     responses={
         status.HTTP_201_CREATED: {
-            "content": schemas.Deployment,
+            "model": schemas.Deployment,
             "description": "Ok Response",
         },
         status.HTTP_404_NOT_FOUND: {

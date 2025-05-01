@@ -1,5 +1,7 @@
-from typing import Tuple
+from typing import Annotated, Optional, Tuple
+from typing_extensions import Doc
 
+from fastapi.openapi.models import APIKey, APIKeyIn
 from fastapi import Depends, HTTPException, Security, status
 from fastapi.security.api_key import APIKeyBase, APIKeyHeader
 from pydantic import UUID4
@@ -14,7 +16,7 @@ from reliably_app.observability import span
 __all__ = ["validate_auth", "with_user_in_org", "with_admin_user"]
 
 
-class APIKeySession(APIKeyBase):  # pragma: no cover
+class _APIKeySession(APIKeyBase):  # pragma: no cover
     def __init__(
         self,
         *,
@@ -27,8 +29,68 @@ class APIKeySession(APIKeyBase):  # pragma: no cover
         return api_key
 
 
+class APIKeySession(APIKeyBase):  # pragma: no cover
+    def __init__(
+        self,
+        *,
+        name: Annotated[
+            str,
+            Doc("Query parameter name."),
+        ],
+        scheme_name: Annotated[
+            Optional[str],
+            Doc(
+                """
+                Security scheme name.
+
+                It will be included in the generated OpenAPI.
+                """
+            ),
+        ] = None,
+        description: Annotated[
+            Optional[str],
+            Doc(
+                """
+                Security scheme description.
+
+                It will be included in the generated OpenAPI.
+                """
+            ),
+        ] = None,
+        auto_error: Annotated[
+            bool,
+            Doc(
+                """
+                By default, if the session is not provided, `APIKeySession` will
+                automatically cancel the request and send the client an error.
+
+                If `auto_error` is set to `False`, when the query parameter is
+                not available, instead of erroring out, the dependency result
+                will be `None`.
+
+                This is useful when you want to have optional authentication.
+
+                It is also useful when you want to have authentication that can
+                be provided in one of multiple optional ways.
+                """
+            ),
+        ] = True,
+    ):
+        self.model: APIKey = APIKey(
+            **{"in": APIKeyIn.query},
+            name=name,
+            description=description,
+        )
+        self.scheme_name = scheme_name or self.__class__.__name__
+        self.auto_error = auto_error
+
+    async def __call__(self, request: Request) -> Optional[str]:
+        api_key = request.session.get(self.model.name)
+        return self.check_api_key(api_key, self.auto_error)
+
+
 api_key_header = APIKeyHeader(name="Authorization", auto_error=False)
-api_key_session = APIKeySession(name="user")
+api_key_session = APIKeySession(name="user", auto_error=False)
 
 
 async def validate_auth(

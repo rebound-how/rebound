@@ -474,7 +474,8 @@ async def auth_with_email(
 
                 if settings.FEATURE_POPULATE_NEW_ORG_WITH_DEFAULTS:
                     await tasks.populate_organization_with_some_content(
-                        org.id, user.id  # type: ignore
+                        org.id,  # type: ignore
+                        user.id,  # type: ignore
                     )
         elif user.password is None:
             logger.debug(

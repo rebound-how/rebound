@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, List, Literal
 
-from pydantic import UUID4, ConfigDict
+from pydantic import UUID4, ConfigDict, RootModel
 
 from reliably_app import environment
 from reliably_app.schemas import BaseSchema
@@ -79,3 +79,6 @@ class IntegrationControlPythonProvider(BaseSchema):
 class IntegrationControl(BaseSchema):
     name: str
     provider: IntegrationControlPythonProvider
+
+
+IntegrationIds = RootModel[List[UUID4]]

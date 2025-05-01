@@ -56,14 +56,14 @@ async def info(
 
 @router.get(
     "/tokens",
-    response_model=List[schemas.Tokens],
+    response_model=schemas.MyTokens,
     status_code=status.HTTP_200_OK,
     description="Tokens on the user per org",
     tags=["Me"],
     summary="Tokens on the user per org",
     responses={
         status.HTTP_200_OK: {
-            "model": List[schemas.Tokens],
+            "model": schemas.MyTokens,
             "description": "Ok Response",
         }
     },

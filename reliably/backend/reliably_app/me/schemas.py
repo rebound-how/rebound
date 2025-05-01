@@ -1,6 +1,6 @@
 from typing import List
 
-from pydantic import ConfigDict
+from pydantic import ConfigDict, RootModel
 
 from reliably_app import account, organization, token
 from reliably_app.schemas import BaseSchema
@@ -20,3 +20,6 @@ class Tokens(BaseSchema):
 
     org: organization.schemas.Organization
     tokens: List[token.schemas.TokenMeta]
+
+
+MyTokens = RootModel[List[Tokens]]

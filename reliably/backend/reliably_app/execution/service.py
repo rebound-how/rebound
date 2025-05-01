@@ -412,7 +412,9 @@ async def set_user_state(
                         )
 
                         summary = await experiment.crud.get_experiment_summary(
-                            db, org.id, exp.id  # type: ignore
+                            db,
+                            org.id,  # type: ignore
+                            exp.id,  # type: ignore
                         )
 
                         if state.status == "completed":
@@ -491,14 +493,14 @@ async def get_log(
 
 @router.get(
     "/{exec_id}/results",
-    response_model=Dict[str, Any],
+    response_model=schemas.ChaosToolkitResults,
     status_code=status.HTTP_200_OK,
     description="Retrieve an execution's result",
     tags=["Execution"],
     summary="Retrieve an execution's result",
     responses={
         status.HTTP_200_OK: {
-            "model": Dict[str, Any],
+            "model": schemas.ChaosToolkitResults,
             "description": "Ok Response",
         },
         status.HTTP_404_NOT_FOUND: {

@@ -34,10 +34,22 @@ def init_app(settings: Settings) -> FastAPI:
     app = FastAPI(
         lifespan=run_background_tasks,
         redoc_url=None,
-        openapi_url=None,
         docs_url=None,
         version=__version__,
-        terms_of_service="https:/reliably.com/terms/",
+        description="Orchestrate Your Resilience Strategy",
+        servers=[
+            {"url": "http://localhost:8090", "description": "Dev server"},
+        ],
+        license_info={
+            "name": "Apache 2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
+        },
+        contact={
+            "name": "Sylvain Hellegouarch",
+            "url": "https://rebound.how/support/#contact",
+            "email": "sylvain@rebound.how",
+        },
+        openapi_tags=[{"name": "reliably"}],
     )
     app.db_engine = engine  # type: ignore
 

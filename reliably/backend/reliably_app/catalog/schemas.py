@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, List, Literal
 
-from pydantic import UUID4, ConfigDict, Field, HttpUrl
+from pydantic import UUID4, ConfigDict, Field, HttpUrl, RootModel
 
 from reliably_app.schemas import BaseSchema
 
@@ -99,3 +99,7 @@ class CatalogItem(BaseSchema):
 class Catalog(BaseSchema):
     count: int
     items: List[CatalogItem]
+
+
+Labels = RootModel[List[str]]
+CatalogItems = RootModel[list[CatalogItem]]

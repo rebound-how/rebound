@@ -66,14 +66,14 @@ async def index(
 
 @router.get(
     "/by/labels",
-    response_model=List[schemas.CatalogItem],
+    response_model=schemas.CatalogItems,
     status_code=status.HTTP_200_OK,
     description="Retrieve organization's items by labels",
     tags=["Catalog"],
     summary="Retrieve organization's catalog items by labels",
     responses={
         status.HTTP_200_OK: {
-            "model": List[schemas.CatalogItem],
+            "model": schemas.CatalogItems,
             "description": "Ok Response",
         }
     },
@@ -128,14 +128,14 @@ async def get_by_name(
 
 @router.get(
     "/labels",
-    response_model=List[str],
+    response_model=schemas.Labels,
     status_code=status.HTTP_200_OK,
     description="Retrieve organization's all labels",
     tags=["Catalog"],
     summary="Retrieve organization's all labels",
     responses={
         status.HTTP_200_OK: {
-            "model": List[str],
+            "model": schemas.Labels,
             "description": "Ok Response",
         }
     },

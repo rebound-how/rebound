@@ -189,7 +189,7 @@ async def get(
 
 @router.get(
     "/{integration_id}/plans",
-    response_model=List[UUID4],
+    response_model=schemas.IntegrationIds,
     status_code=status.HTTP_200_OK,
     description="Retrieve all plans using a integration",
     tags=["Integration", "Plan"],

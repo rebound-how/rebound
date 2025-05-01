@@ -222,14 +222,14 @@ async def delete(
 
 @router.put(
     "/{plan_id}/status",
-    response_model=Dict[str, bool],
+    response_model=schemas.PlanStatusResponse,
     status_code=status.HTTP_200_OK,
     description="Set the status of the plan",
     tags=["Plan"],
     summary="Set the status of the plan",
     responses={
         status.HTTP_200_OK: {
-            "model": Dict[str, bool],
+            "model": schemas.PlanStatusResponse,
             "description": "Ok Response",
         },
         status.HTTP_404_NOT_FOUND: {

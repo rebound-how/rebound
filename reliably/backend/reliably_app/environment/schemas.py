@@ -169,3 +169,6 @@ def dump_environment_in_clear(
                 break
 
     return cast(dict[str, Any], dump)
+
+
+PlanIds = RootModel[List[UUID4]]

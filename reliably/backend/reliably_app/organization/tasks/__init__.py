@@ -208,7 +208,7 @@ async def populate_default_deployments(
             except Exception:
                 logger.debug(
                     "Failed to communicate with Kubernetes API Server",
-                    exc_info=True
+                    exc_info=True,
                 )
             else:
                 try:
@@ -230,7 +230,7 @@ async def populate_default_deployments(
                     create_deployment = False
                     logger.debug(
                         "Failed to communicate with Kubernetes API Server",
-                        exc_info=True
+                        exc_info=True,
                     )
 
                 if create_deployment:
@@ -245,7 +245,9 @@ async def populate_default_deployments(
                             ),
                         )
                         d = await deployment.crud.create_deployment(
-                            db, org_id, d  # type: ignore
+                            db,
+                            org_id,
+                            d,  # type: ignore
                         )
                         deployments.append(d)
 
@@ -280,7 +282,7 @@ async def populate_default_plans(
 ) -> list["reliably_app.plan.models.Plan"]:
     from reliably_app import plan
 
-    plans = []
+    plans: list[plan.models.Plan] = []
 
     async with SessionLocal() as db:
         p = plan.schemas.PlanCreate(
@@ -301,8 +303,7 @@ async def populate_default_plans(
             integrations=[],
             experiments=[experiments[0].id],
         )
-        p = await plan.crud.create_plan(db, org_id, p)  # type: ignore
-        plans.append(p)
+        plans.append(await plan.crud.create_plan(db, org_id, p))
 
     async with SessionLocal() as db:
         p = plan.schemas.PlanCreate(
@@ -320,16 +321,17 @@ async def populate_default_plans(
             integrations=[],
             experiments=[experiments[0].id],
         )
-        p = await plan.crud.create_plan(db, org_id, p)  # type: ignore
-        plans.append(p)
+        plans.append(await plan.crud.create_plan(db, org_id, p))
 
-    for p in plans:
+    for pl in plans:
         async with SessionLocal() as db:
             await plan.crud.set_status(
-                db, p.id, plan.schemas.PlanStatus.created  # type: ignore
+                db,
+                pl.id,  # type: ignore
+                plan.schemas.PlanStatus.created,
             )
 
-    return plans  # type: ignore
+    return plans
 
 
 async def populate_default_tokens(

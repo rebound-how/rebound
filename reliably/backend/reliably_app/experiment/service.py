@@ -434,14 +434,14 @@ async def delete(
 @router.get(
     "/{exp_id}/raw",
     name="get_raw_experiment",
-    response_model=Dict[str, Any],
+    response_model=schemas.ChaosToolkitExperiment,
     status_code=status.HTTP_200_OK,
     description="Retrieve the raw Chaos Toolkit experiment",
     tags=["Experiment"],
     summary="Retrieve the raw Chaos Toolkit experiment",
     responses={
         status.HTTP_200_OK: {
-            "model": Dict[str, Any],
+            "model": schemas.ChaosToolkitExperiment,
             "description": "Ok Response",
         },
         status.HTTP_404_NOT_FOUND: {
@@ -470,7 +470,7 @@ async def get_raw(
 
 @router.get(
     "/{exp_id}/plans",
-    response_model=List[UUID4],
+    response_model=schemas.ExperimentIds,
     status_code=status.HTTP_200_OK,
     description="Retrieve all plans using an experiment",
     tags=["Experiment", "Plan"],

@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
-from typing import List
+from typing import Any, List
 
 from lueur.models import Discovery, Resource, Meta, GCPMeta, AWSMeta, K8SMeta
-from pydantic import UUID4, ConfigDict
+from pydantic import UUID4, ConfigDict, RootModel
 
 from reliably_app.schemas import BaseSchema
 from reliably_app.environment.schemas import Environment
@@ -76,3 +76,6 @@ class ResourceCandidate(BaseSchema):
 class ResourceCandidates(BaseSchema):
     count: int
     items: List[ResourceCandidate]
+
+
+ResourceValue = RootModel[List[Any]]

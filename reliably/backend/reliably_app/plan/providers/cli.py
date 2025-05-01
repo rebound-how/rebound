@@ -137,7 +137,9 @@ async def create_cli_job(
 
     async with SessionLocal() as db:
         experiment_summary = await experiment.crud.get_experiment_summary(
-            db, org_id, plan.definition.experiments[0]  # type: ignore
+            db,
+            org_id,  # type: ignore
+            plan.definition.experiments[0],
         )
         await notification.tasks.notify_event(
             notification.schemas.PlanEvent(
@@ -220,7 +222,7 @@ async def run_cli(
         raise PlanFailedError(
             plan_id,
             "Cannot run plan using the local CLI depoloyment strategy, "
-            "missing `uvx` in PATH"
+            "missing `uvx` in PATH",
         )
 
     scheme, domain = get_endpoint_info(settings.RELIABLY_DOMAIN)
@@ -433,9 +435,7 @@ def execution_directory(base_dir: Path | None) -> Generator[Path, None, None]:
 
 @lru_cache
 def get_baseline_requirements() -> str:
-    with importlib.resources.path(
-        "reliably_app.data", "requirements.txt"
-    ) as p:
+    with importlib.resources.path("reliably_app.data", "requirements.txt") as p:
         if not p.absolute().is_file():
             return ""
 

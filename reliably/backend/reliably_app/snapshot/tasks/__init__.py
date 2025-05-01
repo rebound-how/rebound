@@ -56,7 +56,10 @@ async def schedule_discovery(
         )
 
         snapshot = await generate_snapshot(
-            SnapshotConfig(env=e), org_id, user_id, agent_id  # type: ignore
+            SnapshotConfig(env=e),
+            org_id,  # type: ignore
+            user_id,  # type: ignore
+            agent_id,  # type: ignore
         )
 
         await create_snapshot(db, org_id, user_id, agent_id, snapshot)  # type: ignore
