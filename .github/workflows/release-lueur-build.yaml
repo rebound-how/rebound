@@ -184,12 +184,12 @@ jobs:
 
       - name: Build (shared)
         if: matrix.target != 'x86_64-unknown-linux-musl' && matrix.target != 'aarch64-unknown-linux-musl'
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo build --release --features agent --target ${{ matrix.target }}
         working-directory: ./lueur/lueur-cli
 
       - name: Build (static)
         if: matrix.target == 'x86_64-unknown-linux-musl' || matrix.target == 'aarch64-unknown-linux-musl'
-        run: cargo zigbuild --release --target ${{ matrix.target }}
+        run: cargo zigbuild --release --features agent --target ${{ matrix.target }}
         working-directory: ./lueur/lueur-cli
 
       - name: Upload binaries to release
