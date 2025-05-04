@@ -156,7 +156,7 @@ jobs:
         if: matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
           sudo apt update
-          sudo apt install -y gcc-aarch64-linux-gnu lld
+          sudo apt install -y g++-aarch64-linux-gnu gcc-aarch64-linux-gnu lld
 
       - name: Install gRPC build dependencies (Linux)
         if: matrix.os == 'ubuntu-24.04'

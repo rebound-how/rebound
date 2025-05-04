@@ -297,7 +297,7 @@ backend/.env*
 report.md
 results.json
 lueur/reliably.yaml
-
+docs/lueur/.pdm-python
 
 ###############################################################################
 # Reliably
