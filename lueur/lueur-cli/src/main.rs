@@ -4,8 +4,8 @@
 // https://github.com/rust-lang/rust/issues/27709
 #![feature(ip)]
 
-#[cfg(feature = "ai")]
-mod ai;
+#[cfg(feature = "agent")]
+mod agent;
 mod cli;
 mod config;
 mod demo;
@@ -482,7 +482,8 @@ async fn main() -> Result<()> {
                             )?;
                             println!(
                                 "Generated {} reliability scenarios across {} endpoints!",
-                                format!("{}", scenarios.len()).color(Color::Turquoise2),
+                                format!("{}", scenarios.len())
+                                    .color(Color::Turquoise2),
                                 format!("{}", count).color(Color::IndianRed1b)
                             );
                         }
@@ -500,7 +501,8 @@ async fn main() -> Result<()> {
                             )?;
                             println!(
                                 "Generated {} reliability scenarios across {} endpoints!",
-                                format!("{}", scenarios.len()).color(Color::Turquoise2),
+                                format!("{}", scenarios.len())
+                                    .color(Color::Turquoise2),
                                 format!("{}", count).color(Color::IndianRed1b)
                             );
                         }
@@ -511,7 +513,7 @@ async fn main() -> Result<()> {
                 }
             }
         },
-        #[cfg(feature = "ai")]
+        #[cfg(feature = "agent")]
         Commands::Agent { agent } => match agent {
             cli::AgentCommands::Advise(advice_config) => {
                 let file = File::open(&advice_config.results)?;
@@ -519,9 +521,9 @@ async fn main() -> Result<()> {
                 let final_results: ScenariosResults = from_reader(reader)?;
                 let final_report = report::builder::to_report(&final_results);
 
-                let metas = ai::meta::get_metas(&final_report);
+                let metas = agent::meta::get_metas(&final_report);
 
-                ai::source::index(
+                agent::source::index(
                     &advice_config.repo,
                     "python",
                     &metas,
@@ -529,9 +531,9 @@ async fn main() -> Result<()> {
                 )
                 .await?;
 
-                ai::insight::analyze(&final_report).await?;
+                agent::insight::analyze(&final_report).await?;
 
-                ai::suggestion::make(
+                agent::suggestion::make(
                     &final_report,
                     &metas,
                     &advice_config.repo,

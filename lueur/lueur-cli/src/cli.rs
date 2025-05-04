@@ -219,6 +219,7 @@ pub enum Commands {
     },
 
     /// Resilience Agentic Buddy
+    #[cfg(feature = "agent")]
     Agent {
         #[command(subcommand)]
         agent: AgentCommands,
@@ -784,6 +785,7 @@ pub enum ScenarioCommands {
 }
 
 /// Subcommands for the agent
+#[cfg(feature = "agent")]
 #[derive(Subcommand, Debug)]
 pub enum AgentCommands {
     /// Offer suggestions from a scenario's report
@@ -867,6 +869,7 @@ pub struct ScenarioGenerateConfig {
 }
 
 /// Configuration for generating advice on a report
+#[cfg(feature = "agent")]
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]
 pub struct AgentAdviceConfig {
     /// Path to the scenario results file (JSON)

@@ -2,7 +2,6 @@ use std::fmt;
 
 use anyhow::Result;
 use swiftide::indexing::EmbeddedField;
-use swiftide::indexing::LanguageModelWithBackOff;
 use swiftide::integrations::qdrant::Qdrant;
 use swiftide::integrations::{self};
 use swiftide::query::answers;
@@ -10,15 +9,11 @@ use swiftide::query::query_transformers;
 use swiftide::query::{self};
 
 use super::CODE_COLLECTION;
+use super::clients::openai::get_client;
 use crate::report::types::Report;
 
 pub async fn analyze(report: &Report) -> Result<ReportReviews> {
-    let client = integrations::openai::OpenAI::builder()
-        .default_embed_model("text-embedding-3-small")
-        .default_prompt_model("gpt-4o-mini")
-        .build()?;
-
-    let llm = LanguageModelWithBackOff::new(client, Default::default());
+    let llm = get_client()?;
 
     let qdrant = Qdrant::builder()
         .batch_size(50)

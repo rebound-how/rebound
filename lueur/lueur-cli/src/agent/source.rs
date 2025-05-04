@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use anyhow::Result;
 use async_trait::async_trait;
 use duckdb;
@@ -7,10 +5,8 @@ use serde_json::json;
 use similar_string::find_best_similarity;
 use swiftide::indexing;
 use swiftide::indexing::EmbeddedField;
-use swiftide::indexing::LanguageModelWithBackOff;
 use swiftide::indexing::loaders::FileLoader;
 use swiftide::indexing::transformers::ChunkCode;
-use swiftide::indexing::transformers::Embed;
 use swiftide::indexing::transformers::MetadataQACode;
 use swiftide::indexing::transformers::SparseEmbed;
 use swiftide::indexing::transformers::metadata_refs_defs_code::NAME_DEFINITIONS;
@@ -24,7 +20,9 @@ use swiftide_core::WithBatchIndexingDefaults;
 use swiftide_core::WithIndexingDefaults;
 
 use super::CODE_COLLECTION;
+use super::clients::openai::get_client;
 use super::meta::Meta;
+use super::transformers::model::Embed as ClientEmbed;
 
 pub async fn index(
     source_dir: &str,
@@ -32,15 +30,7 @@ pub async fn index(
     metas: &Vec<Meta>,
     cache_db_path: &str,
 ) -> Result<()> {
-    let openai_client = integrations::openai::OpenAI::builder()
-        .default_embed_model("text-embedding-3-small")
-        .default_prompt_model("gpt-4o-mini")
-        .build()?;
-
-    let openai_client =
-        LanguageModelWithBackOff::new(openai_client, Default::default());
-
-    let llm = LanguageModelWithBackOff::new(openai_client, Default::default());
+    let llm = get_client()?;
 
     let duckdb_client = Duckdb::builder()
         .connection(duckdb::Connection::open(cache_db_path).unwrap())
@@ -80,7 +70,7 @@ pub async fn index(
         source_lang,
     )?)
     .then(TagOpId::new(opids))
-    .then_in_batch(Embed::new(llm.clone()).with_batch_size(10))
+    .then_in_batch(llm.get_embed()?)
     .then_in_batch(SparseEmbed::new(fastembed_sparse.clone()))
     .then_store_with(qdrant.clone())
     .run()

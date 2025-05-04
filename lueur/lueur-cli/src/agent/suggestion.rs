@@ -11,11 +11,8 @@ use swiftide::chat_completion::errors::ToolError;
 use swiftide::indexing::EmbeddedField;
 use swiftide::indexing::LanguageModelWithBackOff;
 use swiftide::integrations::fastembed::FastEmbed;
-use swiftide::integrations::openai::OpenAI;
 use swiftide::integrations::qdrant::Qdrant;
 use swiftide::integrations::{self};
-use swiftide::prompt::Prompt;
-use swiftide::query::Document;
 use swiftide::query::Query;
 use swiftide::query::answers;
 use swiftide::query::query_transformers;
@@ -27,13 +24,13 @@ use swiftide_core::AgentContext;
 use swiftide_core::CommandError;
 use swiftide_core::CommandOutput;
 use swiftide_core::Retrieve;
-use swiftide_core::TransformQuery;
 use swiftide_core::TransformResponse;
 use swiftide_macros;
 use tera::Context;
 
 use super::meta::Meta;
 use crate::ai::CODE_COLLECTION;
+use crate::ai::clients::openai::get_client;
 use crate::errors::SuggestionError;
 use crate::report::types::Report;
 
@@ -43,77 +40,6 @@ fn select_meta(pairs: &Vec<Meta>) -> Result<Meta> {
             .prompt()?;
 
     Ok(meta)
-}
-
-fn get_prompt(
-    opid: &str,
-    method: &str,
-    path: &str,
-    source_dir: &str,
-) -> Prompt {
-    let mut ctx = Context::new();
-
-    ctx.insert("lang", "python");
-    ctx.insert("opid", opid);
-    ctx.insert("path", path);
-    ctx.insert("method", method);
-    ctx.insert("source_dir", source_dir);
-
-    if is_idempotent(method) {
-        ctx.insert("idempotent", "yes");
-    } else {
-        ctx.insert("idempotent", "no");
-    }
-
-    let mut prompt: Prompt = include_str!(
-        "prompts/change-suggestion_idempotent_transient-network-error.md"
-    )
-    .into();
-
-    prompt = prompt.with_context(ctx);
-
-    prompt
-}
-
-pub async fn retrieve_code(
-    client: &integrations::openai::GenericOpenAI,
-    llm: &LanguageModelWithBackOff<integrations::openai::GenericOpenAI>,
-    qdrant: &Qdrant,
-    opid: &str,
-    method: &str,
-    path: &str,
-    top_k: u64,
-    top_n: u64,
-) -> Result<Vec<Document>, SuggestionError> {
-    let fastembed = FastEmbed::try_default()
-        .map_err(|e| SuggestionError::Retrieval(e.to_string()))?;
-    let fastembed_sparse = FastEmbed::try_default_sparse()
-        .map_err(|e| SuggestionError::Retrieval(e.to_string()))?;
-
-    let search_strategy =
-        HybridSearch::default().with_top_k(top_k).with_top_n(top_n).to_owned();
-
-    let pipeline = query::Pipeline::from_search_strategy(search_strategy)
-        .then_transform_query(
-            query_transformers::GenerateSubquestions::from_client(llm.clone()),
-        )
-        .then_transform_query(query_transformers::Embed::from_client(
-            llm.clone(),
-        ))
-        .then_transform_query(query_transformers::SparseEmbed::from_client(
-            fastembed_sparse.clone(),
-        ))
-        .then_retrieve(qdrant.clone())
-        .then_answer(answers::Simple::from_client(client.clone()));
-
-    let results = pipeline
-        .query("")
-        .await
-        .map_err(|e| SuggestionError::Retrieval(e.to_string()))?;
-
-    let docs = results.documents();
-
-    Ok(docs.to_vec())
 }
 
 #[derive(Clone)]
@@ -239,18 +165,7 @@ async fn propose_patch_tool(
     path: &str,
     source_dir: &str,
 ) -> Result<ToolOutput, ToolError> {
-    let client: OpenAI = integrations::openai::OpenAI::builder()
-        .default_embed_model("text-embedding-3-small")
-        .default_prompt_model("gpt-4o-mini")
-        .build()
-        .map_err(|e| {
-            ToolError::ExecutionFailed(CommandError::NonZeroExit(
-                CommandOutput { output: e.to_string() },
-            ))
-        })?;
-
-    let llm: LanguageModelWithBackOff<integrations::openai::GenericOpenAI> =
-        LanguageModelWithBackOff::new(client, Default::default());
+    let llm = get_client()?;
 
     let fastembed_sparse = FastEmbed::try_default_sparse()?;
     //let fastembed = FastEmbed::try_default()?;
@@ -418,42 +333,6 @@ fn strip_change(change: &str) -> &str {
     let change = change.trim();
 
     change
-}
-
-fn apply_patch(
-    source_dir: &str,
-    diff: &str,
-    branch: &str,
-    message: &str,
-) -> anyhow::Result<()> {
-    use std::fs;
-    use std::process::Command;
-    // 1. Write diff to temp file
-    let patch_file = &format!("{}/lueur_patch.diff", source_dir);
-    fs::write(patch_file, diff)?;
-
-    // 2. Create and switch to new branch
-    Command::new("git")
-        .current_dir(source_dir)
-        .args(&["checkout", "-b", branch])
-        .status()?;
-
-    // 3. Apply patch and stage changes
-    Command::new("git")
-        .current_dir(source_dir)
-        .args(&["apply", "--index", patch_file])
-        .status()?;
-
-    // 4. Commit changes
-    Command::new("git")
-        .current_dir(source_dir)
-        .args(&["commit", "-m", message])
-        .status()?;
-
-    // 5. Clean up
-    let _ = fs::remove_file(patch_file);
-
-    Ok(())
 }
 
 /// Represents a diff for a single file.
