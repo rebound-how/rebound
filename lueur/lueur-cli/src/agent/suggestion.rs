@@ -29,8 +29,8 @@ use swiftide_macros;
 use tera::Context;
 
 use super::meta::Meta;
-use crate::ai::CODE_COLLECTION;
-use crate::ai::clients::openai::get_client;
+use crate::agent::CODE_COLLECTION;
+use crate::agent::clients::openai::get_client;
 use crate::errors::SuggestionError;
 use crate::report::types::Report;
 
