@@ -1,3 +1,5 @@
+#[cfg(feature = "openapi")]
+
 use anyhow::Result;
 use oas3::OpenApiV3Spec as V31;
 

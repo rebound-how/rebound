@@ -28,6 +28,7 @@ mod state;
 mod termui;
 mod types;
 
+use std::str::FromStr;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
@@ -77,12 +78,15 @@ use scenario::event::ScenarioEventManager;
 use scenario::event::ScenarioItemLifecycle;
 use scenario::event::capture_request_events;
 use scenario::executor::execute_item;
+#[cfg(feature = "openapi")]
 use scenario::generator::openapi;
 use scenario::types::ScenarioResult;
 use scenario::types::ScenariosResults;
 use sched::build_schedule_events;
 use sched::run_fault_schedule;
 use serde_json::from_reader;
+#[cfg(all(target_family = "unix", feature = "agent"))]
+use swiftide::integrations::treesitter::SupportedLanguages;
 use termui::demo_prelude;
 use termui::full_progress;
 use termui::lean_progress;
@@ -471,6 +475,7 @@ async fn main() -> Result<()> {
                 final_results.save(&config.result)?;
                 final_report.save(&config.report)?;
             }
+            #[cfg(feature = "openapi")]
             ScenarioCommands::Generate(config) => {
                 if let Some(spec_file) = &config.spec_file {
                     match openapi::build_from_file(spec_file, None) {
@@ -523,9 +528,11 @@ async fn main() -> Result<()> {
 
                 let metas = agent::meta::get_metas(&final_report);
 
+                let language = SupportedLanguages::from_str(&advice_config.lang)?;
+
                 agent::source::index(
                     &advice_config.repo,
-                    "python",
+                    &language,
                     &metas,
                     &advice_config.index,
                 )

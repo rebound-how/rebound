@@ -781,6 +781,7 @@ pub enum ScenarioCommands {
     Run(ScenarioRunConfig),
 
     /// Generate a new scenario from an OpenAPIv3 specification
+    #[cfg(feature = "openapi")]
     Generate(ScenarioGenerateConfig),
 }
 
@@ -896,6 +897,14 @@ pub struct AgentAdviceConfig {
         env = "LUEUR_AGENT_ADVICE_INDEX_PATH"
     )]
     pub index: String,
+
+    /// Source language
+    #[arg(
+        long,
+        help = "Target language to index: python, rust, go, java, ...",
+        env = "LUEUR_AGENT_ADVICE_LANGUAGE"
+    )]
+    pub lang: String,
 }
 
 /// Configuration for executing the demo server

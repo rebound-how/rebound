@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::Result;
 use async_trait::async_trait;
 use duckdb;
@@ -14,6 +16,7 @@ use swiftide::indexing::transformers::metadata_refs_defs_code::NAME_REFERENCES;
 use swiftide::integrations::duckdb::Duckdb;
 use swiftide::integrations::fastembed::FastEmbed;
 use swiftide::integrations::qdrant::Qdrant;
+use swiftide::integrations::treesitter::SupportedLanguages;
 use swiftide::integrations::{self};
 use swiftide_core::Transformer;
 use swiftide_core::WithBatchIndexingDefaults;
@@ -26,7 +29,7 @@ use super::transformers::model::Embed as ClientEmbed;
 
 pub async fn index(
     source_dir: &str,
-    source_lang: &str,
+    source_lang: &SupportedLanguages,
     metas: &Vec<Meta>,
     cache_db_path: &str,
 ) -> Result<()> {
@@ -52,22 +55,25 @@ pub async fn index(
 
     let opids = metas.iter().map(|m| m.opid.clone()).collect::<Vec<String>>();
 
+    let lang = serde_json::to_string(&source_lang).unwrap();
+    let exts = source_lang.file_extensions();
+
     indexing::Pipeline::from_loader(
-        FileLoader::new(source_dir).with_extensions(&["py"]),
+        FileLoader::new(source_dir).with_extensions(exts),
     )
     .filter_cached(duckdb_client)
     .then(indexing::transformers::OutlineCodeTreeSitter::try_for_language(
-        source_lang,
+        lang.as_str(),
         Some(chunk_size),
     )?)
     .then(MetadataQACode::new(llm.clone()))
     .then_chunk(ChunkCode::try_for_language_and_chunk_size(
-        source_lang,
+        lang.as_str(),
         10..chunk_size,
     )?)
     .then(indexing::transformers::CompressCodeOutline::new(llm.clone()))
     .then(indexing::transformers::MetadataRefsDefsCode::try_from_language(
-        source_lang,
+        lang.as_str(),
     )?)
     .then(TagOpId::new(opids))
     .then_in_batch(llm.get_embed()?)

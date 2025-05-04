@@ -6,6 +6,9 @@
 //!   jitter, packet-loss, bandwidth, DNS, HTTP-errors, black-hole).
 //! * For every **GET** operation in the spec we render **all** templates, so a
 //!   single OpenAPI file yields a comprehensive test matrix.
+
+#[cfg(feature = "openapi")]
+ 
 use std::fs;
 use std::fs::File;
 use std::io::BufWriter;
