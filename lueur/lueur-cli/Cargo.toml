@@ -86,22 +86,22 @@ minijinja = { version = "2.9.0", features = ["loader"], optional = true }
 openapiv3 = { version = "2.0.0", optional = true }
 oas3 = { version = "0.16.1", optional = true }
 k8s-openapi = { version = "0.24.0", default-features = false, optional = true, features = ["latest"] }
+percent-encoding = { version = "2.3.1", optional = true }
 
 # agent feature
 swiftide = { version = "0.25.1", optional = true, features = ["duckdb", "fastembed", "ollama", "openai", "qdrant", "tree-sitter", "open-router"] }
+swiftide-macros = { version = "0.25.1", optional = true }
+swiftide-core = { version = "0.25.1", optional = true }
+swiftide-agents = { version = "0.25.1", optional = true }
+swiftide-indexing = { version = "0.25.1", features = ["tree-sitter"], optional = true }
 duckdb = { version = "1.2.2", optional = true, features = ["bundled"] }
 tree-sitter-python = { version = "0.23.6", optional = true }
 ignore = { version = "0.4.23", optional = true }
 similar = { version = "2.7.0", optional = true }
 inquire = { version = "0.7.5", optional = true }
-swiftide-macros = { version = "0.25.1", optional = true }
-swiftide-core = { version = "0.25.1", optional = true }
 derive_builder = { version = "0.20.2", optional = true }
 diffy = { version = "0.4.2", optional = true }
-swiftide-agents = { version = "0.25.1", optional = true }
 similar-string = { version = "1.4.3", optional = true }
-percent-encoding = "2.3.1"
-swiftide-indexing = { version = "0.25.1", features = ["tree-sitter"] }
 
 # ebpf feature
 [target.'cfg(target_os = "linux")'.dependencies]
@@ -148,22 +148,23 @@ stealth-auto-build = [
 ]
 agent = [
     "dep:swiftide",
-    "dep:duckdb",
-    "dep:tree-sitter-python",
-    "dep:k8s-openapi",
-    "dep:ignore",
-    "dep:similar",
-    "dep:inquire",
     "dep:swiftide-macros",
     "dep:swiftide-core",
-    "dep:derive_builder",
     "dep:swiftide-agents",
+    "dep:swiftide-indexing",
+    "dep:duckdb",
+    "dep:tree-sitter-python",
+    "dep:ignore",
+    "dep:similar",
+    "dep:derive_builder",
+    "dep:inquire",
     "dep:diffy",
-    "dep:similar-string"
+    "dep:similar-string",
 ]
 openapi = [
     "dep:oas3",
     "dep:k8s-openapi",
     "dep:openapiv3",
-    "dep:minijinja"
+    "dep:minijinja",
+    "dep:percent-encoding"
 ]
