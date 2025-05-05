@@ -1,4 +1,4 @@
-# Capture and Model Traffic With MITM Plugins
+# Extend lueur with gRPC Plugins
 
 lueur's fault are internally managed by design. To support any bespoke
 scenarios you may need to explore, lueur offers an extension mechanism via
@@ -20,10 +20,26 @@ to a more advanced use case by analyzing SQL queries on the fly.
         any language that has a good support for gRPC, which basically means
         most modern languages today.
 
+## Register Plugins
+
+Before you create your first plugin, let's review how they are registered
+with lueur's proxy.
+
+Use the `--grpc-plugin` flag, multiple times one for each plugin, on the
+`lueur run` command:
+
+```bash
+lueur run --grpc-plugin http://localhost:50051 --grpc-plugin http://localhost:50052 ...
+```
+
+??? note "Plugin connection management"
+
+    lueur will tolerate plugins to disconnect and will attempt to reconnect to
+    a plugin that went away.
 
 ## Create a Basic Plugin with Python
 
-!!! question "Are plugins only written in Python?"
+??? question "Are plugins only written in Python?"
 
     lueur's plugins are gRPC servers so you can write plugins in any languages
     that [support gRPC](https://grpc.io/docs/#official-support). 

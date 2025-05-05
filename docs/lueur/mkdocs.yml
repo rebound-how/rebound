@@ -22,23 +22,33 @@ nav:
     - "Getting Started": tutorials/getting-started.md
     - "Creating a Reliability Testing Scenario": tutorials/create-scenario.md
   - "How-To Guides":
-    - "Install lueur": how-to/install.md
-    - "Configure Latency": how-to/proxy/faults/configure-latency.md
-    - "Configure Bandwidth": how-to/proxy/faults/configure-bandwidth.md
-    - "Configure Packet Loss": how-to/proxy/faults/configure-packet-loss.md
-    - "Configure HTTP Error": how-to/proxy/faults/configure-http-error.md
-    - "Configure Jitter": how-to/proxy/faults/configure-jitter.md
-    - "Configure Blackhole": how-to/proxy/faults/configure-blackhole.md
-    - "Impact Any TCP Stream": how-to/proxy/protocols/tcp.md
-    - "Man in The Middle Proxying (MITM)": how-to/proxy/mitm.md
-    - "Run In Stealth Mode": how-to/proxy/stealth/configure-stealth-mode.md
-    - "Enable Open Telemetry Observability": how-to/observability/traces.md
-    - "Integrate GitHub Actions": how-to/ci/github.md
-    - "Run On Kubernetes": how-to/platform/run-on-kubernetes.md
-    - "Run With Docker": how-to/platform/run-with-docker.md
-    - "Run on Windows": how-to/platform/run-on-windows.md
-    - "Run with Chaos Toolkit": how-to/run-with-chaostoolkit.md
-    - "Run with Reliably": how-to/run-with-reliably.md
+    - "Install lueur":
+      - how-to/install.md
+    - "Fault Injection":
+      - "Latency": how-to/proxy/faults/configure-latency.md
+      - "Bandwidth": how-to/proxy/faults/configure-bandwidth.md
+      - "Packet Loss": how-to/proxy/faults/configure-packet-loss.md
+      - "HTTP Error": how-to/proxy/faults/configure-http-error.md
+      - "Jitter": how-to/proxy/faults/configure-jitter.md
+      - "Blackhole": how-to/proxy/faults/configure-blackhole.md
+      - "Extend lueur": how-to/proxy/faults/extending.md
+    - "Scenarios":
+      - "Generate": how-to/scenarios/generate.md
+      - "Run": how-to/scenarios/run.md
+      - "Report": how-to/scenarios/reporting.md
+    - "Proxy Configuration":
+      - "Lifecycle": how-to/proxy/lifecycle.md
+      - "TUI": how-to/proxy/tui.md
+      - "TCP Proxies": how-to/proxy/protocols/tcp.md
+      - "Stealth Mode (eBPF)": how-to/proxy/stealth/configure-stealth-mode.md
+      - "Open Telemetry": how-to/observability/traces.md
+    - "Deployment":
+      - "GitHub Action": how-to/ci/github.md
+      - "Kubernetes": how-to/platform/run-on-kubernetes.md
+      - "Docker": how-to/platform/run-with-docker.md
+      - "Windows": how-to/platform/run-on-windows.md
+      - "Chaos Toolkit": how-to/run-with-chaostoolkit.md
+      - "Reliably": how-to/run-with-reliably.md
   - Reference:
     - "CLI Commands": reference/cli-commands.md
     - "Scenario File Format": reference/scenario-file-format.md
@@ -64,15 +74,17 @@ theme:
 
   features:
     - navigation.tabs
+    - navigation.path
+    - navigation.prune
     - content.tabs
     - search.suggest
     - search.highlight
     - navigation.tracking
-    - navigation.sections
     - navigation.top
     - toc.integrate
     - content.code.copy
     - content.code.annotate
+    - content.footnote.tooltips
     #- content.action.edit
 
   
@@ -94,6 +106,7 @@ plugins:
 
 markdown_extensions:
   - admonition
+  - footnotes
   - attr_list
   - md_in_html
   - pymdownx.details

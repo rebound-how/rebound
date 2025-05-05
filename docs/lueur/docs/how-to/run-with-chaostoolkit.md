@@ -20,7 +20,7 @@ in your Chaos Engineering experiments.
         If you haven’t installed Chaos Toolkit yet, follow the
         [installation instructions](https://chaostoolkit.org/reference/usage/install/).
 
-## Run with the Chaos Toolkit Lueur Extension
+## Run with the Chaos Toolkit lueur Extension
 
 -   [X] Install the {==chaostoolkit-lueur==} extension
 

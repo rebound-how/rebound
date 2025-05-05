@@ -110,3 +110,28 @@
     margin-bottom: 1rem;
   }
 }
+
+.features-container {  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  justify-items: stretch;
+  grid-template-areas:
+    "feat";
+}
+
+.feat {  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "left right";
+  grid-area: feat;
+  height: 100%;
+}
+
+.left { grid-area: left; }
+
+.right { grid-area: right; }

@@ -59,18 +59,23 @@ A proxy to test network resilience by injecting various faults.
 Usage: lueur [OPTIONS] <COMMAND>
 
 Commands:
-  run       Run the lueur proxy and apply network faults to traffic
-  scenario  Execute a scenario
+  run       Resilience proxy
+  scenario  Resilience automation
+  agent     Resilience Agentic Buddy
   demo      Run a simple demo server for learning purpose
   help      Print this message or the help of the given subcommand(s)
 
 Options:
-      --log-file <LOG_FILE>    Path to the log file. Disabled by default
-      --log-stdout             Stdout logging enabled
-      --log-level <LOG_LEVEL>  Log level [default: info,tower_http=debug]
-      --with-otel              Enable open telemetry
-  -h, --help                   Print help
-  -V, --version                Print version
+  -h, --help     Print help
+  -V, --version  Print version
+
+Logging Options:
+      --log-file <LOG_FILE>    Path to the log file. Disabled by default [env: LUEUR_LOG_FILE=]
+      --log-stdout             Stdout logging enabled [env: LUEUR_WITH_STDOUT_LOGGING=]
+      --log-level <LOG_LEVEL>  Log level [env: LUEUR_LOG_LEVEL=] [default: info]
+
+Observability Options:
+      --with-otel  Enable Open Telemetry tracing and metrics. [env: LUEUR_WITH_OTEL=]
 
 ```
 

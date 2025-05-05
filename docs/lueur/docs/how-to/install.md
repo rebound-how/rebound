@@ -4,6 +4,28 @@ lueur is a designed to be easily installed on major systems such as Linux,
 macOS and Windows. We provide a variety of approaches to install lueur depending
 on your environment.
 
+## Features Matrix
+
+lueur disables some of its features depending on the platform. Below is a
+summary of the capabilities per target.
+
+| Platform (OS) / Feature | Proxy | Scenario | Stealh (eBPF) | AI Agent |
+|-------------------------|:-----:|:---------------:|:------------------:|:-------------:|
+| Linux shared library    |  :white_check_mark:    | :white_check_mark:               | :white_check_mark:             | :white_check_mark:        |
+| Linux static (musl)    |  :white_check_mark:    | :white_check_mark:               | :white_check_mark:             | :no_entry:        |
+| MacOSX     |  :white_check_mark:    | :white_check_mark:              | :no_entry:             | :white_check_mark:        |
+| Windows     |  :white_check_mark:    | :white_check_mark:               | :no_entry:             | :no_entry:        |
+
+1. lueur comes with binaries with and without eBPF support for the Linux
+   platform.
+2. Stealth mode relies on the Linux kernel technology called eBPF and therefore
+   is disabled elsewhere.
+3. AI Agent relies on the [swiftide](https://swiftide.rs/) rust framework which
+   [doesn't support Windows](https://github.com/bosun-ai/swiftide/issues/299).
+4. lueur only supports 64 bits architectures: x86 and ARM.
+
+When a feature is disabled, it won't appear in the CLI arguments.
+
 ## Download the lueur binary
 
 The most direct route is to download the lueur binary on your machine.
@@ -37,7 +59,7 @@ The most direct route is to download the lueur binary on your machine.
     chmod a+x lueur
     ```
 
-### Stealth Dependencies
+### Stealth Feature
 
 lueur [stealth mode](../how-to/proxy/stealth/configure-stealth-mode.md)
 requires additional dependencies only available on Linux.
@@ -103,9 +125,25 @@ machine.
     cargo +nightly install lueur
     ```
 
-### Stealth Dependencies
+### AI Agent Feature
 
--   [X] Install the `lueur` executable with {==stealth==} mode enabled
+!!! info
+
+    lueur AI Agent is not supported on Windows.
+
+-   [X] Install the `lueur` executable with {==agent==} feature enabled
+
+    ```bash
+    cargo +nightly install lueur --features agent
+    ```
+
+### Stealth Feature
+
+!!! info
+
+    lueur AI Agent is only available on Linux.
+
+-   [X] Install the `lueur` executable with {==stealth==} feature enabled
 
     In this case, you need to enable the
     [stealth](./proxy/stealth/configure-stealth-mode.md) feature. when
