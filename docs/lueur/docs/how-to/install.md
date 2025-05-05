@@ -9,7 +9,7 @@ on your environment.
 lueur disables some of its features depending on the platform. Below is a
 summary of the capabilities per target.
 
-| Platform (OS) / Feature | Proxy | Scenario | Stealh (eBPF) | AI Agent |
+| Platform (OS) / Feature | Proxy | Scenario | Stealth (eBPF) | AI Agent |
 |-------------------------|:-----:|:---------------:|:------------------:|:-------------:|
 | Linux shared library    |  :white_check_mark:    | :white_check_mark:               | :white_check_mark:             | :white_check_mark:        |
 | Linux static (musl)    |  :white_check_mark:    | :white_check_mark:               | :white_check_mark:             | :no_entry:        |
