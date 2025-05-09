@@ -15,7 +15,7 @@ network traffic without modifying your application.
     -   [X] Install lueur with Stealth mode support
 
         If you haven’t installed lueur yet, follow the
-        [installation instructions](../../install.md#stealth-dependencies).
+        [installation instructions](../../install.md#stealth-feature).
 
 ## Capture HTTPS Traffic
 

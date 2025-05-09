@@ -13,35 +13,7 @@ You may try the installation script:
 curl -sSL https://lueur.dev/get | bash
 ```
 
-Alternatively, you can download the appropriate binary for your platform from
-[here](https://github.com/rebound-how/rebound/releases).
-
-??? tip "Configure the binary"
-
-    Once you have downloaded the archive, you can uncompress it and make sure
-    it can be found in your `PATH`.
-
-    === "Linux, macOS, Windows Bash"
-
-        ```bash
-        export PATH=$PATH:`pwd`
-        ```
-
-        Make also sure the downloaded binary is an executable:
-
-        ```bash
-        chmod a+x lueur
-        ```
-
-    === "Windows Powershell"
-
-        ```console
-        $env:Path += ';C:\directoy\where\lueur\lives' 
-        ```
-
-!!! info "Do you want to know more?"
-
-    Find more installation options [here](../how-to/install.md).
+Alternatively, explore our other [installation options](../how-to/install.md#download-the-lueur-binary).
 
 ## Check lueur is ready to roll
 

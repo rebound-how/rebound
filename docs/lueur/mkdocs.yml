@@ -24,6 +24,12 @@ nav:
   - "How-To Guides":
     - "Install lueur":
       - how-to/install.md
+    - "Proxy Configuration":
+      - "Lifecycle": how-to/proxy/lifecycle.md
+      - "TUI": how-to/proxy/tui.md
+      - "TCP Proxies": how-to/proxy/protocols/tcp.md
+      - "Stealth Mode (eBPF)": how-to/proxy/stealth/configure-stealth-mode.md
+      - "Open Telemetry": how-to/observability/traces.md
     - "Fault Injection":
       - "Latency": how-to/proxy/faults/configure-latency.md
       - "Bandwidth": how-to/proxy/faults/configure-bandwidth.md
@@ -36,12 +42,9 @@ nav:
       - "Generate": how-to/scenarios/generate.md
       - "Run": how-to/scenarios/run.md
       - "Report": how-to/scenarios/reporting.md
-    - "Proxy Configuration":
-      - "Lifecycle": how-to/proxy/lifecycle.md
-      - "TUI": how-to/proxy/tui.md
-      - "TCP Proxies": how-to/proxy/protocols/tcp.md
-      - "Stealth Mode (eBPF)": how-to/proxy/stealth/configure-stealth-mode.md
-      - "Open Telemetry": how-to/observability/traces.md
+    - "Agent":
+      - "Scenario Analysis": how-to/agent/report-advices.md
+      - "Code Review & Suggestions": how-to/agent/code-suggestions.md
     - "Deployment":
       - "GitHub Action": how-to/ci/github.md
       - "Kubernetes": how-to/platform/run-on-kubernetes.md

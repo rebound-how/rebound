@@ -62,7 +62,9 @@ The most direct route is to download the lueur binary on your machine.
 ### Stealth Feature
 
 lueur [stealth mode](../how-to/proxy/stealth/configure-stealth-mode.md)
-requires additional dependencies only available on Linux.
+requires additional dependencies only available on Linux. Follow
+these instructions only if you intend on using the stealth feature. Otherwise,
+you may skip this section.
 
 -   [X] Download lueur with ebpf support
 
