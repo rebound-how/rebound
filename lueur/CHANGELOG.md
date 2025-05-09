@@ -2,5 +2,5 @@
 
 ## Added
 
-- AI agent
-- OpenAPI generation support
+- Improved AI agent
+- Added agent documentation
