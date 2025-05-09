@@ -1,5 +1,4 @@
 #[cfg(feature = "openapi")]
-
 use std::fs::File;
 use std::io::BufReader;
 

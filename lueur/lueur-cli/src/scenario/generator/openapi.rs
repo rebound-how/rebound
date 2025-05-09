@@ -8,7 +8,6 @@
 //!   single OpenAPI file yields a comprehensive test matrix.
 
 #[cfg(feature = "openapi")]
- 
 use std::fs;
 use std::fs::File;
 use std::io::BufWriter;

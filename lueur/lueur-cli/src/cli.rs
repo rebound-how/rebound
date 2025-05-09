@@ -4,6 +4,8 @@ use clap::Subcommand;
 use serde::Deserialize;
 use serde::Serialize;
 
+use crate::agent::clients::SupportedLLMClient;
+use crate::agent::insight::ReportReviewRole;
 use crate::types::BandwidthUnit;
 use crate::types::Direction;
 use crate::types::LatencyDistribution;
@@ -223,6 +225,9 @@ pub enum Commands {
     Agent {
         #[command(subcommand)]
         agent: AgentCommands,
+
+        #[command(flatten)]
+        common: AgentCommandCommon,
     },
 
     /// Run a simple demo server for learning purpose
@@ -789,7 +794,10 @@ pub enum ScenarioCommands {
 #[cfg(feature = "agent")]
 #[derive(Subcommand, Debug)]
 pub enum AgentCommands {
-    /// Offer suggestions from a scenario's report
+    /// Explore and suggests changes of source code to help reliability
+    Review(AgentReviewConfig),
+
+    /// Analyze and offer advices of your scenario report
     Advise(AgentAdviceConfig),
 }
 
@@ -869,7 +877,90 @@ pub struct ScenarioGenerateConfig {
     pub split_files: bool,
 }
 
-/// Configuration for generating advice on a report
+/// Common options for all agent commands
+#[derive(Args, Clone, Debug, Serialize, Deserialize)]
+pub struct AgentCommandCommon {
+    /// LLM client to use
+    #[arg(
+        long,
+        help_heading = "Agent Options",
+        help = "LLM client to use.",
+        env = "LUEUR_AGENT_CLIENT",
+        default_value_t = SupportedLLMClient::OpenAI,
+        value_enum,
+    )]
+    pub llm_client: SupportedLLMClient,
+
+    /// Prompt reasoning model
+    #[arg(
+        long,
+        help_heading = "Agent Options",
+        help = "LLM prompt reasoning model, used by the advise command.",
+        env = "LUEUR_AGENT_PROMPT_REASONING_MODEL",
+        default_value = "o4-mini"
+    )]
+    pub llm_prompt_reasoning_model: String,
+
+    /// Prompt chat model
+    #[arg(
+        long,
+        help_heading = "Agent Options",
+        help = "LLM prompt chat model, used by the review command.",
+        env = "LUEUR_AGENT_PROMPT_CHAT_MODEL",
+        default_value = "gpt-4.1-mini"
+    )]
+    pub llm_prompt_chat_model: String,
+
+    /// Embed model
+    #[arg(
+        long,
+        help_heading = "Agent Options",
+        help = "LLM embed model.",
+        env = "LUEUR_AGENT_EMBED_MODEL",
+        default_value = "text-embedding-3-small"
+    )]
+    pub llm_embed_model: String,
+}
+
+/// Configuration for reviewing source code
+#[cfg(feature = "agent")]
+#[derive(Args, Clone, Debug, Serialize, Deserialize)]
+pub struct AgentReviewConfig {
+    /// Path to the scenario results file (JSON)
+    #[arg(
+        long,
+        help = "Path to the generated json results file",
+        env = "LUEUR_AGENT_REVIEW_RESULTS_PATH"
+    )]
+    pub results: String,
+
+    /// Project source code repository directory
+    #[arg(
+        long = "repo-dir",
+        help = "Path to the repository source code directory",
+        env = "LUEUR_AGENT_REVIEW_REPO_PATH"
+    )]
+    pub repo: String,
+
+    /// Source index path
+    #[arg(
+        long,
+        help = "Path to the index cache",
+        default_value = "/tmp/index.db",
+        env = "LUEUR_AGENT_REVIEW_INDEX_PATH"
+    )]
+    pub index: String,
+
+    /// Source language
+    #[arg(
+        long,
+        help = "Target language to index: python, rust, go, java, ...",
+        env = "LUEUR_AGENT_REVIEW_LANGUAGE"
+    )]
+    pub lang: String,
+}
+
+/// Configuration for suggesting advices on scenario reports
 #[cfg(feature = "agent")]
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]
 pub struct AgentAdviceConfig {
@@ -881,30 +972,15 @@ pub struct AgentAdviceConfig {
     )]
     pub results: String,
 
-    /// Project source code repository directory
-    #[arg(
-        long = "repo-dir",
-        help = "Path to the repository source code directory",
-        env = "LUEUR_AGENT_ADVICE_REPO_PATH"
-    )]
-    pub repo: String,
-
-    /// Source index path
+    /// Role to influence the advice
     #[arg(
         long,
-        help = "Path to the index cache",
-        default_value = "/tmp/index.db",
-        env = "LUEUR_AGENT_ADVICE_INDEX_PATH"
+        default_value_t = ReportReviewRole::Developer,
+        value_enum,
+        help = "Role to influence the advice",
+        env = "LUEUR_AGENT_ADVICE_ROLE"
     )]
-    pub index: String,
-
-    /// Source language
-    #[arg(
-        long,
-        help = "Target language to index: python, rust, go, java, ...",
-        env = "LUEUR_AGENT_ADVICE_LANGUAGE"
-    )]
-    pub lang: String,
+    pub role: ReportReviewRole,
 }
 
 /// Configuration for executing the demo server

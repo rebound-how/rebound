@@ -50,6 +50,38 @@ struct TaskInfo {
     events: Vec<FaultEvent>,
 }
 
+pub fn long_operation(message: &str, size: Option<u64>) -> ProgressBar {
+    if size.is_some() {
+        let pb =
+            ProgressBar::with_draw_target(size, ProgressDrawTarget::stdout());
+        pb.enable_steady_tick(Duration::from_millis(80));
+        pb.set_style(
+            ProgressStyle::with_template(
+                "{spinner:.green} [{elapsed_precise}] {pos}/{len} - {msg}",
+            )
+            .unwrap()
+            .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]),
+        );
+        pb.set_message(message.to_string());
+
+        pb
+    } else {
+        let pb =
+            ProgressBar::with_draw_target(None, ProgressDrawTarget::stdout());
+        pb.enable_steady_tick(Duration::from_millis(80));
+        pb.set_style(
+            ProgressStyle::with_template(
+                "{spinner:.green} [{elapsed_precise}] {msg}",
+            )
+            .unwrap()
+            .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]),
+        );
+        pb.set_message(message.to_string());
+
+        pb
+    }
+}
+
 pub async fn lean_progress(
     receiver: kanal::AsyncReceiver<TaskProgressEvent>,
     shutdown_rx: kanal::AsyncReceiver<()>,

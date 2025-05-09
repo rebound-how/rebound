@@ -89,11 +89,11 @@ k8s-openapi = { version = "0.24.0", default-features = false, optional = true, f
 percent-encoding = { version = "2.3.1", optional = true }
 
 # agent feature
-swiftide = { version = "0.25.1", optional = true, features = ["duckdb", "fastembed", "ollama", "openai", "qdrant", "tree-sitter", "open-router"] }
-swiftide-macros = { version = "0.25.1", optional = true }
-swiftide-core = { version = "0.25.1", optional = true }
-swiftide-agents = { version = "0.25.1", optional = true }
-swiftide-indexing = { version = "0.25.1", features = ["tree-sitter"], optional = true }
+swiftide = { version = "0.26.0", optional = true, features = ["duckdb", "fastembed", "ollama", "openai", "qdrant", "tree-sitter", "open-router"] }
+swiftide-macros = { version = "0.26.0", optional = true }
+swiftide-core = { version = "0.26.0", optional = true }
+swiftide-agents = { version = "0.26.0", optional = true }
+swiftide-indexing = { version = "0.26.0", features = ["tree-sitter"], optional = true }
 duckdb = { version = "1.2.2", optional = true, features = ["bundled"] }
 tree-sitter-python = { version = "0.23.6", optional = true }
 ignore = { version = "0.4.23", optional = true }
@@ -102,6 +102,8 @@ inquire = { version = "0.7.5", optional = true }
 derive_builder = { version = "0.20.2", optional = true }
 diffy = { version = "0.4.2", optional = true }
 similar-string = { version = "1.4.3", optional = true }
+pulldown-cmark = { version = "0.13.0", default-features = false, optional = true }
+pulldown-cmark-to-cmark = { version = "21.0.0", default-features = false, optional = true }
 
 # ebpf feature
 [target.'cfg(target_os = "linux")'.dependencies]
@@ -129,7 +131,7 @@ path = "src/main.rs"
 
 [features]
 default = [
-    "openapi"
+    "openapi","agent"
 ]
 stealth = [
     "aya-ebpf",
@@ -160,6 +162,8 @@ agent = [
     "dep:inquire",
     "dep:diffy",
     "dep:similar-string",
+    "dep:pulldown-cmark",
+    "dep:pulldown-cmark-to-cmark"
 ]
 openapi = [
     "dep:oas3",

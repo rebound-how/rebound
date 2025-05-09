@@ -28,14 +28,15 @@ mod state;
 mod termui;
 mod types;
 
-use std::str::FromStr;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
+use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
 use std::time::Instant;
 
+use agent::insight::ReviewEventPhase;
 use anyhow::Result;
 #[cfg(all(
     target_os = "linux",
@@ -90,6 +91,7 @@ use swiftide::integrations::treesitter::SupportedLanguages;
 use termui::demo_prelude;
 use termui::full_progress;
 use termui::lean_progress;
+use termui::long_operation;
 use termui::proxy_prelude;
 use termui::quiet_handle_displayable_events;
 use tokio::sync::watch;
@@ -519,33 +521,116 @@ async fn main() -> Result<()> {
             }
         },
         #[cfg(feature = "agent")]
-        Commands::Agent { agent } => match agent {
-            cli::AgentCommands::Advise(advice_config) => {
-                let file = File::open(&advice_config.results)?;
+        Commands::Agent { agent, common } => match agent {
+            cli::AgentCommands::Review(cfg) => {
+                let file = File::open(&cfg.results)?;
+                let reader = BufReader::new(file);
+                let final_results: ScenariosResults = from_reader(reader)?;
+                let final_report = report::builder::to_report(&final_results);
+                let metas = agent::meta::get_metas(&final_report);
+
+                let repo = cfg.repo.clone();
+                let lang = cfg.lang.clone();
+                let index = cfg.index.clone();
+                let llm_client = common.llm_client.clone();
+                let llm_prompt_model =
+                    common.llm_prompt_reasoning_model.clone();
+                let llm_prompt_reasoning_model =
+                    common.llm_prompt_reasoning_model.clone();
+                let llm_embed_model = common.llm_embed_model.clone();
+
+                let handle: task::JoinHandle<Result<()>> =
+                    tokio::spawn(async move {
+                        agent::source::index(
+                            &repo,
+                            &lang,
+                            &metas,
+                            &index,
+                            llm_client,
+                            &llm_prompt_model,
+                            &llm_embed_model,
+                        )
+                        .await?;
+
+                        agent::suggestion::review_source(
+                            &metas,
+                            &lang,
+                            &repo,
+                            llm_client,
+                            &llm_prompt_model,
+                            &llm_prompt_reasoning_model,
+                            &llm_embed_model,
+                        )
+                        .await?;
+
+                        Ok(())
+                    });
+
+                /*let pb = long_operation(
+                    &format!(
+                        "{}",
+                        "Reviewing your code! This could take a while..."
+                            .bold()
+                    ),
+                    None,
+                );*/
+
+                handle.await??;
+
+                //pb.finish_and_clear();
+            }
+            cli::AgentCommands::Advise(cfg) => {
+                let file = File::open(&cfg.results)?;
                 let reader = BufReader::new(file);
                 let final_results: ScenariosResults = from_reader(reader)?;
                 let final_report = report::builder::to_report(&final_results);
 
-                let metas = agent::meta::get_metas(&final_report);
+                let role = cfg.role.clone();
+                let llm_client = common.llm_client.clone();
+                let llm_prompt_model =
+                    common.llm_prompt_reasoning_model.clone();
+                let llm_embed_model = common.llm_embed_model.clone();
 
-                let language = SupportedLanguages::from_str(&advice_config.lang)?;
+                let (sender, receiver) = kanal::bounded_async(7);
 
-                agent::source::index(
-                    &advice_config.repo,
-                    &language,
-                    &metas,
-                    &advice_config.index,
-                )
-                .await?;
+                let handle: task::JoinHandle<
+                    Result<agent::insight::ReportReviews>,
+                > = tokio::spawn(async move {
+                    Ok(agent::insight::analyze(
+                        &final_report,
+                        &role,
+                        sender,
+                        llm_client,
+                        &llm_prompt_model,
+                        &llm_embed_model,
+                    )
+                    .await?)
+                });
 
-                agent::insight::analyze(&final_report).await?;
+                let pb = long_operation(
+                    "Analyzing! This could take a while...",
+                    Some(7),
+                );
 
-                agent::suggestion::make(
-                    &final_report,
-                    &metas,
-                    &advice_config.repo,
-                )
-                .await?;
+                tokio::spawn(async move {
+                    let mut stream = receiver.stream();
+                    let pb = pb.clone();
+                    while let Some(event) = stream.next().await {
+                        pb.inc(1);
+                        if event.phase == ReviewEventPhase::Completed {
+                            pb.finish_and_clear();
+                            break;
+                        }
+                        pb.set_message(format!(
+                            "{}...",
+                            event.phase.long_form().bold()
+                        ));
+                    }
+                });
+
+                let advices = handle.await??;
+
+                println!("{}", advices.stitch()?);
             }
         },
     };
