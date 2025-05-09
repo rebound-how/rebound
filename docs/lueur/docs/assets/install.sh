@@ -4,7 +4,7 @@ set -euo pipefail
 GITHUB_ORG="rebound-how"
 GITHUB_REPO="rebound"
 ASSET_TARGET="lueur-cli"
-TARGET_BIN_DIR="$HOME/.local/bin"
+TARGET_BIN_DIR="${TARGET_BIN_DIR:-$HOME/.local/bin}"
 FILE_PATH="${TARGET_BIN_DIR}/lueur"
 
 # --------------------------------------------------
