@@ -926,6 +926,15 @@ pub struct AgentCommandCommon {
 #[cfg(feature = "agent")]
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]
 pub struct AgentReviewConfig {
+    /// Path where to save the generated reviews report
+    #[arg(
+        long = "report",
+        help = "Path where to save the generated reviews report",
+        default_value = "reviews-report.md",
+        env = "LUEUR_AGENT_REVIEW_REPORT"
+    )]
+    pub report: String,
+
     /// Path to the scenario results file (JSON)
     #[arg(
         long,
@@ -958,6 +967,15 @@ pub struct AgentReviewConfig {
         env = "LUEUR_AGENT_REVIEW_LANGUAGE"
     )]
     pub lang: String,
+
+    /// Advice report
+    #[arg(
+        long = "advices-report",
+        help = "Path to the output of the advice command",
+        default_value = "advices-report.md",
+        env = "LUEUR_AGENT_REVIEW_ADVICES_REPORT"
+    )]
+    pub advices: Option<String>,
 }
 
 /// Configuration for suggesting advices on scenario reports
@@ -981,6 +999,15 @@ pub struct AgentAdviceConfig {
         env = "LUEUR_AGENT_ADVICE_ROLE"
     )]
     pub role: ReportReviewRole,
+
+    /// Path where to save the generated advice report.
+    #[arg(
+        long,
+        help = "Path where to save the generated advice report.",
+        default_value = "advices-report.md",
+        env = "LUEUR_AGENT_ADVICE_REPORT_FILE"
+    )]
+    pub report: String,
 }
 
 /// Configuration for executing the demo server

@@ -1,18 +1,15 @@
-use std::error::Error;
+use std::fmt;
 use std::fs;
-use std::io;
 use std::path::Path;
 
 use anyhow::Result;
-use anyhow::anyhow;
 use async_trait::async_trait;
-use diffy::Patch;
-use diffy::PatchFormatter;
 use inquire::Select;
+use kanal::AsyncSender;
+use swiftide::chat_completion::ToolCall;
 use swiftide::chat_completion::ToolOutput;
 use swiftide::chat_completion::errors::ToolError;
 use swiftide::indexing::EmbeddedField;
-use swiftide::indexing::LanguageModelWithBackOff;
 use swiftide::integrations::fastembed::FastEmbed;
 use swiftide::integrations::qdrant::Qdrant;
 use swiftide::integrations::{self};
@@ -127,7 +124,9 @@ impl TransformResponse for InjectCodePrompt {
         let source_dir = Path::new(&self.source_dir);
 
         if self.source_lang == "python" {
-            let pkg_source = fs::read_to_string(source_dir.join("pyproject.toml")).unwrap_or_default();
+            let pkg_source =
+                fs::read_to_string(source_dir.join("pyproject.toml"))
+                    .unwrap_or_default();
             ctx.insert("package_manager", &pkg_source);
         }
 
@@ -147,9 +146,11 @@ impl TransformResponse for InjectCodePrompt {
                 ctx.insert("filedir", &filedir);
                 ctx.insert("filename", &filename);
 
-                let full_source = fs::read_to_string(Path::new(&filedir).join(filename.clone())).unwrap_or_default();
+                let full_source = fs::read_to_string(
+                    Path::new(&filedir).join(filename.clone()),
+                )
+                .unwrap_or_default();
                 ctx.insert("full_source_code", &full_source);
-
             }
         }
 
@@ -164,7 +165,6 @@ impl TransformResponse for InjectCodePrompt {
     }
 }
 
-
 #[derive(Tool, Clone)]
 #[tool(
     description = "Given an operationId, method & path, returns a unified diff suggestion for the operation id code handler"
@@ -175,8 +175,11 @@ pub struct InjectCode {
     pub embed_model: String,
     pub source_dir: String,
     pub source_lang: String,
+    pub advices_path: Option<String>,
+    pub sender: AsyncSender<CodeReviewEvent>,
 }
 
+/// Tool to inject the context of a match code document into the query's context
 impl InjectCode {
     pub fn new_with_models(
         prompt_model: &str,
@@ -184,6 +187,8 @@ impl InjectCode {
         source_dir: &str,
         source_lang: &str,
         meta: Meta,
+        advices_path: Option<String>,
+        sender: AsyncSender<CodeReviewEvent>,
     ) -> Self {
         InjectCode {
             meta,
@@ -191,6 +196,8 @@ impl InjectCode {
             embed_model: embed_model.to_string(),
             source_dir: source_dir.to_string(),
             source_lang: source_lang.to_string(),
+            advices_path,
+            sender,
         }
     }
 
@@ -258,6 +265,14 @@ impl InjectCode {
         ctx.insert("source_dir", &self.source_dir);
         ctx.insert("idempotent", &is_idempotent(&self.meta.method));
 
+        if let Some(advices_report) = self.advices_path.clone() {
+            let p = Path::new(&advices_report);
+            if p.exists() {
+                let report = fs::read_to_string(p).unwrap_or_default();
+                ctx.insert("advices", &report);
+            }
+        }
+
         let tpl = include_str!("prompts/change-base-query.md").to_string();
 
         let q: String =
@@ -268,91 +283,23 @@ impl InjectCode {
             })?;
 
         let reply = pipeline.query(q).await?;
-        let proposed = reply.answer();
+        let reviews = reply.answer();
 
-        tracing::debug!("{}", proposed);
+        let review = reviews.to_string();
 
-        let source_dir_path = Path::new(&self.source_dir);
-        let mut files_changes =
-            parse_model_suggested_diff(proposed, source_dir_path).map_err(|e| {
+        self.sender
+            .send(CodeReviewEvent {
+                phase: CodeReviewEventPhase::Completed,
+                review: CodeReviewAnalysis { analysis: review.clone() },
+            })
+            .await
+            .map_err(|e| {
                 ToolError::ExecutionFailed(CommandError::NonZeroExit(
                     CommandOutput { output: e.to_string() },
                 ))
             })?;
 
-        tracing::debug!("Files changed {:?}", files_changes);
-
-        let review_tpl = include_str!("prompts/change-review.md").to_string();
-
-        for fc in files_changes.iter_mut() {
-            let mut filename = fc.old_path.replace("a/", "");
-
-            if filename == "/dev/null" {
-                filename = fc.new_path.replace("b/", "");
-                fc.old_path = format!("a/{}", filename);
-            }
-
-            let path = format!(
-                "{}/{}",
-                self.source_dir,
-                filename
-            );
-
-            tracing::debug!("File to change Path: {}", path);
-
-            let review_pipeline =
-                query::Pipeline::default()
-                .then_transform_query(query_transformers::Embed::from_client(
-                    llm.clone(),
-                ))
-                .then_transform_query(
-                    query_transformers::SparseEmbed::from_client(
-                        fastembed_sparse.clone(),
-                    ),
-                )
-                .then_retrieve(qdrant.clone())
-                .then_answer(answers::Simple::from_client(llm.clone()));
-
-            
-            let mut ctx = Context::new();
-            
-            let full_source = fs::read_to_string(Path::new(&path)).unwrap_or_default();
-            ctx.insert("full_source_code", &full_source);
-            ctx.insert("proposed_change", &fc.as_diff_string().map_err(ToolError::from)?);
-
-            let q: String = tera::Tera::one_off(&review_tpl, &ctx, false).map_err(|e| {
-                ToolError::ExecutionFailed(CommandError::NonZeroExit(
-                    CommandOutput { output: e.to_string() },
-                ))
-            })?;
-
-            let resp = review_pipeline.query(q).await?;
-
-            println!("{}", resp.answer());
-
-            /* let file_content = std::fs::read_to_string(&path).map_err(|e| {
-                ToolError::ExecutionFailed(CommandError::NonZeroExit(
-                    CommandOutput { output: e.to_string() },
-                ))
-            })?;
-
-            // llms aren't very smart overall, so you need to align their
-            // response with reality
-            realign_hunks(&file_content, &mut fc.hunks);
-
-            tracing::debug!("Realigned hunks: {:?}", fc.hunks);
-            */
-        }
-
-        let mut full_diff = String::new();
-        for fc in files_changes {
-            full_diff.push_str(&fc.as_diff_string().map_err(ToolError::from)?);
-        }
-
-
-        println!("{}", full_diff);
-
-        Ok(ToolOutput::Text(full_diff))
+        Ok(ToolOutput::Text(review))
     }
 }
 
@@ -360,15 +307,17 @@ fn create_agent(
     meta: Meta,
     source_lang: &str,
     source_dir: &str,
+    advices_path: Option<String>,
     client_type: SupportedLLMClient,
     prompt_model: &str,
     reasoning_model: &str,
     embed_model: &str,
+    sender: AsyncSender<CodeReviewEvent>,
 ) -> Result<Agent> {
     let llm = get_client(prompt_model, embed_model)?;
 
     let prompt = format!(
-        "You are a senior software engineer and you are looking at improvine reliability and resilience from for HTTP opid={} method={} path={} source_dir={} source_lang={}",
+        "You are a senior software engineer and you are looking at improving reliability and resilience for HTTP opid={} method={} path={} source_dir={} source_lang={}",
         meta.opid, meta.method, meta.path, source_dir, source_lang
     );
 
@@ -380,10 +329,12 @@ fn create_agent(
             source_dir,
             source_lang,
             meta,
+            advices_path,
+            sender,
         )])
         .system_prompt(prompt)
         .on_new_message(move |_ctx, msg| {
-            let fragment = msg.to_string();
+            //let fragment = msg.to_string();
             Box::pin(async move { Ok(()) })
         })
         .build()?;
@@ -395,10 +346,12 @@ pub async fn review_source(
     metas: &Vec<Meta>,
     source_lang: &str,
     source_dir: &str,
+    advices_path: Option<String>,
     client_type: SupportedLLMClient,
     prompt_model: &str,
     reasoning_model: &str,
     embed_model: &str,
+    sender: AsyncSender<CodeReviewEvent>,
 ) -> Result<()> {
     let meta = select_meta(metas)?;
 
@@ -406,10 +359,12 @@ pub async fn review_source(
         meta,
         source_lang,
         source_dir,
+        advices_path,
         client_type,
         prompt_model,
         reasoning_model,
         embed_model,
+        sender,
     )?;
     agent.run_once().await?;
 
@@ -420,206 +375,49 @@ pub fn is_idempotent(method: &str) -> bool {
     matches!(method, "GET" | "PUT" | "DELETE" | "HEAD" | "OPTIONS")
 }
 
-/// Represents a diff for a single file.
-#[derive(Debug, Clone)]
-pub struct FileDiff {
-    pub old_path: String,
-    pub new_path: String,
-    pub hunks: Vec<Hunk>,
+#[derive(Debug, Clone, PartialEq)]
+pub enum CodeReviewEventPhase {
+    Completed,
 }
 
-impl FileDiff {
-    /// Render back to a colored unified‐diff string.
-    pub fn as_diff_string(&self) -> Result<String> {
-        let mut text = String::new();
-        text += &format!("--- {}\n", self.old_path);
-        text += &format!("+++ {}\n", self.new_path);
-        for h in &self.hunks {
-            text += &format!("{}\n", h.header);
-            for ln in &h.lines {
-                text += &format!("{}\n", ln);
-            }
+impl fmt::Display for CodeReviewEventPhase {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            CodeReviewEventPhase::Completed => write!(f, "completed"),
         }
-        let patch = Patch::from_str(&text)
-            .map_err(|e| SuggestionError::InvalidHunk(e.to_string()))?;
-        let fmt = PatchFormatter::new().with_color();
-        Ok(fmt.fmt_patch(&patch).to_string())
     }
 }
 
-/// Represents a single hunk within a file diff.
-#[derive(Debug, Clone)]
-pub struct Hunk {
-    pub header: String,    // e.g. "@@ -1,4 +1,5 @@"
-    pub lines: Vec<String>,// including leading ' ', '+' or '-'
-    pub orig_start: usize,
-    pub orig_count: usize,
-    pub new_start: usize,
-    pub new_count: usize,
-}
-
-/// A parser that **ignores** any header ranges from the LLM and instead
-/// always locates each hunk by searching the file’s content.
-pub fn parse_model_suggested_diff(
-    diff: &str,
-    source_dir: &Path,
-) -> Result<Vec<FileDiff>, SuggestionError> {
-    let mut result = Vec::new();
-    let mut lines = diff.lines().peekable();
-
-    while let Some(line) = lines.next() {
-        if !line.starts_with("--- ") {
-            continue;
+impl CodeReviewEventPhase {
+    pub fn long_form(&self) -> String {
+        match self {
+            CodeReviewEventPhase::Completed => {
+                "Completed code review".to_string()
+            }
         }
-        let raw_old = line[4..].trim();
-        let raw_new = lines
-            .next()
-            .ok_or_else(|| SuggestionError::InvalidHunk("Missing +++".into()))?;
-        if !raw_new.starts_with("+++ ") {
-            return Err(SuggestionError::InvalidHunk(format!(
-                "Bad +++ line: {}",
-                raw_new
-            )));
-        }
-
-        // Load file for anchoring (skip /dev/null)
-        let file_txt = if raw_old != "/dev/null" {
-            let rel = raw_old.strip_prefix("a/").unwrap_or(raw_old);
-            fs::read_to_string(source_dir.join(rel)).unwrap_or_default()
-        } else {
-            String::new()
-        };
-        let file_lines: Vec<&str> = file_txt.lines().collect();
-
-        let mut hunks = Vec::new();
-        while let Some(&peek) = lines.peek() {
-            if !peek.starts_with("@@ ") {
-                break;
-            }
-            // skip raw header
-            let raw_header = lines.next().unwrap();
-
-            // strip trailing code to capture any inline context
-            let mut extra_ctx = None;
-            if let Some(idx) = raw_header.rfind("@@") {
-                let tail = raw_header[idx+2..].trim();
-                if !tail.is_empty() {
-                    extra_ctx = Some(format!(" {}", tail));
-                }
-            }
-
-            // collect hunk lines
-            let mut body = Vec::new();
-            if let Some(ctx) = extra_ctx.take() {
-                body.push(ctx);
-            }
-            while let Some(&l) = lines.peek() {
-                if l.starts_with("@@ ") || l.starts_with("--- ") {
-                    break;
-                }
-                let ln = lines.next().unwrap().to_string();
-                let t = ln.trim();
-                if t.starts_with("```") || t.chars().all(|c| c=='`') {
-                    continue;
-                }
-                if t.is_empty() {
-                    body.push(" ".into());
-                } else {
-                    body.push(ln);
-                }
-            }
-
-            // find first context line (body entry starting with ' ')
-            let orig_start = body.iter()
-                .find_map(|l| if l.starts_with(' ') {
-                    Some(l.trim_start_matches(' '))
-                } else { None })
-                .and_then(|anchor| {
-                    file_lines.iter()
-                        .position(|&fl| fl.contains(anchor))
-                        .map(|i| i+1)
-                })
-                .unwrap_or(1);  // fallback to line 1
-
-            // new_start = orig_start (we assume no file‐length shift before hunk)
-            let new_start = orig_start;
-
-            // recompute counts
-            let orig_count = body.iter().filter(|l| l.starts_with(' ') || l.starts_with('-')).count();
-            let new_count  = body.iter().filter(|l| l.starts_with(' ') || l.starts_with('+')).count();
-
-            let header = format!("@@ -{},{} +{},{} @@", orig_start, orig_count, new_start, new_count);
-
-            hunks.push(Hunk {
-                header,
-                lines:      body,
-                orig_start,
-                orig_count,
-                new_start,
-                new_count,
-            });
-        }
-
-        result.push(FileDiff {
-            old_path: raw_old.to_string(),
-            new_path: raw_new[4..].trim().to_string(),
-            hunks,
-        });
     }
-
-    Ok(result)
-}
-/// Parse "-12,5" or "+7" into (start, count).
-fn parse_range(s: &str) -> Result<(usize, usize), Box<dyn Error>> {
-    let s = s.trim_start_matches('-').trim_start_matches('+');
-    let mut it = s.split(',');
-    let start: usize = it.next().ok_or("missing start")?.parse()?;
-    let count: usize = it.next().unwrap_or("1").parse()?;
-    Ok((start, count))
 }
 
-/// Adjust each hunk’s header to match the actual `file` contents:
-/// 1) prefer a context line (` ` prefix) as anchor  
-/// 2) otherwise, use the first non-empty `+`/`-` line stripped of its prefix
-pub fn realign_hunks(file: &str, hunks: &mut [Hunk]) {
-    let lines: Vec<&str> = file.lines().collect();
-    for hunk in hunks.iter_mut() {
-        let maybe_anchor = hunk
-            .lines
-            .iter()
-            .find_map(|l| {
-                if l.starts_with(' ') {
-                    Some(l.trim_start_matches(' '))
-                } else {
-                    None
-                }
-            })
-            .or_else(|| {
-                hunk.lines.iter().find_map(|l| {
-                    if let Some(rest) = l.strip_prefix('+').or_else(|| l.strip_prefix('-')) {
-                        let txt = rest.trim();
-                        if !txt.is_empty() {
-                            return Some(txt);
-                        }
-                    }
-                    None
-                })
-            });
+#[derive(Debug, Clone)]
+pub struct CodeReviewAnalysis {
+    pub analysis: String,
+}
 
-        if let Some(anchor) = maybe_anchor {
-            for (idx, &line) in lines.iter().enumerate() {
-                if line.contains(anchor) {
-                    let new_orig = idx + 1;
-                    let delta = new_orig as isize - hunk.orig_start as isize;
-                    hunk.orig_start = new_orig;
-                    hunk.new_start = ((hunk.new_start as isize) + delta) as usize;
-                    hunk.header = format!(
-                        "@@ -{},{} +{},{} @@",
-                        hunk.orig_start, hunk.orig_count, hunk.new_start, hunk.new_count
-                    );
-                    break;
-                }
-            }
-        }
+impl CodeReviewAnalysis {
+    pub fn save(&self, path: &str) -> Result<()> {
+        fs::write(path, self.analysis.clone())?;
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct CodeReviewEvent {
+    pub phase: CodeReviewEventPhase,
+    pub review: CodeReviewAnalysis,
+}
+
+impl CodeReviewEvent {
+    pub fn save_analysis(&self, path: &str) -> Result<()> {
+        Ok(self.review.save(path)?)
     }
 }

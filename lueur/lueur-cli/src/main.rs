@@ -37,6 +37,7 @@ use std::time::Duration;
 use std::time::Instant;
 
 use agent::insight::ReviewEventPhase;
+use agent::suggestion::CodeReviewEventPhase;
 use anyhow::Result;
 #[cfg(all(
     target_os = "linux",
@@ -529,15 +530,49 @@ async fn main() -> Result<()> {
                 let final_report = report::builder::to_report(&final_results);
                 let metas = agent::meta::get_metas(&final_report);
 
+                let report_path = cfg.report.clone();
                 let repo = cfg.repo.clone();
                 let lang = cfg.lang.clone();
                 let index = cfg.index.clone();
+                let advices = cfg.advices.clone();
                 let llm_client = common.llm_client.clone();
                 let llm_prompt_model =
                     common.llm_prompt_reasoning_model.clone();
                 let llm_prompt_reasoning_model =
                     common.llm_prompt_reasoning_model.clone();
                 let llm_embed_model = common.llm_embed_model.clone();
+
+                let (sender, receiver) = kanal::unbounded_async();
+
+                let pb = long_operation(
+                    "Reviewing! This could take a while...",
+                    None,
+                );
+
+                let _event_handle: task::JoinHandle<Result<()>> =
+                    tokio::spawn(async move {
+                        let mut stream: kanal::ReceiveStream<
+                            '_,
+                            agent::suggestion::CodeReviewEvent,
+                        > = receiver.stream();
+                        let pb = pb.clone();
+                        while let Some(event) = stream.next().await {
+                            pb.inc(1);
+                            if event.phase == CodeReviewEventPhase::Completed {
+                                pb.finish_and_clear();
+
+                                event.save_analysis(&report_path)?;
+
+                                break;
+                            }
+                            pb.set_message(format!(
+                                "{}...",
+                                event.phase.long_form().bold()
+                            ));
+                        }
+
+                        Ok(())
+                    });
 
                 let handle: task::JoinHandle<Result<()>> =
                     tokio::spawn(async move {
@@ -556,28 +591,19 @@ async fn main() -> Result<()> {
                             &metas,
                             &lang,
                             &repo,
+                            advices,
                             llm_client,
                             &llm_prompt_model,
                             &llm_prompt_reasoning_model,
                             &llm_embed_model,
+                            sender,
                         )
                         .await?;
 
                         Ok(())
                     });
 
-                /*let pb = long_operation(
-                    &format!(
-                        "{}",
-                        "Reviewing your code! This could take a while..."
-                            .bold()
-                    ),
-                    None,
-                );*/
-
                 handle.await??;
-
-                //pb.finish_and_clear();
             }
             cli::AgentCommands::Advise(cfg) => {
                 let file = File::open(&cfg.results)?;
@@ -628,9 +654,8 @@ async fn main() -> Result<()> {
                     }
                 });
 
-                let advices = handle.await??;
-
-                println!("{}", advices.stitch()?);
+                let report = handle.await??;
+                report.save(&cfg.report)?;
             }
         },
     };

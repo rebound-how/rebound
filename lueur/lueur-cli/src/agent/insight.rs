@@ -1,5 +1,6 @@
 use std::fmt;
 use std::fmt::Display;
+use std::fs;
 
 use anyhow::Result;
 use chrono::Utc;
@@ -151,6 +152,12 @@ pub struct ReportReviews {
 }
 
 impl ReportReviews {
+    pub fn save(&self, path: &str) -> Result<String> {
+        let md = self.stitch()?;
+        fs::write(path, md.clone())?;
+        Ok(md)
+    }
+
     pub fn stitch(&self) -> Result<String> {
         let mut stitched = String::new();
         let mut executive = String::new();
