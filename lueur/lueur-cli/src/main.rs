@@ -504,10 +504,14 @@ async fn main() -> Result<()> {
                 } else if let Some(spec_url) = &config.spec_url {
                     match openapi::build_from_url(spec_url, None).await {
                         Ok(scenarios) => {
+                            let mut split_files = false;
+                            if Path::new(&config.scenario).is_dir() {
+                                split_files = true;
+                            }
                             let count = openapi::save(
                                 &scenarios,
                                 &config.scenario,
-                                config.split_files,
+                                split_files,
                             )?;
                             println!(
                                 "Generated {} reliability scenarios across {} endpoints!",
@@ -525,7 +529,7 @@ async fn main() -> Result<()> {
         },
         #[cfg(feature = "agent")]
         Commands::Agent { agent, common } => match agent {
-            cli::AgentCommands::Review(cfg) => {
+            cli::AgentCommands::CodeReview(cfg) => {
                 let file = File::open(&cfg.results)?;
                 let reader = BufReader::new(file);
                 let final_results: ScenariosResults = from_reader(reader)?;
@@ -607,7 +611,7 @@ async fn main() -> Result<()> {
 
                 handle.await??;
             }
-            cli::AgentCommands::Advise(cfg) => {
+            cli::AgentCommands::ScenarioReview(cfg) => {
                 let file = File::open(&cfg.results)?;
                 let reader = BufReader::new(file);
                 let final_results: ScenariosResults = from_reader(reader)?;

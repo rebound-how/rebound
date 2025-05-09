@@ -797,10 +797,10 @@ pub enum ScenarioCommands {
 #[derive(Subcommand, Debug)]
 pub enum AgentCommands {
     /// Explore and suggests changes of source code to help reliability
-    Review(AgentReviewConfig),
+    CodeReview(AgentReviewConfig),
 
     /// Analyze and offer advices of your scenario report
-    Advise(AgentAdviceConfig),
+    ScenarioReview(AgentAdviceConfig),
 }
 
 /// Subcommands for executing a demo server
@@ -868,15 +868,6 @@ pub struct ScenarioGenerateConfig {
         env = "LUEUR_SCENARIO_OPENAPI_V3_SPEC_URL"
     )]
     pub spec_url: Option<String>,
-
-    /// Split scenario files per url
-    #[arg(
-        long,
-        default_value_t = false,
-        help = "Split scenarios per-url",
-        env = "LUEUR_SCENARIO_SPLIT_PER_URL"
-    )]
-    pub split_files: bool,
 }
 
 /// Common options for all agent commands
@@ -948,7 +939,7 @@ pub struct AgentReviewConfig {
 
     /// Project source code repository directory
     #[arg(
-        long = "repo-dir",
+        long = "source-dir",
         help = "Path to the repository source code directory",
         env = "LUEUR_AGENT_REVIEW_REPO_PATH"
     )]
@@ -965,7 +956,7 @@ pub struct AgentReviewConfig {
 
     /// Source language
     #[arg(
-        long,
+        long = "source-lang",
         help = "Target language to index: python, rust, go, java, ...",
         env = "LUEUR_AGENT_REVIEW_LANGUAGE"
     )]
@@ -1034,9 +1025,6 @@ pub struct DemoConfig {
     )]
     pub port: u16,
 }
-
-#[derive(Args, Clone, Debug, Serialize, Deserialize)]
-pub struct AICommandOptions {}
 
 /// Validator for positive f64 values
 fn validate_positive_f64(val: &str) -> Result<f64, String> {
