@@ -45,7 +45,7 @@ echo "Latest release tag: $TAG_NAME"
 # Find the download URL
 # --------------------------------------------------
 ASSET_DOWNLOAD_URL="$(echo "$LATEST_RELEASE_JSON" \
-  | jq -r '.assets[] | select(.name | test("'${ASSET_TARGET}'-'${TAG_NAME}'-'${ARCH}'.*'${OS}'")) | .browser_download_url')"
+  | jq -r '[.assets[] | select(.name | test("'${ASSET_TARGET}'-'${TAG_NAME}'-'${ARCH}'.*'${OS}'")) | .browser_download_url'][0])"
 
 if [[ -z "${ASSET_DOWNLOAD_URL}" || "${ASSET_DOWNLOAD_URL}" == "null" ]]; then
   echo "Error: Could not find a release asset for OS=${OS} ARCH=${ARCH} in the latest release."
@@ -56,6 +56,8 @@ fi
 # Download the asset
 # --------------------------------------------------
 FILE_NAME="$(basename "${ASSET_DOWNLOAD_URL}")"
+
+echo ${ASSET_DOWNLOAD_URL}
 
 echo "Downloading ${FILE_NAME}..."
 curl -sSL "${ASSET_DOWNLOAD_URL}" -o ${FILE_PATH}
