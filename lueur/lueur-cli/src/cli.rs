@@ -4,7 +4,9 @@ use clap::Subcommand;
 use serde::Deserialize;
 use serde::Serialize;
 
+#[cfg(feature = "agent")]
 use crate::agent::clients::SupportedLLMClient;
+#[cfg(feature = "agent")]
 use crate::agent::insight::ReportReviewRole;
 use crate::types::BandwidthUnit;
 use crate::types::Direction;
@@ -878,6 +880,7 @@ pub struct ScenarioGenerateConfig {
 }
 
 /// Common options for all agent commands
+#[cfg(feature = "agent")]
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]
 pub struct AgentCommandCommon {
     /// LLM client to use

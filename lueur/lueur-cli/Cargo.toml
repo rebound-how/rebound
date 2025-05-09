@@ -100,7 +100,6 @@ ignore = { version = "0.4.23", optional = true }
 similar = { version = "2.7.0", optional = true }
 inquire = { version = "0.7.5", optional = true }
 derive_builder = { version = "0.20.2", optional = true }
-diffy = { version = "0.4.2", optional = true }
 similar-string = { version = "1.4.3", optional = true }
 pulldown-cmark = { version = "0.13.0", default-features = false, optional = true }
 pulldown-cmark-to-cmark = { version = "21.0.0", default-features = false, optional = true }
@@ -160,7 +159,6 @@ agent = [
     "dep:similar",
     "dep:derive_builder",
     "dep:inquire",
-    "dep:diffy",
     "dep:similar-string",
     "dep:pulldown-cmark",
     "dep:pulldown-cmark-to-cmark"

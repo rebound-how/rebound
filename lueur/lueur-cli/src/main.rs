@@ -36,7 +36,9 @@ use std::sync::Arc;
 use std::time::Duration;
 use std::time::Instant;
 
+#[cfg(feature = "agent")]
 use agent::insight::ReviewEventPhase;
+#[cfg(feature = "agent")]
 use agent::suggestion::CodeReviewEventPhase;
 use anyhow::Result;
 #[cfg(all(
