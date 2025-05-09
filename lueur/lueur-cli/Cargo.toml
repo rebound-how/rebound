@@ -131,7 +131,7 @@ path = "src/main.rs"
 
 [features]
 default = [
-    "openapi","agent"
+    "openapi",
 ]
 stealth = [
     "aya-ebpf",
