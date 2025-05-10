@@ -63,7 +63,7 @@ nav:
     - "Why lueur?": explanations/why-lueur.md
     - "Fault Injection Basics": explanations/fault-injection-basics.md
     - "Understanding eBPF": explanations/understanding-ebpf.md
-    - "Technical Jourtney": reference/technical-journey.md
+    - "Technical Journey": reference/technical-journey.md
 theme:
   name: material
   custom_dir: docs/overrides

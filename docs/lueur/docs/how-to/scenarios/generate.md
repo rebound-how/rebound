@@ -4,12 +4,18 @@ This guide will walk you through generating lueur resilience scenarios that you
 can run automatically to validate the capability of your endpoints to deal
 with network issues.
 
-??? abstract "Prerequisites"
+!!! abstract "Prerequisites"
 
     -   [X] Install lueur
 
         If you haven’t installed lueur yet, follow the
         [installation instructions](../install.md).
+  
+    -   [X] Scenario Reference
+
+        You might want to familiar yourself with the
+        [scenario reference](../../reference/scenario-file-format.md).
+
 
 ## Create Single Call Scenarios
 
@@ -224,12 +230,10 @@ quantity of endpoints discovered from an OpenAPI specification.
     ```bash
     lueur scenario generate \
         --scenario scenarios/ \  # (1)!
-        --split-files \  # (2)!
         --spec-url http://myhost/openapi.json
     ```
 
     1. Pass a directory where the files will be stored
-    2. Tell lueur to split scenarios into files
 
 This approach is nice to quickly generate scenarios but if your specification
 is large, you will endup with hundreds of them. Indeed, lueur will create
@@ -356,6 +360,6 @@ In this guide, you will learn how to pass a body string to the request.
 
 ## Next Steps
 
-- Learn how to [run](./run.md) these scenarios.
-- Explore the [specification reference](../../reference/scenario-file-format.md)
+- **Learn how to [run](./run.md)** these scenarios.
+- **Explore the [specification reference](../../reference/scenario-file-format.md)**
   for scenarios.

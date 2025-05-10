@@ -485,10 +485,11 @@ async fn main() -> Result<()> {
                 if let Some(spec_file) = &config.spec_file {
                     match openapi::build_from_file(spec_file, None) {
                         Ok(scenarios) => {
+                            let mut split_files = false;
                             let count = openapi::save(
                                 &scenarios,
                                 &config.scenario,
-                                config.split_files,
+                                split_files,
                             )?;
                             println!(
                                 "Generated {} reliability scenarios across {} endpoints!",

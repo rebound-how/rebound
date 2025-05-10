@@ -1,6 +1,6 @@
 from enum import Enum
 from http import HTTPStatus
-from typing import Annotated, Literal, Optional
+from typing import Annotated, Literal
 
 import msgspec
 from msgspec import Struct, Meta
@@ -13,41 +13,49 @@ Probability = Annotated[float, Meta(ge=0.0, le=1.0)]
 StreamSide = Literal["client", "server"]
 Direction = Literal["ingress", "egress"]
 BandwidthUnit = Literal["bps", "kbps", "mbps", "gbps"]
+SchedPattern = r"(?:start:\s*(\d+s|\d+m|\d+%)(?:,)?;?)*(?:duration:\s*(\d+s|\d+m|\d+%)(?:,)?;?)*"
 
 
 class Latency(Struct):
     distribution: str | None
     global_: bool | None
-    side: StreamSide | None
     mean: PositiveFloat | None
     stddev: PositiveFloat | None
     min: PositiveFloat | None
     max: PositiveFloat | None
     shape: PositiveFloat | None
     scale: PositiveFloat | None
-    direction: Direction | None
+    side: StreamSide | None = "server"
+    direction: Direction | None = "ingress"
+    sched: Annotated[str, msgspec.Meta(pattern=SchedPattern)] | None = None
 
 
 class PacketLoss(Struct):
-    direction: Direction
-    side: StreamSide | None
+    side: StreamSide | None = "server"
+    direction: Direction | None = "ingress"
+    sched: Annotated[str, msgspec.Meta(pattern=SchedPattern)] | None = None
 
 
 class Bandwidth(Struct):
     rate: PositiveInteger = 1000
     unit: BandwidthUnit = "bps"
-    direction: Direction = "egress"
     side: StreamSide | None = "server"
+    direction: Direction | None = "ingress"
+    sched: Annotated[str, msgspec.Meta(pattern=SchedPattern)] | None = None
 
 
 class Jitter(Struct):
-    side: StreamSide | None
     amplitude: PositiveFloat = 20.0
     frequency: PositiveFloat = 5.0
+    side: StreamSide | None = "server"
+    direction: Direction | None = "ingress"
+    sched: Annotated[str, msgspec.Meta(pattern=SchedPattern)] | None = None
 
 
-class Dns(Struct):
-    rate: Probability = 0.5
+class Blackhole(Struct):
+    side: StreamSide | None = "server"
+    direction: Direction | None = "ingress"
+    sched: Annotated[str, msgspec.Meta(pattern=SchedPattern)] | None = None
 
 
 class HttpError(Struct):
@@ -66,8 +74,12 @@ class FaultConfiguration(Struct):
     PacketLoss: PacketLoss
     Bandwidth: Bandwidth
     Jitter: Jitter
-    Dns: Dns
+    Blackhole: Blackhole
     HttpError: HttpError
+
+
+class ScenarioItemCallOpenAPIMeta(Struct):
+    operation_id: str | None = None
 
 
 class ScenarioItemCall(Struct):
@@ -75,25 +87,38 @@ class ScenarioItemCall(Struct):
     url: str
     headers: dict[str, str] | None
     body: str | None
+    timeout: float | None = None
+    meta: ScenarioItemCallOpenAPIMeta | None = None
 
 
-class ScenarioItemCallStrategyMode(Enum):
-    Repeat = 1
-
-
-class ScenarioItemCallStrategy(Struct):
-    mode: ScenarioItemCallStrategyMode | None
-    failfast: bool | None
+class ScenarioRepeatItemCallStrategy(Struct, tag=True):
+    mode: Literal["repeat"]
     step: PositiveFloat
+    failfast: bool | None
     wait: PositiveFloat | None
     add_baseline_call: bool | None
     count: PositiveInteger = 0
 
 
+class ScenarioLoadItemCallStrategy(Struct, tag=True):
+    mode: Literal["load"]
+    duration: str
+    clients: PositiveInteger
+    rps: PositiveInteger
+
+
+class ScenarioItemSLO(Struct):
+    type: str
+    title: str
+    objective: float
+    threshold: float
+
+
 class ScenarioItemContext(Struct):
     upstreams: list[str]
     faults: list[FaultConfiguration]
-    strategy: ScenarioItemCallStrategy | None
+    strategy: ScenarioRepeatItemCallStrategy | ScenarioLoadItemCallStrategy | None
+    slo: list[ScenarioItemSLO] | None = None
 
 
 class ScenarioItemExpectation(Struct):
@@ -104,13 +129,27 @@ class ScenarioItemExpectation(Struct):
 class ScenarioItem(Struct):
     call: ScenarioItemCall
     context: ScenarioItemContext
-    expect: ScenarioItemExpectation | None
+    expect: ScenarioItemExpectation | None = None
+
+
+class HTTPPathsConfig(Struct):
+    segments: dict[str, str]
+
+
+class ScenarioHTTPGlobalConfig(Struct):
+    headers: dict[str, str]
+    paths: HTTPPathsConfig | None = None
+
+
+class ScenarioGlobalConfig(Struct):
+    http: ScenarioHTTPGlobalConfig | None = None
 
 
 class Scenario(Struct):
     title: str
     description: str | None
     scenarios: list[ScenarioItem]
+    config: ScenarioGlobalConfig | None = None
 
 
 def generate() -> str:

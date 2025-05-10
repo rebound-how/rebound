@@ -62,6 +62,6 @@ same directory.
 
 ## Next Steps
 
-- Learn how to explore the generated [report](./reporting.md) from running these scenarios.
-- Explore the [specification reference](../../reference/scenario-file-format.md)
+- **Learn how to explore the generated [report](./reporting.md)** from running these scenarios.
+- **Explore the [specification reference](../../reference/scenario-file-format.md)**
   for scenarios.

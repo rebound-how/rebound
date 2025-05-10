@@ -6,12 +6,32 @@ angle of resilience and reliability, using LLM.
 The proposed changes are proposed as unified diff that help you visualize
 what lueur suggests you may want to add or remove from your code.
 
-??? abstract "Prerequisites"
+!!! abstract "Prerequisites"
 
     -   [X] Install lueur
 
         If you haven’t installed Lueur yet, follow the
         [installation instructions](../../install.md).
+
+    -   [X] Get an OpenAI Key
+
+        For the purpose of the guide, we will be using OpenAI models. You
+        need to create an API key. Then make sure the key is available for
+        lueur:
+
+        ```bash
+        export OPENAI_API_KEY=sk-...
+        ```
+
+    -   [X] Install a local qdrant database
+
+        lueur uses [qdrant](https://qdrant.tech/) for its vector database. You
+        can install a [local](https://qdrant.tech/documentation/quickstart/),
+        free, qdrant using docker:
+
+        ```bash
+        docker run -p 6333:6333 -p 6334:6334 -v "$(pwd)/qdrant_storage:/qdrant/storage:z" qdrant/qdrant
+        ```
 
 !!! danger "Windows not supported"
 
@@ -142,10 +162,10 @@ from this application.
     favourite LLM for its opinion.
 
     ```bash
-    lueur agent review \
+    lueur agent code-review \
         --results results.json \ # (1)!
-        --repo-dir . \ # (2)!
-        --lang python # (3)!
+        --source-dir . \ # (2)!
+        --source-lang python # (3)!
     ? Select the OpenAPI operationId to patch:   # (4)!
     > read_root__get [GET http://localhost:9090/]
       create_user_users__post [POST http://localhost:9090/users/]
@@ -283,8 +303,8 @@ from this application.
     ```bash
     lueur agent review \
         --results results.json \
-        --repo-dir . \
-        --lang python \
+        --source-dir . \
+        --source-lang python \
         --advices-report advice-report.md # (1)!
     ? Select the OpenAPI operationId to patch:
     > read_root__get [GET http://localhost:9090/]

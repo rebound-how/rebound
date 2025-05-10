@@ -6,12 +6,32 @@ angle of resilience and reliability, using LLM.
 The analysis aims at giving you a sound report of potential issues, threats
 and remediations to consider for your application.
 
-??? abstract "Prerequisites"
+!!! abstract "Prerequisites"
 
     -   [X] Install lueur
 
         If you haven’t installed Lueur yet, follow the
         [installation instructions](../../install.md).
+
+    -   [X] Get an OpenAI Key
+
+        For the purpose of the guide, we will be using OpenAI models. You
+        need to create an API key. Then make sure the key is available for
+        lueur:
+
+        ```bash
+        export OPENAI_API_KEY=sk-...
+        ```
+
+    -   [X] Install a local qdrant database
+
+        lueur uses [qdrant](https://qdrant.tech/) for its vector database. You
+        can install a [local](https://qdrant.tech/documentation/quickstart/),
+        free, qdrant using docker:
+
+        ```bash
+        docker run -p 6333:6333 -p 6334:6334 -v "$(pwd)/qdrant_storage:/qdrant/storage:z" qdrant/qdrant
+        ```
 
 !!! danger "Windows not supported"
 
@@ -143,17 +163,16 @@ from this application.
             method: GET
             url: http://localhost:9090/
             meta:
-            operation_id: read_root__get
+              operation_id: read_root__get
         context:
             upstreams:
-            - http://localhost:9090/
+              - http://localhost:9090/
             faults:
             - type: latency
-            side: client
-            mean: 800.0
-            stddev: 100.0
-            direction: ingress
-            strategy: null
+              side: client
+              mean: 800.0
+              stddev: 100.0
+              direction: ingress
         expect:
             status: 200
         ---
@@ -164,21 +183,21 @@ from this application.
             method: GET
             url: http://localhost:9090/
             meta:
-            operation_id: read_root__get
+                operation_id: read_root__get
         context:
             upstreams:
-            - http://localhost:9090/
+              - http://localhost:9090/
             faults:
             - type: latency
-            side: client
-            mean: 100.0
-            stddev: 30.0
-            direction: ingress
-            strategy:
-            mode: repeat
-            step: 100.0
-            count: 5
-            add_baseline_call: true
+              side: client
+              mean: 100.0
+              stddev: 30.0
+              direction: ingress
+              strategy:
+                mode: repeat
+                step: 100.0
+                count: 5
+                add_baseline_call: true
         expect:
             status: 200
         ---
@@ -189,34 +208,34 @@ from this application.
             method: GET
             url: http://localhost:9090/
             meta:
-            operation_id: read_root__get
+                operation_id: read_root__get
         context:
             upstreams:
-            - http://localhost:9090/
+              - http://localhost:9090/
             faults:
             - type: latency
-            mean: 150.0
-            period: start:10%,duration:15%
+              mean: 150.0
+              period: start:10%,duration:15%
             - type: latency
-            mean: 250.0
-            period: start:40%,duration:15%
+              mean: 250.0
+              period: start:40%,duration:15%
             - type: latency
-            mean: 150.0
-            period: start:70%,duration:15%
-            strategy:
-            mode: load
-            duration: 10s
-            clients: 3
-            rps: 2
-            slo:
-            - slo_type: latency
-            title: P95 < 300ms
-            objective: 95.0
-            threshold: 300.0
-            - slo_type: error
-            title: P99 < 1% errors
-            objective: 99.0
-            threshold: 1.0
+              mean: 150.0
+              period: start:70%,duration:15%
+              strategy:
+                mode: load
+                duration: 10s
+                clients: 3
+                rps: 2
+              slo:
+              - slo_type: latency
+                title: P95 < 300ms
+                objective: 95.0
+                threshold: 300.0
+              - slo_type: error
+                title: P99 < 1% errors
+                objective: 99.0
+                threshold: 1.0
         ---
         title: 5% packet loss for 4s
         description: Simulates flaky Wi-Fi or cellular interference.
@@ -226,15 +245,15 @@ from this application.
             url: http://localhost:9090/
             timeout: 500
             meta:
-            operation_id: read_root__get
+                operation_id: read_root__get
         context:
             upstreams:
-            - http://localhost:9090/
+              - http://localhost:9090/
             faults:
             - type: packetloss
-            direction: egress
-            period: start:30%,duration:40%
-            strategy: null
+              direction: egress
+              period: start:30%,duration:40%
+              strategy: null
         expect:
             status: 200
             response_time_under: 100.0
@@ -246,17 +265,16 @@ from this application.
             method: GET
             url: http://localhost:9090/
             meta:
-            operation_id: read_root__get
+                operation_id: read_root__get
         context:
             upstreams:
-            - http://localhost:9090/
+              - http://localhost:9090/
             faults:
             - type: jitter
-            amplitude: 80.0
-            frequency: 8.0
-            direction: ingress
-            side: server
-            strategy: null
+              amplitude: 80.0
+              frequency: 8.0
+              direction: ingress
+              side: server
         expect:
             status: 200
         ---
@@ -267,20 +285,20 @@ from this application.
             method: GET
             url: http://localhost:9090/
             meta:
-            operation_id: read_root__get
+                operation_id: read_root__get
         context:
             upstreams:
-            - http://localhost:9090/
+              - http://localhost:9090/
             faults:
             - type: bandwidth
-            rate: 512
-            unit: KBps
-            direction: ingress
-            strategy:
-            mode: load
-            duration: 15s
-            clients: 2
-            rps: 1
+              rate: 512
+              unit: KBps
+              direction: ingress
+              strategy:
+                mode: load
+                duration: 15s
+                clients: 2
+                rps: 1
         expect:
             status: 200
         ---
@@ -294,16 +312,16 @@ from this application.
             operation_id: read_root__get
         context:
             upstreams:
-            - http://localhost:9090/
+              - http://localhost:9090/
             faults:
             - type: httperror
-            status_code: 500
-            probability: 0.05
-            strategy:
-            mode: load
-            duration: 8s
-            clients: 5
-            rps: 4
+              status_code: 500
+              probability: 0.05
+              strategy:
+              mode: load
+              duration: 8s
+              clients: 5
+              rps: 4
         expect:
             response_time_under: 100.0
         ---
@@ -315,19 +333,19 @@ from this application.
             url: http://localhost:9090/
             timeout: 500
             meta:
-            operation_id: read_root__get
+                operation_id: read_root__get
         context:
             upstreams:
-            - http://localhost:9090/
+              - http://localhost:9090/
             faults:
             - type: blackhole
-            direction: egress
-            period: start:45%,duration:10%
-            strategy:
-            mode: load
-            duration: 10s
-            clients: 2
-            rps: 3
+              direction: egress
+              period: start:45%,duration:10%
+              strategy:
+                mode: load
+                duration: 10s
+                clients: 2
+                rps: 3
         ```
 
 -   [X] Run the scenario against this application
@@ -396,13 +414,13 @@ from this application.
         1. **Enforce per-call timeouts on DB operations**  
            Cap query runtime (e.g. via `asyncio.wait_for` or driver‐level timeouts) to prevent slow queries from monopolizing threads.
         
-        1. **Enable WAL with `synchronous=NORMAL` & tune checkpointing**  
+        2. **Enable WAL with `synchronous=NORMAL` & tune checkpointing**  
            Switch to Write-Ahead Logging for better reader-writer concurrency and schedule regular `PRAGMA wal_checkpoint(TRUNCATE)` to bound WAL growth.
         
-        1. **Add retry logic for transient DB failures**  
+        3. **Add retry logic for transient DB failures**  
            Wrap all DB calls in `tenacity`-style exponential backoff (stop after ~3 attempts) to recover from brief locks or I/O hiccups.
         
-        1. **Migrate to a server-based or async DB client**  
+        4. **Migrate to a server-based or async DB client**  
            Evaluate PostgreSQL/MySQL or an `asyncpg`-based driver to offload locking and I/O, improve scalability, and reduce blocking.
         
         **Key Trade-offs & Threats**
@@ -455,11 +473,11 @@ from this application.
            
            * Symptom mapping: tail-latency pulses on `GET /` (which is async, yet still experiences delay)
            * Hypothesis: even though `read_root()` is an `async def`, other endpoints (`/users/`) execute blocking SQLAlchemy calls in the default thread-pool executor. Under load, these threads become fully occupied, starving Uvicorn’s worker threads and delaying *all* incoming requests—including the root route—for short bursts.
-        1. SQLite file-lock contention during concurrent writes
+        2. SQLite file-lock contention during concurrent writes
            
            * Symptom mapping: periodic 150–250 ms latency spikes and a single 1 s outage burst
            * Hypothesis: the app uses a single SQLite file without WAL or proper connection pool sizing. When many `POST /users/` commits hit the DB simultaneously, the underlying file lock serializes operations, causing some FastAPI workers to block until the lock is released. This serialization shows up as both tail-latency uplift and a black-hole when the lock persists.
-        1. No per-call timeouts on blocking operations
+        3. No per-call timeouts on blocking operations
            
            * Symptom mapping: prolonged service unavailability for the duration of the lock (≈1 s) rather than fast failure
            * Hypothesis: neither the SQLAlchemy engine nor the blocking calls in endpoints have explicit timeouts. When a write or commit stalls on I/O (e.g., lock contention or fsync), the request hangs indefinitely (up to the HTTP client timeout), magnifying the outage window and violating the p95/p99 latency SLOs.
@@ -694,7 +712,7 @@ from this application.
            – Monitor thread pool metrics via APM or `psutil`  
            – Implement safeguards to kill or recycle stuck threads after timeout
         
-        1. Enable WAL & tune SQLite connection parameters  
+        2. Enable WAL & tune SQLite connection parameters  
            • Business risk/trade-off  
            – `synchronous=NORMAL` may lose last-written transactions on crash  
            – WAL file growth can fill storage if checkpoints lag  
@@ -703,7 +721,7 @@ from this application.
            – Simulate power-failure scenarios to measure acceptable data loss window  
            – Generate concurrent writes (e.g., 100× clients) and chart p50/p99 latencies
         
-        1. Add retry logic for transient DB failures  
+        3. Add retry logic for transient DB failures  
            • Business risk/trade-off  
            – Retries may hide underlying bugs or data corruption issues  
            – Excessive retries increase load during broader outages  
@@ -712,7 +730,7 @@ from this application.
            – Alert when retry rate or cumulative retry latency exceeds threshold  
            – Conduct chaos tests by injecting `SQLAlchemyError` and verify exponential back-off
         
-        1. Migrate to server-based or async DB client  
+        4. Migrate to server-based or async DB client  
            • Business risk/trade-off  
            – Migration introduces complexity: schema conversion, connection pooling, error handling changes  
            – New async stack adds a learning curve and potential misconfigurations  

@@ -2,108 +2,252 @@
 
 ## Scenario Overview
 
-A Lueur scenario file is a structured document that defines a suite of tests designed to simulate adverse network conditions and assess your application's resilience. Rather than being an arbitrary collection of tests, each scenario file follows a consistent structure that ensures clarity, repeatability, and ease of automation.
+A lueur scenario file is a structured document that defines a suite of tests
+designed to simulate adverse network conditions and assess your application's
+resilience.
 
-At the top level, a scenario file contains metadata that provides context for the entire test suite. This is followed by a collection of individual test cases, each of which is known as a scenario item.
+At the top level, a scenario file contains metadata that provides context for
+the entire test suite. This is followed by a collection of individual test
+cases, each of which is known as a scenario item.
 
 Each scenario item is composed of three primary components:
 
+!!! info
+
+    You can generate scenarios using the
+    [lueur scenario generate](../how-to/scenarios/generate.md) command.
+
 **Call:**  
-This section describes the HTTP request that will be executed during the test. It specifies essential details such as the HTTP method (for example, GET or POST), the target URL, and any headers or body content that are required. Essentially, it outlines the action that triggers the fault injection.
+This section describes the HTTP request that will be executed during the test.
+It specifies essential details such as the HTTP method
+(for example, GET or POST), the target URL, and any headers or body content that
+are required. Essentially, it outlines the action that triggers the fault
+injection.
 
 **Context:**  
-The context defines the environment in which the test runs. It lists the upstream endpoints that will be affected by fault injection and specifies the type of faults to simulate. Faults can include network latency, packet loss, bandwidth restrictions, jitter, DNS anomalies, or HTTP errors. Additionally, an optional strategy can be included to repeat or vary the test conditions systematically.
+The context defines the environment in which the test runs. It lists the
+upstream endpoints that will be affected by fault injection and specifies the
+type of faults to simulate. Faults can include network latency, packet loss,
+bandwidth restrictions, jitter, blackhole anomalies, or HTTP errors.
+Additionally, an optional strategy can be included to repeat or vary the test
+conditions systematically.
 
 **Expectation:**  
-This component sets the criteria for a successful test. It defines what outcomes are acceptable by specifying expected HTTP status codes and performance metrics like maximum response times. By clearly stating these expectations, the scenario file provides a benchmark against which the test results can be measured.
+This component sets the criteria for a successful test. It defines what outcomes
+are acceptable by specifying expected HTTP status codes and performance metrics
+like maximum response times. Alternatively, expectations can also be Servie
+Level Objectives to verify. By clearly stating these expectations, the scenario
+file provides a benchmark against which the test results can be measured.
 
-The structured approach of a scenario file not only helps maintain consistency across tests but also simplifies troubleshooting and iterative refinement. For detailed information on individual fault parameters, refer to the relevant definitions. This ensures that each test case is both precise and aligned with your reliability objectives.
+The structured approach of a scenario file not only helps maintain consistency
+across tests but also simplifies troubleshooting and iterative refinement. For
+detailed information on individual fault parameters, refer to the relevant
+definitions. This ensures that each test case is both precise and aligned with
+your reliability objectives.
+
+## Scenario Structure
+
+### HTTP `call`
+
+A file may contain many scenarios. They can be grouped however you need to
+make sense of the results. For instance, one approach is to group them by
+endpoint URL.
+
+A scenario is made of at least one `call`. A `call` describes an endpoint, a
+lueur context and optionally a block to verify expectations.
+
+The `call` thus declares the HTTP configuration. The endpoint URL, a valid
+HTTP method. Optional headers and body may also be provided.
+
+Note that the a `call` block also supports a `meta` structure that allows you
+to declare the `operation_id` (from [OpenAPI](https://swagger.io/docs/specification/v3_0/paths-and-operations/#operationid). This is a piece of information used by
+the lueur agent when analyzing the scenario results.
+
+### lueur `context`
+
+Th `context` gathers the configuration for lueur. These are the typical
+information lueur's CLI uses already so you should be familiar with them
+hopefully.
+
+A list of `upstreams` servers which should be impacted by the network faults.
+A sequence of `faults` applied during the run. Finally, a `strategy` block
+describing how to run the scenario.
+
+* No `strategy` block means a asingle shot call (e.g. a single HTTP request)
+* A strategy with `mode` set to `repeat`. The scenario will be executed N
+  iterations
+* A strategy with `mode` set to `load`. The scenario will be executed for
+  a duration with a given traffic.
+
+Finally, the `context` may take a `slo` block that describes a list of
+service level objectives (SLO). These SLOs are not meant to exist. They allow
+you to declare what they might be for that endpoint (actually, they can
+represent real SLOs but lueur doesn't link to them). These fake SLOs are useful
+when running a `strategy` of type `load` because the report lueur generates
+will give you feedback about them in the context of the scenario.
+
+### An `expect` block
+
+The `expect` block defines how you want to verify the results from the `call`.
+
+* `status` to match against the `call` response code (must be a valid HTTP code)
+* `response_time_under` defines the ceiling of the `call` response's time
+
+Note that, these two are ignored when `strategy` is set to `load`.
 
 ## Example
 
 The following example demonstrates a scenario file with many tests and their
-expectations. It targets the lueur demo application.
+expectations.
 
 ```yaml title="scenario.yaml"
+title: Single high-latency spike (client ingress)
+description: A single 800ms spike simulates jitter buffer underrun / GC pause on client network stack.
+items:
+- call:
+    method: GET
+    url: http://localhost:9090/
+    meta:
+      operation_id: read_root__get
+  context:
+    upstreams:
+    - http://localhost:9090/
+    faults:
+    - type: latency
+      side: client
+      mean: 800.0
+      stddev: 100.0
+      direction: ingress
+    strategy: null
+  expect:
+    status: 200
 ---
-title: "Latency Increase By 30ms Steps From Downstream"
-description: ""
-scenarios:
-  - call:
-      method: GET
-      url: http://localhost:7070/ping
-    context:
-      upstreams:
-        - https://postman-echo.com
-      faults:
-        - type: latency
-          mean: 80
-          stddev: 5
-          direction: ingress
-          side: client
-      strategy:
-        mode: Repeat
-        step: 30
-        count: 3
-        add_baseline_call: true
-    expect:
-      status: 200
-      response_time_under: 490
-
+title: Stair-step latency growth (5 x 100 ms)
+description: Latency increases 100 ms per call; emulate slow congestion build-up or head-of-line blocking.
+items:
+- call:
+    method: GET
+    url: http://localhost:9090/
+    meta:
+      operation_id: read_root__get
+  context:
+    upstreams:
+    - http://localhost:9090/
+    faults:
+    - type: latency
+      side: client
+      mean: 100.0
+      stddev: 30.0
+      direction: ingress
+    strategy:
+      mode: repeat
+      step: 100.0
+      count: 5
+      add_baseline_call: true
+  expect:
+    status: 200
 ---
-title: "Within Allowed Latency While Bandwidth At 5 bytes/second"
-description: ""
-scenarios:
-  - call:
-      method: POST
-      url: http://localhost:7070/uppercase
-      headers:
-        "Content-Type": "application/json"
-      body: '{"content": "hello"}'
-    context:
-      upstreams:
-        - http://localhost:7070
-      faults:
-        - type: bandwidth
-          rate: 5
-          unit: Bps
-          direction: ingress
-    expect:
-      response_time_under: 8
-
+title: Periodic 150-250 ms latency pulses during load
+description: Three latency bursts at 10-40-70% of a 10s window; good for P95 drift tracking.
+items:
+- call:
+    method: GET
+    url: http://localhost:9090/
+    meta:
+      operation_id: read_root__get
+  context:
+    upstreams:
+    - http://localhost:9090/
+    faults:
+    - type: latency
+      mean: 150.0
+      period: start:10%,duration:15%
+    - type: latency
+      mean: 250.0
+      period: start:40%,duration:15%
+    - type: latency
+      mean: 150.0
+      period: start:70%,duration:15%
+    strategy:
+      mode: load
+      duration: 10s
+      clients: 3
+      rps: 2
+    slo:
+    - slo_type: latency
+      title: P95 < 300ms
+      objective: 95.0
+      threshold: 300.0
+    - slo_type: error
+      title: P99 < 1% errors
+      objective: 99.0
+      threshold: 1.0
 ---
-title: "Circuit Breaker Takes Care of 404"
-description: ""
-scenarios:
-  - call:
-      method: GET
-      url: http://localhost:7070/ping/myself
-    context:
-      upstreams:
-        - http://127.0.0.1:7070
-      faults:
-        - type: httperror
-          status_code: 404
-          probability: 0.9
-    expect:
-      status: 200
-
+title: 5% packet loss for 4s
+description: Simulates flaky Wi-Fi or cellular interference.
+items:
+- call:
+    method: GET
+    url: http://localhost:9090/
+    timeout: 500
+    meta:
+      operation_id: read_root__get
+  context:
+    upstreams:
+    - http://localhost:9090/
+    faults:
+    - type: packetloss
+      direction: egress
+      period: start:30%,duration:40%
+    strategy: null
+  expect:
+    status: 200
+    response_time_under: 100.0
 ---
-title: "Packet loss has no impact on service performance"
-description: ""
-scenarios:
-  - call:
-      method: GET
-      url: http://localhost:7070/ping
-    context:
-      upstreams:
-        - https://postman-echo.com
-      faults:
-        - type: packetloss
-          direction: ingress
-          side: client
-    expect:
-      status: 200
+title: High jitter (±80ms @ 8Hz)
+description: Emulates bursty uplink, measuring buffering robustness.
+items:
+- call:
+    method: GET
+    url: http://localhost:9090/
+    meta:
+      operation_id: read_root__get
+  context:
+    upstreams:
+    - http://localhost:9090/
+    faults:
+    - type: jitter
+      amplitude: 80.0
+      frequency: 8.0
+      direction: ingress
+      side: server
+    strategy: null
+  expect:
+    status: 200
+---
+title: 512 KBps bandwidth cap
+description: Models throttled 3G link; validates handling of large payloads.
+items:
+- call:
+    method: GET
+    url: http://localhost:9090/
+    meta:
+      operation_id: read_root__get
+  context:
+    upstreams:
+    - http://localhost:9090/
+    faults:
+    - type: bandwidth
+      rate: 512
+      unit: KBps
+      direction: ingress
+    strategy:
+      mode: load
+      duration: 15s
+      clients: 2
+      rps: 1
+  expect:
+    status: 200
 ```
 
 You can run this scenario file agains the demo server:
@@ -148,6 +292,17 @@ Below is the full JSON schema of the scenario file:
           "items": {
             "$ref": "#/$defs/ScenarioItem"
           }
+        },
+        "config": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/ScenarioGlobalConfig"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -174,13 +329,13 @@ Below is the full JSON schema of the scenario file:
             {
               "$ref": "#/$defs/ScenarioItemExpectation"
             }
-          ]
+          ],
+          "default": null
         }
       },
       "required": [
         "call",
-        "context",
-        "expect"
+        "context"
       ]
     },
     "ScenarioItemCall": {
@@ -215,6 +370,28 @@ Below is the full JSON schema of the scenario file:
               "type": "null"
             }
           ]
+        },
+        "timeout": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "meta": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/ScenarioItemCallOpenAPIMeta"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -223,6 +400,24 @@ Below is the full JSON schema of the scenario file:
         "headers",
         "body"
       ]
+    },
+    "ScenarioItemCallOpenAPIMeta": {
+      "title": "ScenarioItemCallOpenAPIMeta",
+      "type": "object",
+      "properties": {
+        "operation_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": []
     },
     "ScenarioItemContext": {
       "title": "ScenarioItemContext",
@@ -246,9 +441,37 @@ Below is the full JSON schema of the scenario file:
               "type": "null"
             },
             {
-              "$ref": "#/$defs/ScenarioItemCallStrategy"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ScenarioRepeatItemCallStrategy"
+                },
+                {
+                  "$ref": "#/$defs/ScenarioLoadItemCallStrategy"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "type",
+                "mapping": {
+                  "ScenarioRepeatItemCallStrategy": "#/$defs/ScenarioRepeatItemCallStrategy",
+                  "ScenarioLoadItemCallStrategy": "#/$defs/ScenarioLoadItemCallStrategy"
+                }
+              }
             }
           ]
+        },
+        "slo": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ScenarioItemSLO"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -273,8 +496,8 @@ Below is the full JSON schema of the scenario file:
         "Jitter": {
           "$ref": "#/$defs/Jitter"
         },
-        "Dns": {
-          "$ref": "#/$defs/Dns"
+        "Blackhole": {
+          "$ref": "#/$defs/Blackhole"
         },
         "HttpError": {
           "$ref": "#/$defs/HttpError"
@@ -285,7 +508,7 @@ Below is the full JSON schema of the scenario file:
         "PacketLoss",
         "Bandwidth",
         "Jitter",
-        "Dns",
+        "Blackhole",
         "HttpError"
       ]
     },
@@ -307,19 +530,6 @@ Below is the full JSON schema of the scenario file:
           "anyOf": [
             {
               "type": "boolean"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "side": {
-          "anyOf": [
-            {
-              "enum": [
-                "client",
-                "server"
-              ]
             },
             {
               "type": "null"
@@ -392,43 +602,6 @@ Below is the full JSON schema of the scenario file:
             }
           ]
         },
-        "direction": {
-          "anyOf": [
-            {
-              "enum": [
-                "egress",
-                "ingress"
-              ]
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      },
-      "required": [
-        "distribution",
-        "global_",
-        "side",
-        "mean",
-        "stddev",
-        "min",
-        "max",
-        "shape",
-        "scale",
-        "direction"
-      ]
-    },
-    "PacketLoss": {
-      "title": "PacketLoss",
-      "type": "object",
-      "properties": {
-        "direction": {
-          "enum": [
-            "egress",
-            "ingress"
-          ]
-        },
         "side": {
           "anyOf": [
             {
@@ -440,13 +613,93 @@ Below is the full JSON schema of the scenario file:
             {
               "type": "null"
             }
-          ]
+          ],
+          "default": "server"
+        },
+        "direction": {
+          "anyOf": [
+            {
+              "enum": [
+                "egress",
+                "ingress"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "ingress"
+        },
+        "sched": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "(?:start:\\s*(\\d+s|\\d+m|\\d+%)(?:,)?;?)*(?:duration:\\s*(\\d+s|\\d+m|\\d+%)(?:,)?;?)*"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
-        "direction",
-        "side"
+        "distribution",
+        "global_",
+        "mean",
+        "stddev",
+        "min",
+        "max",
+        "shape",
+        "scale"
       ]
+    },
+    "PacketLoss": {
+      "title": "PacketLoss",
+      "type": "object",
+      "properties": {
+        "side": {
+          "anyOf": [
+            {
+              "enum": [
+                "client",
+                "server"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "server"
+        },
+        "direction": {
+          "anyOf": [
+            {
+              "enum": [
+                "egress",
+                "ingress"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "ingress"
+        },
+        "sched": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "(?:start:\\s*(\\d+s|\\d+m|\\d+%)(?:,)?;?)*(?:duration:\\s*(\\d+s|\\d+m|\\d+%)(?:,)?;?)*"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": []
     },
     "Bandwidth": {
       "title": "Bandwidth",
@@ -466,6 +719,110 @@ Below is the full JSON schema of the scenario file:
           ],
           "default": "bps"
         },
+        "side": {
+          "anyOf": [
+            {
+              "enum": [
+                "client",
+                "server"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "server"
+        },
+        "direction": {
+          "anyOf": [
+            {
+              "enum": [
+                "egress",
+                "ingress"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "ingress"
+        },
+        "sched": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "(?:start:\\s*(\\d+s|\\d+m|\\d+%)(?:,)?;?)*(?:duration:\\s*(\\d+s|\\d+m|\\d+%)(?:,)?;?)*"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": []
+    },
+    "Jitter": {
+      "title": "Jitter",
+      "type": "object",
+      "properties": {
+        "amplitude": {
+          "type": "number",
+          "minimum": 0.0,
+          "default": 20.0
+        },
+        "frequency": {
+          "type": "number",
+          "minimum": 0.0,
+          "default": 5.0
+        },
+        "side": {
+          "anyOf": [
+            {
+              "enum": [
+                "client",
+                "server"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "server"
+        },
+        "direction": {
+          "anyOf": [
+            {
+              "enum": [
+                "egress",
+                "ingress"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "ingress"
+        },
+        "sched": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "(?:start:\\s*(\\d+s|\\d+m|\\d+%)(?:,)?;?)*(?:duration:\\s*(\\d+s|\\d+m|\\d+%)(?:,)?;?)*"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": []
+    },
+    "Blackhole": {
+      "title": "Blackhole",
+      "type": "object",
+      "properties": {
         "direction": {
           "enum": [
             "egress",
@@ -486,51 +843,6 @@ Below is the full JSON schema of the scenario file:
             }
           ],
           "default": "server"
-        }
-      },
-      "required": []
-    },
-    "Jitter": {
-      "title": "Jitter",
-      "type": "object",
-      "properties": {
-        "side": {
-          "anyOf": [
-            {
-              "enum": [
-                "client",
-                "server"
-              ]
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "amplitude": {
-          "type": "number",
-          "minimum": 0.0,
-          "default": 20.0
-        },
-        "frequency": {
-          "type": "number",
-          "minimum": 0.0,
-          "default": 5.0
-        }
-      },
-      "required": [
-        "side"
-      ]
-    },
-    "Dns": {
-      "title": "Dns",
-      "type": "object",
-      "properties": {
-        "rate": {
-          "type": "number",
-          "minimum": 0.0,
-          "maximum": 1.0,
-          "default": 0.5
         }
       },
       "required": []
@@ -566,7 +878,7 @@ Below is the full JSON schema of the scenario file:
     },
     "HTTPStatus": {
       "title": "HTTPStatus",
-      "description": "HTTP status codes",
+      "description": "",
       "enum": [
         100,
         101,
@@ -632,19 +944,23 @@ Below is the full JSON schema of the scenario file:
         511
       ]
     },
-    "ScenarioItemCallStrategy": {
-      "title": "ScenarioItemCallStrategy",
+    "ScenarioRepeatItemCallStrategy": {
+      "title": "ScenarioRepeatItemCallStrategy",
       "type": "object",
       "properties": {
-        "mode": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/ScenarioItemCallStrategyMode"
-            },
-            {
-              "type": "null"
-            }
+        "type": {
+          "enum": [
+            "ScenarioRepeatItemCallStrategy"
           ]
+        },
+        "mode": {
+          "enum": [
+            "repeat"
+          ]
+        },
+        "step": {
+          "type": "number",
+          "minimum": 0.0
         },
         "failfast": {
           "anyOf": [
@@ -655,10 +971,6 @@ Below is the full JSON schema of the scenario file:
               "type": "null"
             }
           ]
-        },
-        "step": {
-          "type": "number",
-          "minimum": 0.0
         },
         "wait": {
           "anyOf": [
@@ -688,17 +1000,70 @@ Below is the full JSON schema of the scenario file:
         }
       },
       "required": [
+        "type",
         "mode",
-        "failfast",
         "step",
+        "failfast",
         "wait",
         "add_baseline_call"
       ]
     },
-    "ScenarioItemCallStrategyMode": {
-      "title": "ScenarioItemCallStrategyMode",
-      "enum": [
-        1
+    "ScenarioLoadItemCallStrategy": {
+      "title": "ScenarioLoadItemCallStrategy",
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": [
+            "ScenarioLoadItemCallStrategy"
+          ]
+        },
+        "mode": {
+          "enum": [
+            "load"
+          ]
+        },
+        "duration": {
+          "type": "string"
+        },
+        "clients": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rps": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "type",
+        "mode",
+        "duration",
+        "clients",
+        "rps"
+      ]
+    },
+    "ScenarioItemSLO": {
+      "title": "ScenarioItemSLO",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "objective": {
+          "type": "number"
+        },
+        "threshold": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "type",
+        "title",
+        "objective",
+        "threshold"
       ]
     },
     "ScenarioItemExpectation": {
@@ -732,7 +1097,70 @@ Below is the full JSON schema of the scenario file:
         "status",
         "response_time_under"
       ]
+    },
+    "ScenarioGlobalConfig": {
+      "title": "ScenarioGlobalConfig",
+      "type": "object",
+      "properties": {
+        "http": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/ScenarioHTTPGlobalConfig"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": []
+    },
+    "ScenarioHTTPGlobalConfig": {
+      "title": "ScenarioHTTPGlobalConfig",
+      "type": "object",
+      "properties": {
+        "headers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "paths": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/HTTPPathsConfig"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "headers"
+      ]
+    },
+    "HTTPPathsConfig": {
+      "title": "HTTPPathsConfig",
+      "type": "object",
+      "properties": {
+        "segments": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "segments"
+      ]
     }
   }
 }
 ```
+
+## Next Steps
+
+- **Learn how to [generate](../how-to/scenarios/generate.md)** scenarios.
