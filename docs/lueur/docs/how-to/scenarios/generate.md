@@ -17,7 +17,7 @@ with network issues.
         [scenario reference](../../reference/scenario-file-format.md).
 
 
-## Create Single Call Scenarios
+## Create Single Shot Scenarios
 
 In this guide, we will demonstrate how to create a single scenario against the
 lueur demo application. Single call scenarios make only one request to the
@@ -357,6 +357,33 @@ In this guide, you will learn how to pass a body string to the request.
     1. Set the method to `POST`
     2. Pass the actual body content-type.
     3. Pass the body as an encoded string
+
+## Bring on your SRE hat
+
+When running scenarios with a {==load==} or {==repeat==} strategy, we encourage
+you to bring SLO into their context. They will give you invaluable insights
+about the expectations that could be broken due to a typical faults combination.
+
+```yaml
+  slo:
+    - type: latency
+      title: "P95 Latency < 110ms"
+      objective: 95
+      threshold: 110.0
+    - type: latency
+      title: "P99 Latency < 200ms"
+      objective: 99
+      threshold: 200.0
+    - type: error
+      title: "P98 Error Rate < 1%"
+      objective: 98
+      threshold: 1
+```
+
+lueur supports two types of SLO: `latency` and `error`. When a scenario is
+executed, the generated report contains an analysis of the results of the run
+against these objectives. It will decide if broke them or not based on the
+volume of traffic and duration of the scenario.
 
 ## Next Steps
 

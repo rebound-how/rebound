@@ -298,6 +298,7 @@ report.md
 results.json
 lueur/reliably.yaml
 docs/lueur/.pdm-python
+lueur/examples/test.db
 
 ###############################################################################
 # Reliably

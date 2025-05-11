@@ -44,7 +44,7 @@ items:
       meta:
         operation_id: {{ opid }}
     context:
-      upstreams: [ "{{ url }}" ]
+      upstreams: [ "{{ upstream }}" ]
       faults:
         - type: latency
           side: client
@@ -65,7 +65,7 @@ items:
       meta:
         operation_id: {{ opid }}
     context:
-      upstreams: [ "{{ url }}" ]
+      upstreams: [ "{{ upstream }}" ]
       faults:
         - type: latency
           side: client
@@ -91,7 +91,7 @@ items:
       meta:
         operation_id: {{ opid }}
     context:
-      upstreams: [ "{{ url }}" ]
+      upstreams: [ "{{ upstream }}" ]
       faults:
         - { type: latency, mean: 150, period: "start:10%,duration:15%" }
         - { type: latency, mean: 250, period: "start:40%,duration:15%" }
@@ -100,6 +100,7 @@ items:
       slo:
         - { type: latency, title: "P95 < 300ms", objective: 95, threshold: 300 }
         - { type: error,  title: "P99 < 1% errors", objective: 99, threshold: 1 }
+    expect: { all_slo_are_valid: true }
 "#;
 
 /// 4. Short burst packet-loss (egress)
@@ -114,7 +115,7 @@ items:
       meta:
         operation_id: {{ opid }}
     context:
-      upstreams: [ "{{ url }}" ]
+      upstreams: [ "{{ upstream }}" ]
       faults:
         - type: packetloss
           direction: egress
@@ -133,7 +134,7 @@ items:
       meta:
         operation_id: {{ opid }}
     context:
-      upstreams: [ "{{ url }}" ]
+      upstreams: [ "{{ upstream }}" ]
       faults:
         - type: jitter
           side: server
@@ -154,7 +155,7 @@ items:
       meta:
         operation_id: {{ opid }}
     context:
-      upstreams: [ "{{ url }}" ]
+      upstreams: [ "{{ upstream }}" ]
       faults:
         - { type: bandwidth, rate: 512, unit: KBps, direction: ingress }
       strategy: { mode: load, duration: 15s, clients: 2, rps: 1 }
@@ -172,7 +173,7 @@ items:
       meta:
         operation_id: {{ opid }}
     context:
-      upstreams: [ "{{ url }}" ]
+      upstreams: [ "{{ upstream }}" ]
       faults:
         - { type: httperror, status_code: 500, probability: 0.05 }
       strategy: { mode: load, duration: 8s, clients: 5, rps: 4 }
@@ -191,7 +192,7 @@ items:
       meta:
         operation_id: {{ opid }}
     context:
-      upstreams: [ "{{ url }}" ]
+      upstreams: [ "{{ upstream }}" ]
       faults:
         - { type: blackhole, direction: egress, period: "start:45%,duration:10%" }
       strategy: { mode: load, duration: 10s, clients: 2, rps: 3 }
@@ -260,7 +261,7 @@ pub fn generate_scenarios(
 
     for api_op in &spec.operations {
         let url = format!("{}{}", base, api_op.path);
-        let ctx = context! { method => api_op.method.to_string(), url => url, opid => api_op.operation_id };
+        let ctx = context! { method => api_op.method.to_string(), url => url, upstream => base, opid => api_op.operation_id };
         for n in TEMPLATE_NAMES {
             tracing::debug!("Generate scenario {} with context {}", n, ctx);
             let rendered = env.get_template(n)?.render(ctx.clone())?;

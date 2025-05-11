@@ -373,7 +373,7 @@ from this application.
 -   [X] Analyze the generated results
 
     ```bash
-    lueur agent advise --results results.json
+    lueur agent scenario-review --results results.json
     ```
 
     The generated report looks like this:
@@ -746,3 +746,6 @@ from this application.
         Generated on 2025-05-09 12:51:53.290886837 UTC
         
         
+## Next Steps
+
+- **Learn how [review](./code-suggestions.md)** your code base.

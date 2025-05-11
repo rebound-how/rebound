@@ -293,7 +293,7 @@ from this application.
     Run an analysis from a past scenario results:
 
     ```bash
-    lueur agent advise --results results.json
+    lueur agent scenario-review --results results.json
     ```
 
     This will generate a file called `advice-report.md`. Now you can inject this
@@ -301,7 +301,7 @@ from this application.
 
 
     ```bash
-    lueur agent review \
+    lueur agent code-review \
         --results results.json \
         --source-dir . \
         --source-lang python \

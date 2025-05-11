@@ -103,6 +103,7 @@ derive_builder = { version = "0.20.2", optional = true }
 similar-string = { version = "1.4.3", optional = true }
 pulldown-cmark = { version = "0.13.0", default-features = false, optional = true }
 pulldown-cmark-to-cmark = { version = "21.0.0", default-features = false, optional = true }
+rustls = { version = "0.23.27", features = ["ring"] }
 
 # ebpf feature
 [target.'cfg(target_os = "linux")'.dependencies]

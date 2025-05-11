@@ -86,6 +86,93 @@ represent real SLOs but lueur doesn't link to them). These fake SLOs are useful
 when running a `strategy` of type `load` because the report lueur generates
 will give you feedback about them in the context of the scenario.
 
+#### A word about SLO
+
+
+lueur advocates for practicing reliability and resilience as early and often
+as possible. Both require constant attention to make an impact. To achieve this,
+a team may be looking at implementing Site Reliability Engineering or SRE.
+
+!!! question "What is SRE?"
+
+    If you are interested in learning more about SRE, please check out the
+    excellent [documentation](https://sre.google/) put out by Google on the
+    topic.
+
+One the tool coming from SRE is called
+[Service Level Objective](https://sre.google/sre-book/service-level-objectives/)
+or {==SLO==}. These provide a mechanism to decide how close a service is to
+requiring attention. By defining a level of health for a service, a team has a
+new capability called an error budget. Essentially, it's a room for a team to
+bring change safely.
+
+So, where does lueur come into this?
+
+In the context of a lueur scenario, we can use SLO to help us figure out
+if a particular combination of network faults might impact the health of our
+service, and the extent of this impact.
+
+!!! example "lueur SLO definition"
+
+    SLO are declared as part of the scenario's `context` and is a sequence of
+    slo objects. For instance:
+
+    ```yaml
+      slo:
+        - type: latency
+          title: "P95 Latency < 110ms"
+          objective: 95
+          threshold: 110.0
+        - type: latency
+          title: "P99 Latency < 200ms"
+          objective: 99
+          threshold: 200.0
+        - type: error
+          title: "P98 Error Rate < 1%"
+          objective: 98
+          threshold: 1
+    ```
+
+    These SLO do not need to exist per-se. In other words, they aren't tied to
+    any APM or monitoring tool. They simply express health service expectations.
+
+    !!! note
+    
+        lueur supports two types of SLO: `latency` and `error`. 
+
+When a scenario runs, lueur computes then a variety of latency and error
+percentiles (p25, p50, p75, p95 and p99) to compare them with these SLO.
+
+!!! example "lueur SLO reporting"
+
+    For instance, lueur may generate the following report:
+
+    | Latency Percentile | Latency (ms) | Num. Requests (% of total) |
+    |------------|--------------|-----------|
+    | p25 | 394.95 | 16 (26.2%) |
+    | p50 | 443.50 | 31 (50.8%) |
+    | p75 | 548.39 | 47 (77.0%) |
+    | p95 | 607.70 | 59 (96.7%) |
+    | p99 | 636.84 | 61 (100.0%) |
+
+    | SLO       | Pass? | Objective | Margin | Num. Requests Over Threshold (% of total) |
+    |-----------|-------|-----------|--------|--------------------------|
+    | P95 < 300ms | ❌ | 95% < 300ms | Above by 307.7ms | 55 (90.2%) |
+    | P99 < 1% errors | ✅ | 99% < 1% | Below by 1.0 | 0 (0.0%) |
+
+lueur is well aware that the window of the scenario is short. lueur takes the
+view that even from such a small period of time, we can extrapolate valuable
+information.
+
+We believe lueur `slo` bridges SRE to developers. SLO is a simple language
+which makes it explicit what a healthy service performs.
+
+!!! info
+
+    lueur is not an APM/monitoring tool, it doesn't aim at becoming one. A slo
+    in the context of lueur is only a language to help developers see the world
+    as their operations expect it to be.
+
 ### An `expect` block
 
 The `expect` block defines how you want to verify the results from the `call`.

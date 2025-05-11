@@ -82,7 +82,7 @@ pub struct RunOverview {
     pub total_time: f64, // in seconds
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum ItemStatus {
     Pass,
     Fail,

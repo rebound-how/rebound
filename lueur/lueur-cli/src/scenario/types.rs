@@ -25,6 +25,8 @@ pub struct ScenarioItemExpectation {
     pub status: Option<u16>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub response_time_under: Option<f64>, // ms
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub all_slo_are_valid: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -163,12 +165,14 @@ pub enum ItemExpectationDecision {
 pub struct ItemHttpExpectation {
     pub status_code: Option<u16>,
     pub response_time_under: Option<f64>,
+    pub all_slo_are_valid: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ItemHttpResult {
     pub status_code: Option<u16>,
     pub response_time: Option<f64>,
+    pub all_slo_are_valid: Option<bool>,
     pub decision: ItemExpectationDecision,
 }
 

@@ -43,7 +43,7 @@ your applications to experiment with network fault impacts.
 
     ```bash
     lueur run \
-        --proxy "9098=www.google.com:443" \ # (1)!
+        --proxy "9098=https://www.google.com:443" \ # (1)!
         --with-latency \
         --latency-mean 300
     ```
@@ -63,14 +63,16 @@ your applications to experiment with network fault impacts.
     ```bash
     curl \
         -4 \  # (1)!
+        -H "Host: www.google.com" \  # (2)!
         -I \
         -o /dev/null -s \
         -w "Connected IP: %{remote_ip}\nTotal time: %{time_total}s\n" \ 
-    https://0.0.0.0:9098  # (2)!
+    https://0.0.0.0:9098  # (3)!
     ```
 
     1. lueur's proxy only support IPv4 for now. That my change in the future.
-    2. Instead of connecting to `https://www.google.com`, we connect to the
+    2. Make sure the `Host` headers matches the actual target server.
+    3. Instead of connecting to `https://www.google.com`, we connect to the
        proxy and let it forward our HTTP request to `https://www.google.com`
        on our behalf.
        Note that the proxy doesn't make a request, the traffic sent by curl is

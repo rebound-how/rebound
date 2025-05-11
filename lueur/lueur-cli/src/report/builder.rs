@@ -59,8 +59,11 @@ pub fn to_report(exec_results: &ScenariosResults) -> Report {
     }
 }
 
-fn build_item_summary(item: &ScenarioItem, result: &ItemResult) -> ItemSummary {
-    let (method, url) = (item.call.method.clone(), item.call.url.clone());
+pub fn build_item_summary(
+    item: &ScenarioItem,
+    result: &ItemResult,
+) -> ItemSummary {
+    let (_, url) = (item.call.method.clone(), item.call.url.clone());
 
     let strategy_mode = match item.context.strategy.clone() {
         Some(s) => s,

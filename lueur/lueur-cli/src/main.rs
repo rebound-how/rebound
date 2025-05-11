@@ -100,12 +100,15 @@ use termui::quiet_handle_displayable_events;
 use tokio::sync::watch;
 use tokio::task;
 use tokio::time::sleep;
+use tokio_rustls::rustls;
 use tokio_stream::StreamExt;
 use tracing::error;
 use uuid::Uuid;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    let _ = rustls::crypto::ring::default_provider().install_default();
+
     let cli = Cli::parse();
 
     let (_file_guard, _stdout_guard, log_layers) =

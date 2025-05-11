@@ -10,10 +10,15 @@ use uuid::Uuid;
 
 use crate::event::TaskProgressEvent;
 use crate::proxy::ProxyState;
+use crate::report;
 use crate::scenario::event::ScenarioEvent;
 use crate::scenario::event::ScenarioItemLifecycle;
 use crate::scenario::executor::http::execute_request;
 use crate::scenario::executor::update_proxy_from_fault_schedule;
+use crate::scenario::types::ItemExpectation;
+use crate::scenario::types::ItemExpectationDecision;
+use crate::scenario::types::ItemHttpExpectation;
+use crate::scenario::types::ItemHttpResult;
 use crate::scenario::types::ItemResult;
 use crate::scenario::types::ItemResultData;
 use crate::scenario::types::ItemTarget;
@@ -145,13 +150,70 @@ pub async fn run_load_test(
 
     all_data.sort_by_key(|item| item.start);
 
-    let _ = event.on_item_terminated(None);
-
-    Ok(ItemResult {
+    let item_result = ItemResult {
         target: ItemTarget { address: url },
         results: all_data,
         requests_count: total_requests,
         failure_counts,
         total_time: start_instant.elapsed(),
-    })
+    };
+
+    if let Some(expect) = item.expect.clone() {
+        if let Some(needs_all_valid) = expect.all_slo_are_valid {
+            let summary =
+                report::builder::build_item_summary(&item, &item_result);
+
+            let mut all_valid = None;
+            let mut decision = ItemExpectationDecision::Unknown;
+
+            if needs_all_valid
+                && summary.final_status == report::types::ItemStatus::Pass
+            {
+                all_valid = Some(true);
+                decision = ItemExpectationDecision::Success;
+            } else if (needs_all_valid == false)
+                && (summary.final_status == report::types::ItemStatus::Pass)
+            {
+                all_valid = Some(true);
+                decision = ItemExpectationDecision::Failure;
+            } else if (needs_all_valid == true)
+                && (summary.final_status == report::types::ItemStatus::Fail)
+            {
+                all_valid = Some(false);
+                decision = ItemExpectationDecision::Failure;
+            } else if (needs_all_valid == false)
+                && (summary.final_status == report::types::ItemStatus::Fail)
+            {
+                all_valid = Some(false);
+                decision = ItemExpectationDecision::Success;
+            } else if (needs_all_valid == false)
+                && (summary.final_status == report::types::ItemStatus::Unknown)
+            {
+                all_valid = None;
+                decision = ItemExpectationDecision::Unknown;
+            }
+
+            let expectation = ItemExpectation::Http {
+                wanted: ItemHttpExpectation {
+                    status_code: expect.status,
+                    response_time_under: expect.response_time_under,
+                    all_slo_are_valid: expect.all_slo_are_valid,
+                },
+                got: Some(ItemHttpResult {
+                    status_code: expect.status,
+                    response_time: expect.response_time_under,
+                    all_slo_are_valid: all_valid,
+                    decision,
+                }),
+            };
+
+            let _ = event.on_item_terminated(Some(expectation));
+        } else {
+            let _ = event.on_item_terminated(None);
+        }
+    } else {
+        let _ = event.on_item_terminated(None);
+    }
+
+    Ok(item_result)
 }

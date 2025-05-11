@@ -86,6 +86,7 @@ pub async fn execute(
                         let mut result = ItemHttpResult {
                             status_code: None,
                             response_time: None,
+                            all_slo_are_valid: None,
                             decision: ItemExpectationDecision::Unknown,
                         };
 
@@ -126,6 +127,7 @@ pub async fn execute(
                             wanted: ItemHttpExpectation {
                                 status_code: r.status,
                                 response_time_under: r.response_time_under,
+                                all_slo_are_valid: None,
                             },
                             got: Some(result),
                         });
