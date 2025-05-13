@@ -33,6 +33,7 @@ use crate::plugin::load_injectors;
 use crate::proxy;
 use crate::proxy::ProxyState;
 use crate::proxy::monitor_and_update_proxy_config;
+use crate::proxy::protocols::http::init::initialize_http_proxy;
 use crate::proxy::protocols::tcp::init::initialize_tcp_proxies;
 use crate::sched;
 use crate::sched::run_fault_schedule;
@@ -78,20 +79,28 @@ pub async fn execute_item(
 
     let proxy_address = format!("127.0.0.1:{}", "3180");
 
-    let mut proxy_map = Vec::new();
+    /*let mut proxy_map = Vec::new();
     proxy_map.push(ProxyMap {
         proxy: proxy_config,
         remote: RemoteAddrConfig { remote_host: host, remote_port: port },
         proto,
-    });
+    });*/
 
     let _proxy_updater_handle = tokio::spawn(monitor_and_update_proxy_config(
         proxy_state.clone(),
         config_rx,
     ));
 
-    let _proxy_handle = initialize_tcp_proxies(
+    /*let _proxy_handle = initialize_tcp_proxies(
         proxy_map,
+        proxy_state.clone(),
+        proxy_shutdown_rx.clone(),
+        task_manager.clone(),
+    )
+    .await;*/
+
+    let _proxy_handle = initialize_http_proxy(
+        &proxy_config,
         proxy_state.clone(),
         proxy_shutdown_rx.clone(),
         task_manager.clone(),
@@ -189,7 +198,7 @@ pub async fn set_proxy_config_from_item(
 
     let injectors: Vec<Box<dyn FaultInjector>> = load_injectors(&new_config);
 
-    tracing::info!("{:?} {:?}", new_config, injectors);
+    tracing::debug!("{:?} {:?}", new_config, injectors);
 
     if config_tx.send((new_config, injectors)).is_err() {
         tracing::error!("Proxy task has been shut down.");

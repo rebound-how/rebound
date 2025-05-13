@@ -53,37 +53,60 @@ from this application.
 
 -   [X] Source code of the application
 
-    ```python title="app.py"
-    from fastapi import FastAPI, HTTPException, Depends
+    ```python title="webapp/app.py"
+    #!/usr/bin/env -S uv run --script
+
+    # /// script
+    # dependencies = [
+    #   "uvicorn",
+    #   "fastapi[standard]",
+    #   "sqlalchemy"
+    # ]
+    # ///
+
+    ###############################################################################
+    #
+    # Very basic application that expose a couple of endpoints that you can
+    # use to test lueur.
+    # Once you have installed `uv` https://docs.astral.sh/uv/, simply run the
+    # application as follows:
+    # 
+    # uv run --script app.py
+    #
+    ###############################################################################
+    from typing import Annotated
+
+    import uvicorn
+    from fastapi import FastAPI, HTTPException, Depends, status, Body
     from sqlalchemy import create_engine, Column, Integer, String
-    from sqlalchemy.ext.declarative import declarative_base
-    from sqlalchemy.orm import sessionmaker, Session
+    from sqlalchemy.orm import declarative_base, sessionmaker, Session
     from sqlalchemy.exc import SQLAlchemyError
 
+
+    ###############################################################################
     # Database configuration
-    DATABASE_URL = "sqlite:///./test.db"
-    engine = create_engine(DATABASE_URL)
+    ###############################################################################
+    engine = create_engine("sqlite:///./test.db")
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     Base = declarative_base()
 
-    # Define the User model
+
+    ###############################################################################
+    # Data model
+    ###############################################################################
     class User(Base):
         __tablename__ = "users"
 
         id = Column(Integer, primary_key=True, index=True)
         name = Column(String, index=True)
-        secret_password = Column(String)
+        password = Column(String)
 
-    # Create the database tables
     Base.metadata.create_all(bind=engine)
 
-    app = FastAPI(
-        servers=[
-            {"url": "http://localhost:9090", "description": "Staging environment"}
-        ]
-    )
 
-    # Dependency to get the database session
+    ###############################################################################
+    # Dependency injection
+    ###############################################################################
     def get_db():
         db = SessionLocal()
         try:
@@ -91,31 +114,48 @@ from this application.
         finally:
             db.close()
 
+
+    ###############################################################################
+    # Our application
+    ###############################################################################
+    app = FastAPI(servers=[{"url": "http://localhost:9090"}])
+
+
     @app.get("/")
-    async def read_root():
+    async def index() -> dict[str, str]:
         return {"message": "Hello, World!"}
 
+
     @app.post("/users/")
-    async def create_user(name: str, secret_password: str, db: sessionmaker[Session] = Depends(get_db)):
-        try:
-            db_user = User(name=name, secret_password=secret_password)
-            db.add(db_user)
-            db.commit()
-            db.refresh(db_user)
-            return db_user
-        except SQLAlchemyError as e:
-            db.rollback()
-            raise HTTPException(status_code=500, detail="Database error occurred")
+    async def create_user(
+        name: Annotated[str, Body()],
+        password: Annotated[str, Body()],
+        db: sessionmaker[Session] = Depends(get_db)
+    ):
+        db_user = User(name=name, password=password)
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+
+        return db_user
+
 
     @app.get("/users/{user_id}")
-    async def read_user(user_id: int, db: sessionmaker[Session] = Depends(get_db)):
+    async def read_user(
+        user_id: int, db: sessionmaker[Session] = Depends(get_db)
+    ):
         try:
             user = db.query(User).filter(User.id == user_id).first()
             if user is None:
-                raise HTTPException(status_code=404, detail="User not found")
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
             return user
         except SQLAlchemyError as e:
-            raise HTTPException(status_code=500, detail="Database error occurred")
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+    if __name__ == "__main__":
+        uvicorn.run("app:app", port=9090)
+
     ```
 
     You may now install the dependencies to run it:
@@ -123,18 +163,19 @@ from this application.
     === "pip"
 
         ```bash
-        pip install fastapi sqlalchemy uvicorn
+        pip install fastapi[standard] sqlalchemy uvicorn
         ```
 
     === "uv"
 
         ```bash
-        uv tool install fastapi sqlalchemy uvicorn
+        uv tool install fastapi[standard] sqlalchemy uvicorn
         ```
 
     Finally, run the application as follows:
 
     ```bash
+    cd webapp
     fastapi dev --port 9090
     ```
 
@@ -164,14 +205,13 @@ from this application.
     ```bash
     lueur agent code-review \
         --results results.json \ # (1)!
-        --source-dir . \ # (2)!
+        --source-dir webapp/ \ # (2)!
         --source-lang python # (3)!
-    ? Select the OpenAPI operationId to patch:   # (4)!
-    > read_root__get [GET http://localhost:9090/]
+    ⠸ [00:00:34] Reviewing! This could take a while...
+    > index__get [GET http://localhost:9090/]
       create_user_users__post [POST http://localhost:9090/users/]
       read_user_users__user_id__get [GET http://localhost:9090/users/{user_id}]
     [↑↓ to move, enter to select, type to filter]
-
     ```
 
     1. The results from the previous scenario execution
@@ -183,106 +223,210 @@ from this application.
 
     ??? example "Generated code review changes report"
 
-        Here are a few very focused, low-overhead changes you can make today to dramatically improve resilience & observability without rewriting your service.  
+        Below is a set of targeted, small‐scope changes you can drop almost verbatim into your `app.py` to dramatically improve resilience, prevent cascading slow‐downs, and give you early warning via metrics and tracing.  Each change is explained, and I’ve ordered them by immediate impact.
 
-        1) Harden your SQLAlchemy engine  
-        
-        * Enable connection‐pinging so stale connections are detected and re-created.  
-        * Pass a reasonable `timeout` on SQLite so stuck threads give up.  
-        * (Optionally) tune pool sizes if you ever move off SQLite.  
-        
+        ---
+
+        ## 1) Increase and tune your DB-connection pool
+
+        Right now you are using SQLite’s default pool (QueuePool size=5).  Under even moderate latency or I/O hiccups you’ll saturate your pool and stall new requests forever.
+
         ```diff
-        # app.py
-        
-        - DATABASE_URL = "sqlite:///./test.db"
-        - engine = create_engine(DATABASE_URL)
-        + DATABASE_URL = "sqlite:///./test.db"
-        + engine = create_engine(
-        +     DATABASE_URL,
-        +     connect_args={"timeout": 15},      # give up after 15s
-        +     pool_pre_ping=True,               # auto-recover stale / broken connections
-        +     pool_size=5,                      # keep a small pool (tune as needed)
-        +     max_overflow=10,                 
-        + )
+        --- a/app.py
+        +++ b/app.py
+        @@ ### Database configuration
+        -engine = create_engine("sqlite:///./test.db")
+        +engine = create_engine(
+        +    "sqlite:///./test.db",
+        +    # allow up to 10 concurrent connections
+        +    pool_size=10,
+        +    # and burst to 20 before failing
+        +    max_overflow=10,
+        +    # wait up to 5s for a free connection
+        +    pool_timeout=5,
+        +)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
         ```
 
-        2) Add retries with exponential back-off around your DB calls  
-        
-        * Decorate your write and read endpoints with Tenacity to auto-retry on transient `SQLAlchemyError`.  
-        * Keep the retry count low (3 attempts) so you don’t block forever.  
-        
+        **Why:**  prevents “head of line” blocking when one connection is slow (disk I/O hiccup, GC pause, etc.).
+
+        ---
+
+        ## 2) Bound every DB call with a per-request timeout
+
+        Even with a bigger pool, a hung query will hold its slot indefinitely.  Wrapping your sync calls in `asyncio.to_thread` + `asyncio.wait_for` guarantees a hard cap.
+
         ```diff
-        from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
-        
-        @retry(
-            retry=retry_if_exception_type(SQLAlchemyError),
-            wait=wait_exponential(multiplier=1, min=1, max=5),
-            stop=stop_after_attempt(3),
-        )
-        @app.post("/users/")
-        async def create_user(…):
-            …
-        
-        @retry(
-            retry=retry_if_exception_type(SQLAlchemyError),
-            wait=wait_exponential(multiplier=1, min=1, max=5),
-            stop=stop_after_attempt(3),
-        )
+        --- a/app.py
+        +++ b/app.py
+        import asyncio
+        from fastapi import HTTPException, status
+        from sqlalchemy.exc import SQLAlchemyError
+
+        +# helper that runs sync code in a thread
+        +def _sync_read_user(db, user_id: int):
+        +    user = db.query(User).filter(User.id == user_id).first()
+        +    if user is None:
+        +        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="user not found")
+        +    return user
+
         @app.get("/users/{user_id}")
-        async def read_user(…):
-            …
+        async def read_user(
+            user_id: int, db: sessionmaker[Session] = Depends(get_db)
+        ):
+        -    try:
+        -        user = db.query(User).filter(User.id == user_id).first()
+        -        if user is None:
+        -            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        -        return user
+        -    except SQLAlchemyError as e:
+        -        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        +    try:
+        +        # cap the entire DB roundtrip at 2s
+        +        return await asyncio.wait_for(
+        +            asyncio.to_thread(_sync_read_user, db, user_id),
+        +            timeout=2.0,
+        +        )
+        +    except asyncio.TimeoutError:
+        +        # fast‐fail slow queries
+        +        raise HTTPException(status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail="DB request timed out")
+        +    except SQLAlchemyError:
+        +        # catch transient DB errors
+        +        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="DB error")
         ```
 
-        3) Enforce a per-request timeout  
-        
-        * Protect your service from slow handlers by adding Starlette’s `TimeoutMiddleware`.  
-        * Any request taking longer than 10 seconds will be cut off and return a 503.  
-        
-        ```python
-        # app.py
-        
-        from starlette.middleware.timeout import TimeoutMiddleware
-        
-        app = FastAPI( … )
-        # insert immediately after FastAPI() creation
-        app.add_middleware(TimeoutMiddleware, timeout=10)
-        ```
+        **Why:**  prevents a black-hole or very slow query from chewing your entire worker pool and pushing p95 latency off the charts.
 
-        4) Plug in basic Prometheus metrics  
-        
-        * Gain visibility into request rates, latencies and error counts in under 10 lines.  
-        * `prometheus-fastapi-instrumentator` hooks into FastAPI routes automatically.  
-        
+        ---
+
+        ## 3) Add idempotent retries with exponential back-off to your GET
+
+        `read_user` is idempotent.  A retry on a transient DB or I/O error will hide packet drops, brief database locks, file-system stalls, etc.
+
+        1. Install [`tenacity`](https://github.com/jd/tenacity):  
         ```bash
-        pip install prometheus-fastapi-instrumentator
+        pip install tenacity
         ```
-        
+        2. Wrap the in-thread helper:
+
+        ```diff
+        --- a/app.py
+        +++ b/app.py
+        from tenacity import (
+            retry,
+            retry_if_exception_type,
+            wait_exponential,
+            stop_after_attempt,
+        )
+
+        +# retry only on SQLALchemy transient errors
+        @retry(
+            retry=retry_if_exception_type(SQLAlchemyError),
+            wait=wait_exponential(multiplier=0.1, max=1.0),
+            stop=stop_after_attempt(3),
+            reraise=True,
+        )
+        def _sync_read_user(db, user_id: int):
+        @@
+            user = db.query(User).filter(User.id == user_id).first()
+            if user is None:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="user not found")
+            return user
+        ```
+
+        **Why:**  this will re-try on deadlocks, brief locks, dropped packets, without touching your route signature or calling code.
+
+        ---
+
+        ## 4) Instrument basic Prometheus metrics + tracing
+
+        Early warning is critical: track latencies, error rates and retry counts so you can alert before your users notice.
+
+        1. Install:
+        ```bash
+        pip install prometheus-client starlette_exporter opentelemetry-api opentelemetry-sdk opentelemetry-instrumentation-fastapi
+        ```
+
+        2. Add to the top of `app.py`:
+
         ```python
-        # app.py
-        
-        from prometheus_fastapi_instrumentator import Instrumentator
-        
-        Instrumentator(
-            should_group_status_codes=True,
-            should_ignore_untemplated=True
-        ).instrument(app).expose(app, include_in_schema=False)
+        from starlette_exporter import PrometheusMiddleware, handle_metrics
+        from prometheus_client import Counter, Histogram
+        from opentelemetry import trace
+        from opentelemetry.sdk.trace import TracerProvider
+        from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
+
+        # -- tracing -----------------------------------------------------------------
+        trace.set_tracer_provider(TracerProvider())
+        trace.get_tracer_provider().add_span_processor(
+            BatchSpanProcessor(ConsoleSpanExporter())
+        )
+        tracer = trace.get_tracer(__name__)
+
+        # -- metrics -----------------------------------------------------------------
+        app.add_middleware(PrometheusMiddleware)
+        app.add_route("/metrics", handle_metrics)
+
+        REQUEST_LATENCY = Histogram(
+            "http_request_latency_seconds", "Latencies by method and path",
+            ["method", "endpoint"],
+        )
+        REQUEST_COUNT = Counter(
+            "http_requests_total", "Total requests by method, path and status",
+            ["method", "endpoint", "http_status"],
+        )
+
+        @app.middleware("http")
+        async def metrics_middleware(request, call_next):
+            labels = {"method": request.method, "endpoint": request.url.path}
+            with REQUEST_LATENCY.labels(**labels).time():
+                response = await call_next(request)
+            REQUEST_COUNT.labels(
+                **labels, http_status=response.status_code
+            ).inc()
+            return response
         ```
 
-        5) (Optional) Add structured logging & tracing  
-        
-        * Swap in a JSON logger (e.g. `structlog` or `loguru`) so you can correlate EC2/Pod logs with Prometheus metrics.  
-        * Plug in OpenTelemetry (or AWS X-Ray / Datadog APM) by adding their FastAPI middleware.  
+        **Why:**  you’ll immediately see tail-latency spikes (p95/p99), error surges, retry storms or pool-timeouts in your dashboards.
 
-        References  
-        – Tenacity retries: https://tenacity.readthedocs.io/en/latest/  
-        – Starlette TimeoutMiddleware: https://www.starlette.io/middleware/#timeoutmiddleware  
-        – FastAPI + Prometheus: https://github.com/trallnag/prometheus-fastapi-instrumentator  
+        ---
 
-        With just these changes you will:  
-        - auto-recover from transient DB hiccups,  
-        - avoid hanging requests,  
-        - get end-to-end visibility into throughput, latency & failures,  
-        - and lay the groundwork for richer tracing/logging as you grow.
+        ## 5) (Optional) Circuit-breaker for sustained failures
+
+        When your DB goes down for more than a few seconds, retries only amplify pressure.  A circuit-breaker will short-circuit and fast-fail until the DB recovers.
+
+        ```bash
+        pip install pybreaker
+        ```
+
+        ```diff
+        --- a/app.py
+        +++ b/app.py
+        from pybreaker import CircuitBreaker
+
+        # trip breaker after 5 errors, reset after 30s
+        db_breaker = CircuitBreaker(fail_max=5, reset_timeout=30)
+
+        -@retry(...)
+        -def _sync_read_user(...):
+        +@db_breaker
+        +@retry(...)
+        +def _sync_read_user(...):
+            ...
+        ```
+
+        **Why:**  prevents retry avalanches against an already-failing downstream.
+
+        ---
+
+        ### Summary of Impact
+
+        - Pool tuning + per-call timeouts → no more “stair-step” tail-latency under slow queries.  
+        - Idempotent retries → hide small network/DB blips.  
+        - Metrics & tracing → proactive alerting.  
+        - Circuit-breaker → quick fail-fast during true outages.
+
+        With these four “drop-in” changes you’ll eliminate head-of-line blocking, dramatically reduce error SLO violations on `GET /users/{user_id}`, and gain visibility into when—and why—your service is struggling.
 
 -   [X] Optionally Inject Advices from Scenario Executions Analysis
 
@@ -296,16 +440,16 @@ from this application.
     lueur agent scenario-review --results results.json
     ```
 
-    This will generate a file called `advice-report.md`. Now you can inject this
-    file into the code review command line:
+    This will generate a file called `scenario-review-report.md`. Now you can
+    inject this file into the code review command line:
 
 
     ```bash
     lueur agent code-review \
         --results results.json \
-        --source-dir . \
+        --source-dir webapp/ \
         --source-lang python \
-        --advices-report advice-report.md # (1)!
+        --scenario-review-report scenario-review-report.md # (1)!
     ? Select the OpenAPI operationId to patch:
     > read_root__get [GET http://localhost:9090/]
       create_user_users__post [POST http://localhost:9090/users/]
@@ -322,219 +466,119 @@ from this application.
 
     ??? example "Generated code review changes report after scenario analysis"
 
-        Below is a set of very focused, “drop-in” changes that will harden your FastAPI + SQLite service, with almost zero behavioral impact. We tackle three axes:
+        Here are four focused, minimally-intrusive changes you can make today to dramatically improve resilience, reliability and observability in your FastAPI/SQLAlchemy app.  
 
-        1. Mitigate SQLite locking/throughput issues  
-        2. Bound and isolate blocking calls so the event-loop and thread-pool can never be exhausted  
-        3. Add retry/back-off on the two user-CRUD paths and install basic metrics/tracing on *all* endpoints
+          1. Wrap every transaction in an explicit context manager and rollback on failure  
+             Right now you do:  
+             ```python
+             db.add(db_user)
+             db.commit()
+             db.refresh(db_user)
+             ```  
+             If `commit()` fails you never roll back, leaving the session in an invalid state. Instead use:  
+             ```python
+             from sqlalchemy.exc import SQLAlchemyError
 
-        Each snippet is written as a minimal patch you can apply almost verbatim.
+             @app.post("/users/")
+             async def create_user(
+                 name: str = Body(...),
+                 password: str = Body(...),
+                 db: Session = Depends(get_db),
+             ):
+                 try:
+                     # begin() will automatically rollback on exception
+                     with db.begin():
+                         user = User(name=name, password=password)
+                         db.add(user)
+                     # now safe to refresh
+                     db.refresh(user)
+                     return user
+                 except SQLAlchemyError as e:
+                     # session.rollback() already called by begin()
+                     # you can log e here
+                     raise HTTPException(
+                         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                         detail="could not create user",
+                     )
+             ```  
 
-        ---
+          2. Add a simple retry with exponential back-off around commits  
+             Transient “database is locked” errors in SQLite (and some cloud-SQL networks) can often be overcome by a retry. The [tenacity](https://github.com/jd/tenacity) library gives you a one-liner:  
+             ```bash
+             pip install tenacity
+             ```  
+             ```python
+             from tenacity import retry, wait_exponential, stop_after_attempt
 
-        ### 1. Tame SQLite contention with WAL, timeouts and a singleton pool
+             @retry(wait=wait_exponential(multiplier=0.2, max=2), stop=stop_after_attempt(3))
+             def safe_commit(db: Session):
+                 db.commit()
 
-        In `app.py` (or better yet in a new `db.py`):
+             @app.post("/users/")
+             async def create_user(...):
+                 try:
+                     with db.begin():
+                         user = User(...)
+                         db.add(user)
+                     # retry commit if it hits a transient lock
+                     safe_commit(db)
+                     db.refresh(user)
+                     return user
+                 except SQLAlchemyError:
+                     raise HTTPException(500, "db error")
+             ```  
 
-        ```diff
-        --- a/app.py
-        +++ b/app.py
-        @@
-        -# Database configuration
-        -DATABASE_URL = "sqlite:///./test.db"
-        -engine = create_engine(DATABASE_URL)
-        -SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-        +from sqlalchemy.pool import SingletonThreadPool
-        +from sqlalchemy import event
-        +
-        +# Database configuration
-        +DATABASE_URL = "sqlite:///./test.db"
-        +engine = create_engine(
-        +    DATABASE_URL,
-        +    connect_args={
-        +        # wait up to 15s for any pending lock
-        +        "timeout": 15,
-        +        # let our thread‐pool share connections
-        +        "check_same_thread": False,
-        +    },
-        +    # serialize all DB access on one thread
-        +    poolclass=SingletonThreadPool,
-        +)
-        +SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-        +
-        +# On every new DB connection, turn on WAL and looser sync
-        +@event.listens_for(engine, "connect")
-        +def _enable_wal(dbapi_conn, conn_record):
-        +    cursor = dbapi_conn.cursor()
-        +    cursor.execute("PRAGMA journal_mode=WAL;")
-        +    cursor.execute("PRAGMA synchronous=NORMAL;")
-        +    cursor.close()
-        ```
+          3. Enforce a per-request timeout  
+             A hung or extremely slow request ties up your worker. Adding a single middleware gives you a hard cap on processing time:  
+             ```python
+             import asyncio
+             from fastapi import Request
 
-        **Why?**  
-        - WAL mode lets readers & writers proceed in parallel.  
-        - `timeout` makes SQLite queue waiting writers for up to 15 s instead of failing immediately.  
-        - `SingletonThreadPool` reduces lock thrash by funneling everything through one thread.
+             @app.middleware("http")
+             async def timeout_middleware(request: Request, call_next):
+                 # 5 seconds max per request
+                 try:
+                     return await asyncio.wait_for(call_next(request), timeout=5.0)
+                 except asyncio.TimeoutError:
+                     raise HTTPException(504, "request timed out")
+             ```  
 
-        ---
+          4. Add basic metrics and tracing hooks  
+             Knowing “what just broke” is half the battle. Two minutes to add Prometheus metrics:  
+             ```bash
+             pip install prometheus_client
+             ```  
+             ```python
+             import time
+             from prometheus_client import Counter, Histogram, make_asgi_app
+             from starlette.middleware import Middleware
+             from starlette.middleware.base import BaseHTTPMiddleware
 
-        ### 2. Enforce per-call timeouts around blocking SQLAlchemy work
+             REQUEST_COUNT = Counter("http_requests_total", "Request count", ["method", "endpoint", "status"])
+             REQUEST_LATENCY = Histogram("http_request_latency_seconds", "Latency", ["method", "endpoint"])
 
-        Put your *actual* commit/refresh logic into a sync helper, then wrap it in `asyncio.wait_for`:
+             class MetricsMiddleware(BaseHTTPMiddleware):
+                 async def dispatch(self, request, call_next):
+                     start = time.time()
+                     response = await call_next(request)
+                     elapsed = time.time() - start
+                     key = (request.method, request.url.path, response.status_code)
+                     REQUEST_COUNT.labels(*key).inc()
+                     REQUEST_LATENCY.labels(request.method, request.url.path).observe(elapsed)
+                     return response
 
-        ```diff
-        --- a/app.py
-        +++ b/app.py
-        @@
-        from sqlalchemy.exc import SQLAlchemyError
-        +import asyncio
-        +from functools import partial
-        from fastapi import FastAPI, HTTPException, Depends
-        from sqlalchemy.orm import Session
-        
-        @@
-        @app.post("/users/")
-        async def create_user(
-            name: str,
-            secret_password: str,
-            db: Session = Depends(get_db),
-        ):
-        -    try:
-        -        db_user = User(name=name, secret_password=secret_password)
-        -        db.add(db_user)
-        -        db.commit()
-        -        db.refresh(db_user)
-        -        return db_user
-        +    try:
-        +        # run blocking work in a thread, capped to 5s
-        +        task = asyncio.get_event_loop().run_in_executor(
-        +            None,
-        +            partial(_sync_create_user, db, name, secret_password),
-        +        )
-        +        return await asyncio.wait_for(task, timeout=5.0)
-            except asyncio.TimeoutError:
-                # fail fast—doesn’t tie up the pool indefinitely
-                raise HTTPException(status_code=504, detail="Database operation timed out")
-            except SQLAlchemyError:
-                db.rollback()
-                raise HTTPException(status_code=500, detail="Database error occurred")
-        
-        +# the blocking helper
-        +def _sync_create_user(db: Session, name: str, secret_password: str):
-        +    user = User(name=name, secret_password=secret_password)
-        +    db.add(user)
-        +    db.commit()
-        +    db.refresh(user)
-        +    return user
-        ```
+             app.add_middleware(MetricsMiddleware)
+             # mount /metrics for Prometheus to scrape
+             app.mount("/metrics", make_asgi_app())
+             ```  
 
-        Do the same pattern for `read_user`.  This change prevents a sudden SQLite hiccup or a lock queue from saturating Starlette’s thread-pool.
+          With these four changes in place you will have:  
+          - safe transactions that always roll back on error  
+          - automatic retries for common transient failures  
+          - a hard deadline for every HTTP call  
+          - real-time metrics you can hook into your alerting system  
 
-        ---
+!!! tip
 
-        ### 3. Add retry + exponential back-off on transient SQL errors
-
-        Now that timeouts will turn “stuck” calls into 504s, we still want to transparently retry *brief* lock failures and I/O glitches. Use `tenacity` on your CRUD helpers:
-
-        ```diff
-        --- a/app.py
-        +++ b/app.py
-        @@
-        from tenacity import (
-            retry,
-            stop_after_attempt,
-            wait_exponential,
-            retry_if_exception_type,
-        )
-        from sqlalchemy.exc import SQLAlchemyError
-        @@
-        
-        -async def _sync_create_user(db: Session, name: str, secret_password: str):
-        +@retry(
-        +    retry=retry_if_exception_type(SQLAlchemyError),
-        +    wait=wait_exponential(multiplier=0.5, max=2),
-        +    stop=stop_after_attempt(3),
-        +    reraise=True,
-        +)
-        +def _sync_create_user(db: Session, name: str, secret_password: str):
-            user = User(name=name, secret_password=secret_password)
-            db.add(user)
-            db.commit()
-            db.refresh(user)
-            return user
-        ```
-
-        And for reads:
-
-        ```diff
-        --- a/app.py
-        +++ b/app.py
-        @app.get("/users/{user_id}")
-        async def read_user(user_id: int, db: Session = Depends(get_db)):
-        -    try:
-        -        user = db.query(User).filter(User.id == user_id).first()
-        +    try:
-        +        @retry(
-        +            retry=retry_if_exception_type(SQLAlchemyError),
-        +            wait=wait_exponential(multiplier=0.5, max=2),
-        +            stop=stop_after_attempt(3),
-        +            reraise=True,
-        +        )
-        +        def _read_with_retry(uid: int):
-        +            return db.query(User).filter(User.id == uid).first()
-        +
-        +        user = await asyncio.get_event_loop().run_in_executor(None, partial(_read_with_retry, user_id))
-        +
-                if user is None:
-                    raise HTTPException(status_code=404, detail="User not found")
-                return user
-        ```
-
-        **Why?**  
-        - A transient lock conflict (or SQLite I/O blip) will quickly succeed on retry rather than bubble up as a 500.  
-        - Exponential back-off prevents a thundering-herd against the lock.
-
-        ---
-
-        ### 4. (Optional but highly recommended) Instrument metrics and tracing
-
-        Insert at the bottom of your `app.py`:
-
-        ```python
-        # Install: pip install prometheus-fastapi-instrumentator opentelemetry-instrumentation-fastapi
-        from prometheus_fastapi_instrumentator import Instrumentator
-        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-
-        # attach Prometheus metrics
-        Instrumentator().instrument(app).expose(app, include_in_schema=False)
-
-        # attach OpenTelemetry tracing (if you have a collector configured)
-        FastAPIInstrumentor.instrument_app(app)
-        ```
-
-        You’ll start emitting:
-        - HTTP request counts, latencies, 4xx/5xx rates  
-        - DB timeouts, retry counts, lock-acquisition failures  
-        - Distributed traces showing time spent in each layer
-
-        ---
-
-        ## Final notes
-
-        - These changes have **low to medium** complexity and can be rolled out in stages.  
-        - **First**, switch on WAL + timeout + singleton pool.  
-        - **Second**, enforce per-call timeouts so you can safely tune retry/back-off without risking pool exhaustion.  
-        - **Third**, add tenacity retries.  
-        - **Finally**, layer in metrics & tracing so you can verify real-world impact and alert on any regression.
-
-        Together, they will harden `/`, `/users/` and `/users/{id}` against:
-        - lock contention  
-        - unbounded queuing  
-        - transient I/O errors  
-        - silent tail-latencies   
-
-        —and give your team the observability needed to keep your SLOs rock-solid.
-
-    lueur now takes into consideration the previous analysis and is therefore
-    able to propose a set of changes with a deeper understanding of how the
-    code may react.
+    In a future release, lueur will be able to apply and try the changes
+    to verify they may be used safely.

@@ -6,8 +6,10 @@ use std::time::Duration;
 
 use chrono::DateTime;
 use chrono::Utc;
+use regex::Regex;
 use serde::Deserialize;
 use serde::Serialize;
+use url::Url;
 
 use crate::errors::ScenarioError;
 use crate::event::FaultEvent;
@@ -39,6 +41,7 @@ pub struct ScenarioItemCall {
     pub body: Option<String>, // Optional request body
     #[serde(skip_serializing_if = "Option::is_none")]
     pub timeout: Option<u64>, // Optional timeout in ms to fail the request
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub meta: Option<ScenarioItemCallOpenAPIMeta>,
 }
 
@@ -59,9 +62,11 @@ pub struct ScenarioItemSLO {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScenarioItemContext {
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub upstreams: Vec<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub faults: Vec<FaultConfiguration>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub strategy: Option<ScenarioItemCallStrategy>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub slo: Option<Vec<ScenarioItemSLO>>,
@@ -120,13 +125,16 @@ pub struct ScenarioItem {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HTTPPathsConfig {
+    #[serde(skip_serializing_if = "HashMap::is_empty")]
     pub segments: HashMap<String, String>,
 }
 
 /// Global HTTP configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScenarioHTTPGlobalConfig {
-    pub headers: HashMap<String, String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub headers: Option<HashMap<String, String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub paths: Option<HTTPPathsConfig>,
 }
 
@@ -135,6 +143,30 @@ pub struct ScenarioHTTPGlobalConfig {
 pub struct ScenarioGlobalConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub http: Option<ScenarioHTTPGlobalConfig>,
+}
+
+impl ScenarioGlobalConfig {
+    pub fn from_url(url: &str) -> anyhow::Result<Option<Self>> {
+        let re = Regex::new(r"^\{([^/]+)\}$").unwrap();
+        let mut segments = HashMap::new();
+
+        for part in url.split('/') {
+            if let Some(cap) = re.captures(part) {
+                segments.insert(cap[1].to_string(), String::new());
+            }
+        }
+
+        if segments.is_empty() {
+            return Ok(None);
+        }
+
+        let http = Some(ScenarioHTTPGlobalConfig {
+            headers: None,
+            paths: Some(HTTPPathsConfig { segments }),
+        });
+
+        Ok(Some(ScenarioGlobalConfig { http }))
+    }
 }
 
 /// The overall scenario containing multiple entries

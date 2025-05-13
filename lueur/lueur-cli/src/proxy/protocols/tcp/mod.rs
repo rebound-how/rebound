@@ -55,7 +55,7 @@ pub async fn run_tcp_proxy(
             accept_result = proxy_listener.accept() => {
                 match accept_result {
                     Ok((stream, addr)) => {
-                        tracing::debug!("Accepted connection from {}", addr);
+                        tracing::debug!("TCP proxy accepted connection from {}", addr);
 
                         let state = state_cloned.clone();
                         let proto = proxied_proto.clone();

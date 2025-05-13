@@ -84,6 +84,7 @@ pub async fn index(
     .then_store_with(qdrant.clone())
     .run()
     .await?;
+
     Ok(())
 }
 
@@ -124,9 +125,11 @@ impl Transformer for TagOpId {
                     for opid in &self.opids {
                         match find_best_similarity(opid, &defs) {
                             Some((m, score)) => {
-                                println!(
+                                tracing::debug!(
                                     "Matched {} with {} score {}",
-                                    opid, m, score
+                                    opid,
+                                    m,
+                                    score
                                 );
                                 node.metadata.insert(opid, m);
                                 node.metadata

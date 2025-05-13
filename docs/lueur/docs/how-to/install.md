@@ -13,8 +13,8 @@ summary of the capabilities per target.
 |-------------------------|:-----:|:---------------:|:------------------:|:-------------:|
 | Linux shared library    |  :white_check_mark:    | :white_check_mark:               | :white_check_mark:             | :white_check_mark:        |
 | Linux static (musl)    |  :white_check_mark:    | :white_check_mark:               | :white_check_mark:             | :no_entry:        |
-| MacOSX     |  :white_check_mark:    | :white_check_mark:              | :no_entry:             | :white_check_mark:        |
-| Windows     |  :white_check_mark:    | :white_check_mark:               | :no_entry:             | :no_entry:        |
+| MacOSX     |  :white_check_mark:    | :white_check_mark:              | :no_entry: (2)            | :white_check_mark:        |
+| Windows     |  :white_check_mark:    | :white_check_mark:               | :no_entry: (2)           | :no_entry: (3)       |
 
 1. lueur comes with binaries with and without eBPF support for the Linux
    platform.
@@ -22,6 +22,8 @@ summary of the capabilities per target.
    is disabled elsewhere.
 3. AI Agent relies on the [swiftide](https://swiftide.rs/) rust framework which
    [doesn't support Windows](https://github.com/bosun-ai/swiftide/issues/299).
+   However, the agent runs fine on "Linux on Windows" via
+   [WSL](https://learn.microsoft.com/en-us/windows/wsl/install).
 4. lueur only supports 64 bits architectures: x86 and ARM.
 
 When a feature is disabled, it won't appear in the CLI arguments.

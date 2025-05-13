@@ -924,8 +924,8 @@ pub struct AgentReviewConfig {
     #[arg(
         long = "report",
         help = "Path where to save the generated reviews report",
-        default_value = "reviews-report.md",
-        env = "LUEUR_AGENT_REVIEW_REPORT"
+        default_value = "code-review-report.md",
+        env = "LUEUR_AGENT_CODE_REVIEW_REPORT_FILE"
     )]
     pub report: String,
 
@@ -933,41 +933,41 @@ pub struct AgentReviewConfig {
     #[arg(
         long,
         help = "Path to the generated json results file",
-        env = "LUEUR_AGENT_REVIEW_RESULTS_PATH"
+        env = "LUEUR_SCENARIO_RESULTS_PATH"
     )]
     pub results: String,
-
-    /// Project source code repository directory
-    #[arg(
-        long = "source-dir",
-        help = "Path to the repository source code directory",
-        env = "LUEUR_AGENT_REVIEW_REPO_PATH"
-    )]
-    pub repo: String,
 
     /// Source index path
     #[arg(
         long,
         help = "Path to the index cache",
         default_value = "/tmp/index.db",
-        env = "LUEUR_AGENT_REVIEW_INDEX_PATH"
+        env = "LUEUR_AGENT_CODE_REVIEW_SOURCE_INDEX_PATH"
     )]
     pub index: String,
+
+    /// Project source code repository directory
+    #[arg(
+        long = "source-dir",
+        help = "Path to the repository source code directory",
+        env = "LUEUR_AGENT_CODE_REVIEW_SOURCE_DIR"
+    )]
+    pub repo: String,
 
     /// Source language
     #[arg(
         long = "source-lang",
         help = "Target language to index: python, rust, go, java, ...",
-        env = "LUEUR_AGENT_REVIEW_LANGUAGE"
+        env = "LUEUR_AGENT_CODE_REVIEW_SOURCE_LANGUAGE"
     )]
     pub lang: String,
 
-    /// Advice report
+    /// Scenario review report
     #[arg(
-        long = "advices-report",
-        help = "Path to the output of the advice command",
-        default_value = "advices-report.md",
-        env = "LUEUR_AGENT_REVIEW_ADVICES_REPORT"
+        long = "scenario-review-report",
+        help = "Path to the output of the scenario-review command",
+        default_value = "scenario-analysis-report.md",
+        env = "LUEUR_AGENT_SCENARIO_REVIEW_REPORT_FILE"
     )]
     pub advices: Option<String>,
 }
@@ -980,7 +980,7 @@ pub struct AgentAdviceConfig {
     #[arg(
         long,
         help = "Path to the generated json results file",
-        env = "LUEUR_AGENT_ADVICE_RESULTS_PATH"
+        env = "LUEUR_SCENARIO_RESULTS_PATH"
     )]
     pub results: String,
 
@@ -998,8 +998,8 @@ pub struct AgentAdviceConfig {
     #[arg(
         long,
         help = "Path where to save the generated advice report.",
-        default_value = "advices-report.md",
-        env = "LUEUR_AGENT_ADVICE_REPORT_FILE"
+        default_value = "scenario-analysis-report.md",
+        env = "LUEUR_AGENT_SCENARIO_REVIEW_REPORT_FILE"
     )]
     pub report: String,
 }

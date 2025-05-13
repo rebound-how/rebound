@@ -80,6 +80,10 @@ async fn handle_new_connection(
             .unwrap()
     };
 
+    if !passthrough {
+        tracing::debug!("HTTP proxying {}", upstream_url);
+    }
+
     if method == Method::CONNECT {
         let r = tunnel::handle_connect(
             source_addr,

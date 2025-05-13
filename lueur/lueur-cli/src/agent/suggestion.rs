@@ -128,6 +128,14 @@ impl TransformResponse for InjectCodePrompt {
                 fs::read_to_string(source_dir.join("pyproject.toml"))
                     .unwrap_or_default();
             ctx.insert("package_manager", &pkg_source);
+        } else if self.source_lang == "rust" {
+            let pkg_source = fs::read_to_string(source_dir.join("Cargo.toml"))
+                .unwrap_or_default();
+            ctx.insert("package_manager", &pkg_source);
+        } else if self.source_lang == "go" {
+            let pkg_source = fs::read_to_string(source_dir.join("go.mod"))
+                .unwrap_or_default();
+            ctx.insert("package_manager", &pkg_source);
         }
 
         if let Some(filepath) = m.get("path") {

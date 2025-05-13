@@ -28,6 +28,7 @@ use super::v31x;
 use crate::errors::ScenarioError;
 use crate::scenario::Scenario;
 use crate::scenario::generator::types::Api;
+use crate::scenario::types::ScenarioGlobalConfig;
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Template definitions
@@ -37,10 +38,17 @@ use crate::scenario::generator::types::Api;
 const T_LATENCY_SPIKE: &str = r#"---
 title: "Single high-latency spike (client ingress)"
 description: "A single 800ms spike simulates jitter buffer underrun / GC pause on client network stack."
+{% if config %}config:
+  {{ config }}
+{% endif %}
 items:
   - call:
       method: {{ method }}
       url: "{{ url }}"
+      {% if method in ["POST", "PUT"] %}headers:
+        content-type: "application/json"
+      {% endif %}
+      {% if body %}body: '{{ body }}'{% endif %}
       meta:
         operation_id: {{ opid }}
     context:
@@ -58,10 +66,17 @@ items:
 const T_GRADUAL_LATENCY: &str = r#"---
 title: "Stair-step latency growth (5 x 100 ms)"
 description: "Latency increases 100 ms per call; emulate slow congestion build-up or head-of-line blocking."
+{% if config %}config:
+  {{ config }}
+{% endif %}
 items:
   - call:
       method: {{ method }}
       url: "{{ url }}"
+      {% if method in ["POST", "PUT"] %}headers:
+        content-type: "application/json"
+      {% endif %}
+      {% if body %}body: '{{ body }}'{% endif %}
       meta:
         operation_id: {{ opid }}
     context:
@@ -84,10 +99,17 @@ items:
 const T_PERIODIC_PULSES: &str = r#"---
 title: "Periodic 150-250 ms latency pulses during load"
 description: "Three latency bursts at 10-40-70% of a 10s window; good for P95 drift tracking."
+{% if config %}config:
+  {{ config }}
+{% endif %}
 items:
   - call:
       method: {{ method }}
       url: "{{ url }}"
+      {% if method in ["POST", "PUT"] %}headers:
+        content-type: "application/json"
+      {% endif %}
+      {% if body %}body: '{{ body }}'{% endif %}
       meta:
         operation_id: {{ opid }}
     context:
@@ -107,10 +129,17 @@ items:
 const T_PACKET_LOSS: &str = r#"---
 title: "5% packet loss for 4s"
 description: "Simulates flaky Wi-Fi or cellular interference."
+{% if config %}config:
+  {{ config }}
+{% endif %}
 items:
   - call:
       method: {{ method }}
       url: "{{ url }}"
+      {% if method in ["POST", "PUT"] %}headers:
+        content-type: "application/json"
+      {% endif %}
+      {% if body %}body: '{{ body }}'{% endif %}
       timeout: 500
       meta:
         operation_id: {{ opid }}
@@ -127,10 +156,17 @@ items:
 const T_JITTER: &str = r#"---
 title: "High jitter (±80ms @ 8Hz)"
 description: "Emulates bursty uplink, measuring buffering robustness."
+{% if config %}config:
+  {{ config }}
+{% endif %}
 items:
   - call:
       method: {{ method }}
       url: "{{ url }}"
+      {% if method in ["POST", "PUT"] %}headers:
+        content-type: "application/json"
+      {% endif %}
+      {% if body %}body: '{{ body }}'{% endif %}
       meta:
         operation_id: {{ opid }}
     context:
@@ -148,10 +184,17 @@ items:
 const T_BANDWIDTH: &str = r#"---
 title: "512 KBps bandwidth cap"
 description: "Models throttled 3G link; validates handling of large payloads."
+{% if config %}config:
+  {{ config }}
+{% endif %}
 items:
   - call:
       method: {{ method }}
       url: "{{ url }}"
+      {% if method in ["POST", "PUT"] %}headers:
+        content-type: "application/json"
+      {% endif %}
+      {% if body %}body: '{{ body }}'{% endif %}
       meta:
         operation_id: {{ opid }}
     context:
@@ -159,6 +202,9 @@ items:
       faults:
         - { type: bandwidth, rate: 512, unit: KBps, direction: ingress }
       strategy: { mode: load, duration: 15s, clients: 2, rps: 1 }
+      slo:
+        - { type: latency, title: "P95 < 300ms", objective: 95, threshold: 300 }
+        - { type: error,  title: "P99 < 1% errors", objective: 99, threshold: 1 }
     expect: { status: 200 }
 "#;
 
@@ -166,10 +212,17 @@ items:
 const T_HTTP_500: &str = r#"---
 title: "Random 500 errors (5% of calls)"
 description: "Backend flakiness under load; ensures retry / circuit-breaker logic."
+{% if config %}config:
+  {{ config }}
+{% endif %}
 items:
   - call:
       method: {{ method }}
       url: "{{ url }}"
+      {% if method in ["POST", "PUT"] %}headers:
+        content-type: "application/json"
+      {% endif %}
+      {% if body %}body: '{{ body }}'{% endif %}
       meta:
         operation_id: {{ opid }}
     context:
@@ -177,17 +230,27 @@ items:
       faults:
         - { type: httperror, status_code: 500, probability: 0.05 }
       strategy: { mode: load, duration: 8s, clients: 5, rps: 4 }
+      slo:
+        - { type: latency, title: "P95 < 300ms", objective: 95, threshold: 300 }
+        - { type: error,  title: "P99 < 1% errors", objective: 99, threshold: 1 }
     expect: { response_time_under: 100.0 }
 "#;
 
 /// 8. Complete blackhole for a brief window
 const T_BLACKHOLE: &str = r#"---
-title: "Full black-hole for 1 s"
+title: "Full black-hole for 1s"
 description: "Simulates router drop / Pod eviction causing 100% packet loss for a second."
+{% if config %}config:
+  {{ config }}
+{% endif %}
 items:
   - call:
       method: {{ method }}
       url: "{{ url }}"
+      {% if method in ["POST", "PUT"] %}headers:
+        content-type: "application/json"
+      {% endif %}
+      {% if body %}body: '{{ body }}'{% endif %}
       timeout: 500
       meta:
         operation_id: {{ opid }}
@@ -196,6 +259,9 @@ items:
       faults:
         - { type: blackhole, direction: egress, period: "start:45%,duration:10%" }
       strategy: { mode: load, duration: 10s, clients: 2, rps: 3 }
+      slo:
+        - { type: latency, title: "P95 < 300ms", objective: 95, threshold: 300 }
+        - { type: error,  title: "P99 < 1% errors", objective: 99, threshold: 1 }
 "#;
 
 fn env_with_templates(
@@ -261,7 +327,11 @@ pub fn generate_scenarios(
 
     for api_op in &spec.operations {
         let url = format!("{}{}", base, api_op.path);
-        let ctx = context! { method => api_op.method.to_string(), url => url, upstream => base, opid => api_op.operation_id };
+        let config: String =
+            serde_yaml::to_string(&ScenarioGlobalConfig::from_url(&url)?)?
+                .trim_start_matches("---\n")
+                .to_string();
+        let ctx = context! { config => config, method => api_op.method.to_string(), url => url, body => api_op.body, upstream => base, opid => api_op.operation_id };
         for n in TEMPLATE_NAMES {
             tracing::debug!("Generate scenario {} with context {}", n, ctx);
             let rendered = env.get_template(n)?.render(ctx.clone())?;
@@ -362,6 +432,15 @@ pub fn save(
         return Err(ScenarioError::ExpectedDirectoryError());
     } else if !split {
         save_batch(scenarios, path)?;
+
+        let mut seen: Vec<String> = Vec::<String>::new();
+        for s in scenarios {
+            let url = s.items[0].call.url.clone();
+            if !seen.contains(&url) {
+                seen.push(url);
+                count += 1;
+            }
+        }
     } else {
         let mut batch = Vec::new();
         let mut current_url = "".to_string();

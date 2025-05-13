@@ -24,7 +24,7 @@ use tera::Context;
 
 use super::CODE_COLLECTION;
 use super::clients::SupportedLLMClient;
-use super::clients::openai::get_client;
+use super::clients::get_client;
 use crate::report;
 use crate::report::types::Report;
 use crate::report::types::ReportFormat;
@@ -41,15 +41,17 @@ pub async fn analyze(
 
     let md = report::render::render(report, ReportFormat::Markdown);
 
-    let llm = get_client(prompt_model, embed_model)?;
+    let llm = get_client(client_type, prompt_model, embed_model)?;
 
-    let qdrant = Qdrant::builder()
+    let qdrant: Qdrant = Qdrant::builder()
         .batch_size(50)
-        .vector_size(3072)
+        .vector_size(1536)
         .with_vector(EmbeddedField::Combined)
         .with_sparse_vector(EmbeddedField::Combined)
         .collection_name(CODE_COLLECTION)
         .build()?;
+
+    let _ = qdrant.create_index_if_not_exists().await?;
 
     // we carry a multiple shots analysis for better advices
     // each shot response is injected into the next shot

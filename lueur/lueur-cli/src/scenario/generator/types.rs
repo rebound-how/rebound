@@ -14,6 +14,7 @@ pub struct ApiOperation {
     pub method: http::Method,
     pub idempotent: bool,
     pub operation_id: Option<String>,
+    pub body: Option<String>,
 }
 
 #[derive(Clone, Debug)]

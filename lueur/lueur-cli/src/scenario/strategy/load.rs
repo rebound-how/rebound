@@ -207,12 +207,12 @@ pub async fn run_load_test(
                 }),
             };
 
-            let _ = event.on_item_terminated(Some(expectation));
+            let _ = event.on_item_terminated(&item, Some(expectation));
         } else {
-            let _ = event.on_item_terminated(None);
+            let _ = event.on_item_terminated(&item, None);
         }
     } else {
-        let _ = event.on_item_terminated(None);
+        let _ = event.on_item_terminated(&item, None);
     }
 
     Ok(item_result)

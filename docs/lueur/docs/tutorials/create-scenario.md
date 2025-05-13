@@ -15,7 +15,7 @@
 
   By the end of this tutorial, you will:
 
-  - Configure Lueur to apply latency.
+  - Configure lueur to apply latency.
   - Run a defined scenario that systematically applies this fault.
   - Observe the application’s behavior and interpret the resulting report.
 
@@ -23,7 +23,7 @@
 
 **Tools & Setup**:
 
-  - Lueur installed on your local machine.
+  - lueur [installed](../how-to/install.md) on your local machine.
   - An existing application or a simple test client that makes calls to a known
     third-party endpoint (e.g., `https://api.example.com`).
   - Basic familiarity with setting `HTTP_PROXY` or `HTTPS_PROXY` environment
@@ -122,9 +122,9 @@ to inject.
         mean: 80
         stddev: 5
         direction: ingress
-        side: client
+        side: server
     strategy:
-      mode: Repeat
+      mode: repeat
       step: 30
       count: 3
       add_baseline_call: true
@@ -140,7 +140,7 @@ from this endpoint.
 
 !!! note
 
-    The reasone we are using this server here is because the demo application
+    The reason we are using this server here is because the demo application
     provided by lueur makes a call to it when the `/ping` endpoint is called.
 
 **Expect:**
@@ -162,7 +162,7 @@ This section specifies the criteria that determine whether the test has passed.
   ---
   title: "Latency Increase By 30ms Steps From Downstream"
   description: "A collection of tests to evaluate how our service handles network faults."
-  scenarios:
+  items:
     - call:
         method: GET
         url: http://localhost:7070/ping
@@ -174,9 +174,9 @@ This section specifies the criteria that determine whether the test has passed.
             mean: 80
             stddev: 5
             direction: ingress
-            side: client
+            side: server
         strategy:
-          mode: Repeat
+          mode: repeat
           step: 30
           count: 3
           add_baseline_call: true
@@ -238,10 +238,10 @@ lueur scenario run --scenario scenario.yaml
 
 Here is the output of the run:
 
-```bash
+```console
 ================ Running Scenarios ================
 
-⠏  4/4  Latency Increase By 30ms Steps From Downstream  ▮▮▮▮
+⠦  4/4  [00:00:01] Latency Increase By 30ms Steps From Downstream ▮▮▮▮ [GET http://localhost:7070/ping]
 
 ===================== Summary =====================
 
@@ -295,181 +295,301 @@ Here is an example of `results.json` file:
 
 ```json
 {
-  "plugins": [],
-  "items": [
+  "start": 1747072156,
+  "end": 1747072158,
+  "results": [
     {
-      "title": "Latency Increase By 30ms Steps From Downstream",
-      "timestamp": 1741273041489713,
-      "target": {
-        "address": "http://localhost:7070/ping"
+      "scenario": {
+        "title": "Latency Increase By 30ms Steps From Downstream",
+        "description": "A collection of tests to evaluate how our service handles network faults.",
+        "items": [
+          {
+            "call": {
+              "method": "GET",
+              "url": "http://localhost:7070/ping"
+            },
+            "context": {
+              "upstreams": [
+                "https://postman-echo.com"
+              ],
+              "faults": [
+                {
+                  "type": "latency",
+                  "side": "server",
+                  "mean": 80.0,
+                  "stddev": 5.0,
+                  "direction": "ingress"
+                }
+              ],
+              "strategy": {
+                "mode": "repeat",
+                "step": 30.0,
+                "count": 3,
+                "add_baseline_call": true
+              }
+            },
+            "expect": {
+              "status": 200,
+              "response_time_under": 490.0
+            }
+          }
+        ]
       },
-      "metrics": {
-        "dns": [],
-        "protocol": {
-          "type": "http",
-          "code": 200,
-          "body_length": 308
-        },
-        "ttfb": 411.620809,
-        "total_time": 411.620792,
-        "faults": []
-      },
-      "expect": {
-        "type": "http",
-        "wanted": {
-          "status_code": 200,
-          "response_time_under": 490.0
-        },
-        "got": {
-          "status_code": 200,
-          "response_time": 411.620792,
-          "decision": "success"
-        }
-      },
-      "faults": [],
-      "errors": [],
-      "total_time": 0.0
-    },
-    {
-      "title": "Latency Increase By 30ms Steps From Downstream",
-      "timestamp": 1741273041972099,
-      "target": {
-        "address": "http://localhost:7070/ping"
-      },
-      "metrics": {
-        "dns": [],
-        "protocol": {
-          "type": "http",
-          "code": 200,
-          "body_length": 308
-        },
-        "ttfb": 478.129449,
-        "total_time": 478.129428,
-        "faults": []
-      },
-      "expect": {
-        "type": "http",
-        "wanted": {
-          "status_code": 200,
-          "response_time_under": 490.0
-        },
-        "got": {
-          "status_code": 200,
-          "response_time": 478.129428,
-          "decision": "success"
-        }
-      },
-      "faults": [
+      "results": [
         {
-          "type": "latency",
-          "distribution": null,
-          "global": null,
-          "side": "client",
-          "mean": 80.0,
-          "stddev": 5.0,
-          "min": null,
-          "max": null,
-          "shape": null,
-          "scale": null,
-          "direction": "ingress"
+          "target": {
+            "address": "http://localhost:7070/ping"
+          },
+          "results": [
+            {
+              "start": 1747072156512117,
+              "expect": {
+                "type": "http",
+                "wanted": {
+                  "status_code": 200,
+                  "response_time_under": 490.0,
+                  "all_slo_are_valid": null
+                },
+                "got": {
+                  "status_code": 200,
+                  "response_time": 462.121729,
+                  "all_slo_are_valid": null,
+                  "decision": "success"
+                }
+              },
+              "metrics": {
+                "dns": [
+                  {
+                    "host": "localhost",
+                    "duration": 0.095075,
+                    "resolved": true
+                  }
+                ],
+                "protocol": {
+                  "type": "http",
+                  "code": 200,
+                  "body_length": 308
+                },
+                "ttfb": 0.00177,
+                "total_time": 462.121729,
+                "faults": [
+                  {
+                    "url": "localhost:7070",
+                    "applied": [
+                      {
+                        "event": {
+                          "type": "latency",
+                          "direction": "ingress",
+                          "side": "client",
+                          "delay": 84.615696
+                        }
+                      }
+                    ]
+                  }
+                ],
+                "errored": false,
+                "timed_out": false
+              },
+              "faults": [
+                {
+                  "type": "latency",
+                  "side": "client",
+                  "mean": 80.0,
+                  "stddev": 5.0,
+                  "direction": "ingress"
+                }
+              ],
+              "errors": []
+            },
+            {
+              "start": 1747072156987144,
+              "expect": {
+                "type": "http",
+                "wanted": {
+                  "status_code": 200,
+                  "response_time_under": 490.0,
+                  "all_slo_are_valid": null
+                },
+                "got": {
+                  "status_code": 200,
+                  "response_time": 460.167284,
+                  "all_slo_are_valid": null,
+                  "decision": "success"
+                }
+              },
+              "metrics": {
+                "dns": [
+                  {
+                    "host": "localhost",
+                    "duration": 0.050846,
+                    "resolved": true
+                  }
+                ],
+                "protocol": {
+                  "type": "http",
+                  "code": 200,
+                  "body_length": 308
+                },
+                "ttfb": 0.003175,
+                "total_time": 460.167284,
+                "faults": [
+                  {
+                    "url": "localhost:7070",
+                    "applied": [
+                      {
+                        "event": {
+                          "type": "latency",
+                          "direction": "ingress",
+                          "side": "client",
+                          "delay": 77.726423
+                        }
+                      }
+                    ]
+                  }
+                ],
+                "errored": false,
+                "timed_out": false
+              },
+              "faults": [
+                {
+                  "type": "latency",
+                  "side": "client",
+                  "mean": 80.0,
+                  "stddev": 5.0,
+                  "direction": "ingress"
+                }
+              ],
+              "errors": []
+            },
+            {
+              "start": 1747072157452249,
+              "expect": {
+                "type": "http",
+                "wanted": {
+                  "status_code": 200,
+                  "response_time_under": 490.0,
+                  "all_slo_are_valid": null
+                },
+                "got": {
+                  "status_code": 200,
+                  "response_time": 448.75748,
+                  "all_slo_are_valid": null,
+                  "decision": "success"
+                }
+              },
+              "metrics": {
+                "dns": [
+                  {
+                    "host": "localhost",
+                    "duration": 0.051273,
+                    "resolved": true
+                  }
+                ],
+                "protocol": {
+                  "type": "http",
+                  "code": 200,
+                  "body_length": 307
+                },
+                "ttfb": 0.003145,
+                "total_time": 448.75748,
+                "faults": [
+                  {
+                    "url": "localhost:7070",
+                    "applied": [
+                      {
+                        "event": {
+                          "type": "latency",
+                          "direction": "ingress",
+                          "side": "client",
+                          "delay": 72.084749
+                        }
+                      }
+                    ]
+                  }
+                ],
+                "errored": false,
+                "timed_out": false
+              },
+              "faults": [
+                {
+                  "type": "latency",
+                  "side": "client",
+                  "mean": 80.0,
+                  "stddev": 5.0,
+                  "direction": "ingress"
+                }
+              ],
+              "errors": []
+            },
+            {
+              "start": 1747072157910258,
+              "expect": {
+                "type": "http",
+                "wanted": {
+                  "status_code": 200,
+                  "response_time_under": 490.0,
+                  "all_slo_are_valid": null
+                },
+                "got": {
+                  "status_code": 200,
+                  "response_time": 479.741817,
+                  "all_slo_are_valid": null,
+                  "decision": "success"
+                }
+              },
+              "metrics": {
+                "dns": [
+                  {
+                    "host": "localhost",
+                    "duration": 0.078204,
+                    "resolved": true
+                  }
+                ],
+                "protocol": {
+                  "type": "http",
+                  "code": 200,
+                  "body_length": 308
+                },
+                "ttfb": 0.002776,
+                "total_time": 479.741817,
+                "faults": [
+                  {
+                    "url": "localhost:7070",
+                    "applied": [
+                      {
+                        "event": {
+                          "type": "latency",
+                          "direction": "ingress",
+                          "side": "client",
+                          "delay": 79.378289
+                        }
+                      }
+                    ]
+                  }
+                ],
+                "errored": false,
+                "timed_out": false
+              },
+              "faults": [
+                {
+                  "type": "latency",
+                  "side": "client",
+                  "mean": 80.0,
+                  "stddev": 5.0,
+                  "direction": "ingress"
+                }
+              ],
+              "errors": []
+            }
+          ],
+          "requests_count": 4,
+          "failure_counts": 0,
+          "total_time": {
+            "secs": 1,
+            "nanos": 886894730
+          }
         }
-      ],
-      "errors": [],
-      "total_time": 0.0
-    },
-    {
-      "title": "Latency Increase By 30ms Steps From Downstream",
-      "timestamp": 1741273042577946,
-      "target": {
-        "address": "http://localhost:7070/ping"
-      },
-      "metrics": {
-        "dns": [],
-        "protocol": {
-          "type": "http",
-          "code": 200,
-          "body_length": 307
-        },
-        "ttfb": 601.706611,
-        "total_time": 601.706599,
-        "faults": []
-      },
-      "expect": {
-        "type": "http",
-        "wanted": {
-          "status_code": 200,
-          "response_time_under": 490.0
-        },
-        "got": {
-          "status_code": 200,
-          "response_time": 601.706599,
-          "decision": "failure"
-        }
-      },
-      "faults": [
-        {
-          "type": "latency",
-          "distribution": null,
-          "global": null,
-          "side": "client",
-          "mean": 110.0,
-          "stddev": 5.0,
-          "min": null,
-          "max": null,
-          "shape": null,
-          "scale": null,
-          "direction": "ingress"
-        }
-      ],
-      "errors": [],
-      "total_time": 0.0
-    },
-    {
-      "title": "Latency Increase By 30ms Steps From Downstream",
-      "timestamp": 1741273043255539,
-      "target": {
-        "address": "http://localhost:7070/ping"
-      },
-      "metrics": {
-        "dns": [],
-        "protocol": {
-          "type": "http",
-          "code": 200,
-          "body_length": 308
-        },
-        "ttfb": 673.595708,
-        "total_time": 673.595687,
-        "faults": []
-      },
-      "expect": {
-        "type": "http",
-        "wanted": {
-          "status_code": 200,
-          "response_time_under": 490.0
-        },
-        "got": {
-          "status_code": 200,
-          "response_time": 673.595687,
-          "decision": "failure"
-        }
-      },
-      "faults": [
-        {
-          "type": "latency",
-          "distribution": null,
-          "global": null,
-          "side": "client",
-          "mean": 140.0,
-          "stddev": 5.0,
-          "min": null,
-          "max": null,
-          "shape": null,
-          "scale": null,
-          "direction": "ingress"
-        }
-      ],
-      "errors": [],
-      "total_time": 0.0
+      ]
     }
   ]
 }
@@ -488,41 +608,57 @@ follows:
 lueur scenario run --scenario scenario.yaml --report report.md
 ```
 
-Here is an example its output:
+!!! example "Scenario report"
 
-```markdown
-# Lueur Resilience Test Report
+    # Scenarios Report
 
-| **Endpoint** | **Total Fault Injected** | **SLO: 99% < 200ms** | **SLO: 95% < 500ms** | **SLO: 90% < 1s** | **SLO: 99% < 1% Error Rate** | **SLO: 95% < 0.5% Error Rate** |
-|-------------|--------------------------|-----------------------|-----------------------|-----------------------|----------------------------------|-----------------------------------|
-| `http://localhost:7070/ping` |  | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `http://localhost:7070/ping` | - Latency Fault [Global: true, Side: client, Mean: 80.00 ms, Stddev: 5.00 ms, Direction: ingress] | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `http://localhost:7070/ping` | - Latency Fault [Global: true, Side: client, Mean: 110.00 ms, Stddev: 5.00 ms, Direction: ingress] | ❌ (+401.7ms), 0h 0m 0.4s | ❌ (+101.7ms), 0h 0m 0.1s | ❌ (+-398.3ms), 0h 0m 0s | ❌ (+49.0%), 0h 0m 0.1s | ❌ (+49.5%), 0h 0m 0.1s |
-| `http://localhost:7070/ping` | - Latency Fault [Global: true, Side: client, Mean: 140.00 ms, Stddev: 5.00 ms, Direction: ingress] | ❌ (+473.6ms), 0h 0m 0.5s | ❌ (+173.6ms), 0h 0m 0.2s | ❌ (+-326.4ms), 0h 0m 0s | ❌ (+49.0%), 0h 0m 0.1s | ❌ (+49.5%), 0h 0m 0.1s |
-## Summary
-- **Total Test Cases:** 4
-- **Failures:** 2
-- 🔍 Recommendation: Investigate the failed test cases to enhance your application's resilience.
+    Start: 2025-05-13 06:11:34.262257729 UTC
 
-## Fault Type Analysis
+    End: 2025-05-13 06:11:36.746793078 UTC
+
+    ## Scenario: Latency Increase By 30ms Steps From Downstream  (items: 4)
+
+    _Description:_ A tests to evaluate how our service handles network faults.
+
+    ### 🎯 `GET` http://localhost:7070/ping | Failed
+
+    **Call**:
+
+    - Method: `GET`
+    - Timeout: -
+    - Headers: -
+    - Body?: No
+
+    **Strategy**: repeat 3 times with a step of 30
+
+    **Faults Applied**:
+    - Latency: ➡️🖧, Per Read/Write Op.: false, Mean: 80.00 ms, Stddev: 5.00 ms
+
+    **Expectation**: Response time Under 490ms | Status Code 200
+
+    **Run Overview**:
+
+    | Num. Requests | Num. Errors | Min. Response Time | Max Response Time | Mean Latency (ms) | Expectation Failures | Total Time |
+    |-----------|---------|--------------------|-------------------|-------------------|----------------------|------------|
+    | 4 | 0 (0.0%) | 401.56 | 955.63 | 450.99 | 1 | 2 seconds and 407 ms |
+
+    | Latency Percentile | Latency (ms) | Num. Requests (% of total) |
+    |------------|--------------|-----------|
+    | p25 | 413.50 | 2 (50.0%) |
+    | p50 | 450.99 | 3 (75.0%) |
+    | p75 | 829.88 | 4 (100.0%) |
+    | p95 | 955.63 | 4 (100.0%) |
+    | p99 | 955.63 | 4 (100.0%) |
 
 
-## Recommendations
-- No specific recommendations based on fault types.
-
-```
-
-!!! success "Bring our own SLOs"
-
-    In a future release, lueur will allow you to pull information from
-    your own SLO to give a more bespoke picture.
+    ---
 
 
 ## Step 6: Identifying Areas for Improvement
 
 Now that you’ve run your scenarios, it’s time to take a close look at the
 results and ask yourself: How did your application really perform under these
-simulated network conditions? Reflect on the following questions:
+simulated network conditions? Questions you may ask about your service:
 
 **Latency Handling:**
   Did your application gracefully manage the injected latency, or did some
@@ -542,7 +678,7 @@ simulated network conditions? Reflect on the following questions:
 
 **Test 1: Baseline Call (No Fault Injected)**
 
-  - **Response Time:** 411.62ms
+  - **Response Time:** 391.25ms
   - **Expected:** Under 490ms
   - **Outcome:** **Success**  
     *Your service handled the request quickly under ideal conditions.*
@@ -550,7 +686,7 @@ simulated network conditions? Reflect on the following questions:
 **Test 2: Latency Fault with Mean 80ms**
 
   - **Injected Fault:** Latency fault with a mean of 80ms
-  - **Response Time:** 478.13ms
+  - **Response Time:** 382.47ms
   - **Expected:** Under 490ms
   - **Outcome:** **Success**  
     *The slight increase in latency was within acceptable limits.*
@@ -558,15 +694,15 @@ simulated network conditions? Reflect on the following questions:
 **Test 3: Latency Fault with Mean 110ms**
 
   - **Injected Fault:** Latency fault with a mean of 110ms
-  - **Response Time:** 601.71ms
+  - **Response Time:** 434.31ms
   - **Expected:** Under 490ms
   - **Outcome:** **Failure**  
-    *The additional latency caused the response time to exceed the target threshold.*
+    *A higher increase in latency was within acceptable limits.*
 
 **Test 4: Latency Fault with Mean 140ms**
 
   - **Injected Fault:** Latency fault with a mean of 140ms
-  - **Response Time:** 673.60ms
+  - **Response Time:** 655.48ms
   - **Expected:** Under 490ms
   - **Outcome:** **Failure**  
     *The response time further degraded, confirming that higher latency critically impacts performance.*
@@ -606,7 +742,6 @@ simulated network conditions? Reflect on the following questions:
   parameters and re-run tests to see if your improvements yield the desired
   performance enhancements.
 
-
 ## Conclusion
 
 In this tutorial, you learned how to:
@@ -632,6 +767,5 @@ production.
 
 ## Next Steps
 
-- Point to other How-To guides for fine-tuning scenarios or integrating lueur into CI pipelines.
-- Suggest expanding the scenario file with more complex tests or different endpoints.
-- Encourage experimenting with different fault profiles to continuously challenge and improve the application’s resilience.
+- **Discover our [How-To Guides](../how-to/scenarios/generate.md)** to explore
+  lueur's capabilities and how to apply them.

@@ -45,6 +45,71 @@ detailed information on individual fault parameters, refer to the relevant
 definitions. This ensures that each test case is both precise and aligned with
 your reliability objectives.
 
+!!! example "A few scenarios to get a taste..."
+
+    === "Basic scenario"
+
+        ```yaml
+        title: Single high-latency spike (client ingress)
+        description: A single 800ms spike simulates jitter buffer underrun / GC pause on client network stack.
+        items:
+        - call:
+            method: GET
+            url: http://localhost:9090/
+          context:
+            upstreams:
+            - http://localhost:9090/
+            faults:
+            - type: latency
+              side: client
+              mean: 800.0
+              stddev: 100.0
+              direction: ingress
+          expect:
+            status: 200
+        ```
+
+    === "Load test scenario with SLO"
+
+        ```yaml
+        title: 512 KBps bandwidth cap
+        description: Models throttled 3G link; validates handling of large payloads.
+        items:
+        - call:
+            method: POST
+            url: http://localhost:9090/users/
+            headers:
+              content-type: application/json
+            body: '{"name": "jane", "password": "boom"}'
+            meta:
+              operation_id: create_user_users__post
+          context:
+            upstreams:
+            - http://localhost:9090
+            faults:
+            - type: bandwidth
+              rate: 512
+              unit: KBps
+              direction: ingress
+            strategy:
+              mode: load
+              duration: 15s
+              clients: 2
+              rps: 1
+            slo:
+            - slo_type: latency
+              title: P95 < 300ms
+              objective: 95.0
+              threshold: 300.0
+            - slo_type: error
+              title: P99 < 1% errors
+              objective: 99.0
+              threshold: 1.0
+          expect:
+            status: 200
+        ```
+
+
 ## Scenario Structure
 
 ### HTTP `call`
@@ -181,6 +246,42 @@ The `expect` block defines how you want to verify the results from the `call`.
 * `response_time_under` defines the ceiling of the `call` response's time
 
 Note that, these two are ignored when `strategy` is set to `load`.
+
+## OpenAPI Support
+
+lueur supports OpenAPI v3 (v3.0.x and v3.1.x). It may generate scenarios
+from an OpenAPI specification to rapidly bootstrap your catalog of scenarios.
+
+lueur scans an OpenAPI specification and gather the following information:
+
+* the endpoint `url`
+* the HTTP `method`
+* if the method is either `POST` or `PUT`, it also scans the body definition.
+  When this is a typical structured body, it creates a default payload as well.
+
+Then lueur generates a variety of scenarios to create a solid baseline of
+scenarios against each endpoint.
+
+The default behavior from lueur is to create the following scenarios:
+
+* **Single high-latency spike**: single short client ingress
+* **Stair-step latency growth (5 x 100 ms)**: gradualy increase latency
+* **Periodic 150-250 ms latency pulses during load**: load test 3 clients/2 rps
+* **5% packet loss for 4s**: single shot egress
+* **High jitter (±80ms @ 8Hz)**: single shot ingress
+* **512 KBps bandwidth cap**: load test 2 clients/1 rps
+* **Random 500 errors (5% of calls)**: load test 5 clients/4 rps
+* **Full black-hole for 1s**: load test 2 clients/3 rps
+
+!!! tip "Make it your own"
+
+    A future version of lueur should allow you to bring your own scenario
+    templates.
+
+!!! tip "More coverage in the future"
+
+    Right now, lueur generates scenarios against the endpoints themselves, a
+    future release will also generate them for downstream dependencies.
 
 ## Example
 

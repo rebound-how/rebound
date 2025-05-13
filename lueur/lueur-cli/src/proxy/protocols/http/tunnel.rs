@@ -38,6 +38,8 @@ pub async fn handle_connect(
     let target_host = upstream.host().unwrap().to_string();
     let target_port = upstream.port_or_known_default().unwrap();
 
+    tracing::debug!("Tunneling {}", upstream);
+
     let connect_request =
         ConnectRequest { target_host: target_host.clone(), target_port };
 
@@ -56,6 +58,8 @@ pub async fn handle_connect(
         let dns_resolution_time = start.elapsed().as_millis_f64();
 
         let addr: SocketAddr = SocketAddr::new(addresses[0], port);
+
+        tracing::debug!("Using addr {} for remote host {}", addr, upstream);
 
         match hyper::upgrade::on(req).await {
             Ok(upgraded) => match TcpStream::connect(addr).await {

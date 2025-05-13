@@ -16,7 +16,6 @@ with network issues.
         You might want to familiar yourself with the
         [scenario reference](../../reference/scenario-file-format.md).
 
-
 ## Create Single Shot Scenarios
 
 In this guide, we will demonstrate how to create a single scenario against the
@@ -231,6 +230,7 @@ quantity of endpoints discovered from an OpenAPI specification.
     lueur scenario generate \
         --scenario scenarios/ \  # (1)!
         --spec-url http://myhost/openapi.json
+    Generated 24 reliability scenarios across 3 endpoints!
     ```
 
     1. Pass a directory where the files will be stored
@@ -269,6 +269,12 @@ items:
   expect:
     status: 200
 ```
+
+!!! abstract "Read more about scenarios..."
+
+    [Learn more](../../reference/scenario-file-format.md) about scenarios and
+    explore their capabilities.
+
 
 ## Pass Headers to the Scenario
 

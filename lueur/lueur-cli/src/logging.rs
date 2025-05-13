@@ -194,7 +194,7 @@ pub fn setup_logging(
         let file_filter = EnvFilter::builder().parse_lossy(log_level.clone());
 
         let file_layer = tracing_subscriber::fmt::layer()
-            .with_file(false)
+            .with_file(true)
             .with_line_number(true)
             .with_thread_ids(false)
             .with_target(true)
@@ -215,8 +215,8 @@ pub fn setup_logging(
 
         let stdout_layer = tracing_subscriber::fmt::layer()
             .compact()
-            .with_file(false)
-            .with_line_number(false)
+            .with_file(true)
+            .with_line_number(true)
             .with_thread_ids(false)
             .with_thread_names(false)
             .with_target(false)

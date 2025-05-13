@@ -214,8 +214,10 @@ fn build_request(
 
     if let Some(gc) = global_config {
         if let Some(http) = gc.http {
-            for (key, value) in http.headers.iter() {
-                req_builder = req_builder.header(key, value);
+            if let Some(headers) = http.headers {
+                for (key, value) in headers.iter() {
+                    req_builder = req_builder.header(key, value);
+                }
             }
         }
     }

@@ -25,10 +25,24 @@ pub type ScenarioEventReceiver = Receiver<ScenarioEventPhase>;
 
 #[derive(Debug, Clone)]
 pub enum ScenarioEventPhase {
-    Started { id: ScenarioEventId, scenario: Scenario },
-    Terminated { id: ScenarioEventId },
-    ItemStarted { id: ScenarioEventId, url: String, item: ScenarioItem },
-    ItemTerminated { id: ScenarioEventId, expectation: Option<ItemExpectation> },
+    Started {
+        id: ScenarioEventId,
+        scenario: Scenario,
+    },
+    Terminated {
+        id: ScenarioEventId,
+    },
+    ItemStarted {
+        id: ScenarioEventId,
+        url: String,
+        item: ScenarioItem,
+    },
+    ItemTerminated {
+        id: ScenarioEventId,
+        method: String,
+        url: String,
+        expectation: Option<ItemExpectation>,
+    },
 }
 
 pub struct ScenarioEventManager {
@@ -73,10 +87,15 @@ impl ScenarioEvent {
 
     pub fn on_item_terminated(
         &self,
+        item: &ScenarioItem,
         expectation: Option<ItemExpectation>,
     ) -> Result<(), SendError<ScenarioEventPhase>> {
-        let event =
-            ScenarioEventPhase::ItemTerminated { id: self.id, expectation };
+        let event = ScenarioEventPhase::ItemTerminated {
+            id: self.id,
+            method: item.call.method.clone(),
+            url: item.call.url.clone(),
+            expectation,
+        };
         let sender = self.sender.clone();
         let _ = sender.send(event);
         Ok(())

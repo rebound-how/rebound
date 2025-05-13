@@ -1025,8 +1025,8 @@ pub fn demo_prelude(demo_address: String) {
 
     Here are a few examples:
 
-    export HTTP_PROXY=http://localhost:8080
-    export HTTPS_PROXY=http://localhost:8080
+    export HTTP_PROXY=http://localhost:3180
+    export HTTPS_PROXY=http://localhost:3180
 
     curl -x ${{HTTP_PROXY}} http://{demo_address}/
     curl -x ${{HTTP_PROXY}} http://{demo_address}/ping
@@ -1247,16 +1247,16 @@ pub async fn scenario_ui(mut scenario_event_receiver: ScenarioEventReceiver) {
                                         pb.inc(1);
                                         pb.set_message(format!(
                                             "{} {}{} {}",
-                                            scenario_title.clone(),
+                                            scenario_title.clone().bold(),
                                             progress_state,
                                             "▮".to_string().dim().blink(),
-                                            format!("[{} {}]", item.call.method.light_yellow(), url.light_blue())
+                                            format!("[{} {}]", item.call.method.light_yellow(), url.blue()).bold()
                                         ))
                                     }
                                     None => {}
                                 };
                             },
-                            ScenarioEventPhase::ItemTerminated { id: _, expectation } => {
+                            ScenarioEventPhase::ItemTerminated { id: _, method, url, expectation } => {
                                 match expectation {
                                     Some(ItemExpectation::Http { wanted: _, got }) => {
                                         match got {
@@ -1278,11 +1278,12 @@ pub async fn scenario_ui(mut scenario_event_receiver: ScenarioEventReceiver) {
                                 }
 
                                 match progress {
-                                    Some(ref pb) => pb.set_message(format!(
-                                        "{} {}",
+                                    Some(ref pb) => pb.set_message(format!("{}", format!(
+                                        "{} {} [{}]",
                                         scenario_title.clone(),
-                                        progress_state
-                                    )),
+                                        progress_state,
+                                        format!("{} {}", method.yellow(), url.light_blue())
+                                    ).dim())),
                                     None => {}
                                 };
                             }
@@ -1296,7 +1297,7 @@ pub async fn scenario_ui(mut scenario_event_receiver: ScenarioEventReceiver) {
                                 pb.enable_steady_tick(Duration::from_millis(80));
                                 pb.set_style(
                                     ProgressStyle::with_template(
-                                        "{spinner:.green} {pos:>2}/{len:2} {msg}",
+                                        "{spinner:.green} {pos:>2}/{len:2} [{elapsed_precise:.dim}] {msg}",
                                     )
                                     .unwrap()
                                     .tick_strings(
@@ -1312,7 +1313,7 @@ pub async fn scenario_ui(mut scenario_event_receiver: ScenarioEventReceiver) {
                             }
                             ScenarioEventPhase::Terminated { id: _ } => {
                                 match progress {
-                                    Some(ref pb) => pb.finish(),
+                                    Some(ref pb) => {pb.finish()}
                                     None => {}
                                 };
 

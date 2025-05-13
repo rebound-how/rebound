@@ -10,6 +10,7 @@ use openapiv3::PathItem;
 use super::types::Api;
 use super::types::ApiOperation;
 use super::types::ParsedSpec;
+use crate::scenario::types::ScenarioGlobalConfig;
 
 pub fn load_v3(v: &ParsedSpec) -> Result<Api> {
     let mut api: V3 = V3::default();
@@ -25,11 +26,37 @@ pub fn load_v3(v: &ParsedSpec) -> Result<Api> {
     for (path, item) in api.paths.paths {
         if let openapiv3::ReferenceOr::Item(item) = item {
             if let Some((m, idem, op)) = operation_method(&item) {
+                let body = if m == http::Method::POST || m == http::Method::PUT
+                {
+                    op.request_body.as_ref().and_then(|rb_ref| {
+                        if let openapiv3::ReferenceOr::Item(rb) = rb_ref {
+                            rb.content.get("application/json").and_then(|media| {
+                                if let Some(example) = &media.example {
+                                    serde_json::to_string(example).ok()
+                                } else {
+                                    media.schema.as_ref().and_then(|schema_ref| {
+                                        if let openapiv3::ReferenceOr::Item(schema) = schema_ref {
+                                            serde_json::to_string(schema).ok()
+                                        } else {
+                                            None
+                                        }
+                                    })
+                                }
+                            })
+                        } else {
+                            None
+                        }
+                    })
+                } else {
+                    None
+                };
+
                 ops.push(ApiOperation {
                     path: path.clone(),
                     method: m,
                     idempotent: idem,
                     operation_id: op.operation_id.clone(),
+                    body,
                 });
             }
         }

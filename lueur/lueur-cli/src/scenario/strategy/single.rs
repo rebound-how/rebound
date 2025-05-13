@@ -133,7 +133,7 @@ pub async fn execute(
         total_time: start_instant.elapsed(),
     };
 
-    let _ = event.on_item_terminated(expect);
+    let _ = event.on_item_terminated(&item, expect);
 
     Ok(result)
 }

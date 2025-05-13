@@ -58,6 +58,8 @@ pub async fn execute(
         // increase faults with the step amount, where it makes sense
         let item = adjust_to_next_step(cloned_item.clone(), step, i);
 
+        tracing::debug!("Item iteration {} updated to {:?}", i, item);
+
         // with this strategy, we must warn the proxy we have a new config
         set_proxy_config_from_item(&item, config_tx.clone()).await;
 
@@ -148,7 +150,7 @@ pub async fn execute(
             errors,
         });
 
-        let _ = event.on_item_terminated(expect);
+        let _ = event.on_item_terminated(&item, expect);
 
         if let Some(w) = wait {
             tokio::time::sleep(Duration::from_millis(w as u64)).await;
@@ -169,7 +171,7 @@ fn adjust_to_next_step(
     step: f64,
     iteration: usize,
 ) -> ScenarioItem {
-    let next_item = item.clone();
+    let mut next_item = item.clone();
     let mut next_faults = Vec::new();
 
     for fault in item.context.faults {
@@ -247,6 +249,8 @@ fn adjust_to_next_step(
             }
         })
     }
+
+    next_item.context.faults = next_faults;
 
     next_item
 }
