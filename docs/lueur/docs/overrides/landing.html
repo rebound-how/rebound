@@ -1,82 +1,74 @@
 {% extends "base.html" %}
 
 {% block extrahead %}
+<link rel="stylesheet" href="/assets/landing.css">
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.feat').forEach(feat => {
+      const images = feat.dataset.images.split(',');
+      let idx = 0;
+
+      const imgEl = feat.querySelector('.carousel-img');
+      const items = feat.querySelectorAll('.menu-item');
+
+      function update(newIdx) {
+        if (newIdx === idx) return;
+
+        const preload = new Image();
+        preload.src = "/assets/images/" + images[newIdx];
+
+        preload.onload = () => {
+          imgEl.style.opacity = 0;
+          imgEl.addEventListener('transitionend', function handler() {
+            imgEl.removeEventListener('transitionend', handler);
+            imgEl.src = preload.src;
+            imgEl.style.opacity = 1;
+          });
+        };
+
+        items.forEach(li =>
+          li.classList.toggle('active', +li.dataset.index === newIdx)
+        );
+
+        idx = newIdx;
+      }
+
+      items.forEach(li =>
+        li.addEventListener('click', () => update(+li.dataset.index))
+      );
+    });
+  });
+</script>
 <style>
-body {
-    background-image: url("/assets/background.png");
-    background-size: cover;       
-    background-position: center;  
-    background-repeat: no-repeat;
-    background-color: #051424;
-}
-
-aside.md-source-file {
-    display: none;
-}
-
-div.md-search {
-    display: none;
-}
-
-a.md-source {
-    text-align: end;
-    padding-right: 20px;
-}
-
 </style>
 {% endblock %}
 
 
+
 {% block container %}
-<div class="md-content landing-hero" data-md-component="content">
-    <article class="md-content__inner md-typeset">
+<div class="md-content hero-bg" data-md-component="content">
+  <article class="md-content__inner md-typeset">
     <div class="hero">
-        <div class="right">
-            <div class="righ-full">
-            <video controls autoplay>
-                <source src="assets/tapes/proxy.mp4" type="video/mp4">
-                <source src="assets/tapes/proxy.webm" type="video/webm">
-              </video>
-            </div>
-        </div>
-        <div class="left">
-          <div class="left-top">
-                <picture>
-                    <img src="/assets/lueur-inverted.svg">
-                    <cite>Let Your Resilience Glow - /lɥœʁ/</cite>
-                </picture>
-            </div>
-            <div class="left-bottom">
-                <h2>A Rust-powered CLI that simulates network disruptions right on your local machine.</h2>
-    <a class="md-button md-button--primary rounded" href="/tutorials/install/">Get Started</a>
-    <a class="md-button rounded" href="https://github.com/rebound-how/rebound">View on GitHub</a>
-            </div>
+      <div class="hero__content">
+        <div class="logo scratchy">fault<span class="logo-dot twemoji">{% include ".icons/material/ethernet.svg"
+            %}</span></div>
+        <h1>Reliability is your unsung superpower.</h1>
+        <div class="hero__actions">
+          <a class="md-button md-button--primary rounded" href="/tutorials/install/">
+            Get Started
+          </a>
+          <a class="md-button rounded" href="https://github.com/rebound-how/rebound">
+            View on GitHub
+          </a>
         </div>
       </div>
-    </article>
-    <article class="md-content__inner md-typeset">
+    </div>
+  </article>
+  <article class="md-content__inner md-typeset subhero">
     {% block content %}
-        {% include "partials/content.html" %}
+    {% include "partials/content.html" %}
     {% endblock %}
-    </article>
-    <article class="md-content__inner md-typeset">
-        <div class="features-container">
-            <div class="feat">
-              <div class="left">hello</div>
-              <div class="right"></div>
-            </div>
-            <div class="feat">
-              <div class="left"></div>
-              <div class="right"></div>
-            </div>
-            <div class="feat">
-              <div class="left"></div>
-              <div class="right"></div>
-            </div>
-          </div>
-    </article>
-    </article>
-
+  </article>
 </div>
 {% endblock %}
 
@@ -85,3 +77,40 @@ a.md-source {
 
 {% block site_nav %}
 {% endblock %}
+
+
+
+<footer class="md-footer">
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+        <div class="md-copyright__highlight">
+          Copyright &copy; 2024 - 2025 Sylvain Hellegouarch
+        </div>
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+      </div>
+
+      <div class="md-social">
+        <a href="https://www.linkedin.com/in/sylvainhellegouarch/" target="_blank" rel="noopener"
+          title="Sylvain Hellegouarch on Linkedin" class="md-social__link">
+          <svg xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.-->
+            <path
+              d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3M135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5m282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9z" />
+          </svg>
+        </a>
+        <a href="https://fosstodon.org/@lawouach" target="_blank" rel="noopener me"
+          title="Sylvain Hellegouarch on Fosstodon" class="md-social__link">
+          <svg xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.-->
+            <path
+              d="M433 179.11c0-97.2-63.71-125.7-63.71-125.7-62.52-28.7-228.56-28.4-290.48 0 0 0-63.72 28.5-63.72 125.7 0 115.7-6.6 259.4 105.63 289.1 40.51 10.7 75.32 13 103.33 11.4 50.81-2.8 79.32-18.1 79.32-18.1l-1.7-36.9s-36.31 11.4-77.12 10.1c-40.41-1.4-83-4.4-89.63-54a102.5 102.5 0 0 1-.9-13.9c85.63 20.9 158.65 9.1 178.75 6.7 56.12-6.7 105-41.3 111.23-72.9 9.8-49.8 9-121.5 9-121.5m-75.12 125.2h-46.63v-114.2c0-49.7-64-51.6-64 6.9v62.5h-46.33V197c0-58.5-64-56.6-64-6.9v114.2H90.19c0-122.1-5.2-147.9 18.41-175 25.9-28.9 79.82-30.8 103.83 6.1l11.6 19.5 11.6-19.5c24.11-37.1 78.12-34.8 103.83-6.1 23.71 27.3 18.4 53 18.4 175z" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>

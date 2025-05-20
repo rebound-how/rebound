@@ -48,7 +48,7 @@ jobs:
           tags: |
             type=sha
 
-      - name: Build and push lueur CLI
+      - name: Build and push fault CLI
         uses: docker/build-push-action@v6
         with:
           context: "./deploy/docker/job"

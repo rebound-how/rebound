@@ -696,6 +696,7 @@ pub async fn quiet_handle_displayable_events(
 #[allow(clippy::too_many_arguments)]
 pub async fn proxy_prelude(
     proxy_address: String,
+    disable_http_proxy: bool,
     proxied_protos: Vec<ProxyMap>,
     plugins: Arc<RwLock<RpcPluginManager>>,
     opts: &RunCommandOptions,
@@ -704,8 +705,8 @@ pub async fn proxy_prelude(
     total_duration: Option<Duration>,
     tailing: bool,
 ) {
-    let g = "lueur".gradient(Color::DarkOrange);
-    let r = "Your Resiliency Exploration Tool".gradient(Color::Purple1a);
+    let g = "fault.".gradient(Color::DarkOrange);
+    let r = "Your Reliability Toolbox".gradient(Color::Purple1a);
     let a = format!("http://{}", proxy_address).cyan();
     let pp = proxied_protos
         .iter()
@@ -759,32 +760,54 @@ pub async fn proxy_prelude(
         hosts = format!("💡 {}", "No upstream hosts configured for the HTTP proxy. No faults will be applied.".color(Color::Orange1).dim());
     }
 
-    println!(
-        "
+    let other_proxies;
+
+    if pp.is_empty() {
+        other_proxies = format!("");
+    } else {
+        other_proxies = format!("{}\n", pp);
+    }
+
+    if disable_http_proxy {
+        println!(
+            "
+    Welcome to {} — {}!
+
+    {}
+{}",
+            g,
+            r,
+            "Enabled Proxies:".bold(),
+            other_proxies,
+        );
+    } else {
+        println!(
+            "
     Welcome to {} — {}!
 
     {}
      - {} {}
-        {} {}
+       {} {}
      - {} {}
-        {} {}
+       {} {}
 {}",
-        g,
-        r,
-        "Enabled Proxies:".bold(),
-        a,
-        "[HTTP: forward]".dim(),
-        "Target Upstreams:".dim(),
-        hosts,
-        a,
-        "[HTTP: tunnel]".dim(),
-        "Target Upstreams:".dim(),
-        hosts,
-        pp,
-    );
+            g,
+            r,
+            "Enabled Proxies:".bold(),
+            a,
+            "[HTTP: forward]".dim(),
+            "Target Upstreams:".dim(),
+            hosts,
+            a,
+            "[HTTP: tunnel]".dim(),
+            "Target Upstreams:".dim(),
+            hosts,
+            other_proxies,
+        );
+    }
 
     if !pl.is_empty() {
-        println!("{}", format!("\n    {}\n{}", "Plugins:".bold().white(), pl));
+        println!("{}", format!("    {}\n{}", "Plugins:".bold().white(), pl));
     } else {
         println!(
             "{}",
@@ -1018,10 +1041,10 @@ pub async fn proxy_prelude(
 }
 
 pub fn demo_prelude(demo_address: String) {
-    let g = "lueur".gradient(Color::Plum4);
+    let g = "fault".gradient(Color::Plum4);
     println!(
         "
-    Welcome to {}, this demo application is here to let you explore lueur's capabilities.
+    Welcome to {}, this demo application is here to let you explore fault's capabilities.
 
     Here are a few examples:
 

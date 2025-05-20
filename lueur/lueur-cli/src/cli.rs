@@ -21,7 +21,7 @@ use crate::types::StreamSide;
 )]
 pub struct Cli {
     /// Path to the log file. Disabled by default
-    #[arg(help_heading = "Logging Options", long, env = "LUEUR_LOG_FILE")]
+    #[arg(help_heading = "Logging Options", long, env = "FAULT_LOG_FILE")]
     pub log_file: Option<String>,
 
     /// Stdout logging enabled
@@ -29,7 +29,7 @@ pub struct Cli {
         help_heading = "Logging Options",
         long,
         default_value_t = false,
-        env = "LUEUR_WITH_STDOUT_LOGGING"
+        env = "FAULT_WITH_STDOUT_LOGGING"
     )]
     pub log_stdout: bool,
 
@@ -38,7 +38,7 @@ pub struct Cli {
         help_heading = "Logging Options",
         long,
         default_value = "info",
-        env = "LUEUR_LOG_LEVEL"
+        env = "FAULT_LOG_LEVEL"
     )]
     pub log_level: Option<String>,
 
@@ -47,7 +47,7 @@ pub struct Cli {
         help_heading = "Observability Options",
         long,
         help = "Enable Open Telemetry tracing and metrics.",
-        env = "LUEUR_WITH_OTEL",
+        env = "FAULT_WITH_OTEL",
         default_value_t = false
     )]
     pub with_otel: bool,
@@ -64,11 +64,22 @@ pub struct ProxyAwareCommandCommon {
         help_heading = "Proxy Options",
         long = "proxy-address",
         help = "Listening address for the proxy server.",
-        env = "LUEUR_HTTP_PROXY_ADDRESS",
+        env = "FAULT_HTTP_PROXY_ADDRESS",
         default_value = "127.0.0.1:3180",
         value_parser
     )]
     pub http_proxy_address: Option<String>,
+
+    /// Disable HTTP proxying
+    #[arg(
+        help_heading = "Proxy Options",
+        long = "disable-http-proxy",
+        default_value_t = false,
+        help = "Disable HTTP proxying.",
+        env = "FAULT_DISABLE_HTTP_PROXY",
+        value_parser
+    )]
+    pub disable_http_proxies: bool,
 
     /// Mapping to proxy over TCP
     #[arg(
@@ -85,7 +96,7 @@ pub struct ProxyAwareCommandCommon {
         short,
         long = "grpc-plugin",
         help = "gRPC plugin addresses to apply (can specify multiple).",
-        env = "LUEUR_GRPC_PLUGINS",
+        env = "FAULT_GRPC_PLUGINS",
         value_delimiter = ',',
         value_parser
     )]
@@ -97,7 +108,7 @@ pub struct ProxyAwareCommandCommon {
         short,
         long = "upstream",
         help = "Host to proxy.",
-        env = "LUEUR_UPSTREAMS",
+        env = "FAULT_UPSTREAMS",
         value_delimiter = ',',
         value_parser
     )]
@@ -109,7 +120,7 @@ pub struct ProxyAwareCommandCommon {
         help_heading = "Lifecycle Option",
         long,
         help = "How long to run the proxy for.",
-        env = "LUEUR_PROXY_DURATIOn",
+        env = "FAULT_PROXY_DURATIOn",
         value_parser
     )]
     pub duration: Option<String>,
@@ -127,7 +138,7 @@ pub struct StealthCommandCommon {
         long = "stealth",
         default_value_t = false,
         help = "Enable stealth support (using ebpf).",
-        env = "LUEUR_ENABLE_STEALTH",
+        env = "FAULT_ENABLE_STEALTH",
         value_parser
     )]
     pub ebpf: bool,
@@ -142,7 +153,7 @@ pub struct StealthCommandCommon {
         help_heading = "Stealth Options",
         long = "capture-process",
         help = "Process name to intercept traffic using ebpf.",
-        env = "LUEUR_EBPF_PROCESS_NAME",
+        env = "FAULT_EBPF_PROCESS_NAME",
         value_parser
     )]
     pub ebpf_process_name: Option<String>,
@@ -155,8 +166,8 @@ pub struct StealthCommandCommon {
     #[arg(
         help_heading = "Stealth Options",
         long = "ebpf-programs-dir",
-        help = "Directory containing the lueur ebpf programs.",
-        env = "LUEUR_EBPF_PROGRAMS_DIR",
+        help = "Directory containing the fault ebpf programs.",
+        env = "FAULT_EBPF_PROGRAMS_DIR",
         default_value = "~/.local/bin",
         value_parser
     )]
@@ -171,7 +182,7 @@ pub struct StealthCommandCommon {
         help_heading = "Stealth Options",
         long = "ebpf-proxy-ip",
         help = "IP of the eBPF proxy, if not provided use the same IP as the proxy or the first non-loopback available.",
-        env = "LUEUR_EBPF_PROXY_IP",
+        env = "FAULT_EBPF_PROXY_IP",
         value_parser
     )]
     pub ebpf_proxy_ip: Option<String>,
@@ -185,7 +196,7 @@ pub struct StealthCommandCommon {
         help_heading = "Stealth Options",
         long = "ebpf-proxy-iface",
         help = "Interface to bind the EBPF programs to, if not provided find the first non-loopback available.",
-        env = "LUEUR_EBPF_PROXY_IFACE",
+        env = "FAULT_EBPF_PROXY_IFACE",
         value_parser
     )]
     pub ebpf_proxy_iface: Option<String>,
@@ -199,7 +210,7 @@ pub struct StealthCommandCommon {
         help_heading = "Stealth Options",
         long = "ebpf-proxy-port",
         help = "Port of the eBPF proxy, if not provided a random port will be used.",
-        env = "LUEUR_EBPF_PROXY_PORT",
+        env = "FAULT_EBPF_PROXY_PORT",
         value_parser
     )]
     pub ebpf_proxy_port: Option<u16>,
@@ -247,7 +258,7 @@ pub struct LatencyOptions {
         long = "with-latency",
         default_value_t = false,
         help = "Enable latency network fault.",
-        env = "LUEUR_WITH_LATENCY"
+        env = "FAULT_WITH_LATENCY"
     )]
     pub enabled: bool,
 
@@ -259,7 +270,7 @@ pub struct LatencyOptions {
         long,
         default_value_t = false,
         help = "Apply a global latency rather than a per write/read operation.",
-        env = "LUEUR_LATENCY_PER_READ_WRITE"
+        env = "FAULT_LATENCY_PER_READ_WRITE"
     )]
     pub per_read_write: bool,
 
@@ -270,7 +281,7 @@ pub struct LatencyOptions {
         long,
         default_value_t = StreamSide::Server,
         help = "Apply latency on the communication between client to proxy or proxy to upstream server.",
-        env = "LUEUR_LATENCY_SIDE",
+        env = "FAULT_LATENCY_SIDE",
     )]
     pub side: StreamSide,
 
@@ -281,7 +292,7 @@ pub struct LatencyOptions {
         default_value_t = Direction::Ingress,
         value_enum,
         help = "Fault's direction.",
-        env = "LUEUR_LATENCY_DIRECTION",
+        env = "FAULT_LATENCY_DIRECTION",
     )]
     pub latency_direction: Direction,
 
@@ -292,7 +303,7 @@ pub struct LatencyOptions {
         default_value_t = LatencyDistribution::Normal,
         value_enum,
         help = "Latency distribution to simulate (options: uniform, normal, pareto, pareto_normal).",
-        env = "LUEUR_LATENCY_DISTRIBUTION",
+        env = "FAULT_LATENCY_DISTRIBUTION",
     )]
     pub latency_distribution: LatencyDistribution,
 
@@ -302,7 +313,7 @@ pub struct LatencyOptions {
         long,
         help = "Mean latency in milliseconds. Must be a positive value.",
         value_parser = validate_positive_f64,
-        env = "LUEUR_LATENCY_MEAN",
+        env = "FAULT_LATENCY_MEAN",
     )]
     pub latency_mean: Option<f64>,
 
@@ -313,7 +324,7 @@ pub struct LatencyOptions {
         long,
         help = "Standard deviation in milliseconds. Must be a non-negative value.",
         value_parser = validate_non_negative_f64,
-        env = "LUEUR_LATENCY_STANDARD_DEVIATION",
+        env = "FAULT_LATENCY_STANDARD_DEVIATION",
     )]
     pub latency_stddev: Option<f64>,
 
@@ -323,7 +334,7 @@ pub struct LatencyOptions {
         long,
         help = "Distribution shape.",
         value_parser = validate_non_negative_f64,
-        env = "LUEUR_LATENCY_SHAPE",
+        env = "FAULT_LATENCY_SHAPE",
     )]
     pub latency_shape: Option<f64>,
 
@@ -333,7 +344,7 @@ pub struct LatencyOptions {
         long,
         help = "Distribution scale.",
         value_parser = validate_non_negative_f64,
-        env = "LUEUR_LATENCY_SCALE",
+        env = "FAULT_LATENCY_SCALE",
     )]
     pub latency_scale: Option<f64>,
 
@@ -343,7 +354,7 @@ pub struct LatencyOptions {
         long,
         help = "Distribution min.",
         value_parser = validate_non_negative_f64,
-        env = "LUEUR_LATENCY_MIN",
+        env = "FAULT_LATENCY_MIN",
     )]
     pub latency_min: Option<f64>,
 
@@ -353,7 +364,7 @@ pub struct LatencyOptions {
         long,
         help = "Distribution max.",
         value_parser = validate_non_negative_f64,
-        env = "LUEUR_LATENCY_MAX",
+        env = "FAULT_LATENCY_MAX",
     )]
     pub latency_max: Option<f64>,
 
@@ -362,7 +373,7 @@ pub struct LatencyOptions {
         help_heading = "Latency Options",
         long,
         help = "Latency schedule",
-        env = "LUEUR_LATENCY_SCHED"
+        env = "FAULT_LATENCY_SCHED"
     )]
     pub latency_sched: Option<String>,
 }
@@ -377,7 +388,7 @@ pub struct BandwidthOptions {
         long = "with-bandwidth",
         default_value_t = false,
         help = "Enable bandwidth network fault.",
-        env = "LUEUR_WITH_BANDWIDTH"
+        env = "FAULT_WITH_BANDWIDTH"
     )]
     pub enabled: bool,
 
@@ -388,7 +399,7 @@ pub struct BandwidthOptions {
         long,
         default_value_t = StreamSide::Server,
         help = "Apply bandwidth on the communication between client to proxy or proxy to upstream server.",
-        env = "LUEUR_BANDWIDTH_SIDE",
+        env = "FAULT_BANDWIDTH_SIDE",
     )]
     pub side: StreamSide,
 
@@ -399,7 +410,7 @@ pub struct BandwidthOptions {
         default_value_t = Direction::Ingress,
         value_enum,
         help = "Fault's direction.",
-        env = "LUEUR_BANDWIDTH_DIRECTION",
+        env = "FAULT_BANDWIDTH_DIRECTION",
     )]
     pub bandwidth_direction: Direction,
 
@@ -410,7 +421,7 @@ pub struct BandwidthOptions {
         default_value_t = 1000,
         help = "Bandwidth rate. Must be a positive integer.",
         value_parser = validate_positive_usize,
-        env = "LUEUR_BANDWIDTH_RATE",
+        env = "FAULT_BANDWIDTH_RATE",
     )]
     pub bandwidth_rate: usize,
 
@@ -421,7 +432,7 @@ pub struct BandwidthOptions {
         default_value_t = BandwidthUnit::Bps,
         value_enum,
         help = "Unit for the bandwidth rate (options: Bps, KBps, MBps, GBps).",
-        env = "LUEUR_BANDWIDTH_UNIT",
+        env = "FAULT_BANDWIDTH_UNIT",
     )]
     pub bandwidth_unit: BandwidthUnit,
 
@@ -430,7 +441,7 @@ pub struct BandwidthOptions {
         help_heading = "Bandwidth Options",
         long,
         help = "Bandwidth schedule",
-        env = "LUEUR_BANDWIDTH_SCHED"
+        env = "FAULT_BANDWIDTH_SCHED"
     )]
     pub bandwidth_sched: Option<String>,
 }
@@ -445,7 +456,7 @@ pub struct JitterOptions {
         long = "with-jitter",
         default_value_t = false,
         help = "Enable jitter network fault.",
-        env = "LUEUR_WITH_JITTER"
+        env = "FAULT_WITH_JITTER"
     )]
     pub enabled: bool,
 
@@ -456,7 +467,7 @@ pub struct JitterOptions {
         default_value_t = Direction::Ingress,
         value_enum,
         help = "Fault's direction.",
-        env = "LUEUR_JITTER_DIRECTION",
+        env = "FAULT_JITTER_DIRECTION",
     )]
     pub jitter_direction: Direction,
 
@@ -467,7 +478,7 @@ pub struct JitterOptions {
         default_value_t = StreamSide::Server,
         value_enum,
         help = "Fault's side.",
-        env = "LUEUR_JITTER_SIDE",
+        env = "FAULT_JITTER_SIDE",
     )]
     pub jitter_side: StreamSide,
 
@@ -478,7 +489,7 @@ pub struct JitterOptions {
         default_value_t = 20.0,
         help = "Maximum jitter delay in milliseconds. Must be a non-negative value.",
         value_parser = validate_non_negative_f64,
-        env = "LUEUR_JITTER_AMPLITUDE",
+        env = "FAULT_JITTER_AMPLITUDE",
     )]
     pub jitter_amplitude: f64,
 
@@ -489,7 +500,7 @@ pub struct JitterOptions {
         default_value_t = 5.0,
         help = "Frequency of jitter application in Hertz (times per second). Must be a non-negative value.",
         value_parser = validate_non_negative_f64,
-        env = "LUEUR_JITTER_FREQ",
+        env = "FAULT_JITTER_FREQ",
     )]
     pub jitter_frequency: f64,
 
@@ -498,7 +509,7 @@ pub struct JitterOptions {
         help_heading = "Jitter Options",
         long,
         help = "Jitter schedule",
-        env = "LUEUR_JITTER_SCHED"
+        env = "FAULT_JITTER_SCHED"
     )]
     pub jitter_sched: Option<String>,
 }
@@ -513,7 +524,7 @@ pub struct DnsOptions {
         long = "with-dns",
         default_value_t = false,
         help = "Enable dns network fault.",
-        env = "LUEUR_WITH_DNS"
+        env = "FAULT_WITH_DNS"
     )]
     pub enabled: bool,
 
@@ -524,7 +535,7 @@ pub struct DnsOptions {
         default_value_t = 0.5,
         help = "Probability to trigger the DNS failure between 0.0 and 1.0.",
         value_parser = validate_probability,
-        env = "LUEUR_DNS_PROBABILITY",
+        env = "FAULT_DNS_PROBABILITY",
     )]
     pub dns_rate: f64,
 
@@ -533,7 +544,7 @@ pub struct DnsOptions {
         help_heading = "Dns Options",
         long,
         help = "Dns schedule",
-        env = "LUEUR_DNS_SCHED"
+        env = "FAULT_DNS_SCHED"
     )]
     pub dns_sched: Option<String>,
 }
@@ -548,7 +559,7 @@ pub struct PacketLossOptions {
         long = "with-packet-loss",
         default_value_t = false,
         help = "Enable packet loss network fault.",
-        env = "LUEUR_WITH_PACKET_LOSS"
+        env = "FAULT_WITH_PACKET_LOSS"
     )]
     pub enabled: bool,
 
@@ -559,7 +570,7 @@ pub struct PacketLossOptions {
         long,
         default_value_t = StreamSide::Server,
         help = "Apply packet loss on the communication between client to proxy or proxy to upstream server.",
-        env = "LUEUR_PACKET_LOSS_SIDE",
+        env = "FAULT_PACKET_LOSS_SIDE",
     )]
     pub side: StreamSide,
 
@@ -570,7 +581,7 @@ pub struct PacketLossOptions {
         default_value_t = Direction::Ingress,
         value_enum,
         help = "Fault's direction.",
-        env = "LUEUR_PACKET_LOSS_DIRECTION",
+        env = "FAULT_PACKET_LOSS_DIRECTION",
     )]
     pub packet_loss_direction: Direction,
 
@@ -579,7 +590,7 @@ pub struct PacketLossOptions {
         help_heading = "Packet Loss Options",
         long,
         help = "Packet Loss schedule",
-        env = "LUEUR_PACKET_LOSS_SCHED"
+        env = "FAULT_PACKET_LOSS_SCHED"
     )]
     pub packet_loss_sched: Option<String>,
 }
@@ -594,7 +605,7 @@ pub struct BlackholeOptions {
         long = "with-blackhole",
         default_value_t = false,
         help = "Enable blackhole network fault.",
-        env = "LUEUR_WITH_BLACKHOLE"
+        env = "FAULT_WITH_BLACKHOLE"
     )]
     pub enabled: bool,
 
@@ -605,7 +616,7 @@ pub struct BlackholeOptions {
         long,
         default_value_t = StreamSide::Server,
         help = "Apply blackhole on the communication between client to proxy or proxy to upstream server.",
-        env = "LUEUR_BLACKHOLE_SIDE",
+        env = "FAULT_BLACKHOLE_SIDE",
     )]
     pub side: StreamSide,
 
@@ -616,7 +627,7 @@ pub struct BlackholeOptions {
         default_value_t = Direction::Ingress,
         value_enum,
         help = "Fault's direction.",
-        env = "LUEUR_BLACKHOLE_DIRECTION",
+        env = "FAULT_BLACKHOLE_DIRECTION",
     )]
     pub blackhole_direction: Direction,
 
@@ -625,7 +636,7 @@ pub struct BlackholeOptions {
         help_heading = "Blackhole Options",
         long,
         help = "Blackhole schedule",
-        env = "LUEUR_BLACKHOLE_SCHED"
+        env = "FAULT_BLACKHOLE_SCHED"
     )]
     pub blackhole_sched: Option<String>,
 }
@@ -675,7 +686,7 @@ pub struct HTTPResponseOptions {
         long = "with-http-response",
         default_value_t = false,
         help = "Enable HTTP response fault.",
-        env = "LUEUR_WITH_HTTP_FAULT"
+        env = "FAULT_WITH_HTTP_FAULT"
     )]
     pub enabled: bool,
 
@@ -686,7 +697,7 @@ pub struct HTTPResponseOptions {
         default_value_t = 500,
         help = "HTTP status code to return.",
         value_parser = validate_http_status,
-        env = "LUEUR_HTTP_FAULT_STATUS",
+        env = "FAULT_HTTP_FAULT_STATUS",
     )]
     pub http_response_status_code: u16,
 
@@ -696,7 +707,7 @@ pub struct HTTPResponseOptions {
         long = "http-response-body",
         help = "Optional HTTP response body to return.",
         value_parser,
-        env = "LUEUR_HTTP_FAULT_BODY"
+        env = "FAULT_HTTP_FAULT_BODY"
     )]
     pub http_response_body: Option<String>,
 
@@ -707,7 +718,7 @@ pub struct HTTPResponseOptions {
         default_value_t = 1.0, // Default to always trigger when enabled
         help = "Probability to trigger the HTTP response fault (0.0 to 1.0).",
         value_parser = validate_probability,
-        env = "LUEUR_HTTP_FAULT_PROBABILITY",
+        env = "FAULT_HTTP_FAULT_PROBABILITY",
     )]
     pub http_response_trigger_probability: f64,
 
@@ -716,7 +727,7 @@ pub struct HTTPResponseOptions {
         help_heading = "HTTP Response Options",
         long,
         help = "HTTP Response schedule",
-        env = "LUEUR_HTTP_FAULT_SCHED"
+        env = "FAULT_HTTP_FAULT_SCHED"
     )]
     pub http_response_sched: Option<String>,
 }
@@ -724,11 +735,11 @@ pub struct HTTPResponseOptions {
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]
 pub struct ProxyUICommon {
     /// Disable proxi terminal UI
-    #[arg(long, default_value_t = false, env = "LUEUR_PROXY_NO_UI")]
+    #[arg(long, default_value_t = false, env = "FAULT_PROXY_NO_UI")]
     pub no_ui: bool,
 
     /// Enable tailing of incoming requests
-    #[arg(long, default_value_t = false, env = "LUEUR_PROXY_TAILING")]
+    #[arg(long, default_value_t = false, env = "FAULT_PROXY_TAILING")]
     pub tail: bool,
 }
 
@@ -818,7 +829,7 @@ pub struct ScenarioRunConfig {
         short,
         long,
         help = "Path to a scenario file",
-        env = "LUEUR_SCENARIO_PATH"
+        env = "FAULT_SCENARIO_PATH"
     )]
     pub scenario: String,
 
@@ -828,7 +839,7 @@ pub struct ScenarioRunConfig {
         long,
         help = "File to save the generated report.",
         default_value = "report.md",
-        env = "LUEUR_SCENARIO_REPORT_PATH"
+        env = "FAULT_SCENARIO_REPORT_PATH"
     )]
     pub report: String,
 
@@ -837,7 +848,7 @@ pub struct ScenarioRunConfig {
         long,
         help = "File to save the generated results.",
         default_value = "results.json",
-        env = "LUEUR_SCENARIO_RESULTS_PATH"
+        env = "FAULT_SCENARIO_RESULTS_PATH"
     )]
     pub result: String,
 }
@@ -849,7 +860,7 @@ pub struct ScenarioGenerateConfig {
     #[arg(
         long,
         help = "Directory or file where to save the scenarios",
-        env = "LUEUR_SCENARIO_PATH"
+        env = "FAULT_SCENARIO_PATH"
     )]
     pub scenario: String,
 
@@ -857,7 +868,7 @@ pub struct ScenarioGenerateConfig {
     #[arg(
         long,
         help = "Path to a OpenAPI v3 specification file",
-        env = "LUEUR_SCENARIO_OPENAPI_V3_SPEC_FILE"
+        env = "FAULT_SCENARIO_OPENAPI_V3_SPEC_FILE"
     )]
     pub spec_file: Option<String>,
 
@@ -865,7 +876,7 @@ pub struct ScenarioGenerateConfig {
     #[arg(
         long,
         help = "URL to a OpenAPI v3 specification resource",
-        env = "LUEUR_SCENARIO_OPENAPI_V3_SPEC_URL"
+        env = "FAULT_SCENARIO_OPENAPI_V3_SPEC_URL"
     )]
     pub spec_url: Option<String>,
 }
@@ -879,7 +890,7 @@ pub struct AgentCommandCommon {
         long,
         help_heading = "Agent Options",
         help = "LLM client to use.",
-        env = "LUEUR_AGENT_CLIENT",
+        env = "FAULT_AGENT_CLIENT",
         default_value_t = SupportedLLMClient::OpenAI,
         value_enum,
     )]
@@ -890,7 +901,7 @@ pub struct AgentCommandCommon {
         long,
         help_heading = "Agent Options",
         help = "LLM prompt reasoning model, used by the advise command.",
-        env = "LUEUR_AGENT_PROMPT_REASONING_MODEL",
+        env = "FAULT_AGENT_PROMPT_REASONING_MODEL",
         default_value = "o4-mini"
     )]
     pub llm_prompt_reasoning_model: String,
@@ -900,7 +911,7 @@ pub struct AgentCommandCommon {
         long,
         help_heading = "Agent Options",
         help = "LLM prompt chat model, used by the review command.",
-        env = "LUEUR_AGENT_PROMPT_CHAT_MODEL",
+        env = "FAULT_AGENT_PROMPT_CHAT_MODEL",
         default_value = "gpt-4.1-mini"
     )]
     pub llm_prompt_chat_model: String,
@@ -910,7 +921,7 @@ pub struct AgentCommandCommon {
         long,
         help_heading = "Agent Options",
         help = "LLM embed model.",
-        env = "LUEUR_AGENT_EMBED_MODEL",
+        env = "FAULT_AGENT_EMBED_MODEL",
         default_value = "text-embedding-3-small"
     )]
     pub llm_embed_model: String,
@@ -925,7 +936,7 @@ pub struct AgentReviewConfig {
         long = "report",
         help = "Path where to save the generated reviews report",
         default_value = "code-review-report.md",
-        env = "LUEUR_AGENT_CODE_REVIEW_REPORT_FILE"
+        env = "FAULT_AGENT_CODE_REVIEW_REPORT_FILE"
     )]
     pub report: String,
 
@@ -933,7 +944,7 @@ pub struct AgentReviewConfig {
     #[arg(
         long,
         help = "Path to the generated json results file",
-        env = "LUEUR_SCENARIO_RESULTS_PATH"
+        env = "FAULT_SCENARIO_RESULTS_PATH"
     )]
     pub results: String,
 
@@ -942,7 +953,7 @@ pub struct AgentReviewConfig {
         long,
         help = "Path to the index cache",
         default_value = "/tmp/index.db",
-        env = "LUEUR_AGENT_CODE_REVIEW_SOURCE_INDEX_PATH"
+        env = "FAULT_AGENT_CODE_REVIEW_SOURCE_INDEX_PATH"
     )]
     pub index: String,
 
@@ -950,7 +961,7 @@ pub struct AgentReviewConfig {
     #[arg(
         long = "source-dir",
         help = "Path to the repository source code directory",
-        env = "LUEUR_AGENT_CODE_REVIEW_SOURCE_DIR"
+        env = "FAULT_AGENT_CODE_REVIEW_SOURCE_DIR"
     )]
     pub repo: String,
 
@@ -958,7 +969,7 @@ pub struct AgentReviewConfig {
     #[arg(
         long = "source-lang",
         help = "Target language to index: python, rust, go, java, ...",
-        env = "LUEUR_AGENT_CODE_REVIEW_SOURCE_LANGUAGE"
+        env = "FAULT_AGENT_CODE_REVIEW_SOURCE_LANGUAGE"
     )]
     pub lang: String,
 
@@ -967,7 +978,7 @@ pub struct AgentReviewConfig {
         long = "scenario-review-report",
         help = "Path to the output of the scenario-review command",
         default_value = "scenario-analysis-report.md",
-        env = "LUEUR_AGENT_SCENARIO_REVIEW_REPORT_FILE"
+        env = "FAULT_AGENT_SCENARIO_REVIEW_REPORT_FILE"
     )]
     pub advices: Option<String>,
 }
@@ -980,7 +991,7 @@ pub struct AgentAdviceConfig {
     #[arg(
         long,
         help = "Path to the generated json results file",
-        env = "LUEUR_SCENARIO_RESULTS_PATH"
+        env = "FAULT_SCENARIO_RESULTS_PATH"
     )]
     pub results: String,
 
@@ -990,7 +1001,7 @@ pub struct AgentAdviceConfig {
         default_value_t = ReportReviewRole::Developer,
         value_enum,
         help = "Role to influence the advice",
-        env = "LUEUR_AGENT_ADVICE_ROLE"
+        env = "FAULT_AGENT_ADVICE_ROLE"
     )]
     pub role: ReportReviewRole,
 
@@ -999,7 +1010,7 @@ pub struct AgentAdviceConfig {
         long,
         help = "Path where to save the generated advice report.",
         default_value = "scenario-analysis-report.md",
-        env = "LUEUR_AGENT_SCENARIO_REVIEW_REPORT_FILE"
+        env = "FAULT_AGENT_SCENARIO_REVIEW_REPORT_FILE"
     )]
     pub report: String,
 }
@@ -1012,7 +1023,7 @@ pub struct DemoConfig {
         help = "Listening address for the proxy server. Overrides the one defined in the scenario.",
         default_value = "127.0.0.1",
         value_parser,
-        env = "LUEUR_DEMO_ADDR"
+        env = "FAULT_DEMO_ADDR"
     )]
     pub address: String,
 
@@ -1021,7 +1032,7 @@ pub struct DemoConfig {
         help = "Listening address for the proxy server. Overrides the one defined in the scenario.",
         default_value_t = 7070,
         value_parser,
-        env = "LUEUR_DEMO_PORT"
+        env = "FAULT_DEMO_PORT"
     )]
     pub port: u16,
 }

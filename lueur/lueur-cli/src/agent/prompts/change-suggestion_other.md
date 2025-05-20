@@ -1,7 +1,7 @@
 # Task
 
 Your task is to generate unified diff changes for source code written in {{lang}}
-from the weaknesses found by running the lueur tool and reported by OpenAPI
+from the weaknesses found by running the fault tool and reported by OpenAPI
 operation id, request method and path.
 
 Given that somebody else might ask questions about each path, consider things like:

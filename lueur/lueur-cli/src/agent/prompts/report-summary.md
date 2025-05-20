@@ -20,7 +20,7 @@
 # Step 1: High-Level Report Overview
 
 You are a senior **{{ role | capitalize }}**.  
-Based on the following Lueur resilience report, provide a concise (2–3 sentence) summary of the overall service resilience posture.
+Based on the following fault resilience report, provide a concise (2–3 sentence) summary of the overall service resilience posture.
 
 ```text
 {{ report }}

@@ -1,10 +1,10 @@
-site_name: ""
+site_name: "fault."
 site_description: "Developer-Friendly Reliability Engineering | /lɥœʁ/"
 site_author: "Sylvain Hellegouarch"
-site_url: https://lueur.dev
+site_url: https://fault.dev
 repo_url: https://github.com/rebound-how/rebound
-repo_name: rebound/lueur
-edit_uri: edit/main/docs/lueur/docs
+repo_name: rebound/fault
+edit_uri: edit/main/docs/fault/docs
 copyright: Copyright &copy; 2024 - 2025 Sylvain Hellegouarch
 extra:
   social:
@@ -22,7 +22,7 @@ nav:
     - "Getting Started": tutorials/getting-started.md
     - "Creating a Reliability Testing Scenario": tutorials/create-scenario.md
   - "How-To Guides":
-    - "Install lueur":
+    - "Install fault":
       - how-to/install.md
     - "Proxy Configuration":
       - "Lifecycle": how-to/proxy/lifecycle.md
@@ -37,7 +37,7 @@ nav:
       - "HTTP Error": how-to/proxy/faults/configure-http-error.md
       - "Jitter": how-to/proxy/faults/configure-jitter.md
       - "Blackhole": how-to/proxy/faults/configure-blackhole.md
-      - "Extend lueur": how-to/proxy/faults/extending.md
+      - "Extend fault": how-to/proxy/faults/extending.md
     - "Scenarios":
       - "Generate": how-to/scenarios/generate.md
       - "Run": how-to/scenarios/run.md
@@ -60,7 +60,7 @@ nav:
     - "Scheduling Intervals": reference/schedule-intervals-syntax.md
     - "TCP Proxy Mapping": reference/proxy-mapping-syntax.md
   - Explanations:
-    - "Why lueur?": explanations/why-lueur.md
+    - "Why fault?": explanations/why-fault.md
     - "Fault Injection Basics": explanations/fault-injection-basics.md
     - "Understanding eBPF": explanations/understanding-ebpf.md
     - "Technical Journey": reference/technical-journey.md
@@ -70,10 +70,9 @@ theme:
   icon:
     annotation: material/plus-circle
     repo: fontawesome/brands/github
+    logo: material/ethernet
   palette:
-    scheme: slate
-    primary: black
-    accent: yellow
+    primary: custom
 
   features:
     - navigation.tabs
@@ -92,7 +91,7 @@ theme:
 
   
 extra_css:
-  - stylesheets/lueur.css
+  - stylesheets/fault.css
 
 plugins:
   - search

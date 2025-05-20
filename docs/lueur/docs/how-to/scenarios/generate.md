@@ -1,14 +1,14 @@
 # Generate Automated Resilience Testing Scenarios
 
-This guide will walk you through generating lueur resilience scenarios that you
+This guide will walk you through generating fault resilience scenarios that you
 can run automatically to validate the capability of your endpoints to deal
 with network issues.
 
 !!! abstract "Prerequisites"
 
-    -   [X] Install lueur
+    -   [X] Install fault
 
-        If you haven’t installed lueur yet, follow the
+        If you haven’t installed fault yet, follow the
         [installation instructions](../install.md).
   
     -   [X] Scenario Reference
@@ -19,13 +19,13 @@ with network issues.
 ## Create Single Shot Scenarios
 
 In this guide, we will demonstrate how to create a single scenario against the
-lueur demo application. Single call scenarios make only one request to the
+fault demo application. Single call scenarios make only one request to the
 target endpoint.
 
--   [X] Start demo application provided by lueur
+-   [X] Start demo application provided by fault
 
     ```bash
-    lueur demo run
+    fault demo run
     ```
 
 -   [X] Create the scenario file
@@ -65,14 +65,14 @@ target endpoint.
 ## Create Repeated Call Scenarios
 
 In this guide, we will demonstrate how to create a repeated scenario against the
-lueur demo application. Repated call scenarios make a determinitic number of
+fault demo application. Repated call scenarios make a determinitic number of
 requests to the target endpoint, with the possibility to increase some of the
 fault parameters by a step on each iteration.
 
--   [X] Start demo application provided by lueur
+-   [X] Start demo application provided by fault
 
     ```bash
-    lueur demo run
+    fault demo run
     ```
 
 -   [X] Create the scenario file
@@ -110,7 +110,7 @@ fault parameters by a step on each iteration.
     1. A scenario file may have as many scenarios as you want
     2. You may group several calls, and their own context, per scenario
     3. This is the host impacted by the latency
-    4. The `strategy` block defines how lueur should run this scenario's call
+    4. The `strategy` block defines how fault should run this scenario's call
     5. The step by which we increase latency on each iteration
     6. How many iterations we iterate
     7. Do we have a baseline call, without fault, at the start?
@@ -121,19 +121,19 @@ fault parameters by a step on each iteration.
 ## Create Load Test Call Scenarios
 
 In this guide, we will demonstrate how to create a load test scenario against
-the lueur demo application. Load test call scenarios make a number of
+the fault demo application. Load test call scenarios make a number of
 requests to the target endpoint over a duration.
 
 !!! warning
 
-    lueur is not a full-blown load testing tool. It doesn't aim at becoming
+    fault is not a full-blown load testing tool. It doesn't aim at becoming
     one. The facility provided by this strategy is merely a convenience for
     very small load tests. It can prove very useful nonetheless.
 
--   [X] Start demo application provided by lueur
+-   [X] Start demo application provided by fault
 
     ```bash
-    lueur demo run
+    fault demo run
     ```
 
 -   [X] Create the scenario file
@@ -181,7 +181,7 @@ requests to the target endpoint over a duration.
     1. A scenario file may have as many scenarios as you want
     2. You may group several calls, and their own context, per scenario
     3. This is the host impacted by the latency
-    4. The `strategy` block defines how lueur should run this scenario's call
+    4. The `strategy` block defines how fault should run this scenario's call
     5. The total duration, in seconds, of our test
     6. The number of connected clients
     7. The number of request per second per client
@@ -208,26 +208,26 @@ quantity of endpoints discovered from an OpenAPI specification.
 
 !!! info
 
-    lueur can generate scenarios from OpenAPI
+    fault can generate scenarios from OpenAPI
     [v3.0.x](https://spec.openapis.org/oas/v3.0.3.html) and
     [v3.1.x](https://spec.openapis.org/oas/v3.1.1.html).
 
 -   [X] Generate from a specification file
 
     ```bash
-    lueur scenario generate --scenario scenario.yaml --spec-file openapi.yaml
+    fault scenario generate --scenario scenario.yaml --spec-file openapi.yaml
     ```
 
 -   [X] Generate from a specification URL
 
     ```bash
-    lueur scenario generate --scenario scenario.yaml --spec-url http://myhost/openapi.json
+    fault scenario generate --scenario scenario.yaml --spec-url http://myhost/openapi.json
     ```
 
 -   [X] Generate one scenario file per endpoint
 
     ```bash
-    lueur scenario generate \
+    fault scenario generate \
         --scenario scenarios/ \  # (1)!
         --spec-url http://myhost/openapi.json
     Generated 24 reliability scenarios across 3 endpoints!
@@ -236,7 +236,7 @@ quantity of endpoints discovered from an OpenAPI specification.
     1. Pass a directory where the files will be stored
 
 This approach is nice to quickly generate scenarios but if your specification
-is large, you will endup with hundreds of them. Indeed, lueur will create
+is large, you will endup with hundreds of them. Indeed, fault will create
 tests for single shot, repeated calls or load tests. All of these with a
 combination of faults.
 
@@ -281,10 +281,10 @@ items:
 In this guide, you will learn how to provide HTTP headers to the request made
 for a scenario.
 
--   [X] Start demo application provided by lueur
+-   [X] Start demo application provided by fault
 
     ```bash
-    lueur demo run
+    fault demo run
     ```
 
 -   [X] Create the scenario file
@@ -324,10 +324,10 @@ for a scenario.
 
 In this guide, you will learn how to pass a body string to the request.
 
--   [X] Start demo application provided by lueur
+-   [X] Start demo application provided by fault
 
     ```bash
-    lueur demo run
+    fault demo run
     ```
 
 -   [X] Create the scenario file
@@ -386,7 +386,7 @@ about the expectations that could be broken due to a typical faults combination.
       threshold: 1
 ```
 
-lueur supports two types of SLO: `latency` and `error`. When a scenario is
+fault supports two types of SLO: `latency` and `error`. When a scenario is
 executed, the generated report contains an analysis of the results of the run
 against these objectives. It will decide if broke them or not based on the
 volume of traffic and duration of the scenario.

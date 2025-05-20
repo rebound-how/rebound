@@ -3,7 +3,7 @@
   <p align="center"><img src="https://raw.githubusercontent.com/reliablyhq/cli/main/public/logo.png"></p>
 </h2>
 
-<h4 align="center">Lueur | Developer-Friendly Reliability Testing</h4>
+<h4 align="center">fault | Developer-Friendly Reliability Testing</h4>
 
 <p align="center">
    <a href="https://github.com/reliablyhq/cli/releases">

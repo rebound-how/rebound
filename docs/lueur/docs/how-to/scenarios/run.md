@@ -1,13 +1,13 @@
-# Run lueur Scenarios
+# Run fault Scenarios
 
-In this guide, you will learn how to run lueur scenarios and read the generated
+In this guide, you will learn how to run fault scenarios and read the generated
 report.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install lueur
+    -   [X] Install fault
 
-        If you haven’t installed lueur yet, follow the
+        If you haven’t installed fault yet, follow the
         [installation instructions](../install.md).
 
     -   [X] Generate Scenario Files
@@ -19,12 +19,12 @@ report.
 ## Run a Scenario File
 
 We will explore now how to run scenarios generated to verify the resilience of
-the lueur demo application itself.
+the fault demo application itself.
 
--   [X] Start demo application provided by lueur
+-   [X] Start demo application provided by fault
 
     ```bash
-    lueur demo run  # (1)!
+    fault demo run  # (1)!
     ```
 
     1. The application under test must be started for the scenario to be
@@ -33,20 +33,20 @@ the lueur demo application itself.
 -   [X] Run a scenario file
 
     ```bash
-    lueur scenario run --scenario scenario.yaml
+    fault scenario run --scenario scenario.yaml
     ```
 
 ## Run Many Scenario Files
 
 We will explore now how to run scenarios generated to verify the resilience of
-the lueur demo application itself. In this specific use case, we assume you want
+the fault demo application itself. In this specific use case, we assume you want
 to run many scenario files at once and that they are located in the
 same directory.
 
--   [X] Start demo application provided by lueur
+-   [X] Start demo application provided by fault
 
     ```bash
-    lueur demo run  # (1)!
+    fault demo run  # (1)!
     ```
 
     1. The application under test must be started for the scenario to be
@@ -55,10 +55,10 @@ same directory.
 -   [X] Run scenario files located in a directory
 
     ```bash
-    lueur scenario run --scenario scenarios/  # (1)!
+    fault scenario run --scenario scenarios/  # (1)!
     ```
 
-    1. lueur will load all YAML files in that directory.
+    1. fault will load all YAML files in that directory.
 
 ## Next Steps
 

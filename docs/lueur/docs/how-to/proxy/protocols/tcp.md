@@ -1,17 +1,17 @@
 # How to Simulate Network Faults On Any TCP-based Traffic
 
-This guide shows you how to use lueur to simulate network faults on any
+This guide shows you how to use fault to simulate network faults on any
 TCP-oriented network traffic, even with TLS encryption.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install lueur
+    -   [X] Install fault
 
-        If you haven’t installed Lueur yet, follow the
+        If you haven’t installed fault yet, follow the
         [installation instructions](../../install.md).
 
     -   [X] Basic Proxy Setup
-        Be familiar with running lueur run {==--with-[fault]==} commands from
+        Be familiar with running fault run {==--with-[fault]==} commands from
         your terminal.
 
     -   [X] Understanding of TCP Proxying
@@ -30,30 +30,30 @@ TCP-oriented network traffic, even with TLS encryption.
     to the target host, the traffic is encrypted if the endpoint expects
     it to be.
 
-    A future version of lueur may allow to encrypt the traffic between
+    A future version of fault may allow to encrypt the traffic between
     client and proxy as well with your own certificate.
 
 
 ## Create a Dedicated TCP Proxy
 
-lueur can create any number of proxies that can be used as endpoints by
+fault can create any number of proxies that can be used as endpoints by
 your applications to experiment with network fault impacts.
 
 -   [X] Start a proxy on port `9098`
 
     ```bash
-    lueur run \
+    fault run \
         --proxy "9098=https://www.google.com:443" \ # (1)!
         --with-latency \
         --latency-mean 300
     ```
 
-    1. Make sure to set a host and its port. lueur cannot figure it out.
+    1. Make sure to set a host and its port. fault cannot figure it out.
 
-    You can use as many `--proxy` flags as needed. lueur will start
+    You can use as many `--proxy` flags as needed. fault will start
     listening on port {==9098==} for TCP connections. Any network going to that
     the address {==0.0.0.0:9098==} will be transmitted to the endpoint, here
-    `https://www.google.com`. lueur will apply any faults you have setup to the
+    `https://www.google.com`. fault will apply any faults you have setup to the
     traffic. Please read the
     [reference](../../../reference/proto-syntax.md#grammar). for the supported
     definition of the proxy protocol.
@@ -70,7 +70,7 @@ your applications to experiment with network fault impacts.
     https://0.0.0.0:9098  # (3)!
     ```
 
-    1. lueur's proxy only support IPv4 for now. That my change in the future.
+    1. fault's proxy only support IPv4 for now. That my change in the future.
     2. Make sure the `Host` headers matches the actual target server.
     3. Instead of connecting to `https://www.google.com`, we connect to the
        proxy and let it forward our HTTP request to `https://www.google.com`
@@ -87,7 +87,7 @@ dependencies such as traffic between your application and its database.
 -   [X] Start a proxy on port `35432`
 
     ```bash
-    lueur run \
+    fault run \
         --proxy "35432=localhost:5432" \ # (1)!
         --with-latency \
         --latency-mean 800 \  # (2)!
@@ -98,12 +98,12 @@ dependencies such as traffic between your application and its database.
        Change to match your system.
     2. Let's use a fairly high latency to notice it
     3. The default for latency faults is to be applied only once in the
-       life of the connection. With `--latency-per-read-write` you tell lueur
+       life of the connection. With `--latency-per-read-write` you tell fault
        to apply the fault on any read or write operation. This is useful
        here for our example because we will connect with {==psql==} and without
        this flag, the latency would be applied only once at connection time.
 
--   [X] Connect with {==psql==} to the PostgreSQL server via lueur's proxy
+-   [X] Connect with {==psql==} to the PostgreSQL server via fault's proxy
 
     ```bash
     psql -h localhost \ # (1)!
@@ -112,7 +112,7 @@ dependencies such as traffic between your application and its database.
         -d demo # (4)!
     ```
 
-    1. The address of your the lueur's proxy. You may use `localhost` here or
+    1. The address of your the fault's proxy. You may use `localhost` here or
        a non-loopback address since the proxy is bound to all interfaces with
        `0.0.0.0`
     2. The proxy's port

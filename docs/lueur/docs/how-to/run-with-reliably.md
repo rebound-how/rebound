@@ -1,6 +1,6 @@
-# Run lueur as a Reliably Plan
+# Run fault as a Reliably Plan
 
-This guide will walk you through running lueur as part of a
+This guide will walk you through running fault as part of a
 [Reliably Plan][reliably].
 
 [reliably]: https://reliably.com
@@ -14,7 +14,7 @@ This guide will walk you through running lueur as part of a
 -   [X] Create the Reliably Experiment
 
     To create the Experiment, go to the {==Builder==} page. Look for the
-    {==Lueur==} target and select the {==Run Network Fault Proxy==} action.
+    {==fault==} target and select the {==Run Network Fault Proxy==} action.
 
     ![Reliably Builder](/assets/guide-reliably-builder.png)
 
@@ -30,7 +30,7 @@ This guide will walk you through running lueur as part of a
     ![Reliably Experiment Form](/assets/guide-reliably-experiment-form.png)
 
     Pass the [proxy CLI arguments](../reference/cli-commands.md#run-command-options)
-    as you would to the `lueur run` command itself. For instance, let's use the
+    as you would to the `fault run` command itself. For instance, let's use the
     following argument line:
 
     ```bash
@@ -39,7 +39,7 @@ This guide will walk you through running lueur as part of a
         --latency-sched "duration:20%;start:50%,duration:40%" # (3)!
     ```
 
-    1. Run lueur with a `latency` fault
+    1. Run fault with a `latency` fault
     2. Inject a `300ms` delay on responses
     3. Inject the fault only for around 60% of the total duration of the run
 

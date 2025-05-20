@@ -8,16 +8,16 @@ and remediations to consider for your application.
 
 !!! abstract "Prerequisites"
 
-    -   [X] Install lueur
+    -   [X] Install fault
 
-        If you haven’t installed Lueur yet, follow the
+        If you haven’t installed fault yet, follow the
         [installation instructions](../../install.md).
 
     -   [X] Get an OpenAI Key
 
         For the purpose of the guide, we will be using OpenAI models. You
         need to create an API key. Then make sure the key is available for
-        lueur:
+        fault:
 
         ```bash
         export OPENAI_API_KEY=sk-...
@@ -25,7 +25,7 @@ and remediations to consider for your application.
 
     -   [X] Install a local qdrant database
 
-        lueur uses [qdrant](https://qdrant.tech/) for its vector database. You
+        fault uses [qdrant](https://qdrant.tech/) for its vector database. You
         can install a [local](https://qdrant.tech/documentation/quickstart/),
         free, qdrant using docker:
 
@@ -36,7 +36,7 @@ and remediations to consider for your application.
 !!! danger "Windows not supported"
 
     Unfortunately, the {==agent==} feature is not supported on Windows because
-    the framework used by lueur to interact with LLM does not support that
+    the framework used by fault to interact with LLM does not support that
     platform.
 
 !!! info "Experimental feature"
@@ -67,7 +67,7 @@ from this application.
     ###############################################################################
     #
     # Very basic application that expose a couple of endpoints that you can
-    # use to test lueur.
+    # use to test fault.
     # Once you have installed `uv` https://docs.astral.sh/uv/, simply run the
     # application as follows:
     # 
@@ -187,12 +187,12 @@ from this application.
     application.
 
     ```bash
-    lueur scenario generate --scenario scenario.yaml --spec-url http://localhost:9090/openapi.json
+    fault scenario generate --scenario scenario.yaml --spec-url http://localhost:9090/openapi.json
     ```
 
     ??? example "Generated scenarios"
 
-        The following scenarios are created by lueur (we also trimmed it down to
+        The following scenarios are created by fault (we also trimmed it down to
         a single endpoint for clarity):
 
         ```yaml
@@ -421,7 +421,7 @@ from this application.
 -   [X] Run the scenarios against this application
 
     ```console
-    lueur scenario run --scenario examples/scenario.yaml 
+    fault scenario run --scenario examples/scenario.yaml 
 
     ================ Running Scenarios ================
 
@@ -459,14 +459,14 @@ from this application.
 -   [X] Analyze the generated results
 
     ```bash
-    lueur agent scenario-review --results results.json
+    fault agent scenario-review --results results.json
     ```
 
     The generated report looks like this:
 
     ??? example "Generated scenario analysis"
 
-        # lueur resilience report analysis
+        # fault resilience report analysis
         
         ## Table of Contents
         
@@ -776,7 +776,7 @@ from this application.
     !!! important
 
         It's interesting to notice that the report shows some possible code changes.
-        lueur isn't aware of your code (it will be once you call
+        fault isn't aware of your code (it will be once you call
         the [code-review](./code-suggestions.md) command) so it illustrates its
         advices with placeholder code snippets.
 
@@ -787,7 +787,7 @@ from this application.
     ??? example "Generated review report once the source code has been indexed"
 
 
-        # lueur resilience report analysis
+        # fault resilience report analysis
         
         ## Table of Contents
         

@@ -1,6 +1,7 @@
 use std::fmt;
 use std::fmt::Display;
 use std::fs;
+use std::sync::Arc;
 
 use anyhow::Result;
 use chrono::Utc;
@@ -20,6 +21,8 @@ use swiftide::integrations::{self};
 use swiftide::query::answers;
 use swiftide::query::query_transformers;
 use swiftide::query::{self};
+use swiftide_core::EmbeddingModel;
+use swiftide_core::SimplePrompt;
 use tera::Context;
 
 use super::CODE_COLLECTION;
@@ -42,6 +45,10 @@ pub async fn analyze(
     let md = report::render::render(report, ReportFormat::Markdown);
 
     let llm = get_client(client_type, prompt_model, embed_model)?;
+
+    // upcast for later calls
+    let sp: Arc<dyn SimplePrompt>     = llm.clone();
+    let em: Arc<dyn EmbeddingModel>   = llm.clone();
 
     let qdrant: Qdrant = Qdrant::builder()
         .batch_size(50)
@@ -103,14 +110,14 @@ pub async fn analyze(
         let pipeline = query::Pipeline::default()
             .then_transform_query(
                 query_transformers::GenerateSubquestions::from_client(
-                    llm.clone(),
+                    sp.clone(),
                 ),
             )
             .then_transform_query(query_transformers::Embed::from_client(
-                llm.clone(),
+                em.clone(),
             ))
             .then_retrieve(qdrant.clone())
-            .then_answer(answers::Simple::from_client(llm.clone()));
+            .then_answer(answers::Simple::from_client(sp.clone()));
 
         let resp = pipeline.query(q).await?;
         let advice = normalize_markdown(&resp.answer().to_string())?;
@@ -175,7 +182,7 @@ impl ReportReviews {
         }
 
         let mut md = String::new();
-        md.push_str(&format!("# lueur resilience report analysis"));
+        md.push_str(&format!("# fault resilience report analysis"));
 
         md.push_str("\n\n");
         let toc = generate_toc(&stitched);

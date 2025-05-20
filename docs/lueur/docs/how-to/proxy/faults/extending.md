@@ -1,7 +1,7 @@
-# Extend lueur with gRPC Plugins
+# Extend fault with gRPC Plugins
 
-lueur's fault are internally managed by design. To support any bespoke
-scenarios you may need to explore, lueur offers an extension mechanism via
+fault's fault are internally managed by design. To support any bespoke
+scenarios you may need to explore, fault offers an extension mechanism via
 remote plugins.
 
 In this guide, you will learn how to create a simple echo plugin before moving
@@ -9,9 +9,9 @@ to a more advanced use case by analyzing SQL queries on the fly.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install lueur
+    -   [X] Install fault
 
-        If you haven’t installed Lueur yet, follow the
+        If you haven’t installed fault yet, follow the
         [installation instructions](../../install.md).
 
     -   [X] Python 3
@@ -23,31 +23,31 @@ to a more advanced use case by analyzing SQL queries on the fly.
 ## Register Plugins
 
 Before you create your first plugin, let's review how they are registered
-with lueur's proxy.
+with fault's proxy.
 
 Use the `--grpc-plugin` flag, multiple times one for each plugin, on the
-`lueur run` command:
+`fault run` command:
 
 ```bash
-lueur run --grpc-plugin http://localhost:50051 --grpc-plugin http://localhost:50052 ...
+fault run --grpc-plugin http://localhost:50051 --grpc-plugin http://localhost:50052 ...
 ```
 
 ??? note "Plugin connection management"
 
-    lueur will tolerate plugins to disconnect and will attempt to reconnect to
+    fault will tolerate plugins to disconnect and will attempt to reconnect to
     a plugin that went away.
 
 ## Create a Basic Plugin with Python
 
 ??? question "Are plugins only written in Python?"
 
-    lueur's plugins are gRPC servers so you can write plugins in any languages
+    fault's plugins are gRPC servers so you can write plugins in any languages
     that [support gRPC](https://grpc.io/docs/#official-support). 
     We use Python here but feel free to adjust to your own personal preferences.
 
--   [X] Get the lueur gRPC protocol file
+-   [X] Get the fault gRPC protocol file
 
-    Download the [gRPC protocol file](https://github.com/rebound-how/rebound/blob/main/lueur/lueur-cli/src/plugin/rpc/protos/plugin.proto)
+    Download the [gRPC protocol file](https://github.com/rebound-how/rebound/blob/main/fault/fault-cli/src/plugin/rpc/protos/plugin.proto)
     on your machine.
 
 -   [X] Install the Python dependencies with `uv`
@@ -76,7 +76,7 @@ lueur run --grpc-plugin http://localhost:50051 --grpc-plugin http://localhost:50
     1. Execute the gRPC tool to convert the protocol file into a Python source file
     2. The directory where to save the generated modules
     3. The include directory, this is the directory where the `plugin.proto` file lives
-    4. The lueur protocol file you just downloaded
+    4. The fault protocol file you just downloaded
 
     This command should generate two files:
 
@@ -202,23 +202,23 @@ lueur run --grpc-plugin http://localhost:50051 --grpc-plugin http://localhost:50
 
     The plugin now listens on port `50051`
 
--   [X] Start the lueur's demo server
+-   [X] Start the fault's demo server
 
     ```bash
-    lueur demo run
+    fault demo run
     ```
 
     We'll send traffic to this server via the proxy as an example of a target
     endpoint. Of course, you can use any server of your choosing.
 
--   [X] Use the echo plugin with lueur
+-   [X] Use the echo plugin with fault
 
     ```bash
-    lueur run --grpc-plugin http://localhost:50051 --with-latency --latency-mean 300 --upstream '*'
+    fault run --grpc-plugin http://localhost:50051 --with-latency --latency-mean 300 --upstream '*'
     ```
 
-    Use lueur as you would without the plugin. All the other flags support
-    work the same way. Here lueur will forward traffic to your plugin but
+    Use fault as you would without the plugin. All the other flags support
+    work the same way. Here fault will forward traffic to your plugin but
     also apply the latency fault.
 
 -   [X] Explore the plugin's behavior
@@ -246,9 +246,9 @@ wire format](https://www.postgresql.org/docs/current/protocol-message-formats.ht
 to parse some messages. This could be a skeletton to change the values
 returned by the database and observe the impacts on your application.
 
--   [X] Get the lueur gRPC protocol file
+-   [X] Get the fault gRPC protocol file
 
-    Download the [gRPC protocol file](https://github.com/rebound-how/rebound/blob/main/lueur/lueur-cli/src/plugin/rpc/protos/plugin.proto)
+    Download the [gRPC protocol file](https://github.com/rebound-how/rebound/blob/main/fault/fault-cli/src/plugin/rpc/protos/plugin.proto)
     on your machine.
 
 -   [X] Install the Python dependencies with `uv`
@@ -277,7 +277,7 @@ returned by the database and observe the impacts on your application.
     1. Execute the gRPC tool to convert the protocol file into a Python source file
     2. The directory where to save the generated modules
     3. The include directory, this is the directory where the `plugin.proto` file lives
-    4. The lueur protocol file you just downloaded
+    4. The fault protocol file you just downloaded
 
     This command should generate two files:
 
@@ -628,10 +628,10 @@ returned by the database and observe the impacts on your application.
     1. The address of the proxy
     2. The port of the proxy since we route our traffic via the proxy
 
--   [X] Use the plugin with lueur
+-   [X] Use the plugin with fault
 
     ```bash
-    lueur run --grpc-plugin http://localhost:50051 \   # (1)!
+    fault run --grpc-plugin http://localhost:50051 \   # (1)!
         --proxy "9098=psql://192.168.1.45:5432"   # (2)!
     ```
 

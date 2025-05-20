@@ -4,20 +4,20 @@ This guide will introduces you to generating code change suggestions, from an
 angle of resilience and reliability, using LLM.
 
 The proposed changes are proposed as unified diff that help you visualize
-what lueur suggests you may want to add or remove from your code.
+what fault suggests you may want to add or remove from your code.
 
 !!! abstract "Prerequisites"
 
-    -   [X] Install lueur
+    -   [X] Install fault
 
-        If you haven’t installed Lueur yet, follow the
+        If you haven’t installed fault yet, follow the
         [installation instructions](../../install.md).
 
     -   [X] Get an OpenAI Key
 
         For the purpose of the guide, we will be using OpenAI models. You
         need to create an API key. Then make sure the key is available for
-        lueur:
+        fault:
 
         ```bash
         export OPENAI_API_KEY=sk-...
@@ -25,7 +25,7 @@ what lueur suggests you may want to add or remove from your code.
 
     -   [X] Install a local qdrant database
 
-        lueur uses [qdrant](https://qdrant.tech/) for its vector database. You
+        fault uses [qdrant](https://qdrant.tech/) for its vector database. You
         can install a [local](https://qdrant.tech/documentation/quickstart/),
         free, qdrant using docker:
 
@@ -36,7 +36,7 @@ what lueur suggests you may want to add or remove from your code.
 !!! danger "Windows not supported"
 
     Unfortunately, the {==agent==} feature is not supported on Windows because
-    the framework used by lueur to interact with LLM does not support that
+    the framework used by fault to interact with LLM does not support that
     platform.
 
 !!! info "Experimental feature"
@@ -67,7 +67,7 @@ from this application.
     ###############################################################################
     #
     # Very basic application that expose a couple of endpoints that you can
-    # use to test lueur.
+    # use to test fault.
     # Once you have installed `uv` https://docs.astral.sh/uv/, simply run the
     # application as follows:
     # 
@@ -188,22 +188,22 @@ from this application.
     application.
 
     ```bash
-    lueur scenario generate --scenario scenario.yaml --spec-url http://localhost:9090/openapi.json
+    fault scenario generate --scenario scenario.yaml --spec-url http://localhost:9090/openapi.json
     ```
 
 -   [X] Run the scenario against this application
 
     ```bash
-    lueur scenario run --scenario scenario.yaml
+    fault scenario run --scenario scenario.yaml
     ```
 
 -   [X] Review the code and make suggestions
 
-    lueur reviews the code by chunking it, indexing it and then asking your
+    fault reviews the code by chunking it, indexing it and then asking your
     favourite LLM for its opinion.
 
     ```bash
-    lueur agent code-review \
+    fault agent code-review \
         --results results.json \ # (1)!
         --source-dir webapp/ \ # (2)!
         --source-lang python # (3)!
@@ -219,7 +219,7 @@ from this application.
     3. The application's language (someday a heuristic will guess this)
     4. Use the arrow keys to select the endpoint you want to review and patch
 
-    Assuming we select the first endpoint, lueur suggests the following changes:
+    Assuming we select the first endpoint, fault suggests the following changes:
 
     ??? example "Generated code review changes report"
 
@@ -437,7 +437,7 @@ from this application.
     Run an analysis from a past scenario results:
 
     ```bash
-    lueur agent scenario-review --results results.json
+    fault agent scenario-review --results results.json
     ```
 
     This will generate a file called `scenario-review-report.md`. Now you can
@@ -445,7 +445,7 @@ from this application.
 
 
     ```bash
-    lueur agent code-review \
+    fault agent code-review \
         --results results.json \
         --source-dir webapp/ \
         --source-lang python \
@@ -461,7 +461,7 @@ from this application.
     1. Pass the generated report. You can omit this, if the file exists in
        the current directory, it will be read.
 
-    Assuming again we select the first endpoint, lueur suggests now the
+    Assuming again we select the first endpoint, fault suggests now the
     following changes:
 
     ??? example "Generated code review changes report after scenario analysis"
@@ -580,5 +580,5 @@ from this application.
 
 !!! tip
 
-    In a future release, lueur will be able to apply and try the changes
+    In a future release, fault will be able to apply and try the changes
     to verify they may be used safely.

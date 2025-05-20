@@ -1,17 +1,17 @@
-# How to Simulate HTTP Errors Using lueur
+# How to Simulate HTTP Errors Using fault
 
 This guide will walk you through emulating application level HTTP errors into your
-application using lueur proxy capabilities.
+application using fault proxy capabilities.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install lueur
+    -   [X] Install fault
 
-        If you haven’t installed Lueur yet, follow the
+        If you haven’t installed fault yet, follow the
         [installation instructions](../../install.md).
 
     -   [X] Basic Proxy Setup
-        Be familiar with running lueur run {==--with-[fault]==} commands from
+        Be familiar with running fault run {==--with-[fault]==} commands from
         your terminal.
 
 ## Constant Internal Server Error
@@ -19,7 +19,7 @@ application using lueur proxy capabilities.
 -   [X] Start the proxy with HTTP Error 500 from the remote server
 
     ```bash
-    lueur run \
+    fault run \
         --with-http-response \ # (1)!
         --http-response-status 500 \ # (2)!
         --http-response-trigger-probability 1  # (3)!
@@ -34,7 +34,7 @@ application using lueur proxy capabilities.
 -   [X] Start the proxy with HTTP Error 503 from the remote server
 
     ```bash
-    lueur run \
+    fault run \
         --with-http-response \ # (1)!
         --http-response-status 503 \ # (2)!
         --http-response-trigger-probability 0.5  # (3)!
@@ -49,7 +49,7 @@ application using lueur proxy capabilities.
 -   [X] Start the proxy with HTTP Error 404 from the remote server
 
     ```bash
-    lueur \
+    fault \
         --with-http-response \ # (1)!
         --http-response-status 404 \ # (2)!
         --http-response-trigger-probability 0.5 \ # (3)!

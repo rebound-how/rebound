@@ -2,7 +2,7 @@
 
 ## Scenario Overview
 
-A lueur scenario file is a structured document that defines a suite of tests
+A fault scenario file is a structured document that defines a suite of tests
 designed to simulate adverse network conditions and assess your application's
 resilience.
 
@@ -15,7 +15,7 @@ Each scenario item is composed of three primary components:
 !!! info
 
     You can generate scenarios using the
-    [lueur scenario generate](../how-to/scenarios/generate.md) command.
+    [fault scenario generate](../how-to/scenarios/generate.md) command.
 
 **Call:**  
 This section describes the HTTP request that will be executed during the test.
@@ -119,19 +119,19 @@ make sense of the results. For instance, one approach is to group them by
 endpoint URL.
 
 A scenario is made of at least one `call`. A `call` describes an endpoint, a
-lueur context and optionally a block to verify expectations.
+fault context and optionally a block to verify expectations.
 
 The `call` thus declares the HTTP configuration. The endpoint URL, a valid
 HTTP method. Optional headers and body may also be provided.
 
 Note that the a `call` block also supports a `meta` structure that allows you
 to declare the `operation_id` (from [OpenAPI](https://swagger.io/docs/specification/v3_0/paths-and-operations/#operationid). This is a piece of information used by
-the lueur agent when analyzing the scenario results.
+the fault agent when analyzing the scenario results.
 
-### lueur `context`
+### fault `context`
 
-Th `context` gathers the configuration for lueur. These are the typical
-information lueur's CLI uses already so you should be familiar with them
+Th `context` gathers the configuration for fault. These are the typical
+information fault's CLI uses already so you should be familiar with them
 hopefully.
 
 A list of `upstreams` servers which should be impacted by the network faults.
@@ -147,14 +147,14 @@ describing how to run the scenario.
 Finally, the `context` may take a `slo` block that describes a list of
 service level objectives (SLO). These SLOs are not meant to exist. They allow
 you to declare what they might be for that endpoint (actually, they can
-represent real SLOs but lueur doesn't link to them). These fake SLOs are useful
-when running a `strategy` of type `load` because the report lueur generates
+represent real SLOs but fault doesn't link to them). These fake SLOs are useful
+when running a `strategy` of type `load` because the report fault generates
 will give you feedback about them in the context of the scenario.
 
 #### A word about SLO
 
 
-lueur advocates for practicing reliability and resilience as early and often
+fault advocates for practicing reliability and resilience as early and often
 as possible. Both require constant attention to make an impact. To achieve this,
 a team may be looking at implementing Site Reliability Engineering or SRE.
 
@@ -171,13 +171,13 @@ requiring attention. By defining a level of health for a service, a team has a
 new capability called an error budget. Essentially, it's a room for a team to
 bring change safely.
 
-So, where does lueur come into this?
+So, where does fault come into this?
 
-In the context of a lueur scenario, we can use SLO to help us figure out
+In the context of a fault scenario, we can use SLO to help us figure out
 if a particular combination of network faults might impact the health of our
 service, and the extent of this impact.
 
-!!! example "lueur SLO definition"
+!!! example "fault SLO definition"
 
     SLO are declared as part of the scenario's `context` and is a sequence of
     slo objects. For instance:
@@ -203,14 +203,14 @@ service, and the extent of this impact.
 
     !!! note
     
-        lueur supports two types of SLO: `latency` and `error`. 
+        fault supports two types of SLO: `latency` and `error`. 
 
-When a scenario runs, lueur computes then a variety of latency and error
+When a scenario runs, fault computes then a variety of latency and error
 percentiles (p25, p50, p75, p95 and p99) to compare them with these SLO.
 
-!!! example "lueur SLO reporting"
+!!! example "fault SLO reporting"
 
-    For instance, lueur may generate the following report:
+    For instance, fault may generate the following report:
 
     | Latency Percentile | Latency (ms) | Num. Requests (% of total) |
     |------------|--------------|-----------|
@@ -225,17 +225,17 @@ percentiles (p25, p50, p75, p95 and p99) to compare them with these SLO.
     | P95 < 300ms | ❌ | 95% < 300ms | Above by 307.7ms | 55 (90.2%) |
     | P99 < 1% errors | ✅ | 99% < 1% | Below by 1.0 | 0 (0.0%) |
 
-lueur is well aware that the window of the scenario is short. lueur takes the
+fault is well aware that the window of the scenario is short. fault takes the
 view that even from such a small period of time, we can extrapolate valuable
 information.
 
-We believe lueur `slo` bridges SRE to developers. SLO is a simple language
+We believe fault `slo` bridges SRE to developers. SLO is a simple language
 which makes it explicit what a healthy service performs.
 
 !!! info
 
-    lueur is not an APM/monitoring tool, it doesn't aim at becoming one. A slo
-    in the context of lueur is only a language to help developers see the world
+    fault is not an APM/monitoring tool, it doesn't aim at becoming one. A slo
+    in the context of fault is only a language to help developers see the world
     as their operations expect it to be.
 
 ### An `expect` block
@@ -249,20 +249,20 @@ Note that, these two are ignored when `strategy` is set to `load`.
 
 ## OpenAPI Support
 
-lueur supports OpenAPI v3 (v3.0.x and v3.1.x). It may generate scenarios
+fault supports OpenAPI v3 (v3.0.x and v3.1.x). It may generate scenarios
 from an OpenAPI specification to rapidly bootstrap your catalog of scenarios.
 
-lueur scans an OpenAPI specification and gather the following information:
+fault scans an OpenAPI specification and gather the following information:
 
 * the endpoint `url`
 * the HTTP `method`
 * if the method is either `POST` or `PUT`, it also scans the body definition.
   When this is a typical structured body, it creates a default payload as well.
 
-Then lueur generates a variety of scenarios to create a solid baseline of
+Then fault generates a variety of scenarios to create a solid baseline of
 scenarios against each endpoint.
 
-The default behavior from lueur is to create the following scenarios:
+The default behavior from fault is to create the following scenarios:
 
 * **Single high-latency spike**: single short client ingress
 * **Stair-step latency growth (5 x 100 ms)**: gradualy increase latency
@@ -275,12 +275,12 @@ The default behavior from lueur is to create the following scenarios:
 
 !!! tip "Make it your own"
 
-    A future version of lueur should allow you to bring your own scenario
+    A future version of fault should allow you to bring your own scenario
     templates.
 
 !!! tip "More coverage in the future"
 
-    Right now, lueur generates scenarios against the endpoints themselves, a
+    Right now, fault generates scenarios against the endpoints themselves, a
     future release will also generate them for downstream dependencies.
 
 ## Example
@@ -441,13 +441,13 @@ items:
 You can run this scenario file agains the demo server:
 
 ```bash
-lueur demo run
+fault demo run
 ```
 
 To execute the scenario file, run the following command:
 
 ```bash
-lueur scenario run --scenario scenario.yaml
+fault scenario run --scenario scenario.yaml
 ```
 
 ## JSON Schema

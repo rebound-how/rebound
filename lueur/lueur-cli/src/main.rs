@@ -154,6 +154,8 @@ async fn main() -> Result<()> {
     let (ebpf_proxy_shutdown_tx, ebpf_proxy_shutdown_rx) =
         kanal::bounded_async(1);
 
+    let _http_proxy_guard;
+
     match &cli.command {
         Commands::Run { options } => {
             // if we are in stealth mode, we'll start the ebpf layer as well
@@ -192,16 +194,19 @@ async fn main() -> Result<()> {
                     }
                 });
             }
+            
+            let http_proxy_nic_config = get_http_proxy_address(&options.common);
 
             // it's time to start our HTTP proxies
-            let http_proxy_nic_config = get_http_proxy_address(&options.common);
-            let _http_proxy_guard = initialize_http_proxy(
-                &http_proxy_nic_config,
-                proxy_state.clone(),
-                proxy_shutdown_rx.clone(),
-                task_manager.clone(),
-            )
-            .await;
+            if options.common.disable_http_proxies == false {
+                _http_proxy_guard = initialize_http_proxy(
+                    &http_proxy_nic_config,
+                    proxy_state.clone(),
+                    proxy_shutdown_rx.clone(),
+                    task_manager.clone(),
+                )
+                .await;
+            }
 
             // we now also start any other proxy that the user has requested us
             // to setup
@@ -300,6 +305,7 @@ async fn main() -> Result<()> {
 
                 proxy_prelude(
                     http_proxy_nic_config.proxy_address(),
+                    options.common.disable_http_proxies,
                     proxied_protos.clone(),
                     proxy_state.clone().rpc_manager.clone(),
                     options,

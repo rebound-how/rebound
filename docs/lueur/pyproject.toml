@@ -1,7 +1,7 @@
 [project]
-name = "lueur-cli-doc"
+name = "fault-cli-doc"
 dynamic = ["version"]
-description = "Lueur documentation"
+description = "fault documentation"
 authors = [
     {name = "Sylvain Hellegouarch", email = "sylvain@rebound.how"},
 ]

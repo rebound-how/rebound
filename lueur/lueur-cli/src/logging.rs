@@ -129,7 +129,7 @@ pub fn init_subscriber(
     layers.extend(log_layers);
 
     if tracer_provider.is_some() {
-        let tracer = tracer_provider.clone().unwrap().tracer("lueur");
+        let tracer = tracer_provider.clone().unwrap().tracer("fault");
         let telemetry = OpenTelemetryLayer::new(tracer)
             .with_error_records_to_exceptions(true);
         layers.push(Box::new(telemetry));

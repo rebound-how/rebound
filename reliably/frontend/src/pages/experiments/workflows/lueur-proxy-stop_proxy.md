@@ -1,17 +1,17 @@
 ---
 name: Stop Network Proxy
-target: Lueur
+target: fault
 category: Network
 type: action
-module: chaoslueur.actions
-description: Stop the Lueur proxy.
+module: chaosfault.actions
+description: Stop the fault proxy.
 layout: src/layouts/ActivityLayout.astro
 ---
 
 |            |                                     |
 | ---------- | ----------------------------------- |
 | **Type**   | action                               |
-| **Module** | chaoslueur.actions |
+| **Module** | chaosfault.actions |
 | **Name**   | run_proxy                        |
 | **Return** | list                                |
 
@@ -25,7 +25,7 @@ JSON
   "type": "action",
   "provider": {
     "type": "python",
-    "module": "chaoslueur.actions",
+    "module": "chaosfault.actions",
     "func": "stop_proxy"
   }
 }
@@ -38,7 +38,7 @@ name: run-proxy
 type: action
 provider:
   type: python
-  module: chaoslueur.actions
+  module: chaosfault.actions
   func: stop_proxy
 
 ```
@@ -48,7 +48,7 @@ provider:
 | Name             | Type   | Default     | Required | Title        | Description                                  |
 | ---------------- | ------ | ----------- | -------- | ------------ | -------------------------------------------- |
 
-Stop the lueur proxy.
+Stop the fault proxy.
 
 **Signature**
 

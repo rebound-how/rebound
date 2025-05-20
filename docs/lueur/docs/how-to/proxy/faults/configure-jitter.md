@@ -1,4 +1,4 @@
-# How to Simulate Jitter Using lueur
+# How to Simulate Jitter Using fault
 
 This guide explains how to introduce variable latency (jitter) into your
 application flow. Jitter is random, short‐term fluctuations in latency that can
@@ -6,13 +6,13 @@ disrupt real‐time communication or stream quality.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install lueur
+    -   [X] Install fault
 
-        If you haven’t installed Lueur yet, follow the
+        If you haven’t installed fault yet, follow the
         [installation instructions](../../install.md).
 
     -   [X] Basic Proxy Setup
-        Be familiar with running lueur run {==--with-[fault]==} commands from
+        Be familiar with running fault run {==--with-[fault]==} commands from
         your terminal.
 
 ## Light Ingress Jitter
@@ -26,7 +26,7 @@ fluctuations.
 -   [X] Start the proxy with jitter on ingress
 
     ```bash
-    lueur run \
+    fault run \
         --with-jitter \ # (1)!
         --jitter-amplitude 30 \ # (2)!
         --jitter-frequency 5 \ # (3)!
@@ -50,7 +50,7 @@ streaming client uploads.
 -   [X] Start the proxy with jitter on egress
 
     ```bash
-    lueur run \
+    fault run \
         --with-jitter \ # (1)!
         --jitter-amplitude 50 \ # (2)!
         --jitter-frequency 10 \ # (3)!
@@ -70,7 +70,7 @@ This is great for testing two‐way real‐time apps.
 -   [X] Start the proxy with jitter on egress and ingress
 
     ```bash
-    lueur run \
+    fault run \
         --with-jitter \ # (1)!
         --jitter-amplitude 30 \ # (2)!
         --jitter-frequency 8 \ # (3)!

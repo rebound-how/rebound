@@ -30,7 +30,8 @@ from sqlalchemy.exc import SQLAlchemyError
 ###############################################################################
 # Database configuration
 ###############################################################################
-engine = create_engine("sqlite:///./test.db")
+uri = "postgresql+psycopg2://scott:tiger@localhost:5432/mydatabase"
+engine = create_engine(uri)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
