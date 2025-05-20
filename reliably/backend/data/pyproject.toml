@@ -39,5 +39,5 @@ dependencies = [
     "awscli>=1.29.78",
     "chaostoolkit-google-cloud-platform>=0.17.1",
     "slack-sdk>=3.34.0",
-    "chaostoolkit-lueur>=0.1.6",
+    "chaostoolkit-fault>=0.1.1",
 ]
