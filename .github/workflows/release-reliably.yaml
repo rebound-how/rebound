@@ -1,0 +1,57 @@
+name: Release Reliably Application
+
+on:
+  push:
+    branches:
+      - release-reliably
+    paths: 
+      - 'reliably/backend/**'
+      - 'reliably/frontend/**'
+      - '.github/workflows/release-reliably.yaml'
+
+jobs:
+  build:
+    runs-on: "ubuntu-24.04"
+    environment: release
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-suffix: "rebound-how-reliably-backend"
+
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: "3.13"
+          cache: true
+          prerelease: true
+          cache-dependency-path: 'reliably/backend/pdm.lock'
+
+      - name: Install dependencies
+        working-directory: ./reliably/backend
+        run: |
+          pdm sync --prod -G gcp -G kubernetes
+
+      - name: Build frontend
+        uses: withastro/action@v2
+        with:
+          path: ./reliably/frontend
+          node-version: 24
+
+      - name: Build backend
+        if: runner.os == 'Linux'
+        working-directory: ./reliably/backend
+        run: |
+          cp -r ../frontend/dist/* reliably_app/www
+          pdm build
+
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
