@@ -116,7 +116,7 @@ full = [
     "awscli>=1.37.26",
     "chaostoolkit-google-cloud-platform>=0.37.0",
     "slack-sdk>=3.34.0",
-    "chaostoolkit-lueur>=0.1.6",
+    "chaostoolkit-fault>=0.1.1",
 ]
 
 [project.scripts]
