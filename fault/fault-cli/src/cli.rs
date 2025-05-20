@@ -120,7 +120,7 @@ pub struct ProxyAwareCommandCommon {
         help_heading = "Lifecycle Option",
         long,
         help = "How long to run the proxy for.",
-        env = "FAULT_PROXY_DURATIOn",
+        env = "FAULT_PROXY_DURATION",
         value_parser
     )]
     pub duration: Option<String>,
