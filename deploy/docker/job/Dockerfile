@@ -33,7 +33,7 @@ RUN apt-get update && apt-get install -y apt-transport-https ca-certificates gnu
     #echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
     #apt-get update && apt-get install -y nano google-cloud-cli google-cloud-sdk-gke-gcloud-auth-plugin && \
     groupadd -g 1001 svc && useradd -m -u 1001 -g svc svc && \
-    curl -Lo aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.6.30/aws-iam-authenticator_0.6.30_linux_amd64 && \
+    curl -Lo aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.7.2/aws-iam-authenticator_0.7.2_linux_amd64 && \
     chmod +x ./aws-iam-authenticator && \
     chown svc:svc ./aws-iam-authenticator && \
     mv ./aws-iam-authenticator /home/svc/aws-iam-authenticator && \
@@ -41,7 +41,7 @@ RUN apt-get update && apt-get install -y apt-transport-https ca-certificates gnu
     chmod +x ./oha && \
     chown svc:svc ./oha && \
     mv ./oha /home/svc/oha && \
-    curl -Lo fault https://github.com/rebound-how/rebound/releases/download/0.2.1/fault-cli-0.2.1-x86_64-unknown-linux-musl && \
+    curl -Lo fault https://github.com/rebound-how/rebound/releases/download/0.6.0/fault-cli-0.6.0-x86_64-unknown-linux-musl  && \
     chmod +x ./fault && \
     chown svc:svc ./fault && \
     mv ./fault /home/svc/fault && \
