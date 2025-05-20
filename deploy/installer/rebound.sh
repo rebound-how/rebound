@@ -3,7 +3,7 @@
 # Rebound installer
 #
 # This sets up:
-#   • lueur         - a self-contained binary (Linux/macOS)
+#   • fault         - a self-contained binary (Linux/macOS)
 #   • Chaos Toolkit - a Python package
 #   • Reliably      - a Python application using PostgreSQL 17 as its DB
 #
@@ -131,22 +131,22 @@ install_tools() {
 }
 
 #---------------------------------------------------------------------
-# Install the lueur binary if present.
+# Install the fault binary if present.
 #---------------------------------------------------------------------
-LUEUR_INSTALLED=0
-install_lueur() {
-    if [[ -f "./lueur" ]]; then
+FAULT_INSTALLED=0
+install_fault() {
+    if [[ -f "./fault" ]]; then
         if [[ $EUID -eq 0 ]]; then
-            run_step cp "./lueur" /usr/local/bin/lueur
-            run_step chmod +x /usr/local/bin/lueur
+            run_step cp "./fault" /usr/local/bin/fault
+            run_step chmod +x /usr/local/bin/fault
         else
             run_step mkdir -p "$HOME/.local/bin"
-            run_step cp "./lueur" "$HOME/.local/bin/lueur"
-            run_step chmod +x "$HOME/.local/bin/lueur"
+            run_step cp "./fault" "$HOME/.local/bin/fault"
+            run_step chmod +x "$HOME/.local/bin/fault"
         fi
-        LUEUR_INSTALLED=1
+        FAULT_INSTALLED=1
     else
-        LUEUR_INSTALLED=0
+        FAULT_INSTALLED=0
     fi
 }
 
@@ -169,11 +169,11 @@ main() {
     install_uv
     update_shell
     install_python
-    install_lueur
-    if [[ "$LUEUR_INSTALLED" -eq 1 ]]; then
-        print_success "lueur installed"
+    install_fault
+    if [[ "$FAULT_INSTALLED" -eq 1 ]]; then
+        print_success "fault installed"
     else
-        print_warning "lueur not installed"
+        print_warning "fault not installed"
     fi
     install_tools
     print_success "Chaos Toolkit installed"

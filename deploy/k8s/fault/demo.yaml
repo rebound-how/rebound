@@ -2,21 +2,21 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: lueur-demo
+  name: fault-demo
   labels:
-    app: lueur-demo
+    app: fault-demo
 automountServiceAccountToken: false
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: lueur-demo
+  name: fault-demo
   labels:
-    app: lueur-demo
+    app: fault-demo
 spec:
   selector:
-    app: lueur-demo
+    app: fault-demo
   ports:
     - protocol: TCP
       port: 7070
@@ -26,29 +26,29 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: lueur-demo
+  name: fault-demo
   labels:
-    app: lueur-demo
+    app: fault-demo
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: lueur-demo
+      app: fault-demo
   template:
     metadata:
       labels:
-        app: lueur-demo
+        app: fault-demo
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
-      serviceAccountName: lueur-demo
+      serviceAccountName: fault-demo
       securityContext:
         runAsUser: 65532
         runAsGroup: 65532
         fsGroup: 65532
       containers:
-        - name: lueur-demo
-          image: localhost:32000/rebound/lueur:latest
+        - name: fault-demo
+          image: localhost:32000/rebound/fault:latest
           imagePullPolicy: Always
           tty: true
           args:

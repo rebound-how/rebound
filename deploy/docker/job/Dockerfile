@@ -25,7 +25,7 @@ LABEL org.opencontainers.image.vendor="Rebound"
 LABEL org.opencontainers.image.url="https://rebound.how"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
 LABEL org.opencontainers.image.source=https://github.com/rebound-how/rebound
-LABEL org.opencontainers.image.description="lueur network proxy CLI"
+LABEL org.opencontainers.image.description="fault network proxy CLI"
 
 RUN apt-get update && apt-get install -y apt-transport-https ca-certificates gnupg curl python3.12 && \
     # next three lines whould be enabled for gcloud support
@@ -41,10 +41,10 @@ RUN apt-get update && apt-get install -y apt-transport-https ca-certificates gnu
     chmod +x ./oha && \
     chown svc:svc ./oha && \
     mv ./oha /home/svc/oha && \
-    curl -Lo lueur https://github.com/rebound-how/rebound/releases/download/0.2.1/lueur-cli-0.2.1-x86_64-unknown-linux-musl && \
-    chmod +x ./lueur && \
-    chown svc:svc ./lueur && \
-    mv ./lueur /home/svc/lueur && \
+    curl -Lo fault https://github.com/rebound-how/rebound/releases/download/0.2.1/fault-cli-0.2.1-x86_64-unknown-linux-musl && \
+    chmod +x ./fault && \
+    chown svc:svc ./fault && \
+    mv ./fault /home/svc/fault && \
     apt-get remove --auto-remove -y golang-go curl gnupg apt-transport-https && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -57,7 +57,7 @@ USER 1001
 RUN mkdir -p /home/svc/bin && \
     mv ./aws-iam-authenticator /home/svc/bin/aws-iam-authenticator && \
     mv ./oha /home/svc/bin/oha && \
-    mv ./lueur /home/svc/bin/lueur
+    mv ./fault /home/svc/bin/fault
 
 ENV PATH="$PATH:/home/svc/bin:/home/svc/.venv/bin"
 

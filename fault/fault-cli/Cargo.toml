@@ -1,8 +1,8 @@
 [package]
-name = "lueur-cli"
-authors = ["Sylvain Hellegouarch <sylvain@lueur.dev>"]
-description = "Lueur CLI" 
-keywords = ["lueur", "ebpf"]
+name = "fault-cli"
+authors = ["Sylvain Hellegouarch <sylvain@fault.dev>"]
+description = "Fault CLI" 
+keywords = ["fault", "ebpf"]
 readme = "README.md"
 repository.workspace = true
 license-file.workspace = true
@@ -113,7 +113,7 @@ aya-log-ebpf = { version = "0.1.1", optional = true }
 aya = { version = "0.13.1", optional = true }
 aya-log = { version = "0.2.1", optional = true }
 nix = { version = "0.29.0", features = ["net"], optional = true }
-lueur-ebpf-programs = { version = "0.1.41", optional = true }
+fault-ebpf-programs = { version = "0.1.41", optional = true }
 
 [build-dependencies]
 anyhow = { workspace = true }
@@ -124,10 +124,10 @@ tonic-build = "0.12"
 aya-build = "0.1.2"
 
 #[target.'cfg(all(target_os = "linux", feature = "stealth-auto-build"))'.build-dependencies]
-#lueur-ebpf-programs = { path = "../lueur-ebpf-programs" }
+#fault-ebpf-programs = { path = "../fault-ebpf-programs" }
 
 [[bin]]
-name = "lueur"
+name = "fault"
 path = "src/main.rs"
 
 [features]
@@ -140,7 +140,7 @@ stealth = [
     "aya",
     "aya-log",
     "nix",
-    "lueur-ebpf-programs"
+    "fault-ebpf-programs"
 ]
 stealth-auto-build = [
     "aya-ebpf",

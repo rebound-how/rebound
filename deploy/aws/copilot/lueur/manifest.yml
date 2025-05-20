@@ -1,16 +1,16 @@
-# The manifest for the "lueur" service.
+# The manifest for the "fault" service.
 # Read the full specification for the "Backend Service" type at:
 #  https://aws.github.io/copilot-cli/docs/manifest/backend-service/
 
 # Your service name will be used in naming your resources like log groups, ECS services, etc.
-name: lueur
+name: fault
 type: Backend Service
 
-# Your service is reachable at "http://lueur.${COPILOT_SERVICE_DISCOVERY_ENDPOINT}:8080" but is not public.
+# Your service is reachable at "http://fault.${COPILOT_SERVICE_DISCOVERY_ENDPOINT}:8080" but is not public.
 
 # Configuration for your containers and service.
 image:
-  location: 912823331559.dkr.ecr.us-east-1.amazonaws.com/rebound-how/lueur:latest
+  location: 912823331559.dkr.ecr.us-east-1.amazonaws.com/rebound-how/fault:latest
   # Port exposed through your container to route traffic to it.
   port: 8080
 

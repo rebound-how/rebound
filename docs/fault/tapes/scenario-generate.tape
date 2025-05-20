@@ -71,6 +71,6 @@ Set FontSize 18
 Set Width 1400
 Set Height 800
 
-Type "lueur scenario generate --scenario scenario.yaml --spec-url http://localhost:9090/openapi.json"
+Type "fault scenario generate --scenario scenario.yaml --spec-url http://localhost:9090/openapi.json"
 Enter
 

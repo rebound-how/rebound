@@ -2,36 +2,36 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: lueur-scenario
+  name: fault-scenario
   labels:
-    app: lueur-scenario
+    app: fault-scenario
 automountServiceAccountToken: false
 
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: lueur-scenario
+  name: fault-scenario
   labels:
-    app: lueur-scenario
+    app: fault-scenario
 spec:
   backoffLimit: 0
   template:
     metadata:
       labels:
-        app: lueur-scenario
+        app: fault-scenario
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
-      serviceAccountName: lueur-scenario
+      serviceAccountName: fault-scenario
       restartPolicy: Never
       securityContext:
         runAsUser: 65532
         runAsGroup: 65532
         fsGroup: 65532
       containers:
-        - name: lueur-scenario
-          image: localhost:32000/rebound/lueur:latest
+        - name: fault-scenario
+          image: localhost:32000/rebound/fault:latest
           imagePullPolicy: Always
           tty: true
           args:
@@ -44,7 +44,7 @@ spec:
             - --result
             - result.json
           volumeMounts:
-          - name: lueur-scenario-file
+          - name: fault-scenario-file
             mountPath: /home/nonroot/rebound/scenario.yaml
             readOnly: true
           securityContext:
@@ -55,9 +55,9 @@ spec:
               drop:
                 - ALL
       volumes:
-      - name: lueur-scenario-file
+      - name: fault-scenario-file
         configMap:
-          name: lueur-scenario-file
+          name: fault-scenario-file
           items:
             - key: scenario.yaml
               path: scenario.yaml

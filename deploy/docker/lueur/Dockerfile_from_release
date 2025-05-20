@@ -5,15 +5,15 @@ ARG BUILDPLATFORM
 ARG CLI_PREFIX_PATH
 
 LABEL org.opencontainers.image.source=https://github.com/rebound-how/rebound
-LABEL org.opencontainers.image.description="lueur network proxy CLI"
+LABEL org.opencontainers.image.description="fault network proxy CLI"
 LABEL org.opencontainers.image.licenses=Apache-2.0
 
-COPY --chown=nonroot:nonroot --chmod=+x ${CLI_PREFIX_PATH}-${TARGETARCH}/lueur /home/nonroot/lueur
+COPY --chown=nonroot:nonroot --chmod=+x ${CLI_PREFIX_PATH}-${TARGETARCH}/fault /home/nonroot/fault
 
 WORKDIR /home/nonroot
 USER nonroot
 
 EXPOSE 8080
 
-ENTRYPOINT ["/home/nonroot/lueur"]
+ENTRYPOINT ["/home/nonroot/fault"]
 CMD []

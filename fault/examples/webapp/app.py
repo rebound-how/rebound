@@ -11,7 +11,7 @@
 ###############################################################################
 #
 # Very basic application that expose a couple of endpoints that you can
-# use to test lueur.
+# use to test fault.
 # Once you have installed `uv` https://docs.astral.sh/uv/, simply run the
 # application as follows:
 # 

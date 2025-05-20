@@ -6,9 +6,9 @@ ARG CLI_PREFIX_PATH
 
 RUN apk add --no-cache libcap-setcap
 
-COPY ${CLI_PREFIX_PATH}-${TARGETARCH}/lueur /lueur
+COPY ${CLI_PREFIX_PATH}-${TARGETARCH}/fault /fault
 
-RUN setcap cap_sys_admin,cap_bpf,cap_net_admin+ep /lueur
+RUN setcap cap_sys_admin,cap_bpf,cap_net_admin+ep /fault
 
 
 FROM --platform=$BUILDPLATFORM gcr.io/distroless/static-debian12
@@ -19,17 +19,17 @@ ARG CLI_PREFIX_PATH
 ARG EBPF_PREFIX_PATH
 
 LABEL org.opencontainers.image.source=https://github.com/rebound-how/rebound
-LABEL org.opencontainers.image.description="lueur network proxy CLI with ebpf support"
+LABEL org.opencontainers.image.description="fault network proxy CLI with ebpf support"
 LABEL org.opencontainers.image.licenses=Apache-2.0
 
-COPY --from=builder --chown=nonroot:nonroot --chmod=+x /lueur /home/nonroot/lueur
-COPY --chown=nonroot:nonroot ${EBPF_PREFIX_PATH}-${TARGETARCH}/lueur-ebpf /home/nonroot/.cargo/bin/lueur-ebpf
+COPY --from=builder --chown=nonroot:nonroot --chmod=+x /fault /home/nonroot/fault
+COPY --chown=nonroot:nonroot ${EBPF_PREFIX_PATH}-${TARGETARCH}/fault-ebpf /home/nonroot/.cargo/bin/fault-ebpf
 
 WORKDIR /home/nonroot
 USER nonroot
 
 EXPOSE 8080
 
-ENTRYPOINT ["/home/nonroot/lueur"]
+ENTRYPOINT ["/home/nonroot/fault"]
 CMD []
 

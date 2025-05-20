@@ -2,33 +2,33 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: lueur-proxy
+  name: fault-proxy
   labels:
-    app: lueur-proxy
+    app: fault-proxy
 automountServiceAccountToken: false
 
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: lueur-proxy-config
+  name: fault-proxy-config
   labels:
-    app: lueur-proxy
+    app: fault-proxy
 data:
-  LUEUR_UPSTREAMS: "http://lueur-demo:7070"
-  LUEUR_WITH_LATENCY: "true"
-  LUEUR_LATENCY_MEAN: "300"
+  FAULT_UPSTREAMS: "http://fault-demo:7070"
+  FAULT_WITH_LATENCY: "true"
+  FAULT_LATENCY_MEAN: "300"
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: lueur-proxy
+  name: fault-proxy
   labels:
-    app: lueur-proxy
+    app: fault-proxy
 spec:
   selector:
-    app: lueur-proxy
+    app: fault-proxy
   ports:
     - protocol: TCP
       port: 8080
@@ -38,29 +38,29 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: lueur-proxy
+  name: fault-proxy
   labels:
-    app: lueur-proxy
+    app: fault-proxy
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: lueur-proxy
+      app: fault-proxy
   template:
     metadata:
       labels:
-        app: lueur-proxy
+        app: fault-proxy
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
-      serviceAccountName: lueur-proxy
+      serviceAccountName: fault-proxy
       securityContext:
         runAsUser: 65532
         runAsGroup: 65532
         fsGroup: 65532
       containers:
-        - name: lueur-proxy
-          image: localhost:32000/rebound/lueur:latest
+        - name: fault-proxy
+          image: localhost:32000/rebound/fault:latest
           imagePullPolicy: Always
           tty: true
           args:
@@ -76,7 +76,7 @@ spec:
               name: http
           envFrom:
             - configMapRef:
-                name: lueur-proxy-config
+                name: fault-proxy-config
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true

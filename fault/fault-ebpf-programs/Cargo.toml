@@ -1,8 +1,8 @@
 [package]
-name = "lueur-ebpf-programs"
-authors = ["Sylvain Hellegouarch <sylvain@lueur.dev>"]
-description = "Lueur CLI" 
-keywords = ["lueur", "ebpf"]
+name = "fault-ebpf-programs"
+authors = ["Sylvain Hellegouarch <sylvain@fault.dev>"]
+description = "Fault CLI" 
+keywords = ["fault", "ebpf"]
 readme = "README.md"
 repository.workspace = true
 license-file.workspace = true
@@ -24,5 +24,5 @@ network-types = "0.0.7"
 which = { workspace = true }
 
 [[bin]]
-name = "lueur-ebpf"
+name = "fault-ebpf"
 path = "src/main.rs"

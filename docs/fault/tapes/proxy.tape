@@ -71,7 +71,7 @@ Set FontSize 18
 Set Width 1400
 Set Height 800
 
-Type "lueur run --with-latency --latency-mean=300 --latency-sched 'start:10%,duration:10%;start:60%' --upstream=* --duration=5"
+Type "fault run --with-latency --latency-mean=300 --latency-sched 'start:10%,duration:10%;start:60%' --upstream=* --duration=5"
 Enter
 Sleep 10
 Ctrl+C
@@ -86,6 +86,6 @@ Sleep 5
 Ctrl+L
 Sleep 1
 
-Type "lueur scenario run --scenario scenario.yaml"
+Type "fault scenario run --scenario scenario.yaml"
 Enter
 Sleep 10

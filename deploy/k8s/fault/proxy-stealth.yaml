@@ -2,21 +2,21 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: lueur-demo
+  name: fault-demo
   labels:
-    app: lueur-demo
+    app: fault-demo
 automountServiceAccountToken: false
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: lueur-demo
+  name: fault-demo
   labels:
-    app: lueur-demo
+    app: fault-demo
 spec:
   selector:
-    app: lueur-demo
+    app: fault-demo
   ports:
     - protocol: TCP
       port: 7070
@@ -26,33 +26,33 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: lueur-proxy-stealth
+  name: fault-proxy-stealth
   labels:
-    app: lueur-proxy-stealth
+    app: fault-proxy-stealth
 automountServiceAccountToken: false
 
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: lueur-proxy-stealth-config
+  name: fault-proxy-stealth-config
   labels:
-    app: lueur-proxy-stealth
+    app: fault-proxy-stealth
 data:
-  LUEUR_EBPF_PROCESS_NAME: "curl"
-  LUEUR_WITH_LATENCY: "true"
-  LUEUR_LATENCY_MEAN: "300"
+  FAULT_EBPF_PROCESS_NAME: "curl"
+  FAULT_WITH_LATENCY: "true"
+  FAULT_LATENCY_MEAN: "300"
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: lueur-proxy-stealth
+  name: fault-proxy-stealth
   labels:
-    app: lueur-proxy-stealth
+    app: fault-proxy-stealth
 spec:
   selector:
-    app: lueur-proxy-stealth
+    app: fault-proxy-stealth
   ports:
     - name: proxy
       protocol: TCP
@@ -67,29 +67,29 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: lueur-demo
+  name: fault-demo
   labels:
-    app: lueur-demo
+    app: fault-demo
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: lueur-demo
+      app: fault-demo
   template:
     metadata:
       labels:
-        app: lueur-demo
+        app: fault-demo
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
-      serviceAccountName: lueur-demo
+      serviceAccountName: fault-demo
       securityContext:
         runAsUser: 65532
         runAsGroup: 65532
         fsGroup: 65532
       containers:
-        - name: lueur-demo
-          image: localhost:32000/rebound/lueur:latest
+        - name: fault-demo
+          image: localhost:32000/rebound/fault:latest
           imagePullPolicy: Always
           tty: true
           args:
@@ -108,8 +108,8 @@ spec:
               drop:
                 - ALL
 
-        - name: lueur-proxy
-          image: localhost:32000/rebound/lueur-ebpf:latest
+        - name: fault-proxy
+          image: localhost:32000/rebound/fault-ebpf:latest
           imagePullPolicy: Always
           tty: true
           args:
@@ -132,7 +132,7 @@ spec:
               name: ebpf-proxy
           envFrom:
             - configMapRef:
-                name: lueur-proxy-stealth-config
+                name: fault-proxy-stealth-config
           securityContext:
             runAsUser: 65532
             runAsGroup: 65532
