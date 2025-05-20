@@ -318,6 +318,7 @@ reliably/backend/.python-version
 reliably/frontend/c8-coverage.txt
 reliably/backend/uv.lock
 
+deploy/docker/job/.pdm-python
 
 ###############################################################################
 # Documentation

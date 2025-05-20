@@ -4,13 +4,13 @@ members = ["fault-cli", "fault-ebpf-programs"]
 default-members = ["fault-cli"]
 
 [workspace.package]
-version = "0.5.0"
+version = "0.6.0"
 edition = "2024"
 rust-version = "1.85"
 license-file = "LICENSE"
 repository = "https://github.com/rebound-how/rebound" 
-documentation = "https://fault.dev" 
-homepage = "https://fault.dev"
+documentation = "https://fault-project.com" 
+homepage = "https://fault-project.com"
 include = [
   "build.rs",
   "src/**/*",

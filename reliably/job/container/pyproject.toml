@@ -3,7 +3,7 @@ name = "reliablyjob"
 version = "0.1.0"
 description = ""
 authors = [
-    {name = "Sylvain Hellegouarch", email = "sylvain@reliably.com"},
+    {name = "Sylvain Hellegouarch", email = "sylvain@rebound.how"},
 ]
 dependencies = [
     "chaostoolkit>=1.15",

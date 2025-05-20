@@ -3,7 +3,7 @@ name = "reliably-app"
 description = "Reliably - Resilience and Chaos Engineering Platform"
 dynamic = ["version"]
 authors = [
-    { name = "Sylvain Hellegouarch", email = "sylvain@reliably.com" },
+    { name = "Sylvain Hellegouarch", email = "sylvain@rebound.how" },
 ]
 requires-python = ">=3.12"
 readme = "docs/README.md"
