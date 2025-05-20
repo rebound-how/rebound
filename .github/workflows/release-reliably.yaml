@@ -51,11 +51,11 @@ jobs:
         working-directory: ./reliably/backend
         run: |
           cp -r ../frontend/dist/* reliably_app/www
-          pdm build -d /github/workspace/dist
+          pdm build
         env:
           PDM_BUILD_SCM_VERSION: 0.1.0
 
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          packages-dir: /github/workspace/dist
+          packages-dir: ./reliably/backend/dist
