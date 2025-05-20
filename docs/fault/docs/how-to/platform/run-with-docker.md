@@ -19,6 +19,12 @@ Docker containers.
     docker pull ghcr.io/rebound-how/fault
     ```
 
+    !!! warning
+        
+        This image is based on distroless and embeds the static version of the
+        fault cli which
+        [doesn't support the AI Agent feature](../install.md#features-matrix).
+
 -   [X] Run fault with a latency fault
 
     ```bash
@@ -76,7 +82,7 @@ Docker containers.
 -   [X] Pull the fault image
 
     ```bash
-    docker pull ghcr.io/rebound-how/fault:0.2.1-stealth
+    docker pull ghcr.io/rebound-how/fault:0.6.0-stealth
     ```
 
     !!! abstract
@@ -99,7 +105,7 @@ Docker containers.
         --cap-add=SYS_ADMIN \ # (6)!
         --cap-add=BPF \ # (7)!
         --cap-add=NET_ADMIN \ # (8)!
-        ghcr.io/rebound-how/fault:0.2.1-stealth \  # (9)!
+        ghcr.io/rebound-how/fault:0.6.0-stealth \  # (9)!
             run \
             --stealth \  # (10)!
             --capture-process curl \  # (11)!
