@@ -47,6 +47,11 @@ you must pass the total duration via `--duration`.
 
 Mixing relative and fixed schedules is supported.
 
+!!! note
+
+    Relative scheduling is declared using percentages of the total duration.
+    It is not a ratio of seen requests.
+
 !!! example "Fixed Schedule"
 
     ```bash

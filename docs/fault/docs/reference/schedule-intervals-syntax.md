@@ -12,7 +12,7 @@ fault runs continuously from start to finish.
 An interval is made of two tokens:
 
 * a starting point: determines when the fault should be apply by fault
-* a duration: defines hgow long this fault should be run for
+* a duration: defines how long this fault should be run for
 
 When the starting point is unset, fault takes this as "run from the beginning".
 When no duration is set, fault understand you want to run from the given
