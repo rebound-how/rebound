@@ -35,6 +35,7 @@ This guide will walk you through running fault as part of a
     following argument line:
 
     ```bash
+        --duration 45s \
         --with-latency \ # (1)!
         --latency-mean 300 \ # (2)!
         --latency-sched "duration:10s;start:25s,duration:17s" # (3)!
@@ -42,7 +43,7 @@ This guide will walk you through running fault as part of a
 
     1. Run fault with a `latency` fault
     2. Inject a `300ms` delay on responses
-    3. Inject the fault only for around 60% of the total duration of the run
+    3. Inject the fault only for around `60%` of the total duration of the run
 
     We suggest you run the action in background so that other activities can
     take place while it is running.
