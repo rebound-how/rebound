@@ -14,7 +14,8 @@ This guide will walk you through running fault as part of a
 -   [X] Create the Reliably Experiment
 
     To create the Experiment, go to the {==Builder==} page. Look for the
-    {==fault==} target and select the {==Run Network Fault Proxy==} action.
+    {==Rebound fault==} target and select the {==Run Network Fault Proxy==}
+    action.
 
     ![Reliably Builder](/assets/guide-reliably-builder.png)
 
@@ -36,7 +37,7 @@ This guide will walk you through running fault as part of a
     ```bash
         --with-latency \ # (1)!
         --latency-mean 300 \ # (2)!
-        --latency-sched "duration:20%;start:50%,duration:40%" # (3)!
+        --latency-sched "duration:10s;start:25s,duration:17s" # (3)!
     ```
 
     1. Run fault with a `latency` fault
@@ -48,6 +49,8 @@ This guide will walk you through running fault as part of a
 
     Finally, if you did not set the `--duration` flag, you want to keep the
     {==Stop Network Proxy==} action so that your proxy is properly terminated.
+    In such case, remember you can only set
+    [fixed schedules](../how-to/proxy/lifecycle.md#scheduling).
 
     At that stage you may want to insert new activities once the proxy has
     started by clicking the little `+` icon on the right of the
@@ -108,10 +111,9 @@ This guide will walk you through running fault as part of a
 
     !!! warning "Critical thinking remains your best strategy"
 
-        LLM models are known to hallucinate at times. Here, the model shows us
-        an action that does not exist in the catalog of Chaos Toolkit
-        known activities. Nonetheless, it's a valuable discussion starting
-        point.
+        LLM models are known to hallucinate at times. More than often, the LLM
+        will suggest Chaos Toolkit activities that don't exist. Nonetheless,
+        it's a valuable discussion starting point.
 
     ![Reliably Plan Assistant Follow up](/assets/guide-reliably-plan-assistant-2.png)
 
@@ -121,8 +123,15 @@ This guide will walk you through running fault as part of a
     Overall, the assistant is here to support your own analysis and you should
     use it as a data point only, not as the one truth.
 
+    Finally, the assistant also responds to the question about well-known
+    incidents, which may help put your experiment into context:
+
+    ![Reliably Plan Assistant Past Incidents](/assets/guide-reliably-plan-assistant-3.png)
+
+
+
 ## Next Steps
 
-- Explore [Reliably](https://reliably.com) to understand how you can run
+- **Explore [Reliably](https://reliably.com)** to understand how you can run
   a plan on various deployment targets.
 

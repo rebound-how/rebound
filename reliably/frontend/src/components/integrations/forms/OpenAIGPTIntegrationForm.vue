@@ -78,12 +78,10 @@
         required
       >
         <option value="">Select GPT model</option>
-        <option value="gpt-4.5-preview">GPT-4.5 Preview</option>
-        <option value="gpt-4o">GPT-4o</option>
-        <option value="chatgpt-4o-latest">ChatGPT-4o</option>
-        <option value="o1">o1</option>
-        <option value="o1-mini">o1-mini</option>
+        <option value="o4-mini">o4-mini</option>
         <option value="o3-mini">o3-mini</option>
+        <option value="chatgpt-4o-latest">ChatGPT-4o</option>
+        <option value="gpt-4.1">gpt-4.1</option>
       </select>
       <p
         v-if="!isModelValid"
