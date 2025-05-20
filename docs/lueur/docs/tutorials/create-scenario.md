@@ -15,7 +15,7 @@
 
   By the end of this tutorial, you will:
 
-  - Configure lueur to apply latency.
+  - Configure fault to apply latency.
   - Run a defined scenario that systematically applies this fault.
   - Observe the application’s behavior and interpret the resulting report.
 
@@ -23,7 +23,7 @@
 
 **Tools & Setup**:
 
-  - lueur [installed](../how-to/install.md) on your local machine.
+  - fault [installed](../how-to/install.md) on your local machine.
   - An existing application or a simple test client that makes calls to a known
     third-party endpoint (e.g., `https://api.example.com`).
   - Basic familiarity with setting `HTTP_PROXY` or `HTTPS_PROXY` environment
@@ -32,7 +32,7 @@
 **Assumptions**:  
   The tutorial assumes you have followed the
   [Getting Started](./getting-started.md) tutorial and understand how to launch
-  lueur proxy.
+  fault proxy.
 
 ## Step 1: Choosing the Third-Party Endpoint
 
@@ -44,8 +44,8 @@ injected faults.
 ### How to Pick a Stable Endpoint
 
 - **Reachability:**  
-  lueur supports HTTP/1.1 and HTTP/2 only. If your endpoint only responds to
-  HTTP/3, lueur cannot work with it.
+  fault supports HTTP/1.1 and HTTP/2 only. If your endpoint only responds to
+  HTTP/3, fault cannot work with it.
   
 - **Consistency:**  
   Select an endpoint known for its consistency. A public API that rarely experiences
@@ -60,7 +60,7 @@ For demonstration purposes, use `http://localhost:7070`.
 ## Step 2: Creating a Scenario File
 
 In this step, you'll create a scenario file in YAML that defines a series of
-tests. Each scenario acts like a mini-test case, telling lueur exactly how to
+tests. Each scenario acts like a mini-test case, telling fault exactly how to
 simulate network faults and what to expect from your application. This file is
 your blueprint for reliability engineering.
 
@@ -89,7 +89,7 @@ parts:
 
 **Call:**
 
-This section defines the HTTP request that Lueur will make.
+This section defines the HTTP request that fault will make.
 
 - `method`: The HTTP method (GET, POST, etc.).
 - `url`: The full URL to call.
@@ -104,7 +104,7 @@ This section defines the HTTP request that Lueur will make.
 
 **Context:**
 
-This section tells Lueur which upstream services are involved and which faults
+This section tells fault which upstream services are involved and which faults
 to inject.
 
 - `upstreams`: An array of endpoints (as strings) where faults should be applied.
@@ -141,7 +141,7 @@ from this endpoint.
 !!! note
 
     The reason we are using this server here is because the demo application
-    provided by lueur makes a call to it when the `/ping` endpoint is called.
+    provided by fault makes a call to it when the `/ping` endpoint is called.
 
 **Expect:**
 
@@ -189,13 +189,13 @@ This section specifies the criteria that determine whether the test has passed.
 ## Step 3: Configuring Your Application and Environment
 
 Before running your fault injection scenarios, it's crucial to ensure that
-traffic to and from your application is routed via lueur's proxy.
+traffic to and from your application is routed via fault's proxy.
 
 ### Set the Proxy Environment Variable
 
-Configure your environment so that all HTTPS traffic is routed through lueur.
+Configure your environment so that all HTTPS traffic is routed through fault.
 This is typically done by setting the `HTTP_PROXY`  and/or `HTTPS_PROXY`
-environment variable to point to lueur's proxy endpoint.
+environment variable to point to fault's proxy endpoint.
 
 - **On Linux/MacOS/Windows (WSL):**
 
@@ -221,19 +221,19 @@ environment variable to point to lueur's proxy endpoint.
 ## Step 4: Running the Scenario
 
 Now that you’ve defined your scenarios and configured your environment,
-it’s time to run the tests and see lueur in action.
+it’s time to run the tests and see fault in action.
 
 ### Run the Scenario
 
 Execute the following command in your terminal:
 
 ```bash
-lueur scenario run --scenario scenario.yaml
+fault scenario run --scenario scenario.yaml
 ```
 
 !!! tip
 
-    You may pass a directory instead of a single file, lueur will process all
+    You may pass a directory instead of a single file, fault will process all
     of them as part of a single run.
 
 Here is the output of the run:
@@ -261,31 +261,31 @@ Report saved as report.json
 
 **Proxy Launch:**
 
-- lueur starts a local proxy server (by default at `http://127.0.0.1:3180`) to
+- fault starts a local proxy server (by default at `http://127.0.0.1:3180`) to
 intercept and manipulate network traffic.
 
 **Fault Injection:**
 
-- For each test defined in your scenario file, lueur applies the specified
+- For each test defined in your scenario file, fault applies the specified
   network faults.
 
 **Metrics and Logging:**
 
-- As the tests run, lueur captures detailed metrics (like response times,
+- As the tests run, fault captures detailed metrics (like response times,
   status codes, and error occurrences) along with logs. All this data is then
   saved to `scenario-report.json` for later analysis.
 
 ## Step 5: Observing Logs and Output
 
-lueur records metrics while running the scenario. You can use this information
+fault records metrics while running the scenario. You can use this information
 to analyse the way your application reacted to increasingly degraded network
 conditions.
 
-lueur produces two files:
+fault produces two files:
 
 - `results.json` Represents the structured log of the scenario execution.
   Notably, it shows the faults as they were applied
-- `report.json` Represents an automated analysis of the run. lueur applies some
+- `report.json` Represents an automated analysis of the run. fault applies some
   heuristics to evaluate what would be the impact on a variety of service-level
   objectives (SLO)
 
@@ -597,15 +597,15 @@ Here is an example of `results.json` file:
 
 ### Report Analysis
 
-lueur is able to generate a report for you when running the scenario. By
+fault is able to generate a report for you when running the scenario. By
 default, it will serialize it to JSON. Alternatively, you may change this to
-YAML or Markdown. lueur will select the right format based on the extension
+YAML or Markdown. fault will select the right format based on the extension
 of the report file. For instance, we could have executed the scenario as
 follows:
 
 
 ```bash
-lueur scenario run --scenario scenario.yaml --report report.md
+fault scenario run --scenario scenario.yaml --report report.md
 ```
 
 !!! example "Scenario report"
@@ -768,4 +768,4 @@ production.
 ## Next Steps
 
 - **Discover our [How-To Guides](../how-to/scenarios/generate.md)** to explore
-  lueur's capabilities and how to apply them.
+  fault's capabilities and how to apply them.

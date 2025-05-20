@@ -35,8 +35,8 @@ options available.
 These options apply across all commands.
 
 - **`--log-file <file>`**  
-  _Path to a file where lueur can append new logs during its execution._  
-  **Example:** `--log-file lueur.log`
+  _Path to a file where fault can append new logs during its execution._  
+  **Example:** `--log-file fault.log`
 
 - **`--log-stdout`**  
   _Flag enabling logs to be printed to the standard output._  
@@ -69,7 +69,7 @@ configure its properties.
 
 ### UI Options
 
-These options define how the UI is setup on lueur's output:
+These options define how the UI is setup on fault's output:
 
 - **`--no-ui`**  
   _Disable entirely the terminal UI and make the output fully silent._  
@@ -80,7 +80,7 @@ These options define how the UI is setup on lueur's output:
 
 ### Proxy Configuration Options
 
-These options define how to configure the proxy started by lueur:
+These options define how to configure the proxy started by fault:
 
 - **`--duration <value>`**  
   _How long to run the proxy process for. See [here](https://docs.rs/parse_duration/latest/parse_duration/#syntax) for the supported syntax_  
@@ -94,7 +94,7 @@ These options define how to configure the proxy started by lueur:
   **Example:** `--proxy-address 192.168.12.45:8090`
 
 - **`--proxy <proto-def>`**  
-  _Target host(s) to proxy (can be specified multiple times). You may also set `*` to tell lueur you want to impact any upstream._  
+  _Target host(s) to proxy (can be specified multiple times). You may also set `*` to tell fault you want to impact any upstream._  
   **Example:** `--upstream example.com`
   **Example:** `--upstream '*'`
   **Example:** `--upstream=*`
@@ -106,7 +106,7 @@ These options define how to configure the proxy started by lueur:
 ### Upstream Hosts Options
 
 - **`--upstream <host>`**  
-  _Target host(s) for HTTP proxying (can be specified multiple times). You may also set `*` to tell lueur you want to impact any upstream._  
+  _Target host(s) for HTTP proxying (can be specified multiple times). You may also set `*` to tell fault you want to impact any upstream._  
   **Example:** `--upstream example.com`
   **Example:** `--upstream '*'`
   **Example:** `--upstream=*`
@@ -121,7 +121,7 @@ These options define the remote plugins to forward traffic to.
 
 ### Stealth Configuration Options
 
-These options configure the stealth mode of the lueur's proxy.
+These options configure the stealth mode of the fault's proxy.
 
 !!! info
 
@@ -360,7 +360,7 @@ Learn more about the [Blackhole fault](./builtin-faults.md#blackhole).
 #### Running the Proxy with Multiple Faults
 
 ```bash
-lueur run \
+fault run \
   --proxy-address "127.0.0.1:3180" \
   --with-latency --latency-mean 120.0 --latency-stddev 30.0 \
   --with-bandwidth --bandwidth-rate 2000 --bandwidth-unit KBps
@@ -368,8 +368,8 @@ lueur run \
 
 ## `scenario` Command Options
 
-A lueur scenario is a file containing test scenarios to execute automatically
-by lueur generating report and result files for further analysis.
+A fault scenario is a file containing test scenarios to execute automatically
+by fault generating report and result files for further analysis.
 
 ### Proxy Configuration Options
 
@@ -404,7 +404,7 @@ by lueur generating report and result files for further analysis.
 
 ## `agent` Command Options
 
-A lueur agent is an AI agent using LLM to analyze code and scenario results to
+A fault agent is an AI agent using LLM to analyze code and scenario results to
 help you make appropriate changes.
 
 ### Common Options
@@ -434,7 +434,7 @@ These options define the LLm parameters of the agent.
 
 ### Code Review Options
 
-Ask lueur to review your source code.
+Ask fault to review your source code.
 
 - **`--report <file>`**  
   _Path to the file where the report is saved._  
@@ -460,7 +460,7 @@ Ask lueur to review your source code.
 
 ### Scenario Review Options
 
-Ask lueur to review a scenario run's results.
+Ask fault to review a scenario run's results.
 
 - **`--report <file>`**  
   _Path to the file where the report is saved._  

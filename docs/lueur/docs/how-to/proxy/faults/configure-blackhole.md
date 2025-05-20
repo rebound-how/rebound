@@ -1,17 +1,17 @@
-# How to Blackhole Traffic Using lueur
+# How to Blackhole Traffic Using fault
 
 This guide will walk you through emulating network severe degradation into your
-application using lueur proxy capabilities.
+application using fault proxy capabilities.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install lueur
+    -   [X] Install fault
 
-        If you haven’t installed Lueur yet, follow the
+        If you haven’t installed fault yet, follow the
         [installation instructions](../../install.md).
 
     -   [X] Basic Proxy Setup
-        Be familiar with running lueur run {==--with-[fault]==} commands from
+        Be familiar with running fault run {==--with-[fault]==} commands from
         your terminal.
 
 ## Completely Blackhole All Traffic
@@ -25,7 +25,7 @@ a response, eventually timing out.
 -   [X] Start the proxy with blackhole fault
 
     ```bash
-    lueur run --with-blackhole
+    fault run --with-blackhole
     ```
 
 ## Blackhole Traffic for Specific Time Windows
@@ -36,7 +36,7 @@ by complete blackhole intervals.
 -   [X] Start the proxy with blackhole fault and a schedule
 
     ```bash
-    lueur run \
+    fault run \
         --duration 10m \  # (1)!
         --with-blackhole \
         --blackhole-sched "start:10%,duration:50%;start:75%,duration:20%"  # (2)!

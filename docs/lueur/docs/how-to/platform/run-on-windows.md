@@ -1,32 +1,32 @@
-# Run lueur on a Microsoft Windows host
+# Run fault on a Microsoft Windows host
 
-This guide will show you how to run lueur on a Microsoft Windows host.
+This guide will show you how to run fault on a Microsoft Windows host.
 
 ## What You'll Achieve
 
-You will learn how to run lueur from a PowerShell command line or
+You will learn how to run fault from a PowerShell command line or
 via the Windows Subsystem for Linux.
 
-## Run lueur via Windows PowerShell
+## Run fault via Windows PowerShell
 
--   [X] Download lueur for Windows
+-   [X] Download fault for Windows
 
-    Download the latest Windows release of lueur from the
+    Download the latest Windows release of fault from the
     [releases](https://github.com/rebound-how/rebound/releases/latest) page.
 
 -   [X] Rename the binary
 
-    Once downloaded, rename the executable to `lueur.exe`
+    Once downloaded, rename the executable to `fault.exe`
 
 -   [X] Add the directory to the `Path`
 
-    You may additionnaly update the `Path` so that lueur is found.
+    You may additionnaly update the `Path` so that fault is found.
 
     ```console
-    $env:Path += ';C:\directoy\where\lueur\lives' 
+    $env:Path += ';C:\directoy\where\fault\lives' 
     ```
 
-## Run lueur via Windows Subsystem for Linux (WSL)
+## Run fault via Windows Subsystem for Linux (WSL)
 
 -   [X] Install a Ubuntu release
 
@@ -52,7 +52,7 @@ via the Windows Subsystem for Linux.
     sudo apt install -y jq
     ```
 
-    Then, create the target directory where `lueur` will be installed:
+    Then, create the target directory where `fault` will be installed:
 
     ```bash
     mkdir -p .local/bin
@@ -64,10 +64,10 @@ via the Windows Subsystem for Linux.
     export PATH=$PATH:$HOME/.local/bin
     ```
 
--   [X] Install lueur
+-   [X] Install fault
 
-    Install lueur using our installer script:
+    Install fault using our installer script:
 
     ```bash
-    curl -sSL https://lueur.dev/get | bash
+    curl -sSL https://fault.dev/get | bash
     ```

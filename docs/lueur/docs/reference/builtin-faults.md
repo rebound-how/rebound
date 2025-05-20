@@ -1,6 +1,6 @@
 # Built-in Faults
 
-lueur comes with a set of builtin faults. This page explores each fault
+fault comes with a set of builtin faults. This page explores each fault
 and how they get applied.
 
 ## Latency
@@ -38,7 +38,7 @@ real-world connection slowdowns.
 
 ### Distributions
 
-lueur implements four different distributions.
+fault implements four different distributions.
 
 #### Uniform Distribution
 

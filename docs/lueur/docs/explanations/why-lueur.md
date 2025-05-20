@@ -1,14 +1,14 @@
-# Why lueur?
+# Why fault?
 
-We are building lueur because we have met unexpected production
+We are building fault because we have met unexpected production
 issues which forced us to scramble, patch code at the last minute, and hope
 that live fixes will hold up, all under pressure.
 
-lueur aims to change that story. It brings reliability testing right
+fault aims to change that story. It brings reliability testing right
 into your daily development routine, so you’re not left guessing how your code
 will behave under poor network conditions.
 
-Instead of waiting until the final line lueur invites you to explore resilience
+Instead of waiting until the final line fault invites you to explore resilience
 as you go. It’s built to help you identify weak spots early, reducing last-minute
 surprises and giving you more time to craft thoughtful solutions.
 
@@ -19,7 +19,7 @@ systems lead to healthier operations.
 
 ### Protocol Support
 
-lueur slips into your workflow without demanding a big overhaul. Just point your
+fault slips into your workflow without demanding a big overhaul. Just point your
 traffic through its proxy and test your application as normal:
 
 - Forward and tunnel proxy modes
@@ -31,7 +31,7 @@ traffic through its proxy and test your application as normal:
 
 ### Real-World Faults
 
-lueur simulates the kinds of hiccups you’ve seen (or worried about) in
+fault simulates the kinds of hiccups you’ve seen (or worried about) in
 production. It does all of this right on your own machine:
 
 - Inject HTTP errors to see if your app recovers gracefully.
@@ -41,25 +41,25 @@ production. It does all of this right on your own machine:
 
 ### Tailored for Your Needs
 
-If your scenario demands more than the built-in faults, lueur’s gRPC interface
+If your scenario demands more than the built-in faults, fault’s gRPC interface
 lets you customize your own conditions. Mold the tool to fit your environment,
 not the other way around.
 
 ### Lightweight and Fast
 
-lueur wants to help you, not slow you down. It’s a single binary that starts up
+fault wants to help you, not slow you down. It’s a single binary that starts up
 quickly and has minimal overhead. That means you can integrate it into your
 daily workflow, tests, and continuous integration pipelines without feeling
 weighed down.
 
-Under the hood, lueur uses [Rust](https://www.rust-lang.org/) to ensure speed,
+Under the hood, fault uses [Rust](https://www.rust-lang.org/) to ensure speed,
 safety, and resilience.
 
 ## The Real-World Costs of Slowness and Unreliability
 
 It’s not just about feeling “fast.” Slow or unreliable responses can have real
 business and user engagement costs. By
-helping you pinpoint potential performance and reliability issues early, lueur
+helping you pinpoint potential performance and reliability issues early, fault
 empowers you to avoid these pitfalls:
 
 <div class="annotate" markdown>
@@ -82,7 +82,7 @@ empowers you to avoid these pitfalls:
 3. Akamai, *Akamai Online Retail Performance Report* (2017)
 
 **What does this mean for you?** By injecting faults and testing
-resiliency scenarios early with lueur, you’re investing in a smoother launch,
+resiliency scenarios early with fault, you’re investing in a smoother launch,
 happier users, healthier on-calls and a product that stands strong under
 real-world conditions. Postponing issues discovery late means they’re
 costlier and more stressful to fix.
@@ -91,7 +91,7 @@ costlier and more stressful to fix.
 
 Traditionally, developers focus on crafting features and fixing bugs, leaving
 resilience concerns to be uncovered later by SREs, performance engineers, or end
-users in production. lueur challenges this status quo by inviting developers to
+users in production. fault challenges this status quo by inviting developers to
 think differently about the resilience of their applications. This isn’t just a
 shift in tools; it’s a shift in philosophy.
 
@@ -127,7 +127,7 @@ propose a set of new indicators that highlight different angles of resilience:
 
 ### A Daily Practice, Not a Crisis Response
 
-Think of lueur as a steady practice in your development cadence. Just as TDD
+Think of fault as a steady practice in your development cadence. Just as TDD
 (Test-Driven Development) encourages writing tests first, we envision a
 Reliability-First Development approach: write a feature, inject a fault, and see
 how it holds up. Adjust, refine, and proceed with a clearer understanding of how
@@ -138,14 +138,14 @@ just work in ideal conditions. Over time, this practice becomes muscle memory,
 and resilience testing transforms from an occasional chore into an integral part
 of building and delivering products.
 
-lueur isn’t just another tool on your belt; it’s a new way of thinking about and
+fault isn’t just another tool on your belt; it’s a new way of thinking about and
 measuring reliability. We’re here to help you see beyond happy paths, to embrace
 uncertainty early, and to raise the bar on what “done” really means.
 
 
 ---
 
-lueur is about making your life easier when it comes to building reliable
+fault is about making your life easier when it comes to building reliable
 software. It puts you in the driver’s seat, letting you explore and solidify the
 resilience of your applications before those big, stressful moments can occur.
 

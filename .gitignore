@@ -289,16 +289,16 @@ backend/.env*
 
 
 ###############################################################################
-# lueur
+# fault
 ###############################################################################
 **/*.pdm-python
 **/*.python-version
 .fastembed_cache/
 report.md
 results.json
-lueur/reliably.yaml
-docs/lueur/.pdm-python
-lueur/examples/test.db
+fault/reliably.yaml
+docs/fault/.pdm-python
+fault/examples/test.db
 
 ###############################################################################
 # Reliably
@@ -322,5 +322,5 @@ reliably/backend/uv.lock
 ###############################################################################
 # Documentation
 ###############################################################################
-docs/lueur/.pdm-python
+docs/fault/.pdm-python
 docs/reliably/.pdm-python

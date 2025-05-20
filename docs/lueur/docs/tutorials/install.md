@@ -1,34 +1,34 @@
-# Install lueur
+# Install fault
 
-lueur strives to get of your way and it starts with a smooth installation.
+fault strives to get out of your way and it starts with a smooth installation.
 
-## Download lueur
+## Download fault
 
-lueur is provided as a binary targetting the three major platforms: Linux,
+fault is provided as a binary targetting the three major platforms: Linux,
 macOS and Windows.
 
 You may try the installation script:
 
 ```bash
-curl -sSL https://lueur.dev/get | bash
+curl -sSL https://fault.dev/get | bash
 ```
 
-Alternatively, explore our other [installation options](../how-to/install.md#download-the-lueur-binary).
+Alternatively, explore our other [installation options](../how-to/install.md#download-the-fault-binary).
 
-## Check lueur is ready to roll
+## Check fault is ready to roll
 
 Let's verify it all went well by running the following command:
 
 ```bash
-lueur --help
+fault --help
 ```
 
 This should output the following:
 
-```
+```console
 A proxy to test network resilience by injecting various faults.
 
-Usage: lueur [OPTIONS] <COMMAND>
+Usage: fault [OPTIONS] <COMMAND>
 
 Commands:
   run       Resilience proxy
@@ -42,26 +42,26 @@ Options:
   -V, --version  Print version
 
 Logging Options:
-      --log-file <LOG_FILE>    Path to the log file. Disabled by default [env: LUEUR_LOG_FILE=]
-      --log-stdout             Stdout logging enabled [env: LUEUR_WITH_STDOUT_LOGGING=]
-      --log-level <LOG_LEVEL>  Log level [env: LUEUR_LOG_LEVEL=] [default: info]
+      --log-file <LOG_FILE>    Path to the log file. Disabled by default [env: fault_LOG_FILE=]
+      --log-stdout             Stdout logging enabled [env: fault_WITH_STDOUT_LOGGING=]
+      --log-level <LOG_LEVEL>  Log level [env: fault_LOG_LEVEL=] [default: info]
 
 Observability Options:
-      --with-otel  Enable Open Telemetry tracing and metrics. [env: LUEUR_WITH_OTEL=]
+      --with-otel  Enable Open Telemetry tracing and metrics. [env: fault_WITH_OTEL=]
 
 ```
 
 ## Troubleshooting
 
-If you receive a message such as ̀`lueur: No such file or directory`, it likely
-means you have not put the directory containing the `lueur` binary in your 
+If you receive a message such as ̀`fault: No such file or directory`, it likely
+means you have not put the directory containing the `fault` binary in your 
 `PATH`, or you may need to restart your session for the changes to take
 effect.
 
 ## Next Steps
 
-You’ve successfully downloaded and made lueure. What’s next?
+You’ve successfully downloaded and made faulte. What’s next?
 
-- **Explore our [Getting Started Tutorial](../getting-started/)** to learn how to first use lueur.
-- **Dive into [How-To Guides](../../how-to/)** to integrate lueur deeper into
+- **Explore our [Getting Started Tutorial](../getting-started/)** to learn how to first use fault.
+- **Dive into [How-To Guides](../../how-to/)** to integrate fault deeper into
   your workflow, from automated testing to continuous integration.

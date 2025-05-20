@@ -1,23 +1,23 @@
 ---
 name: Run Simple Web Demo Server
-target: Lueur
+target: fault
 category: Network
 type: action
-module: chaoslueur.actions
-description: Run Lueur demo server to explore Reliably's features
+module: chaosfault.actions
+description: Run fault demo server to explore Reliably's features
 layout: src/layouts/ActivityLayout.astro
 related: |
-    - method:lueur-proxy-run_proxy
+    - method:fault-proxy-run_proxy
     - method:reliably-pauses-pause_execution
-    - method:lueur-load-via_proxy
-    - method:lueur-proxy-stop_proxy
+    - method:fault-load-via_proxy
+    - method:fault-proxy-stop_proxy
     - method:reliably-load-verify_latency_percentile_from_load_test
 ---
 
 |            |                                     |
 | ---------- | ----------------------------------- |
 | **Type**   | action                               |
-| **Module** | chaoslueur.actions |
+| **Module** | chaosfault.actions |
 | **Name**   | run_demo                        |
 | **Return** | list                                |
 
@@ -31,7 +31,7 @@ JSON
   "type": "action",
   "provider": {
     "type": "python",
-    "module": "chaoslueur.actions",
+    "module": "chaosfault.actions",
     "func": "run_demo",
     "arguments": {
       "duration": 45
@@ -47,7 +47,7 @@ name: run-demo
 type: action
 provider:
   type: python
-  module: chaoslueur.actions
+  module: chaosfault.actions
   func: run_demo
   arguments:
     duration: 45
@@ -60,7 +60,7 @@ provider:
 | ---------------- | ------ | ----------- | -------- | ------------ | -------------------------------------------- |
 | **duration**       | float | 0| No      | Duration       | Sets the window in seconds during which the proxy runs. The default of 0 means the proxy does not stop on its own               |
 
-Run the lueur proxy with the appropriate network faults.
+Run the fault proxy with the appropriate network faults.
 
 **Signature**
 

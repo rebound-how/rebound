@@ -5,4 +5,4 @@ pub(crate) mod source;
 pub(crate) mod suggestion;
 pub(crate) mod transformers;
 
-const CODE_COLLECTION: &str = "lueur-code";
+const CODE_COLLECTION: &str = "fault-code";

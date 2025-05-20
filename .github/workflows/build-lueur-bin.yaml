@@ -1,13 +1,13 @@
-name: Build Lueur Binaries
+name: Build fault Binaries
 
 on: 
   push:
     branches:
       - main
     paths: 
-      - 'lueur/**'
-      - '!lueur/CHANGELOG.md'
-      - '.github/workflows/build-lueur-bin.yaml'
+      - 'fault/**'
+      - '!fault/CHANGELOG.md'
+      - '.github/workflows/build-fault-bin.yaml'
 
 jobs:
   workspaces:
@@ -40,7 +40,7 @@ jobs:
         with:
           key: ${{ matrix.target }}
           workspaces: |
-            lueur
+            fault
 
       - name: Install gRPC build dependencies (Linux)
         if: matrix.os == 'ubuntu-24.04'
@@ -60,17 +60,17 @@ jobs:
 
       - name: Check
         run: cargo check
-        working-directory: ./lueur/lueur-cli
+        working-directory: ./fault/fault-cli
 
       - name: Build on Windows
         if: matrix.os == 'windows-latest'
         run: cargo build --verbose --target ${{ matrix.target }}
-        working-directory: ./lueur/lueur-cli
+        working-directory: ./fault/fault-cli
 
       - name: Build on Unix-like
         if: matrix.os != 'windows-latest'
         run: cargo build --verbose --target ${{ matrix.target }} --features agent
-        working-directory: ./lueur/lueur-cli
+        working-directory: ./fault/fault-cli
 
       - name: Build ebpf programs
         if: matrix.os == 'ubuntu-24.04'
@@ -79,7 +79,7 @@ jobs:
           cargo build --verbose --target ${{ matrix.target }} --features stealth
           cargo build \
             --release \
-            -p lueur-ebpf-programs \
+            -p fault-ebpf-programs \
             --target=bpfel-unknown-none \
             -Z build-std=core
-        working-directory: ./lueur
+        working-directory: ./fault

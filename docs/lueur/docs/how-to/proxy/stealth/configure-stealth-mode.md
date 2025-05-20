@@ -1,6 +1,6 @@
 # Intercept Network Traffic Transparently
 
-This guide will walk you through enabling lueur's {==stealth mode==} to capture
+This guide will walk you through enabling fault's {==stealth mode==} to capture
 network traffic without modifying your application.
 
 !!! warning "This feature requires eBPF and a Linux host"
@@ -12,9 +12,9 @@ network traffic without modifying your application.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install lueur with Stealth mode support
+    -   [X] Install fault with Stealth mode support
 
-        If you haven’t installed lueur yet, follow the
+        If you haven’t installed fault yet, follow the
         [installation instructions](../../install.md#stealth-feature).
 
 ## Capture HTTPS Traffic
@@ -22,7 +22,7 @@ network traffic without modifying your application.
 -   [X] Start the proxy in stealth mode with a normal distribution latency
 
     ```bash
-    lueur run \
+    fault run \
         --stealth \ # (1)!
         --capture-process curl \ # (2)!
         --with-latency \ # (3)!
@@ -45,14 +45,14 @@ network traffic without modifying your application.
         https://www.google.com
     ```
 
-    1.  lueur can only intercept IPv4 traffic
+    1.  fault can only intercept IPv4 traffic
     2.  Let's only focus on a HEAD request for brevety
     3.  Discard any returned output
     4.  Display statistics about the call
 
 ## Apply Latency to a PostgreSQL Connection
 
--   [X] Install lueur's ebpf dependencies
+-   [X] Install fault's ebpf dependencies
     
     Follow the procedure to
     [install](../../../tutorials/install.md#optional-configure-ebpf-support) the
@@ -81,7 +81,7 @@ network traffic without modifying your application.
 -   [X] Start the proxy in stealth mode with a normal distribution latency
 
     ```bash
-    lueur run \
+    fault run \
         --stealth \ # (1)!
         --capture-process curl \ # (2)!
         --with-latency \ # (3)!
@@ -144,11 +144,11 @@ network traffic without modifying your application.
     Time taken 0.30957818031311035  # (1)!
     ```
 
-    1. This shows the impact of the latency injected by lueur into the exchange
+    1. This shows the impact of the latency injected by fault into the exchange
 
     !!! info
 
         We use `uv` to ease the management of the Python environment for this
         particular script. When we run the script this way, the actual process
-        executing the script is indeed `python`. This is why lueur captures
+        executing the script is indeed `python`. This is why fault captures
         the network traffic from the `python` process, not from `uv`.

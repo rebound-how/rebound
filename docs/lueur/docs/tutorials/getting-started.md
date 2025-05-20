@@ -1,14 +1,14 @@
-# Getting Started with lueur
+# Getting Started with fault
 
-Welcome to lueur! Your new ally in exploring and understanding the impact of
+Welcome to fault! Your new ally in exploring and understanding the impact of
 these petty network issues on your application.
-In this brief tutorial, we’ll help you get up and running with lueur so that you
+In this brief tutorial, we’ll help you get up and running with fault so that you
 can start experimenting with network faults and latency right from your own
 environment.
 
 By the end of this tutorial, you’ll have:
 
-- Installed lueur on your machine.
+- Installed fault on your machine.
 - Started a local proxy to simulate network conditions.
 - Started a local demo application for learning purpose
 - Made your first request through the proxy, observing how latency affects the
@@ -20,30 +20,30 @@ Let’s get started!
 
 Before diving in, make sure you have the following:
 
-- **A supported operating system:** lueur runs smoothly on most modern Linux,
+- **A supported operating system:** fault runs smoothly on most modern Linux,
   macOS, and Windows systems.
 
 ## Step 1: Installation
 
-If you haven’t installed lueur yet, please follow the
+If you haven’t installed fault yet, please follow the
 [installation guide](../how-to/install.md).
 
 ## Step 2: Starting the Local Proxy
 
-lueur operates by running a local proxy server. You can route your application’s
+fault operates by running a local proxy server. You can route your application’s
 traffic through it to simulate network faults. Let’s start a simple latency
 scenario:
 
 ```bash
-lueur run --upstream http://localhost:7070 --with-latency --latency-mean 300
+fault run --upstream http://localhost:7070 --with-latency --latency-mean 300
 ```
 
-This command launches the lueur proxy on a local port
+This command launches the fault proxy on a local port
 (by default, `127.0.0.1:3180`) and injects an average of `300ms` latency into
 outgoing requests. You can adjust the `--latency-mean` value to experiment with
 different latencies.
 
-The `--upstream http://localhost:7070` argument tells lueur to only process
+The `--upstream http://localhost:7070` argument tells fault to only process
 traffic from and to this host.
 
 !!! failure
@@ -56,12 +56,12 @@ traffic from and to this host.
     Always remember to set the right upstream server address that matches the
     endpoints you are exploring. You can set many `--upstream` arguments.
 
-    Any traffic received by lueur that does not match any of these
+    Any traffic received by fault that does not match any of these
     upstream addresses will go through the proxy unaltered.
 
 Once started, the proxy should issue the following message:
 
-<img srcset="/assets/screenshots/run-default.svg" src="/assets/screenshots/run-default.webp">
+<img srcset="/assets/images/run-default.svg" src="/assets/images/run-default.webp">
 
 Notice how the output tells you the address of the proxy server to use from
 your clients.
@@ -71,12 +71,12 @@ You are now ==ready to roll!==
 ## Step 3: Starting a demo application
 
 For the purpose of this tutorial, we will use a demo application built-in
-into lueur.
+into fault.
 
 Start the demo application in a different terminal:
 
 ```bash
-lueur demo run
+fault demo run
 ```
 
 This will start an application and listen for HTTP requests on
@@ -84,7 +84,7 @@ This will start an application and listen for HTTP requests on
 
 This will output the following prelude:
 
-<img srcset="/assets/screenshots/demo-default.svg" src="/assets/screenshots/demo-default.webp">
+<img srcset="/assets/images/demo-default.svg" src="/assets/images/demo-default.webp">
 
 
 The demo describes which endpoints are available and how to call them.
@@ -133,7 +133,7 @@ point of view of the time taken to receive a response from the demo application.
 
 ## Step 4: Configuring Your Application to Use the Proxy
 
-Now that lueur’s running, configure your application’s HTTP requests to pass
+Now that fault’s running, configure your application’s HTTP requests to pass
 through the proxy.
 
 For example, if you’re using `curl`, you might do:
@@ -146,7 +146,7 @@ curl -I -o /dev/null -s \
 ```
 
 With `-x http://127.0.0.1:3180` set, all requests made via `curl` will flow
-through lueur, experiencing the specified latency. By observing your
+through fault, experiencing the specified latency. By observing your
 application’s behavior (whether it’s a command-line tool, a local service, or
 a browser hitting a test endpoint), you’ll gain first-hand insight into how
 network slowdowns affect it.
@@ -183,14 +183,14 @@ slightly delayed. This delay simulates real-world network conditions.
 
 ## Next Steps
 
-You’ve successfully set up lueur, run your first latency scenario, and routed
+You’ve successfully set up fault, run your first latency scenario, and routed
 traffic through it. What’s next?
 
 - **Try different latency values or other fault injection parameters** to get
   a feel for how your application responds to varied conditions.
 - **Explore our [Scenario Tutorial](./real-impact-use-case.md)** to learn how to
   simulate scenarios using files and generate detailed reports.
-- **Dive into [How-To Guides](../../how-to/)** to integrate lueur deeper into
+- **Dive into [How-To Guides](../../how-to/)** to integrate fault deeper into
   your workflow, from automated testing to continuous integration.
 
 With this initial setup under your belt, you’re well on your way to embracing

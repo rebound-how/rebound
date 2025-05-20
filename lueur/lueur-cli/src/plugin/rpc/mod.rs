@@ -238,7 +238,7 @@ impl RpcPluginManager {
     /// to fetch them and update the plugin in-place.
     ///
     /// This is by no means bullet proof and is mostly to bring a bit of
-    /// resilience. But lueur itself makes no promise when a plugin is or
+    /// resilience. But fault itself makes no promise when a plugin is or
     /// isn't available.
     ///
     /// # Arguments

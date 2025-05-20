@@ -1,10 +1,10 @@
 ---
 name: Load Test via Proxy
-target: Lueur
+target: fault
 category: load
 type: action
-module: chaoslueur
+module: chaosfault
 background: true
-description: Send traffic to an endpoint via a lueur's proxy
+description: Send traffic to an endpoint via a fault's proxy
 layout: src/layouts/ActivityLayout.astro
 ---

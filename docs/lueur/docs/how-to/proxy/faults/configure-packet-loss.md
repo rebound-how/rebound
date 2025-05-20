@@ -1,35 +1,35 @@
-# How to Simulate Packet Loss Using lueur
+# How to Simulate Packet Loss Using fault
 
-This How-To guide shows you how to configure Lueur so that a portion of your
+This How-To guide shows you how to configure fault so that a portion of your
 traffic is lost. You can keep a persistent level of packet loss or schedule it
 in specific bursts to test how your application handles intermittent
 unreliability.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install lueur
+    -   [X] Install fault
 
-        If you haven’t installed lueur yet, follow the
+        If you haven’t installed fault yet, follow the
         [installation instructions](../../install.md).
 
     -   [X] Basic Proxy Setup
-        Be familiar with running lueur run {==--with-[fault]==} commands from
+        Be familiar with running fault run {==--with-[fault]==} commands from
         your terminal.
 
     -   [X] Check Available Packet Loss Strategies
 
-        lueur implements the Multi-State Markov strategy. Familiarize yourself
+        fault implements the Multi-State Markov strategy. Familiarize yourself
         with any advanced settings if needed.
 
 ## Constant Packet Loss
 
-In this scenario, lueur starts with packet loss enabled throughout the entire
+In this scenario, fault starts with packet loss enabled throughout the entire
 proxy run.
 
 -   [X] Start the proxy with packet loss on ingress from server side
 
     ```bash
-    lueur run --with-packet-loss 
+    fault run --with-packet-loss 
     ```
 
 ## Scheduled Packet Loss Bursts
@@ -37,7 +37,7 @@ proxy run.
 -   [X] Start the proxy with packet loss fo
 
     ```bash
-    lueur run \
+    fault run \
       --duration 10m \
       --with-packet-loss \
       --packet-loss-sched "start:5%,duration:20%;start:60%,duration:15%" # (1)!

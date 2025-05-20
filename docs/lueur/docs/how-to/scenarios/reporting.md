@@ -5,9 +5,9 @@ running scenarios.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install lueur
+    -   [X] Install fault
 
-        If you haven’t installed lueur yet, follow the
+        If you haven’t installed fault yet, follow the
         [installation instructions](../install.md).
 
     -   [X] Generate Scenario Files
@@ -22,7 +22,7 @@ running scenarios.
 
 ## Results vs Report
 
-lueur generates two assets when running scenarios:
+fault generates two assets when running scenarios:
 
 * `results.json` an extensive account of what happened during the run, including
   a detailed trace of all the faults that were injected

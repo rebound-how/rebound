@@ -1,12 +1,12 @@
-# Installing lueur
+# Installing the **fault** cli
 
-lueur is a designed to be easily installed on major systems such as Linux,
-macOS and Windows. We provide a variety of approaches to install lueur depending
+fault is a designed to be easily installed on major systems such as Linux,
+macOS and Windows. We provide a variety of approaches to install fault depending
 on your environment.
 
 ## Features Matrix
 
-lueur disables some of its features depending on the platform. Below is a
+fault disables some of its features depending on the platform. Below is a
 summary of the capabilities per target.
 
 | Platform (OS) / Feature | Proxy | Scenario | Stealth (eBPF) | AI Agent |
@@ -16,7 +16,7 @@ summary of the capabilities per target.
 | MacOSX     |  :white_check_mark:    | :white_check_mark:              | :no_entry: (2)            | :white_check_mark:        |
 | Windows     |  :white_check_mark:    | :white_check_mark:               | :no_entry: (2)           | :no_entry: (3)       |
 
-1. lueur comes with binaries with and without eBPF support for the Linux
+1. fault comes with binaries with and without eBPF support for the Linux
    platform.
 2. Stealth mode relies on the Linux kernel technology called eBPF and therefore
    is disabled elsewhere.
@@ -24,20 +24,20 @@ summary of the capabilities per target.
    [doesn't support Windows](https://github.com/bosun-ai/swiftide/issues/299).
    However, the agent runs fine on "Linux on Windows" via
    [WSL](https://learn.microsoft.com/en-us/windows/wsl/install).
-4. lueur only supports 64 bits architectures: x86 and ARM.
+4. fault only supports 64 bits architectures: x86 and ARM.
 
 When a feature is disabled, it won't appear in the CLI arguments.
 
-## Download the lueur binary
+## Download the fault binary
 
-The most direct route is to download the lueur binary on your machine.
+The most direct route is to download the fault binary on your machine.
 
--   [X] Download lueur
+-   [X] Download fault
 
-    You can download the appropriate {==lueur-cli==} binary for your platform
+    You can download the appropriate {==fault-cli==} binary for your platform
     from [here](https://github.com/rebound-how/rebound/releases).
 
--   [X] Ensure `lueur` can be found in your `PATH`
+-   [X] Ensure `fault` can be found in your `PATH`
 
     === "Linux, macOS, Windows Bash"
 
@@ -48,7 +48,7 @@ The most direct route is to download the lueur binary on your machine.
     === "Windows Powershell"
 
         ```console
-        $env:Path += ';C:\directoy\where\lueur\lives' 
+        $env:Path += ';C:\directoy\where\fault\lives' 
         ```
 
 
@@ -58,23 +58,23 @@ The most direct route is to download the lueur binary on your machine.
     executable permission flipped on with:
 
     ```bash
-    chmod a+x lueur
+    chmod a+x fault
     ```
 
 ### Stealth Feature
 
-lueur [stealth mode](../how-to/proxy/stealth/configure-stealth-mode.md)
+fault [stealth mode](../how-to/proxy/stealth/configure-stealth-mode.md)
 requires additional dependencies only available on Linux. Follow
 these instructions only if you intend on using the stealth feature. Otherwise,
 you may skip this section.
 
--   [X] Download lueur with ebpf support
+-   [X] Download fault with ebpf support
 
-    Instead, of `lueur-cli`, you will need to download and run `lueur-cli-ebpf`
+    Instead, of `fault-cli`, you will need to download and run `fault-cli-ebpf`
     which comes with the appropriate stealth mode enabled.
 
-    You can download {==lueur-cli-ebpf==}
-    [here](https://github.com/lueurdev/lueur/releases/latest).
+    You can download {==fault-cli-ebpf==}
+    [here](https://github.com/faultdev/fault/releases/latest).
 
 -   [X] Turn the binary into an executable
 
@@ -82,93 +82,93 @@ you may skip this section.
     executable permission flipped on with:
 
     ```bash
-    chmod a+x lueur
+    chmod a+x fault
     ```
 
--   [X] Download lueur's ebpf programs
+-   [X] Download fault's ebpf programs
 
-    You can download {==lueur-ebpf-programs==} from
-    [here](https://github.com/lueurdev/lueur/releases/latest).
+    You can download {==fault-ebpf-programs==} from
+    [here](https://github.com/faultdev/fault/releases/latest).
 
 -   [X] Copy them in their default location
 
-    Move the `lueur-ebpf` binary to `$HOME/.local/bin`
+    Move the `fault-ebpf` binary to `$HOME/.local/bin`
 
     ```bash
-    mv lueur-ebpf $HOME/.local/bin
+    mv fault-ebpf $HOME/.local/bin
     ```
 
--   [X] Give privileges to `lueur` to load and attach these ebpf programs
+-   [X] Give privileges to `fault` to load and attach these ebpf programs
 
     eBPF is powerful Linux kernel level feature which requires elevated
-    privileges to be used. While you can always run `lueur` with `sudo`, it
+    privileges to be used. While you can always run `fault` with `sudo`, it
     might be better to set privileges more specifically to the executable:
 
     ```bash
-    sudo setcap cap_sys_admin,cap_bpf,cap_net_admin+ep `$HOME/.local/bin/lueur`
+    sudo setcap cap_sys_admin,cap_bpf,cap_net_admin+ep `$HOME/.local/bin/fault`
     ```
 
 ## Install using `cargo`
 
-lueur is a [rust](https://www.rust-lang.org/) application. It can be installed
+fault is a [rust](https://www.rust-lang.org/) application. It can be installed
 using [cargo](https://github.com/rust-lang/cargo) which will recompile it on the
 machine.
 
 -   [X] Requirements
 
-    lueur expects rust 1.85+ and the {==nightly==}
+    fault expects rust 1.85+ and the {==nightly==}
     [channel](https://rust-lang.github.io/rustup/concepts/channels.html).
 
     ```bash
     rustup toolchain install nightly
     ```
 
--   [X] Install the `lueur` executable
+-   [X] Install the `fault` executable
 
     ```bash
-    cargo +nightly install lueur
+    cargo +nightly install fault
     ```
 
 ### AI Agent Feature
 
 !!! info
 
-    lueur AI Agent is not supported on Windows.
+    fault AI Agent is not supported on Windows.
 
--   [X] Install the `lueur` executable with {==agent==} feature enabled
+-   [X] Install the `fault` executable with {==agent==} feature enabled
 
     ```bash
-    cargo +nightly install lueur --features agent
+    cargo +nightly install fault --features agent
     ```
 
 ### Stealth Feature
 
 !!! info
 
-    lueur AI Agent is only available on Linux.
+    fault AI Agent is only available on Linux.
 
--   [X] Install the `lueur` executable with {==stealth==} feature enabled
+-   [X] Install the `fault` executable with {==stealth==} feature enabled
 
     In this case, you need to enable the
     [stealth](./proxy/stealth/configure-stealth-mode.md) feature. when
-    installing the `lueur` executable.
+    installing the `fault` executable.
 
     ```bash
-    cargo +nightly install lueur --features stealth
+    cargo +nightly install fault --features stealth
     ```
 
 -   [X] Install the `ebpf` binaries on Linux
 
     ```bash
-    cargo +nightly install lueur-ebpf-programs --target=bpfel-unknown-none -Z build-std=core
+    cargo +nightly install fault-ebpf-programs --target=bpfel-unknown-none -Z build-std=core
     ```
 
--   [X] Give privileges to `lueur` to load and attach these ebpf programs
+-   [X] Give privileges to `fault` to load and attach these ebpf programs
 
     eBPF is powerful Linux kernel level feature which requires elevated
-    privileges to be used. While you can always run `lueur` with `sudo`, it
+    privileges to be used. While you can always run `fault` with `sudo`, it
     might be better to set privileges more specifically to the executable:
 
     ```bash
-    sudo setcap cap_sys_admin,cap_bpf,cap_net_admin+ep `$HOME/.cargo/bin/lueur`
+    sudo setcap cap_sys_admin,cap_bpf,cap_net_admin+ep `$HOME/.cargo/bin/fault`
     ```

@@ -1,18 +1,18 @@
-# How to Simulate Bandwidth Constraints Using lueur
+# How to Simulate Bandwidth Constraints Using fault
 
 This guide shows you how to reduce or throttle network bandwidth in your
-application flow with lueur. You’ll see examples of slowing traffic on the
+application flow with fault. You’ll see examples of slowing traffic on the
 server side, client side, or both directions.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install lueur
+    -   [X] Install fault
 
-        If you haven’t installed Lueur yet, follow the
+        If you haven’t installed fault yet, follow the
         [installation instructions](../../install.md).
 
     -   [X] Basic Proxy Setup
-        Be familiar with running lueur run {==--with-[fault]==} commands from
+        Be familiar with running fault run {==--with-[fault]==} commands from
         your terminal.
 
 ## Severe Upstream Slowdown
@@ -26,7 +26,7 @@ or streaming on the client side.
 -   [X] Start the proxy with bandwidth set from server-side ingress
 
     ```bash
-    lueur run \
+    fault run \
         --with-bandwidth \ # (1)!
         --bandwidth-side server \ # (2)!
         --bandwidth-direction ingress \ # (3)!
@@ -50,7 +50,7 @@ your app behaves if the client is the bottleneck.
 -   [X] Start the proxy with bandwidth set from client-side both ingress and egress
 
     ```bash
-    lueur run \
+    fault run \
         --with-bandwidth \ # (1)!
         --bandwidth-side client \ # (2)!
         --bandwidth-direction both \ # (3)!
@@ -75,7 +75,7 @@ moderate network constraints on the server side.
 -   [X] Start the proxy with bandwidth set from server-side both ingress and egress
 
     ```bash
-    lueur run \
+    fault run \
         --with-bandwidth \ # (1)!
         --bandwidth-side server \ # (2)!
         --bandwidth-direction both \ # (3)!
@@ -97,7 +97,7 @@ The user sees slow and sluggish performance typical of older mobile networks.
 -   [X] Start the proxy with bandwidth and latency faults
 
     ```bash
-    lueur run \
+    fault run \
         --duration 10m \
         --with-bandwidth \  # (1)!
             --bandwidth-side client \

@@ -1,4 +1,4 @@
-# How to Inject Latency into Your Flow with lueur
+# How to Inject Latency into Your Flow with fault
 
 This guide shows how to delay traffic by a configurable amount, distribution,
 side (client or server), and direction (ingress or egress). You can simulate
@@ -7,13 +7,13 @@ selectively apply them to only client or server traffic.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install lueur
+    -   [X] Install fault
 
-        If you haven’t installed Lueur yet, follow the
+        If you haven’t installed fault yet, follow the
         [installation instructions](../../install.md).
 
     -   [X] Basic Proxy Setup
-        Be familiar with running lueur run {==--with-[fault]==} commands from
+        Be familiar with running fault run {==--with-[fault]==} commands from
         your terminal.
 
 ## Normal Distribution
@@ -27,7 +27,7 @@ curve.
 -   [X] Start the proxy with a normal distribution latency
 
     ```bash
-    lueur run \
+    fault run \
         --with-latency \ # (1)!
         --latency-distribution normal \ # (2)!
         --latency-mean 300 \ # (3)!
@@ -49,7 +49,7 @@ value.
 -   [X] Start the proxy with a uniform distribution latency
 
     ```bash
-    lueur run \
+    fault run \
         --with-latency \ # (1)!
         --latency-distribution uniform \ # (2)!
         --latency-min 300 \ # (3)!
@@ -72,7 +72,7 @@ You’ll see frequent short delays (`20ms` or so) but occasionally large outlier
 -   [X] Start the proxy with a Pareto distribution latency
 
     ```bash
-    lueur run \
+    fault run \
         --with-latency \ # (1)!
         --latency-distribution pareto \ # (2)!
         --latency-scale 20 \ # (3)!
@@ -92,7 +92,7 @@ Pareto factors.
 -   [X] Start the proxy with a Pareto + Normal distribution latency
 
     ```bash
-    lueur run \
+    fault run \
         --with-latency \ # (1)!
         --latency-distribution paretonormal \ # (2)!
         --latency-scale 20 \ # (3)!
@@ -115,7 +115,7 @@ Delay traffic from the server to the client.
 -   [X] Start the proxy with any distribution and set the direction to {==ingress==}.
 
     ```bash
-    lueur run \
+    fault run \
         --with-latency \ # (1)!
         --latency-direction ingress \ # (2)!
         --latency-mean 50
@@ -131,7 +131,7 @@ Delay traffic from the client to the server.
 -   [X] Start the proxy with any distribution and set the direction to {==egress==}.
 
     ```bash
-    lueur run \
+    fault run \
         --with-latency \ # (1)!
         --latency-direction egress \ # (2)!
         --latency-mean 50
@@ -145,7 +145,7 @@ Delay traffic from the client to the server.
 -   [X] Start the proxy with any distribution and set the side to {==client==}.
 
     ```bash
-    lueur run \
+    fault run \
         --with-latency \ # (1)!
         --latency-side client \ # (2)!
         --latency-mean 50
@@ -159,7 +159,7 @@ Delay traffic from the client to the server.
 -   [X] Start the proxy with any distribution and set the side to {==server==}.
 
     ```bash
-    lueur run \
+    fault run \
         --with-latency \ # (1)!
         --latency-side server \ # (2)!
         --latency-mean 50
@@ -174,7 +174,7 @@ Delay traffic from the client to the server.
 -   [X] Start the proxy with any distribution and set the direction to {==ingress==} and the side to {==server==}.
 
     ```bash
-    lueur run \
+    fault run \
         --with-latency \
         --latency-direction ingress \
         --latency-side server \

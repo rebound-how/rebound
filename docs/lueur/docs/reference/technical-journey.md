@@ -1,4 +1,4 @@
-# My Technical Journey Through lueur
+# My Technical Journey Through fault
 
 ## Where it all started
 

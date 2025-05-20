@@ -1,12 +1,12 @@
-# Enable lueur Observability
+# Enable fault Observability
 
 This guide will walk you sending traces to an Open Telemetry aware stack.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install lueur
+    -   [X] Install fault
 
-        If you haven’t installed lueur yet, follow the
+        If you haven’t installed fault yet, follow the
         [installation instructions](../../install.md).
 
 ## Send Open Telemetry Traces to Jaeger
@@ -17,16 +17,16 @@ This guide will walk you sending traces to an Open Telemetry aware stack.
     [Jaeger instructions](https://www.jaegertracing.io/docs/2.4/getting-started/)
     to deploy a local instance
 
--   [X] Start demo application provided by lueur
+-   [X] Start demo application provided by fault
 
     ```bash
-    lueur demo run
+    fault demo run
     ```
 
 -   [X] Start the proxy with a basic latency fault
 
     ```bash
-    lueur --with-otel \  # (1)!
+    fault --with-otel \  # (1)!
         run \
         --with-latency \ 
         --latency-distribution normal \
@@ -34,7 +34,7 @@ This guide will walk you sending traces to an Open Telemetry aware stack.
         --latency-stddev 40
     ```
 
-    1.  Configure lueur to generate and send Open Telemetry traces
+    1.  Configure fault to generate and send Open Telemetry traces
    
 
 -   [X] Send a request to the demo application routed via the proxy
@@ -43,10 +43,10 @@ This guide will walk you sending traces to an Open Telemetry aware stack.
     curl -x http://localhost:3180 http://localhost:7070
     ```
 
--   [X] View lueur traces
+-   [X] View fault traces
 
     Open your browser and
-    [view your lueur traces](http://localhost:16686/search?operation=apply_on_response&service=lueur-cli).
+    [view your fault traces](http://localhost:16686/search?operation=apply_on_response&service=fault-cli).
 
     In the following snippet, you can quickly notice the `~308ms` delay on the
     poll-read. ![Jaeger Traces](/assets/otel.png){ align=right }

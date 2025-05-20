@@ -24,9 +24,9 @@ fn main() -> anyhow::Result<()> {
         let ebpf_package = packages
             .into_iter()
             .find(|cargo_metadata::Package { name, .. }| {
-                name == "lueur-ebpf-programs"
+                name == "fault-ebpf-programs"
             })
-            .ok_or_else(|| anyhow!("lueur-ebpf-programs package not found"))?;
+            .ok_or_else(|| anyhow!("fault-ebpf-programs package not found"))?;
         let _ = aya_build::build_ebpf([ebpf_package]);
     }
 
