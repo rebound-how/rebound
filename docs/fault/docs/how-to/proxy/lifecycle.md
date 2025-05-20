@@ -57,7 +57,7 @@ Mixing relative and fixed schedules is supported.
         --bandwidth-sched "start:35s,duration:20s"
     ```
 
-    <img srcset="/assets/images/fixed-schedule.svg" src="/assets/images/fixed-schedule.webp">
+    <img src="/assets/images/fixed-schedule.png">
 
 
 !!! example "Relative Schedule"
@@ -70,4 +70,4 @@ Mixing relative and fixed schedules is supported.
         --bandwidth-sched "start:125s,duration:20s;start:70%,duration:5%"
     ```
 
-    <img srcset="/assets/images/relative-schedule.svg" src="/assets/images/relative-schedule.webp">
+    <img src="/assets/images/relative-schedule.png">

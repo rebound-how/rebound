@@ -8,11 +8,11 @@ a beautiful TUI (Terminal User Interface).
 The default TUI mode shows a summary of the configuration you set for the proxy
 and a summary of the events it sees:
 
-<img srcset="/assets/images/default-tui.svg" src="/assets/images/default-tui.webp">
+<img src="/assets/images/default-tui.png">
 
 A more comprehensive example:
 
-<img srcset="/assets/images/comprehensive-tui.svg" src="/assets/images/comprehensive-tui.webp">
+<img src="/assets/images/comprehensive-tui.png">
 
 
 ## Disable the TUI
@@ -28,4 +28,4 @@ fault injection) in a very concise manner.
 You may switch to a more verbose output by tailing the events using the
 `--tail` flag.
 
-<img srcset="/assets/images/tail-tui.svg" src="/assets/images/tail-tui.webp">
+<img src="/assets/images/tail-tui.png">
