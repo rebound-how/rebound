@@ -1,6 +1,6 @@
 # fault Proxy CLI
 
-![Demo](https://fault.dev/assets/tapes/proxy.gif)
+![Demo](https://fault-project.com/assets/tapes/proxy.gif)
 
 fault is here to help you uncover and address resiliency issues early in your
 development cycle. By easily injecting network faults into your application’s
@@ -28,7 +28,7 @@ can quickly see how your application responds when the network isn’t perfect.
 ### Using built binaries
 
 fault is distributed as built bianries on GitHub. Please refer to the
-[documentation](https://fault.dev/how-to/install/).
+[documentation](https://fault-project.com/how-to/install/).
 
 ### Using cargo
 

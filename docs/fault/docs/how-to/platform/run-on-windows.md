@@ -69,5 +69,5 @@ via the Windows Subsystem for Linux.
     Install fault using our installer script:
 
     ```bash
-    curl -sSL https://fault.dev/get | bash
+    curl -sSL https://fault-project.com/get | bash
     ```

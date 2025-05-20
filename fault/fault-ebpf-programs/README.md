@@ -15,5 +15,5 @@ You will need to install the [fault-cli](https://crates.io/crates/fault-cli)
 to use these programs.
 
 Please refer to the
-[documentation](https://fault.dev/how-to/proxy/stealth/configure-stealth-mode/)
+[documentation](https://fault-project.com/how-to/proxy/stealth/configure-stealth-mode/)
 for more details.

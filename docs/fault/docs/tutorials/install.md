@@ -10,7 +10,7 @@ macOS and Windows.
 You may try the installation script:
 
 ```bash
-curl -sSL https://fault.dev/get | bash
+curl -sSL https://fault-project.com/get | bash
 ```
 
 Alternatively, explore our other [installation options](../how-to/install.md#download-the-fault-binary).

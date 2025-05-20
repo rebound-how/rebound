@@ -59,7 +59,7 @@ provider:
 
 | Name             | Type   | Default     | Required | Title        | Description                                  |
 | ---------------- | ------ | ----------- | -------- | ------------ | -------------------------------------------- |
-| **proxy_args**       | string |             | Yes      | Proxy Arguments       | fault proxy arguments for its run command https://fault.dev/reference/cli-commands/#run-command-options              |
+| **proxy_args**       | string |             | Yes      | Proxy Arguments       | fault proxy arguments for its run command https://fault-project.com/reference/cli-commands/#run-command-options              |
 | **duration**       | float | 0| No      | Duration       | Sets the window in seconds during which the proxy runs. The default of 0 means the proxy does not stop on its own               |
 | **verbose**       | boolean | false | No      | Enables Debug Logging       | Make fault more verbose. Enable this only for debugging as fault can be chatty.               |
 
