@@ -54,3 +54,7 @@
     width: var(--guide-width);
     left: -0.75rem;
 }
+
+.md-typeset [type="checkbox"]:checked + .task-list-indicator::before {
+  background: hsl(205, 100%, 50%);
+}
