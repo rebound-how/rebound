@@ -1,7 +1,7 @@
 site_name: "fault."
-site_description: "Developer-Friendly Reliability Engineering | /lɥœʁ/"
+site_description: "Developer-Friendly Reliability Engineering"
 site_author: "Sylvain Hellegouarch"
-site_url: https://fault.dev
+site_url: https://fault-project.com
 repo_url: https://github.com/rebound-how/rebound
 repo_name: rebound/fault
 edit_uri: edit/main/docs/fault/docs
