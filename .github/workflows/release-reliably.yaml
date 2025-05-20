@@ -51,7 +51,7 @@ jobs:
         working-directory: ./reliably/backend
         run: |
           cp -r ../frontend/dist/* reliably_app/www
-          pdm build
+          pdm build -d ~/dist
         env:
           PDM_BUILD_SCM_VERSION: 0.1.0
 
