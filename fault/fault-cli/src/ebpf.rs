@@ -237,10 +237,10 @@ fn get_all_interfaces() -> anyhow::Result<Vec<(String, Ipv4Addr)>> {
 
 #[cfg(all(target_os = "linux", feature = "stealth-auto-build"))]
 pub fn initialize_stealth(
-    cli: &ProxyAwareCommandCommon,
+    cli: &StealthCommandCommon,
     ebpf_proxy_config: &EbpfProxyAddrConfig,
 ) -> Option<Ebpf> {
-    let upstream_hosts = cli.upstream_hosts.clone();
+    let proc_name = cli.ebpf_process_name.clone().unwrap();
 
     #[allow(unused_variables)]
     let ebpf_guard = match cli.ebpf {
@@ -254,7 +254,7 @@ pub fn initialize_stealth(
                 tracing::warn!("failed to initialize eBPF logger: {}", e);
             }
 
-            let _ = ebpf::install_and_run(&mut bpf, &ebpf_proxy_config);
+            let _ = install_and_run(&mut bpf, &ebpf_proxy_config, proc_name);
 
             tracing::info!("Ebpf has been loaded");
 

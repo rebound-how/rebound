@@ -18,8 +18,7 @@ fn main() -> anyhow::Result<()> {
         let cargo_metadata::Metadata { packages, .. } =
             cargo_metadata::MetadataCommand::new()
                 .no_deps()
-                .exec()
-                .context("MetadataCommand::exec")?;
+                .exec()?;
 
         let ebpf_package = packages
             .into_iter()
