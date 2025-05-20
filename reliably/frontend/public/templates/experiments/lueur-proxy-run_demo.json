@@ -1,7 +1,7 @@
 {
   "metadata": {
     "name": "Run Simple Web Demo Server",
-    "labels": ["lueur"],
+    "labels": ["fault"],
     "annotations": null
   },
   "spec": {
@@ -24,7 +24,7 @@
       "version": "1.0.0",
       "title": "Run Simple Web Demo Server",
       "description": "Starts a simple basic HTTP server that allows you to explore Reliably's features.",
-      "tags": ["lueur", "latency", "network"],
+      "tags": ["fault", "latency", "network"],
       "contributions": {
         "availability": "none",
         "latency": "high",
@@ -62,7 +62,7 @@
           "background": true,
           "provider": {
             "type": "python",
-            "module": "chaoslueur.actions",
+            "module": "chaosfault.actions",
             "func": "run_demo",
             "arguments": {
               "duration": "${duration}"
@@ -77,15 +77,15 @@
     "related": [
       {
         "block": "method",
-        "name": "lueur-proxy-run_proxy"
+        "name": "fault-proxy-run_proxy"
       },
       {
         "block": "method",
-        "name": "lueur-load-via_proxy"
+        "name": "fault-load-via_proxy"
       },
       {
         "block": "method",
-        "name": "lueur-proxy-stop_proxy"
+        "name": "fault-proxy-stop_proxy"
       }
     ]
   }

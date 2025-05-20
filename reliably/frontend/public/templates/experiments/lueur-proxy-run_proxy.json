@@ -1,7 +1,7 @@
 {
   "metadata": {
     "name": "Run Network Fault Proxy",
-    "labels": ["lueur"],
+    "labels": ["fault"],
     "annotations": null
   },
   "spec": {
@@ -12,7 +12,7 @@
         {
           "title": "Proxy Arguments",
           "key": "proxy_args",
-          "help": "Proxy arguments as per https://lueur.dev/reference/cli-commands/#run-command-options",
+          "help": "Proxy arguments as per https://fault-project.com/reference/cli-commands/#run-command-options",
           "placeholder": "--duration=45 --with-latency --latency-mean=300 --upstream=*",
           "default": "",
           "type": "string",
@@ -22,9 +22,9 @@
     },
     "template": {
       "version": "1.0.0",
-      "title": "Run the lueur network proxy to inject network faults into application's traffic",
+      "title": "Run the fault network proxy to inject network faults into application's traffic",
       "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
-      "tags": ["lueur", "fault", "network"],
+      "tags": ["fault", "network"],
       "contributions": {
         "availability": "none",
         "latency": "none",
@@ -61,7 +61,7 @@
           "background": true,
           "provider": {
             "type": "python",
-            "module": "chaoslueur.actions",
+            "module": "chaosfault.actions",
             "func": "run_proxy",
             "arguments": {
               "proxy_args": "${proxy_args}"
@@ -73,7 +73,7 @@
     "related": [
       {
         "block": "method",
-        "name": "lueur-proxy-stop_proxy"
+        "name": "fault-proxy-stop_proxy"
       }
     ]
   }
