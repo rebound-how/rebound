@@ -45,6 +45,13 @@ jobs:
         with:
           path: ./reliably/frontend
           node-version: 24
+        env:
+          DEPLOYMENT: "onprem"
+          KUBERNETES_DEPLOYMENT: "true"
+          PUBLIC_API_URL: "/api"
+          LOGIN_MODE: "mail"
+          OAUTH_PROVIDERS: "mail"
+          DEPLOYMENTS_TYPES: "cli,github,docker,kubernetes"
 
       - name: Build backend
         if: runner.os == 'Linux'
@@ -53,7 +60,7 @@ jobs:
           cp -r ../frontend/dist/* reliably_app/www
           pdm build
         env:
-          PDM_BUILD_SCM_VERSION: 0.2.0
+          PDM_BUILD_SCM_VERSION: 0.3.0
 
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
