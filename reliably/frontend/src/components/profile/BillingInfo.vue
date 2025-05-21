@@ -1,89 +1,10 @@
 <template>
   <div class="billing">
-    <div v-if="isSuccessDisplayed" class="billingEvent billingEvent--success">
-      <h2>🎉 Congratulations!</h2>
-      <p>
-        Your payment has been processed and your
-        <span class="billingEvent__plan">{{ currentSub.plan.name }}</span>
-        plan has been successfully activated!
-      </p>
-      <button @click.prevent="closeSuccess" class="button button--icon">
-        <CloseIcon />
-        <span class="screen-reader-text">Close</span>
-      </button>
-    </div>
-    <div v-if="isFailDisplayed" class="billingEvent billingEvent--fail">
-      <h2>Something went wrong</h2>
-      <p>
-        We couldn't process your payment.
-        <a
-          href="https://reliably.com/contact/"
-          target="_blank"
-          rel="noreferer noopener"
-          >Get in touch</a
-        >
-        so we can fix this.
-      </p>
-      <button @click.prevent="closeFail" class="button button--icon">
-        <CloseIcon />
-        <span class="screen-reader-text">Close</span>
-      </button>
-    </div>
 
     <section class="billingCurrent">
       <p>
-        Your organization <strong>{{ currentOrganizationName }}</strong> is
-        currently using
-        <strong class="billingCurrent__plan"
-          >{{ displayedPlanName }} Plan</strong
-        >
+        Your organization is <strong>{{ currentOrganizationName }}</strong>
       </p>
-      <button
-        v-if="currentSub.plan.name === 'free'"
-        @click="displayModal"
-        class="button button--primary"
-      >
-        Switch to a paid plan
-      </button>
-      <button
-        v-if="
-          currentSub.plan.name === 'start' || currentSub.plan.name === 'scale'
-        "
-        @click="displayModal"
-        class="button button--primary"
-      >
-        Upgrade
-      </button>
-    </section>
-
-    <section class="billingUsage">
-      <h2>Remaining Resources</h2>
-      <dl>
-        <div>
-          <dt>Custom Experiments</dt>
-          <dd v-if="isOnPrem">Unlimited</dd>
-          <dd v-else v-html="remaining.experiments"></dd>
-        </div>
-        <div>
-          <dt>
-            Cloud Experiments Minutes
-            <span
-              class="hasTooltip hasTooltip--bottom-center"
-              aria-label="Reset on each billing period"
-              label="Reset on each billing period"
-            >
-              <HelpCircle />
-            </span>
-          </dt>
-          <dd v-if="isOnPrem">Unlimited</dd>
-          <dd v-else v-html="remaining.minutes"></dd>
-        </div>
-        <div>
-          <dt>Team Members</dt>
-          <dd v-if="isOnPrem">Unlimited</dd>
-          <dd v-else v-html="remaining.members"></dd>
-        </div>
-      </dl>
     </section>
 
     <section class="billingUsers" ref="billingUsers">
@@ -118,7 +39,6 @@
           <button
             class="button button--primary"
             @click.prevent="copyLink"
-            :disabled="areInvitationsDisabled"
           >
             Copy to clipboard
           </button>
@@ -133,7 +53,6 @@
           <button
             class="button button--creative"
             @click.prevent="generateNewLink()"
-            :disabled="areInvitationsDisabled"
           >
             Generate new link
           </button>
@@ -141,22 +60,6 @@
       </div>
     </section>
 
-    <ModalWindow
-      v-if="isModalDisplayed"
-      :isUnlimited="true"
-      :hasCloseButton="true"
-      :hasPadding="false"
-      @close="closeModal"
-    >
-      <template #title>{{ modalTitle }}</template>
-      <template #content>
-        <PlanUpgrade
-          :from="currentSub.plan.name"
-          :to="preSelectedPlan"
-          @close="closeModal"
-        />
-      </template>
-    </ModalWindow>
   </div>
 </template>
 
@@ -187,97 +90,16 @@ import { addNotification } from "@/stores/notifications";
 import type { PagerData } from "@/types/pager";
 
 import UserPreview from "@/components/profile/UserPreview.vue";
-import ModalWindow from "@/components/_ui/ModalWindow.vue";
-import PlanUpgrade from "@/components/profile/PlanUpgrade.vue";
-import HelpCircle from "@/components/svg/HelpCircle.vue";
-import CloseIcon from "@/components/svg/CloseIcon.vue";
 import Pager from "@/components/_ui/Pager.vue";
 
-import type { RemainingForUi } from "@/types/subscriptions";
 import type { Notification } from "@/types/ui-types";
 
 const currentOrganizationId = useStore(organizationToken);
 const currentOrganizationName = useStore(organizationName);
 const currentSub = useStore(currentSubscription);
 
-const isOnPrem = computed<boolean>(() => {
-  return currentSub.value.plan.name === "onpremise";
-});
-
-const displayedPlanName = computed<string>(() => {
-  if (currentSub.value) {
-    if (isOnPrem.value) {
-      return "an On-Premise";
-    } else {
-      return `a ${
-        currentSub.value.plan.name.charAt(0).toUpperCase() +
-        currentSub.value.plan.name.slice(1)
-      }`;
-    }
-  } else {
-    return "";
-  }
-});
-
 const isSuccessDisplayed = ref<boolean>(false);
 const isFailDisplayed = ref<boolean>(false);
-function closeSuccess() {
-  isSuccessDisplayed.value = false;
-}
-function closeFail() {
-  isFailDisplayed.value = false;
-}
-
-const remaining = computed<RemainingForUi>(() => {
-  const plan = currentSub.value.plan.name;
-
-  if (plan === "free") {
-    return {
-      experiments: `<strong>${Math.max(
-        0,
-        currentSub.value.plan.remaining.experiments
-      )}</strong>/5`,
-      minutes: `<strong>${Math.max(
-        0,
-        currentSub.value.plan.remaining.minutes
-      )}</strong>/180`,
-      members: `<strong>${Math.max(
-        0,
-        currentSub.value.plan.remaining.members
-      )}</strong>/1`,
-    };
-  } else if (plan === "start") {
-    return {
-      experiments: "<strong>Unlimited</strong>",
-      minutes: `<strong>${Math.max(
-        0,
-        currentSub.value.plan.remaining.minutes
-      )}</strong>/300`,
-      members: `<strong>${Math.max(
-        0,
-        currentSub.value.plan.remaining.members
-      )}</strong>/3`,
-    };
-  } else if (plan === "scale") {
-    return {
-      experiments: "<strong>Unlimited</strong>",
-      minutes: "<strong>Unlimited</strong>",
-      members: `<strong>${Math.max(
-        0,
-        currentSub.value.plan.remaining.members
-      )}</strong>/5`,
-    };
-  } else {
-    return {
-      experiments: Math.max(
-        0,
-        currentSub.value.plan.remaining.experiments
-      ).toString(),
-      minutes: Math.max(0, currentSub.value.plan.remaining.minutes).toString(),
-      members: Math.max(0, currentSub.value.plan.remaining.members).toString(),
-    };
-  }
-});
 
 const usersList = useStore(users);
 const usersPage = ref<number>(1);
@@ -405,7 +227,6 @@ onMounted(async () => {
   if (currentOrganizationName.value === "") {
     await setOrganizationName();
   }
-  await fetchCurrentSubscription();
   await getUsers();
   getpagerData();
   await getInvitationLink();

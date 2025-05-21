@@ -410,7 +410,7 @@ async def auth_with_email(
         invite: organization.models.OrganizationInvitation | None = None
         invite_org: organization.models.Organization | None = None
 
-        invite_hash = request.query_params.get("join_hash")
+        invite_hash = request.query_params.get("join")
         logger.debug(f"Found invitation hash {invite_hash}")
         if invite_hash:
             invite = await organization.crud.get_invitation_by_link_hash(
@@ -447,7 +447,7 @@ async def auth_with_email(
             else:
                 user_info = UserInfo(
                     {
-                        "sub": secrets.token_hex(8),
+                        " ": secrets.token_hex(8),
                         "name": "",
                         "email": email,
                         "preferred_username": email,

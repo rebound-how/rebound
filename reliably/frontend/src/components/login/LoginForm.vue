@@ -15,31 +15,8 @@
     </ul>
     <div v-if="mode === 'oauth' || mode === 'both'">
       <div class="screen-reader-text">Login with OpenID</div>
-      <form class="form">
-        <div class="inputWrapper inputWrapper--tick">
-          <div>
-            <input
-              type="checkbox"
-              v-model="acceptTOS"
-              id="acceptTOS"
-              name="acceptTOS"
-            />
-            <label for="acceptTOS">
-              I accept Reliably's
-              <a
-                href="https://reliably.com/legal/"
-                target="_blank"
-                rel="noopener noreferer"
-              >
-                Terms of Service
-              </a>
-            </label>
-          </div>
-        </div>
-      </form>
       <div
         class="login__links"
-        :class="{ 'login__links--disabled': !acceptTOS }"
       >
         <a
           v-if="providers && providers.includes('github')"
@@ -79,6 +56,7 @@ import EmailLogin from "@/components/login/EmailLogin.vue";
 import GithubLogo from "@/components/svg/GithubLogo.vue";
 import GoogleG from "@/components/svg/GoogleG.vue";
 import ReliablyLogo from "@/components/svg/ReliablyLogo.vue";
+import { tryLogout } from "@/stores/user";
 
 const props = defineProps<{
   // register?: boolean;
@@ -124,14 +102,12 @@ function getLoginMode() {
   }
 }
 
-const acceptTOS = ref<boolean>(false);
-
 const loginWithGitHubUrl = computed<string>(() => {
-  return acceptTOS.value ? `/login/with/github${apiParams.value}` : "";
+  return `/login/with/github${apiParams.value}`;
 });
 
 const loginWithGoogleUrl = computed<string>(() => {
-  return acceptTOS.value ? `/login/with/google${apiParams.value}` : "";
+  return `/login/with/google${apiParams.value}`;
 });
 
 const hasLoginFailed = ref(false);
@@ -168,25 +144,13 @@ function getRedirectParameters() {
   }
 }
 
-function getInviteParameters() {
+async function getInviteParameters() {
   if (join !== undefined && join.value === true) {
     let location = window.location;
     let p = new URLSearchParams(location.search);
     if (p.has("invite")) {
-      params.value = `invite=${p.get("invite")}`;
-      apiParams.value = `?join=${p.get("invite")}`;
-      if (localStorage.getItem("reliably:context")) {
-        const u = localStorage.getItem("reliably:user");
-        if (u !== null) {
-          const user = JSON.parse(u);
-          const picture = user.profile.picture;
-          if (picture.startsWith("https://avatars.githubusercontent.com")) {
-            location.replace(`/login/with/github/${apiParams.value}`);
-          } else if (picture.startsWith("https://lh3.googleusercontent.com")) {
-            location.replace(`/login/with/google/${apiParams.value}`);
-          }
-        }
-      }
+      apiParams.value = `?invite=${p.get("invite")}`;
+      await tryLogout();
     } else {
       location.replace("/login/");
     }
@@ -203,11 +167,11 @@ const actionVerb = computed<string>(() => {
   }
 });
 
-onMounted(() => {
+onMounted(async () => {
   getLoginStatus();
   getRedirectParameters();
   if (join !== undefined && join.value === true) {
-    getInviteParameters();
+    await getInviteParameters();
   }
   getLoginMode();
 });

@@ -118,33 +118,6 @@
           <EyeIcon v-else />
         </button>
       </div>
-      <div
-        v-if="register"
-        class="inputWrapper inputWrapper--tick"
-        :class="{ 'inputWrapper--error': tosHaveErrors }"
-      >
-        <div>
-          <input
-            type="checkbox"
-            v-model="acceptTOS"
-            id="acceptTOS"
-            name="acceptTOS"
-          />
-          <label for="acceptTOS">
-            I accept Reliably's
-            <a
-              href="https://reliably.com/legal/"
-              target="_blank"
-              rel="noopener noreferer"
-            >
-              Terms of Service
-            </a>
-          </label>
-        </div>
-        <p v-if="tosHaveErrors" class="inputWrapper__help">
-          You must accept Reliably's terms of service.
-        </p>
-      </div>
       <div v-if="register" class="inputWrapper">
         <button
           type="button"
@@ -194,7 +167,6 @@ const isPasswordVisible = ref<boolean>(false);
 const revealPasswordMessage = computed<string>(() => {
   return isPasswordVisible.value ? "Hide password" : "Reveal password";
 });
-const acceptTOS = ref<boolean>(false);
 const inviteHash = ref<string>("");
 
 const pwHas8Characters = computed<boolean>(() => {
@@ -311,11 +283,6 @@ async function submitRegister() {
     passwordHasErrors.value = true;
   } else {
     passwordHasErrors.value = false;
-  }
-  if (!acceptTOS.value) {
-    tosHaveErrors.value = true;
-  } else {
-    tosHaveErrors.value = false;
   }
 
   if (

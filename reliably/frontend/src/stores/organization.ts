@@ -131,8 +131,10 @@ export const getInvitationLink = async () => {
     } else {
       const link: InvitationLinkPayload = await response.json();
       if (link.link !== null) {
+        const scheme = location.protocol;
+        const loc =  location.host;
         let data: InvitationLink = {
-          link: `https://app.reliably.com/join/?invite=${link.link}`,
+          link: `${scheme}//${loc}/join/?invite=${link.link}`,
           state: "ready",
         };
         updateInvitationLink(data);
@@ -170,8 +172,10 @@ export const generateInvitationLink = async () => {
       throw new Error(response.statusText);
     } else {
       const link: InvitationLinkPayload = await response.json();
+      const scheme = location.protocol;
+      const loc =  location.host;
       let data: InvitationLink = {
-        link: `https://app.reliably.com/join/?invite=${link.link}`,
+        link: `${scheme}//${loc}/join/?invite=${link.link}`,
         state: "ready",
       };
       updateInvitationLink(data);
