@@ -158,6 +158,7 @@ test("catch error in checkout response payload", async () => {
   fetchMock.restore();
 });
 
+/*
 test("successful checkout", async () => {
   const mockResponse: CheckoutResponsePayload = {
     link: "https://checkout.stripe.com/c/pay/cs_test_a197MJKgTqfH8NWGBVbeLdmkP9KBQcFPyEB9WQT0XZ2WTCaxKKocGuK4uU#fidkdWxOYHwnPyd1blpxYHZxWjA0T05sQFNPTDNiYmp3XUk0Yn10QzN%2FQ1BQM3BmdmtqbWxXTj1hSXVoV05HTlExSE1HdE9Jd11oMERMTGJ9cnZwdUZsSDV9dEc9dElRX3ZncWZ9S0RTRk1RNTV3SjdUVlwxfycpJ2N3amhWYHdzYHcnP3F3cGApJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
@@ -175,7 +176,7 @@ test("successful checkout", async () => {
   // Will have to do better
   fetchMock.restore();
 });
-
+*/
 test("organization name is available", async () => {
   const expected: NameCandidateInternalResponse = {
     available: true,

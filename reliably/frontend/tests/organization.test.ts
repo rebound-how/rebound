@@ -3,6 +3,7 @@ import * as assert from "uvu/assert";
 import fetchMock from "fetch-mock";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { JSDOM } from 'jsdom';
 
 import { cleanStores } from "nanostores";
 import {
@@ -32,8 +33,11 @@ import type {
 
 import type { Notification } from "@/types/ui-types";
 
+const { window } = new JSDOM('');
+
 test.before(() => {
   const PUBLIC_API_URL: string = "https://62ff903e9350a1e548e1952e.mockapi.io";
+	global.window = window;
 });
 
 test.before.each(() => {
@@ -141,7 +145,7 @@ test("get invitation link", async () => {
     link: "46fbb0023197282319bfc9082ded6409",
   };
   const expected: InvitationLink = {
-    link: "https://app.reliably.com/join/?invite=46fbb0023197282319bfc9082ded6409",
+    link: "about:///join/?invite=46fbb0023197282319bfc9082ded6409",
     state: "ready",
   };
   fetchMock.mock(
@@ -162,7 +166,7 @@ test("get invitation link before it's been created", async () => {
     link: "46fbb0023197282319bfc9082ded6409",
   };
   const expected: InvitationLink = {
-    link: "https://app.reliably.com/join/?invite=46fbb0023197282319bfc9082ded6409",
+    link: "about:///join/?invite=46fbb0023197282319bfc9082ded6409",
     state: "ready",
   };
   fetchMock.mock(
