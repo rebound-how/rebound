@@ -1,6 +1,6 @@
 <h2 align="center">
   <br>
-  <p align="center"><img src="https://raw.githubusercontent.com/reliablyhq/cli/main/public/logo.png"></p>
+  <p align="center"><img src="https://raw.githubusercontent.com/rebound-how/rebound/refs/heads/main/reliably/cli/public/logo.png"></p>
 </h2>
 
 <h4 align="center">Reliably | Orchestrate Your Resilience Strategy</h4>
