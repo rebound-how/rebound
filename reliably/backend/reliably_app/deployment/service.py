@@ -177,8 +177,6 @@ async def get(
     )
 
 
-
-
 @router.get(
     "/{dep_id}/plans",
     response_model=schemas.DeploymentIds,

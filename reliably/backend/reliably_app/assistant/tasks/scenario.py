@@ -178,7 +178,7 @@ def get_assistant_examples() -> List[AssistantMessage]:
                             type="integer",
                             title="Duration of Test",
                             required=True,
-                            default=60
+                            default=60,
                         ),
                     ],
                 ),
@@ -195,7 +195,7 @@ def get_assistant_examples() -> List[AssistantMessage]:
                             type="integer",
                             title="Pause Duration",
                             required=True,
-                            default=5
+                            default=5,
                         )
                     ],
                 ),
@@ -246,7 +246,7 @@ def get_assistant_examples() -> List[AssistantMessage]:
                             type="integer",
                             title="Pause Duration",
                             required=True,
-                            default=45
+                            default=45,
                         )
                     ],
                 ),
@@ -355,7 +355,7 @@ def get_assistant_examples() -> List[AssistantMessage]:
                             type="integer",
                             title="Duration of Test",
                             required=True,
-                            default=60
+                            default=60,
                         ),
                     ],
                 ),
@@ -372,7 +372,7 @@ def get_assistant_examples() -> List[AssistantMessage]:
                             type="integer",
                             title="Pause Duration",
                             required=True,
-                            default=5
+                            default=5,
                         )
                     ],
                 ),
@@ -603,7 +603,7 @@ def get_assistant_examples() -> List[AssistantMessage]:
                             type="string",
                             title="Availability-Zone",
                             required=True,
-                            default="us-east-1a"
+                            default="us-east-1a",
                         ),
                     ],
                 ),
@@ -649,7 +649,7 @@ def get_assistant_examples() -> List[AssistantMessage]:
                             type="string",
                             title="Availability-Zone",
                             required=True,
-                            default="us-east-1a"
+                            default="us-east-1a",
                         ),
                     ],
                 ),
@@ -666,7 +666,7 @@ def get_assistant_examples() -> List[AssistantMessage]:
                             type="integer",
                             title="Pause Duration",
                             required=True,
-                            default=5
+                            default=5,
                         )
                     ],
                 ),
@@ -702,7 +702,7 @@ def get_assistant_examples() -> List[AssistantMessage]:
                             type="integer",
                             title="Duration of Test",
                             required=True,
-                            default=60
+                            default=60,
                         ),
                     ],
                 ),
@@ -719,7 +719,7 @@ def get_assistant_examples() -> List[AssistantMessage]:
                             type="integer",
                             title="Pause Duration",
                             required=True,
-                            default=5
+                            default=5,
                         )
                     ],
                 ),
@@ -736,7 +736,7 @@ def get_assistant_examples() -> List[AssistantMessage]:
                             type="string",
                             title="Proxy CLI Arguments",
                             required=True,
-                            default="--duration=60 --with-latency --latency-mean=300"
+                            default="--duration=60 --with-latency --latency-mean=300",  # noqa E501
                         ),
                     ],
                 ),
