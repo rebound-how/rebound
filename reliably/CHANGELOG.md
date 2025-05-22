@@ -2,7 +2,15 @@
 
 ## [Unreleased][]
 
-[Unreleased]: https://github.com/rebound-how/rebound/compare/0.3.0...HEAD
+[Unreleased]: https://github.com/rebound-how/rebound/compare/0.4.0...HEAD
+
+## [0.4.0][] - 2025-05-22
+
+[0.4.0]: https://github.com/rebound-how/rebound/compare/0.3.0...0.4.0
+
+### Changed
+
+-   Variety of small adjustements on the assistant
 
 ## [0.3.0][] - 2025-05-21
 
