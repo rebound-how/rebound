@@ -146,6 +146,7 @@ def get_initial_system_message(tags: List[str]) -> SystemMessage:
                 * try to use an incremental approach when appropriate, I want to learn how my system to a gradual change or by ramping up the degradation
                 * use the purpose property to explain the rationale for each operation in the context of the scenario
                 * keep only required parameters of each operation
+                * make sure required parameters are present in the output for each operation
                 * update the name property so it reflects the purpose of the operation, but make the title human oriented. It should neatly convey the reason for this operation at this time
                 * use the related operations, when an operation declares any, to help you complete the scenario. Notably the rollbacks. Make sure you match the number of rollbacks with the number of operations you introduced.
                 """  # noqa E501
