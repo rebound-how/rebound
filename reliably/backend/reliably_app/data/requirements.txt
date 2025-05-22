@@ -192,9 +192,9 @@ chaostoolkit-aws==0.35.1 \
 chaostoolkit-dynatrace==0.2.0 \
     --hash=sha256:5f8462c3e798b1fa8079bb502779d2bb27e0ed6086c80d9e12bc2331cdb73bf2 \
     --hash=sha256:8e3388a4df15c7cd0bd18d29e2e2811412fc2e987ab3206ae1e754a71c5585c0
-chaostoolkit-fault==0.1.1 \
-    --hash=sha256:313b4bb9d088a8d4820089378548039825187e87d06742702668f41b77f0f9eb \
-    --hash=sha256:7f84653f1397bb641424c54d4e5355660dba3d243a2666d6b8ce805ac9ded31d
+chaostoolkit-fault==0.1.2 \
+    --hash=sha256:2ca4b32aeb3d5309e268cfbe50e2cbeacad5ef3bcab9dc7778152b1e37765bbb \
+    --hash=sha256:dfb6f7f1b1d3a541de902bf16b9f8e6dc2b434d5e033499eb8ffa4450911ce93
 chaostoolkit-gandi==0.2.0 \
     --hash=sha256:6005dcd05e85ab01fe867251a1844961848fe8766001cecb2c77cebb33652eba \
     --hash=sha256:e091120be6151a764331d5ab474875754210a5a61b6ba6bf5a16b31c2445d622

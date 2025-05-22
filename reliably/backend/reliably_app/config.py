@@ -118,8 +118,8 @@ class Settings(BaseSettings):
     # assistant
     ASSISTANT_SCENARIO_ENABLED: bool = False
     OPENAI_API_KEY: str | None = None
-    ASSISTANT_SCENARIO_MODEL: str = "gpt-4o"
-    ASSISTANT_MAX_TOKENS: int = 4096
+    ASSISTANT_SCENARIO_MODEL: str = "gpt-4.1"
+    ASSISTANT_MAX_TOKENS: int = 16384
     ASSISTANT_LIBRARY_FILE: Path | None = None
 
     # smtp

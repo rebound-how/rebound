@@ -745,6 +745,7 @@ const tagsList: { tag: string; label: string }[] = [
   { tag: "aws", label: "AWS" },
   { tag: "google cloud", label: "Google Cloud" },
   { tag: "kubernetes", label: "Kubernetes" },
+  { tag: "on-premise", label: "On-Premise" },
 ];
 const tags = ref<string[]>([]);
 const isTagsSelectionDisplayed = ref<boolean>(false);

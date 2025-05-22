@@ -1,7 +1,16 @@
 {
   "metadata": {
     "name": "Stop Network Proxy",
-    "labels": ["fault"],
+    "labels": [
+      "reliability",
+      "load",
+      "fault",
+      "Kubernetes",
+      "AWS",
+      "GCP",
+      "on-premise",
+      "network"
+    ],
     "annotations": null
   },
   "spec": {
@@ -15,7 +24,16 @@
       "title": "Stop the fault network proxy",
       "contributions": {},
       "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
-      "tags": ["fault"],
+      "tags": [
+        "reliability",
+        "load",
+        "fault",
+        "Kubernetes",
+        "AWS",
+        "GCP",
+        "on-premise",
+        "network"
+      ],
       "configuration": {},
       "extensions": [],
       "method": [

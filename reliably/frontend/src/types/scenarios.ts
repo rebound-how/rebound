@@ -51,6 +51,7 @@ export interface ScenarioItemParameter {
   title: string;
   type: "string" | "integer" | "float" | "number" | "boolean" | "object";
   required: boolean;
+  default: any | undefined;
 }
 
 export interface UiScenarioParameter {

@@ -20,6 +20,7 @@ class ScenarioItemParameter(BaseSchema):
     title: str
     type: str
     required: bool
+    default: Any | None = None
 
 
 class ScenarioItemRelated(BaseSchema):

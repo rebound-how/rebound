@@ -521,7 +521,7 @@ files = [
 
 [[package]]
 name = "chaostoolkit-fault"
-version = "0.1.1"
+version = "0.1.2"
 requires_python = ">=3.10"
 summary = "Chaos Toolkit extension for the fault proxy"
 groups = ["default"]
@@ -530,8 +530,8 @@ dependencies = [
     "psutil>=7.0.0",
 ]
 files = [
-    {file = "chaostoolkit_fault-0.1.1-py3-none-any.whl", hash = "sha256:313b4bb9d088a8d4820089378548039825187e87d06742702668f41b77f0f9eb"},
-    {file = "chaostoolkit_fault-0.1.1.tar.gz", hash = "sha256:7f84653f1397bb641424c54d4e5355660dba3d243a2666d6b8ce805ac9ded31d"},
+    {file = "chaostoolkit_fault-0.1.2-py3-none-any.whl", hash = "sha256:dfb6f7f1b1d3a541de902bf16b9f8e6dc2b434d5e033499eb8ffa4450911ce93"},
+    {file = "chaostoolkit_fault-0.1.2.tar.gz", hash = "sha256:2ca4b32aeb3d5309e268cfbe50e2cbeacad5ef3bcab9dc7778152b1e37765bbb"},
 ]
 
 [[package]]

@@ -26,7 +26,7 @@
       "description": "Starts a simple basic HTTP server that allows you to explore Reliably's features.",
       "tags": ["fault", "latency", "network"],
       "contributions": {
-        "availability": "none",
+        "availability": "low",
         "latency": "high",
         "security": "none",
         "errors": "none",

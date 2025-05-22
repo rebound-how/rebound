@@ -1,5 +1,7 @@
 import logging
 import textwrap
+import importlib.resources
+from pathlib import Path
 from typing import Any, AsyncIterable, Dict, List
 
 import orjson
@@ -102,14 +104,19 @@ def filter_by_tags(catalog: bytes, tags: List[str]) -> str:
 def load_library() -> bytes:
     settings = get_settings()
 
-    if settings.ASSISTANT_LIBRARY_FILE is None:
-        raise RuntimeError("Assistant library file was not set")
+    lib_file: Path | None = settings.ASSISTANT_LIBRARY_FILE
 
-    p = settings.ASSISTANT_LIBRARY_FILE
-    if not p.exists():
+    if lib_file is None:
+        with importlib.resources.path("reliably_app.data", "catalog.json") as p:
+            if not p.absolute().is_file():
+                raise RuntimeError("Default assistant library not found")
+
+            return p.read_bytes()
+
+    if not lib_file.exists():
         raise RuntimeError("Assistant library file does not exist")
 
-    return p.read_bytes()
+    return lib_file.read_bytes()
 
 
 def get_initial_system_message(tags: List[str]) -> SystemMessage:
@@ -135,7 +142,7 @@ def get_initial_system_message(tags: List[str]) -> SystemMessage:
 
                 Be smart about it. Assume the following:
 
-                * run load traffic that spans across the entire scenario
+                * run load traffic that spans across the entire scenario when this helps
                 * try to use an incremental approach when appropriate, I want to learn how my system to a gradual change or by ramping up the degradation
                 * use the purpose property to explain the rationale for each operation in the context of the scenario
                 * keep only required parameters of each operation
@@ -170,6 +177,7 @@ def get_assistant_examples() -> List[AssistantMessage]:
                             type="integer",
                             title="Duration of Test",
                             required=True,
+                            default=60
                         ),
                     ],
                 ),
@@ -186,6 +194,7 @@ def get_assistant_examples() -> List[AssistantMessage]:
                             type="integer",
                             title="Pause Duration",
                             required=True,
+                            default=5
                         )
                     ],
                 ),
@@ -236,6 +245,7 @@ def get_assistant_examples() -> List[AssistantMessage]:
                             type="integer",
                             title="Pause Duration",
                             required=True,
+                            default=45
                         )
                     ],
                 ),
@@ -344,6 +354,7 @@ def get_assistant_examples() -> List[AssistantMessage]:
                             type="integer",
                             title="Duration of Test",
                             required=True,
+                            default=60
                         ),
                     ],
                 ),
@@ -360,6 +371,7 @@ def get_assistant_examples() -> List[AssistantMessage]:
                             type="integer",
                             title="Pause Duration",
                             required=True,
+                            default=5
                         )
                     ],
                 ),
@@ -590,6 +602,7 @@ def get_assistant_examples() -> List[AssistantMessage]:
                             type="string",
                             title="Availability-Zone",
                             required=True,
+                            default="us-east-1a"
                         ),
                     ],
                 ),
@@ -635,6 +648,7 @@ def get_assistant_examples() -> List[AssistantMessage]:
                             type="string",
                             title="Availability-Zone",
                             required=True,
+                            default="us-east-1a"
                         ),
                     ],
                 ),
@@ -651,6 +665,7 @@ def get_assistant_examples() -> List[AssistantMessage]:
                             type="integer",
                             title="Pause Duration",
                             required=True,
+                            default=5
                         )
                     ],
                 ),
@@ -662,6 +677,67 @@ def get_assistant_examples() -> List[AssistantMessage]:
                     background=False,
                     purpose="Restore the Availability-Zone and all services after its interruption",  # noqa E501
                     parameters=[],
+                ),
+            ]
+        ),
+        AssistantMessage(
+            [
+                ScenarioItem(
+                    name="Run typical user traffic",
+                    ref="reliably-load-run_load_test",
+                    tags=["performance"],
+                    type="action",
+                    background=True,
+                    purpose="Load traffic into our application using a typical traffic of an intense peak day",  # noqa E501
+                    parameters=[
+                        ScenarioItemParameter(
+                            key="url",
+                            type="string",
+                            title="URL under Test",
+                            required=True,
+                        ),
+                        ScenarioItemParameter(
+                            key="duration",
+                            type="integer",
+                            title="Duration of Test",
+                            required=True,
+                            default=60
+                        ),
+                    ],
+                ),
+                ScenarioItem(
+                    name="Let system warm-up",
+                    ref="reliably-pauses-pause_execution",
+                    tags=["workflow"],
+                    type="action",
+                    background=False,
+                    purpose="Give our system a chance to warm up",
+                    parameters=[
+                        ScenarioItemParameter(
+                            key="duration",
+                            type="integer",
+                            title="Pause Duration",
+                            required=True,
+                            default=5
+                        )
+                    ],
+                ),
+                ScenarioItem(
+                    name="Start a fault network proxy to inject latency and packet loss",  # noqa E501
+                    ref="fault-proxy-run_proxy",
+                    tags=["on-premise", "fault", "network"],
+                    type="action",
+                    background=True,
+                    purpose="Inject network faults such as a latency, packet-loss, jittering... and observe the impact",  # noqa E501
+                    parameters=[
+                        ScenarioItemParameter(
+                            key="proxy_args",
+                            type="string",
+                            title="Proxy CLI Arguments",
+                            required=True,
+                            default="--duration=60 --with-latency --latency-mean=300"
+                        ),
+                    ],
                 ),
             ]
         ),

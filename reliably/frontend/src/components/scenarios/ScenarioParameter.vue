@@ -123,7 +123,7 @@ const emit = defineEmits<{
 
 const isActive = ref<boolean>(false);
 const wasReactivated = ref<boolean>(false);
-const value = ref<string>("");
+const value = ref<string>(typedToString(parameter.value.parameter.default));
 
 function setValue(v: string) {
   value.value = v;

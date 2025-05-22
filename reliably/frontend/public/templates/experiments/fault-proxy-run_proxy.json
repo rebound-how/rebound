@@ -1,7 +1,16 @@
 {
   "metadata": {
     "name": "Run Network Fault Proxy",
-    "labels": ["fault"],
+    "labels": [
+      "reliability",
+      "load",
+      "fault",
+      "Kubernetes",
+      "AWS",
+      "GCP",
+      "on-premise",
+      "network"
+    ],
     "annotations": null
   },
   "spec": {
@@ -22,9 +31,18 @@
     },
     "template": {
       "version": "1.0.0",
-      "title": "Run the fault network proxy to inject network faults into application's traffic",
+      "title": "Run the fault network proxy to inject network faults into application's traffic: latency, blackhole, bandwidth, jitter, HTTP error, packet loss.",
       "description": "This experiment should perform a non-destructive operation against your system. Still we recommend you try it against a non-production environment. This kind of experiment is useful when you want to measure how your system is performing.",
-      "tags": ["fault", "network"],
+      "tags": [
+        "reliability",
+        "load",
+        "fault",
+        "Kubernetes",
+        "AWS",
+        "GCP",
+        "on-premise",
+        "network"
+      ],
       "contributions": {
         "availability": "none",
         "latency": "none",
