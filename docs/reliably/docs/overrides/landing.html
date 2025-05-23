@@ -2,23 +2,22 @@
 
 {% block extrahead %}
 <style>
-aside.md-source-file {
-    display: none;
-}
+    aside.md-source-file {
+        display: none;
+    }
 
-div.md-search {
-    display: none;
-}
+    div.md-search {
+        display: none;
+    }
 
-a.md-source {
-    text-align: end;
-    padding-right: 20px;
-}
+    a.md-source {
+        text-align: end;
+        padding-right: 20px;
+    }
 
-.md-footer {
-    display: none;
-}
-
+    .md-footer {
+        display: none;
+    }
 </style>
 {% endblock %}
 
@@ -26,33 +25,28 @@ a.md-source {
 {% block container %}
 <div class="md-content landing-hero" data-md-component="content">
     <article class="md-content__inner md-typeset">
-    <div class="hero">
-        <div class="right">
-            <div class="righ-full">
-            <video controls autoplay>
-                <source src="assets/tapes/proxy.mp4" type="video/mp4">
-                <source src="assets/tapes/proxy.webm" type="video/webm">
-              </video>
-            </div>
-        </div>
-        <div class="left">
-          <div class="left-top">
+        <div class="hero">
+            <div class="hero__content">
                 <picture>
-                    <img src="/assets/logo-black-gradient.svg">
+                    <img src="/assets/logo-pink.svg">
                 </picture>
             </div>
-            <div class="left-bottom">
-                <h2>Orchestrate your resilience across your entire infrastructure from a single platform.</h2>
-    <a class="md-button md-button--primary rounded" href="/tutorials/install/">Get Started</a>
-    <a class="md-button rounded" href="https://github.com/rebound-how/rebound">View on GitHub</a>
+            <h1>Orchestrate your resilience across your entire infrastructure from a single platform.</h1>
+            <div class="hero__actions">
+                <a class="md-button md-button--primary rounded" href="/tutorials/install/">Get Started</a>
+                <a class="md-button rounded" href="https://github.com/rebound-how/rebound">View on GitHub</a>
             </div>
         </div>
-      </div>
+    </article>
+    <article class="md-content__inner md-typeset subhero">
+
+        <iframe style="border:0;" width="100%" height="900" src="https://www.tella.tv/video/cmazos9x5000a0ble8jo72rdk/embed?b=0&title=1&a=1&loop=1&autoPlay=true&t=0&muted=1&wt=1" allowfullscreen allowtransparency></iframe>
+
     </article>
     <article class="md-content__inner md-typeset">
-    {% block content %}
+        {% block content %}
         {% include "partials/content.html" %}
-    {% endblock %}
+        {% endblock %}
     </article>
 </div>
 {% endblock %}
