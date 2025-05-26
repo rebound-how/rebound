@@ -1,0 +1,35 @@
+.contentTable {
+  padding-bottom: var(--space-large);
+
+  h2 {
+    font-size: 1.6rem;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+
+  li {
+    a {
+      display: block;
+      padding: 0.3rem 1rem 0.3rem 1.6rem;
+      border-left: 0.3rem solid var(--grey-200);
+
+      color: var(--text-color);
+      text-decoration: none;
+
+      transform: border-color 0.3s ease-in-out;
+
+      &:hover {
+        border-color: var(--accentColorSecondary);
+
+        color: var(--accentColorSecondary);
+        text-decoration: none;
+      }
+    }
+
+    &.depth-3 {
+      a {
+        padding-left: 3.2rem;
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+.chaosEngineering {
+  &__disclaimer {
+    padding-top: var(--sectionPadding);
+    padding-bottom: var(--sectionPadding);
+
+    p {
+      margin-right: auto;
+      margin-left: auto;
+      max-width: 70ch;
+
+      color: white;
+      font-size: 1.6rem;
+      text-align: center;
+    }
+  }
+}

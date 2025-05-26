@@ -1,0 +1,110 @@
+---
+import { Icon } from "astro-icon";
+import PriceConverter from "@/components/pricing/PriceConverter.astro";
+---
+
+<div class="pricing-plan pricing-plan--scale">
+  <h2 class="pricing-plan__name">Scale</h2>
+  <p class="pricing-plan__price">
+    <span>£</span>330
+    <PriceConverter gbp={330} />
+  </p>
+  <p class="pricing-plan__billing">Billed monthly</p>
+  <p class="pricing-plan__description">Optimize your Organization Resilience</p>
+  <ul class="pricing-plan__features-list list-reset">
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      <strong>5+</strong> Team Members
+      <span class="featureHelp">
+        <Icon name="info" />
+        <span class="featureHelp__tip">
+          Additional members for $20 per month
+        </span>
+      </span>
+    </li>
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      <strong>Unlimited</strong> Custom Executions
+      <span class="featureHelp">
+        <Icon name="info" />
+        <span class="featureHelp__tip">
+          Those are experiments you run<br />
+          in your own environment,<br />
+          such as a CI/CD pipeline.
+        </span>
+      </span>
+    </li>
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      <strong>Unlimited</strong> GitHub Executions
+      <span class="featureHelp">
+        <Icon name="info" />
+        <span class="featureHelp__tip">
+          Experiments you run as GitHub Actions.<br />
+          Additional billing from GitHub might occur<br />
+          depending on usage.
+        </span>
+      </span>
+    </li>
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      <strong>Unlimited</strong> Cloud Executions per Month
+      <span class="featureHelp">
+        <Icon name="info" />
+        <span class="featureHelp__tip">
+          Experiments you run in Reliably Cloud.
+        </span>
+      </span>
+    </li>
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      <strong>60</strong> minutes Cloud Execution Limit
+      <span class="featureHelp">
+        <Icon name="info" />
+        <span class="featureHelp__tip">
+          Maximum duration for an experiment<br /> you run in Reliably Cloud.
+        </span>
+      </span>
+    </li>
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      <strong>Unlimited</strong> Custom Experiments
+      <span class="featureHelp">
+        <Icon name="info" />
+        <span class="featureHelp__tip">
+          Import your own Chaos Toolkit experiments
+        </span>
+      </span>
+    </li>
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      <strong>10</strong> Custom Templates
+    </li>
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      <strong>Unlimited</strong> Concurrent Execution
+    </li>
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      <strong>12 months</strong> Data Retention
+    </li>
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      3rd Party Integrations
+    </li>
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      Email Support
+      <span class="featureHelp">
+        <Icon name="info" />
+        <span class="featureHelp__tip"> 9/5 CET on week days </span>
+      </span>
+    </li>
+    <li class="pricing-plan__feature pricing-plan__feature--locked">
+      <Icon name="minus" />
+      Private SaaS and On-Prem Installation <span class="screen-reader-text"
+        >not included</span
+      >
+    </li>
+  </ul>
+</div>

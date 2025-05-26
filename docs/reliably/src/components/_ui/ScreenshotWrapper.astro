@@ -1,0 +1,95 @@
+---
+export interface Props {
+  theme?: string;
+  width?: string;
+  bar?: boolean;
+}
+
+const { theme, bar, width } = Astro.props;
+
+let classes: string = "screenshotWrapper";
+if (theme === "dark") classes += " screenshotWrapper--dark";
+if (bar === false) {
+  classes += " screenshotWrapper--noBar";
+}
+---
+
+{width !== undefined ? (
+  <div class={classes} style={`max-width: ${width}px;`}>
+    <slot />
+    {bar !== false && <span></span>}
+  </div>
+) : (
+  <div class={classes}>
+    <slot />
+    {bar !== false && <span></span>}
+  </div>
+)}
+
+<style lang="scss">
+  .screenshotWrapper {
+    --statusBarColor: var(--grey-100);
+    --buttonColor: var(--grey-200);
+
+    &--dark {
+      --statusBarColor: var(--grey-900);
+      --buttonColor: var(--grey-800);
+    }
+
+    position: relative;
+
+    overflow: hidden;
+    padding-top: 3.6rem;
+
+    background-color: var(--statusBarColor);
+    border-radius: var(--border-radius-l);
+    box-shadow: var(--box-shadow-sharp);
+
+    :global(img) {
+      display: block;
+
+      border-top: 0.1rem solid var(--buttonColor);
+    }
+
+    &--noBar {
+      padding-top: 0;
+
+      :global(img) {
+        border: none;
+      }
+    }
+
+    span {
+      top: 1.2rem;
+      left: 1.6rem;
+
+      &,
+      &::before,
+      &::after {
+        position: absolute;
+
+        display: block;
+        height: 1.2rem;
+        width: 1.2rem;
+
+        background-color: var(--buttonColor);
+        border-radius: 50%;
+      }
+
+      &::before,
+      &::after {
+        content: "";
+
+        top: 0;
+      }
+
+      &::before {
+        left: 2rem;
+      }
+
+      &::after {
+        left: 4rem;
+      }
+    }
+  }
+</style>

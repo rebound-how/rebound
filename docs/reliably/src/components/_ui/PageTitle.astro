@@ -1,0 +1,58 @@
+---
+export interface Props {
+  center?: boolean;
+  color?: string;
+}
+
+const { center, color } = Astro.props;
+---
+
+<h1 class={center ? "pageTitle pageTitle--centered" : "pageTitle"}>
+  <!-- <span class={color ? "slash-" + color : null}> -->
+  <slot />
+  <!-- </span> -->
+</h1>
+
+<style lang="scss">
+  .pageTitle {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.66em;
+
+    color: var(--text-color-bright);
+    font-size: 4.8rem;
+    font-size: clamp(3.6rem, 6vw + 1rem, 6rem);
+    font-weight: 700;
+    letter-spacing: 0.02rem;
+    line-height: 1.15;
+
+    &--centered {
+      justify-content: center;
+
+      text-align: center;
+    }
+
+    // The 'backslash symbol'
+    // span {
+    //   position: relative;
+
+    //   &::before {
+    //     content: "";
+
+    //     display: inline-block;
+    //     height: 0.715em;
+    //     width: 0.5em;
+    //     margin-right: -0.2em;
+
+    //     background-color: var(--yellow-500);
+    //     clip-path: polygon(0 0, 40% 0, 100% 100%, 60% 100%);
+    //   }
+
+    //   &.slash-pink {
+    //     &::before {
+    //       background-color: var(--pink-500);
+    //     }
+    //   }
+    // }
+  }
+</style>

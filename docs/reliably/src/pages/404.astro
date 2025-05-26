@@ -1,0 +1,81 @@
+---
+import { Icon } from "astro-icon";
+import ErrorLayout from "@/layouts/ErrorLayout.astro";
+import DocsSearch from "@/components/docs/DocsSearch.vue";
+---
+
+<ErrorLayout>
+  <div class="error-404" id="error-404">
+    <Icon name="reliably-logo" />
+    <h1>404</h1>
+    <p>The page you are looking for is missing.</p>
+    {false && (
+      <div class="error-404__search">
+        <DocsSearch client:visible />
+      </div>
+    )}
+    <p>
+      <a href="/docs/">Explore Documentation</a> or <a href="/"
+        >Visit the homepage</a
+      >
+    </p>
+  </div>
+</ErrorLayout>
+
+<script lang="ts">
+  if (location.pathname.startsWith("/docs/")) {
+    document.getElementById("error-404").classList.add("docs");
+  }
+</script>
+
+<style lang="scss">
+  .error-404 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    width: 100%;
+    padding: var(--space-small);
+
+    background-color: white;
+
+    color: var(--text-color);
+
+    svg {
+      height: 3.6rem;
+
+      color: var(--text-color-bright);
+    }
+
+    h1 {
+      margin-top: 0;
+
+      color: var(--text-color-bright);
+      font-size: 7.2rem;
+    }
+
+    p {
+      text-align: center;
+
+      &:not(:last-child) {
+        font-size: 2rem;
+      }
+    }
+
+    &__search {
+      display: none;
+      margin-top: var(--space-medium);
+      margin-bottom: var(--space-medium);
+    }
+
+    a {
+      color: var(--link-color);
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+</style>

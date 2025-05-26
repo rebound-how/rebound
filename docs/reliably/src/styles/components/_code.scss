@@ -1,0 +1,17 @@
+.default code {
+  padding: 0 0.2em;
+
+  background-color: var(--pink-100);
+  border: 0.1rem solid var(--pink-200);
+  border-radius: var(--border-radius-s);
+
+  color: var(--pink-800);
+  font-family: var(--monospace-font);
+  font-size: 0.9em;
+}
+
+code.language-bash {
+  &::before {
+    content: "$ ";
+  }
+}

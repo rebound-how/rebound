@@ -1,0 +1,117 @@
+---
+import { Icon } from "astro-icon";
+---
+
+<section class="homeProblem">
+  <div class="container">
+    <div class="homeProblem__header">
+      <h2 class="homeProblem__title">
+        The delta between project objectives and implementation is costly and
+        painful.
+      </h2>
+    </div>
+    <div class="homeProblem__item">
+      <div class="homeFeatureIcon">
+        <Icon name="search" />
+      </div>
+      <h3>Failure surface area</h3>
+      <p>
+        How much of potential issues do you discover before they happen in production?
+      </p>
+    </div>
+    <div class="homeProblem__item">
+      <div class="homeFeatureIcon">
+        <Icon name="activity" />
+      </div>
+      <h3>Decision Impact Projection</h3>
+      <p>
+        You know how much you are spending on your infrastructure. But what if you could evaluate how reducing costs impacts your bottom line and SLOs?
+      </p>
+    </div>
+    <div class="homeProblem__item">
+      <div class="homeFeatureIcon">
+        <Icon name="bell" />
+      </div>
+      <h3>Evaluation of Operations Effectiveness</h3>
+      <p>
+        You have monitoring, observability, and paging tools deployed, but how confident are you that they would work as expected should an incident happen?
+      </p>
+    </div>
+  </div>
+</section>
+
+<style lang="scss">
+  .homeProblem {
+    padding-top: var(--sectionPadding);
+    padding-bottom: var(--sectionPadding);
+
+    background-color: white;
+
+    .container {
+      display: grid;
+      gap: var(--space-large);
+
+      @media (min-width: 40rem) {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      @media (min-width: 56rem) {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+
+    &__header {
+      // margin-bottom: var(--space-large);
+      padding-bottom: var(--space-large);
+
+      border-bottom: 0.1rem solid var(--grey-300);
+
+      @media (min-width: 56rem) {
+        grid-column: 1 / span 3;
+      }
+    }
+
+    &__title {
+      max-width: 46rem;
+    }
+
+    &__item {
+      @media (min-width: 56rem) {
+        grid-row-start: 2;
+      }
+
+      &:nth-child(2) {
+        @media (min-width: 40rem) {
+          align-self: end;
+        }
+
+        @media (min-width: 56rem) {
+          align-self: start;
+        }
+
+      }
+
+      h3 {
+        margin-top: var(--space-small);
+      }
+    }
+
+    &__icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 6rem;
+      width: 6rem;
+
+      background-color: var(--pink-200);
+      border-radius: var(--border-radius-m);
+
+      color: var(--pink-500);
+
+      svg {
+        height: 3.6rem;
+      }
+    }
+  }
+</style>

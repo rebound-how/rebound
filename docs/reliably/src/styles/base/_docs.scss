@@ -1,0 +1,70 @@
+.docs {
+  article {
+    h2 {
+      font-size: 3.6rem;
+    }
+
+    img {
+      display: block;
+      margin: var(--space-medium) auto;
+      max-width: 100%;
+
+      border: 0.1rem solid var(--grey-200);
+      border-radius: var(--border-radius-m);
+      box-shadow: var(--box-shadow-diffuse);
+    }
+
+    dl {
+      > div {
+        margin-top: var(--space-large);
+
+        dt {
+          margin-bottom: var(--space-small);
+
+          color: var(--text-color-bright);
+          font-size: 2rem;
+          font-weight: 700;
+        }
+
+        dd {
+          margin-left: 0;
+        }
+      }
+    }
+
+    table {
+      width: 100%;
+    }
+
+    .media {
+      iframe {
+        height: 100%;
+        width: 100%;
+        margin-top: var(--space-small);
+        margin-bottom: var(--space-small);
+
+        aspect-ratio: 16/9;
+        border-radius: var(--border-radius-m);
+        box-shadow: var(--box-shadow-diffuse);
+      }
+    }
+  }
+
+  a:not(.button) {
+    color: var(--link-color);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &[target="_blank"] {
+      &::after {
+        content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='hsl(329, 97%, 55%)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-external-link'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'%3E%3C/path%3E%3Cpolyline points='15 3 21 3 21 9'%3E%3C/polyline%3E%3Cline x1='10' y1='14' x2='21' y2='3'%3E%3C/line%3E%3C/svg%3E");
+
+        display: inline-block;
+        height: 1.2rem;
+      }
+    }
+  }
+}

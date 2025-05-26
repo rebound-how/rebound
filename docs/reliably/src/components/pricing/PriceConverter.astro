@@ -1,0 +1,85 @@
+---
+import { Icon } from "astro-icon";
+
+export interface Props {
+  gbp: number;
+}
+
+const { gbp } = Astro.props;
+---
+
+<span class="priceConverter priceConverter--hidden">
+  <span class="priceConverter__gbp" data-value={gbp}></span>
+  <Icon name="help-circle" />
+  <span class="priceConverter__wrapper">
+    Approx. <br />
+    <span class="priceConverter__usd"></span> or
+    <span class="priceConverter__eur"></span>
+  </span>
+</span>
+
+<style lang="scss">
+  .priceConverter {
+    position: relative;
+    z-index: 4;
+
+    display: flex;
+    justify-content: center;
+    gap: var(--space-small);
+    margin-top: 0.6rem;
+    margin-left: 0.6rem;
+
+    &__gbp {
+      display: none;
+    }
+
+    &__wrapper {
+      position: absolute;
+      top: 50%;
+      left: calc(100% + 0.8rem);
+      z-index: 2;
+
+      display: none;
+      padding: 0.4rem 0.8rem;
+      height: auto;
+      width: auto;
+
+      background-color: var(--planColorHelpBackground);
+      border-radius: var(--border-radius-s);
+      pointer-events: none;
+
+      color: var(--planColorBackground);
+      font-size: 1.4rem;
+      font-weight: 400;
+      line-height: 1.5;
+      white-space: nowrap;
+
+      transform: translateY(-50%);
+
+      &::after {
+        content: "";
+
+        position: absolute;
+        top: calc(50% - 0.6rem);
+        left: -0.6rem;
+
+        height: 0;
+        width: 0;
+
+        border: 0.6rem solid transparent;
+        border-left: none;
+        border-right-color: var(--planColorHelpBackground);
+      }
+    }
+
+    svg {
+      height: 1.6rem;
+    }
+
+    &:hover {
+      .priceConverter__wrapper {
+        display: block;
+      }
+    }
+  }
+</style>

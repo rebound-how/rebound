@@ -1,0 +1,485 @@
+backend:
+  name: git-gateway
+  repo: reliablyhq/www-astro
+  branch: main # NOTE this relates to your GitHub branch
+publish_mode: editorial_workflow
+local_backend: true # allows for you to locally mess with your CMS
+media_folder: "public/images/uploads" # Media files will be stored in the repo under public/images/uploads
+public_folder: "/images/uploads" # The src attribute for uploaded media will begin with /images/uploads
+editor:
+  preview: false # we're going to hide the preview editor
+slug:
+  encoding: "ascii"
+  clean_accents: true
+collections:
+  - name: "docs-setup"
+    label: "[Docs] Setup Article"
+    folder: "src/pages/docs"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {
+          label: "Title",
+          name: "title",
+          widget: "string",
+          hint: "Remember to add your new article to _/src/config/config.ts_ to update Docs navigation.",
+        }
+      - { label: "Description", name: "description", widget: "text" }
+      - { label: "Body", name: "body", widget: "markdown" }
+  - name: "docs-basics"
+    label: "[Docs] Basics Article"
+    folder: "src/pages/docs/basics"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {
+          label: "Title",
+          name: "title",
+          widget: "string",
+          hint: "Remember to add your new article to _/src/config/config.ts_ to update Docs navigation.",
+        }
+      - { label: "Description", name: "description", widget: "text" }
+      - { label: "Body", name: "body", widget: "markdown" }
+  - name: "docs-guides"
+    label: "[Docs] Guide"
+    folder: "src/pages/docs/guides"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {
+          label: "Title",
+          name: "title",
+          widget: "string",
+          hint: "Remember to add your new article to _/src/config/config.ts_ to update Docs navigation.",
+        }
+      - { label: "Description", name: "description", widget: "text" }
+      - { label: "Body", name: "body", widget: "markdown" }
+  - name: "docs-advanced"
+    label: "[Docs] Advanced Use Case"
+    folder: "src/pages/docs/advanced"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {
+          label: "Title",
+          name: "title",
+          widget: "string",
+          hint: "Remember to add your new article to _/src/config/config.ts_ to update Docs navigation.",
+        }
+      - { label: "Description", name: "description", widget: "text" }
+      - { label: "Body", name: "body", widget: "markdown" }
+  - name: "blog"
+    label: "Blog Post"
+    folder: "src/pages/blog"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Description", name: "description", widget: "text" }
+      - {
+          label: "SEO",
+          name: "seo",
+          widget: "object",
+          fields:
+            [
+              {
+                name: "title",
+                label: "Meta title",
+                widget: "string",
+                hint: "' · Reliably' will be appended at the end. If left empty, the {title} field will be used.",
+                required: false,
+              },
+              {
+                name: "description",
+                label: "Meta description",
+                widget: "text",
+                hint: "If left empty, the {description} field will be used.",
+                required: false,
+              },
+            ],
+        }
+      - { label: "Category", name: "category", widget: "string" }
+      - { label: "Author", name: "author", widget: "string" }
+      - { label: "Author Role", name: "author_role", widget: "string" }
+      - { label: "Author Image", name: "author_image", widget: "image" }
+      - {
+          label: "Publication Date",
+          name: "date",
+          widget: "datetime",
+          hint: "Settig a date in the future won't make the post getting published at that date.",
+        }
+      - {
+          name: "featured_image",
+          label: "Featured image",
+          widget: "object",
+          fields:
+            [
+              { name: "src", label: "Image", widget: "image" },
+              { name: "alt", label: "Alt text", widget: "string" },
+            ],
+        }
+      - {
+          label: "Excerpt",
+          name: "excerpt",
+          widget: "string",
+          hint: "The excerpt will be used in blog posts lists.",
+        }
+      - {
+          label: "Layout",
+          name: "layout",
+          widget: "select",
+          options:
+            [
+              {
+                label: "Default Blog Post Layout",
+                value: "../../layouts/PostLayout.astro",
+              },
+            ],
+          default:
+            [
+              {
+                label: "Default Blog Post Layout",
+                value: "../../layouts/PostLayout.astro",
+              },
+            ],
+        }
+      - { label: "Body", name: "body", widget: "markdown" }
+  - name: "events" # Used in routes, e.g., /admin/collections/blog
+    label: "Event" # Used in the UI
+    folder: "src/pages/events" # The path to the folder where the documents are stored
+    create: true # Allow users to create new documents in this collection
+    slug: "{{slug}}-{{year}}" # Filename template, e.g., YYYY-MM-DD-title.md
+    fields: # The fields for each document, usually in front matter
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Description", name: "description", widget: "text" }
+      - { label: "Event Date", name: "date", widget: "datetime" }
+      - {
+          label: "Displayed Date",
+          name: "displayed_date",
+          widget: "string",
+          required: false,
+          hint: "This allows you to enter a multiple day date, eg 'March 13-15, 2022'.",
+        }
+      - {
+          label: "External Link",
+          name: "link",
+          widget: "string",
+          required: false,
+          hint: "If an external URL is specified, it will be displayed in the event card instead of the singular event page. The singular page will still be generated.",
+        }
+      - {
+          label: "Labels",
+          name: "labels",
+          widget: "list",
+          field: { name: "label", widget: "string" },
+        }
+      - { label: "Featured Image", name: "thumbnail", widget: "image" }
+      - {
+          label: "Layout",
+          name: "layout",
+          widget: "select",
+          options:
+            [
+              {
+                label: "Default Event Layout",
+                value: "../../layouts/EventLayout.astro",
+              },
+            ],
+          default:
+            [
+              {
+                label: "Default Event Layout",
+                value: "../../layouts/EventLayout.astro",
+              },
+            ],
+        }
+      - { label: "Body", name: "body", widget: "markdown" }
+  - name: "integrations"
+    label: "Integration"
+    folder: "src/objects/integrations"
+    create: true
+    slug: "{{name}}"
+    fields:
+      - { label: "Name", name: "name", widget: "string" }
+      - { label: "Description", name: "description", widget: "string" }
+      - { label: "Category", name: "category", widget: "string" }
+      - {
+          label: "SVG",
+          name: "svg",
+          widget: "text",
+          hint: "The SVG logo, as SVG code. If both Image and SVG fields are used, only the SVG will be displayed.",
+          required: false,
+        }
+      - {
+          label: "Image",
+          name: "image",
+          widget: "image",
+          hint: "The logo, as a PNG or JPEG image.",
+          required: false,
+        }
+  - name: "pages"
+    label: "Custom Pages"
+    files:
+      - label: "Product Page"
+        name: "product"
+        file: "src/pages/product.md"
+        fields:
+          - { label: "Title", name: "title", widget: "string" }
+          - {
+              label: "SEO",
+              name: "seo",
+              widget: "object",
+              fields:
+                [
+                  {
+                    name: "title",
+                    label: "Meta title",
+                    widget: "string",
+                    hint: "' · Reliably' will be appended at the end. If left empty, the {title} field will be used.",
+                    required: false,
+                  },
+                  {
+                    name: "description",
+                    label: "Meta description",
+                    widget: "text",
+                  },
+                ],
+            }
+          - { label: "Introduction", name: "introduction", widget: "markdown" }
+          - { label: "Header image", name: "header-image", widget: "image" }
+          - {
+              name: "section1",
+              label: "Section 1",
+              widget: "object",
+              fields:
+                [
+                  { name: "title", label: "Title", widget: "string" },
+                  { name: "content", label: "Content", widget: "markdown" },
+                  {
+                    name: "pieChart1",
+                    label: "Pie Chart Bit 1",
+                    widget: "object",
+                    fields:
+                      [
+                        { name: "title", label: "Title", widget: "string" },
+                        { name: "content", label: "Content", widget: "text" },
+                      ],
+                  },
+                  {
+                    name: "pieChart2",
+                    label: "Pie Chart Bit 2",
+                    widget: "object",
+                    fields:
+                      [
+                        { name: "title", label: "Title", widget: "string" },
+                        { name: "content", label: "Content", widget: "text" },
+                      ],
+                  },
+                  {
+                    name: "pieChart3",
+                    label: "Pie Chart Bit 3",
+                    widget: "object",
+                    fields:
+                      [
+                        { name: "title", label: "Title", widget: "string" },
+                        { name: "content", label: "Content", widget: "text" },
+                      ],
+                  },
+                ],
+            }
+          - {
+              name: "section2",
+              label: "Section 2",
+              widget: "object",
+              fields:
+                [
+                  {
+                    name: "quote",
+                    label: "Quote",
+                    widget: "markdown",
+                    hint: "Use Bold text to change to color of a specific word, as a percentage, for example.",
+                  },
+                  {
+                    name: "title",
+                    label: "Title",
+                    widget: "string",
+                    required: false,
+                  },
+                  { name: "content", label: "Content", widget: "markdown" },
+                ],
+            }
+          - {
+              name: "section3",
+              label: "Section 3",
+              widget: "object",
+              fields:
+                [
+                  { name: "title", label: "Title", widget: "string" },
+                  {
+                    name: "tab1",
+                    label: "Tab 1",
+                    widget: "object",
+                    fields:
+                      [
+                        { name: "title", label: "Title", widget: "string" },
+                        {
+                          name: "content",
+                          label: "Content",
+                          widget: "markdown",
+                        },
+                        {
+                          name: "image",
+                          label: "SVG Image",
+                          widget: "text",
+                          hint: "Paste SVG markup",
+                        },
+                      ],
+                  },
+                  {
+                    name: "tab2",
+                    label: "Tab 2",
+                    widget: "object",
+                    fields:
+                      [
+                        { name: "title", label: "Title", widget: "string" },
+                        {
+                          name: "content",
+                          label: "Content",
+                          widget: "markdown",
+                        },
+                        {
+                          name: "image",
+                          label: "SVG Image",
+                          widget: "text",
+                          hint: "Paste SVG markup",
+                        },
+                      ],
+                  },
+                  {
+                    name: "tab3",
+                    label: "Tab 3",
+                    widget: "object",
+                    fields:
+                      [
+                        { name: "title", label: "Title", widget: "string" },
+                        {
+                          name: "content",
+                          label: "Content",
+                          widget: "markdown",
+                        },
+                        {
+                          name: "image",
+                          label: "SVG Image",
+                          widget: "text",
+                          hint: "Paste SVG markup",
+                        },
+                      ],
+                  },
+                ],
+            }
+          - {
+              name: "section4",
+              label: "Section 4",
+              widget: "object",
+              fields:
+                [
+                  { name: "title", label: "Title", widget: "string" },
+                  {
+                    name: "cards",
+                    label: "Cards",
+                    widget: "list",
+                    fields:
+                      [
+                        { name: "title", label: "Title", widget: "string" },
+                        { name: "content", label: "Content", widget: "text" },
+                        {
+                          name: "link",
+                          label: "Link",
+                          widget: "object",
+                          fields:
+                            [
+                              {
+                                name: "label",
+                                label: "Label",
+                                widget: "string",
+                              },
+                              {
+                                name: "target",
+                                label: "Target",
+                                widget: "string",
+                              },
+                            ],
+                        },
+                        {
+                          name: "icon",
+                          label: "SVG Icon",
+                          widget: "text",
+                          hint: "Paste the markup of an SVG icon from feathericons.com",
+                        },
+                      ],
+                  },
+                ],
+            }
+          - {
+              name: "section5",
+              label: "Section 5",
+              widget: "object",
+              fields:
+                [
+                  { name: "title", label: "Title", widget: "string" },
+                  { name: "content", label: "Content", widget: "markdown" },
+                  {
+                    name: "cards",
+                    label: "Cards",
+                    widget: "list",
+                    fields:
+                      [
+                        { name: "title", label: "Title", widget: "string" },
+                        { name: "content", label: "Content", widget: "text" },
+                        {
+                          name: "link",
+                          label: "Link",
+                          widget: "object",
+                          fields:
+                            [
+                              {
+                                name: "label",
+                                label: "Label",
+                                widget: "string",
+                              },
+                              {
+                                name: "target",
+                                label: "Target",
+                                widget: "string",
+                              },
+                            ],
+                        },
+                        {
+                          name: "screenshot",
+                          label: "Screenshot",
+                          widget: "image",
+                          hint: "Expected image: 640x480px. No need to use a 4K screenshot!",
+                        },
+                      ],
+                  },
+                ],
+            }
+          - {
+              label: "Layout",
+              name: "layout",
+              widget: "select",
+              options:
+                [
+                  {
+                    label: "Product Page Layout",
+                    value: "../../layouts/ProductPageLayout.astro",
+                  },
+                ],
+              default:
+                [
+                  {
+                    label: "Product Page Layout",
+                    value: "../../layouts/ProductPageLayout.astro",
+                  },
+                ],
+            }

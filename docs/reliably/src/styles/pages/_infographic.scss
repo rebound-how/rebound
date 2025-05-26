@@ -1,0 +1,37 @@
+.infographic-page {
+  .infographic-image {
+    border-radius: var(--border-radius-m);
+    box-shadow: var(--box-shadow-diffuse);
+    overflow: hidden;
+
+    img {
+      display: block;
+      max-width: 100%;
+    }
+  }
+
+  .infographic-download {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-small);
+
+    a {
+      display: inline-block;
+
+      color: var(--text-color);
+      font-size: 1.4rem;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .infographic-cta {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-small);
+    padding: var(--space-large) 0;
+  }
+}

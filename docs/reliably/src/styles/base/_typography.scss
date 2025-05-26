@@ -1,0 +1,176 @@
+html {
+  // 1rem = 10px
+  font-size: 62.5%;
+}
+
+// Font size scale
+//
+// 1.2rem
+// 1.4rem
+// 1.6rem
+// 1.8rem
+// 2rem
+// 2.4rem
+// 3rem
+// 3.6rem
+// 4.8rem
+// 6rem
+// 7.2rem
+
+body {
+  color: var(--text-color);
+  font-family: var(--body-font);
+  font-size: var(--base-font-size); // 1.6rem = 16px
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--heading-font);
+  letter-spacing: 0.02rem;
+  line-height: 1.15;
+}
+
+h1 {
+  font-weight: 700;
+}
+
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+
+  color: var(--text-color-bright);
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+h2 {
+  font-size: 4.8rem;
+  font-size: clamp(3rem, 4vw + 1rem, 4.8rem);
+}
+
+h3 {
+  font-size: 2.4rem;
+  font-size: clamp(1.8rem, 2vw + 1rem, 2.4rem);
+}
+
+h4 {
+  font-size: 2rem;
+}
+
+h5 {
+  font-size: 1.8rem;
+}
+
+h6 {
+  font-size: 1.6rem;
+}
+
+strong {
+  color: var(--text-color-bright);
+  font-weight: 600;
+}
+
+a {
+  color: var(--pink-500);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+blockquote {
+  margin: var(--space-large) 0;
+  padding-left: var(--space-medium);
+
+  font-size: 2rem;
+  font-style: italic;
+
+  border-left: 1rem solid var(--pink-500);
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+p + p {
+  margin-top: var(--space-small);
+}
+
+// Highlighter effect
+.highlighted {
+  position: relative;
+
+  &::before {
+    content: "";
+
+    position: absolute;
+    top: 35%;
+    left: -5%;
+    z-index: -1;
+
+    display: block;
+    height: 40%;
+    width: 110%;
+
+    background-color: transparent;
+    background-image: linear-gradient(
+      to right,
+      var(--yellow-400),
+      var(--yellow-500) 4%,
+      var(--yellow-400)
+    );
+    border-radius: 0.8em 0.3em;
+    box-decoration-break: clone;
+  }
+}
+
+.withBackslash {
+  display: flex;
+  margin-bottom: var(--space-large);
+
+  color: var(--text-color-bright);
+  // font-size: 4.8rem;
+  font-weight: 800;
+  letter-spacing: -0.01rem;
+  line-height: 1;
+
+  &--centered {
+    justify-content: center;
+  }
+
+  span {
+    position: relative;
+
+    padding-left: 0;
+
+    &::before {
+      content: "";
+
+      display: inline-block;
+      height: 0.715em;
+      width: 0.5em;
+      margin-right: 0.1em;
+
+      background-color: var(--yellow-500);
+      clip-path: polygon(0 0, 40% 0, 100% 100%, 60% 100%);
+    }
+
+    &.slash-pink {
+      &::before {
+        background-color: var(--pink-500);
+      }
+    }
+  }
+}

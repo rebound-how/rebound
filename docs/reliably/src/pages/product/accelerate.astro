@@ -1,0 +1,648 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { Icon } from "astro-icon";
+
+const image = new URL("https://reliably.com/social.png", Astro.site).toString();
+const activities: string[] = [];
+for (let i = 1; i < 15; i++) {
+  activities.push(i.toString());
+}
+---
+
+<BaseLayout
+  title="Accelerate resilience engineering adoption"
+  description="Discover how Reliably helps organizations of all sizes adopt at proactive approch to resilience engineering"
+  {image}
+>
+  <div class="accelerate">
+    <header class="accelerateHeader">
+      <div class="container">
+        <h1>
+          <span>Accelerate </span>
+          <span>resilience engineering adoption </span>
+          <span>in your organization </span>
+          <span>with Reliably</span>
+        </h1>
+      </div>
+    </header>
+    <section class="accelerateSection">
+      <p class="introduction">
+        Your observability stack is all set up, but how do you check it surfaces
+        the good signals? And how do your teams prepare for incidents? <strong
+          >Chaos engineering helps you proactively prepare for incidents</strong
+        > and get better at responding to them.<br />
+        Discover how <strong
+          >Reliably makes it easier for organizations to adopt chaos engineering
+          at scale.</strong
+        >
+      </p>
+    </section>
+    <section class="accelerateSection">
+      <div class="container">
+        <div class="accelerateSection__content">
+          <header>
+            <span class="supTitle">Templates</span>
+            <h2>Provide developers with easily customizable experiments</h2>
+          </header>
+          <p>
+            We know it's sometimes hard for development teams to find the time
+            to learn yet another tool to add their stack. And we know SRE and
+            platform engineering teams can't spend all their time writing
+            specific experiments for everyone.
+          </p>
+          <p>
+            Our templates allow reliability engineers to create customizable
+            experiments. <strong
+              >Upload an existing experiment, and we'll turn it into a template
+              that everyone can use by simply filling out a form.</strong
+            >
+          </p>
+          <p>
+            No more sharing JSON files and manually modifying values, while
+            retaining all the versatility and power of Chaos Toolkit.
+          </p>
+        </div>
+        <div
+          class="accelerateSection__illustration accelerateSection__illustration--yt"
+        >
+          <iframe
+            width="620"
+            height="356"
+            src="https://www.youtube.com/embed/LCs0rvTvEtA"
+            title="Custom template creation and usage demo"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            modestbranding="1"
+            rel="0"
+            showinfo="0"
+            allowfullscreen></iframe>
+        </div>
+      </div>
+    </section>
+    <section class="accelerateSection">
+      <div class="container">
+        <div class="accelerateSection__content">
+          <header>
+            <span class="supTitle">Starters</span>
+            <h2>Create experiments in minutes</h2>
+          </header>
+          <p>
+            Reliably comes bundled with <strong>more than 200 actions</strong> (to
+            perform an activity or an attack on your system) <strong
+              >and probes</strong
+            > (to measure and check the state of your system), allowing new users
+            to run their first experiment in minutes.
+          </p>
+          <p>
+            Pick a starter from the list, fill out a simple form, and we'll
+            create an experiment. And if you don't want to install anything, you
+            can even run it from the Reliably Cloud.
+          </p>
+          <p>
+            <a href="/activities/" class="button button--secondary">
+              Browse all activities
+            </a>
+          </p>
+        </div>
+        <div class="accelerateSection__illustration">
+          <div class="accelerateActivities" id="accelerateActivities">
+            <div class="accelerateActivities__track">
+              {activities.map((index) => (
+                <img
+                  src={`/images/pages/accelerate/reliably-activity-${index}.png`}
+                  alt=""
+                  width="400"
+                />
+              ))}
+              {activities.map((index) => (
+                <img
+                  src={`/images/pages/accelerate/reliably-activity-${index}.png`}
+                  alt=""
+                  width="400"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="accelerateSection">
+      <div class="container">
+        <div class="accelerateSection__content">
+          <header>
+            <span class="supTitle">Deployments</span>
+            <h2>
+              Run from the cloud.<br />
+              Or anywhere else.
+            </h2>
+          </header>
+          <p>
+            Chaos engineering experiments are typically run in a CI/CD. While it
+            makes perfect sense, as it makes resilience work as part of your
+            development pipeline, it sometimes makes it hard to quickly try new
+            things.
+          </p>
+          <p>
+            <strong
+              >Reliably can run your experiments in the cloud, making it easier
+              than ever to run experiments on demand.</strong
+            > It's a great solution while you're working on your experiments, organizing
+            game days, or onboarding new teammates. It's also a <strong
+              >fully scalable</strong
+            > solution, with <strong>built-in scheduling</strong> and <strong
+              >plug-and-play integrations</strong
+            >.
+          </p>
+          <p>
+            Reliably can also run experiments in Kubernetes, in a Docker image,
+            or even as a GitHub action. And, of course, in your favorite CI/CD.
+          </p>
+        </div>
+        <div class="accelerateSection__illustration deploymentsVideoContainer">
+          <video
+            id="deploymentsVideo"
+            src="/images/pages/accelerate/reliably-deployments-options.webm"
+            poster="/images/pages/accelerate/reliably-deployments-options.webm"
+            height="447"
+            width="490"
+            autoplay
+            loop
+            muted
+            playsinline
+            preload="auto"
+          >
+            <img
+              src="/images/pages/accelerate/reliably-deployments-options.png"
+              alt=""
+            />
+          </video>
+          <button id="deploymentsButton">
+            <span class="screen-reader-text">Play</span>
+            <Icon name="pause" />
+            <Icon name="play" />
+          </button>
+        </div>
+      </div>
+    </section>
+    <section class="accelerateSection">
+      <div class="container">
+        <div class="accelerateSection__content">
+          <header>
+            <span class="supTitle">Timeline and execution journal</span>
+            <h2>Explore as a team</h2>
+          </header>
+          <p>
+            Reliably gathers all your executions data in a shared space, making
+            it easier to <strong>collaborate on findings</strong>.
+          </p>
+          <p>
+            No more emailing JSON files or pasting journals in Slack. Reliably
+            provides you with a more efficient way to understand what happended
+            during your experiment. <strong
+              >It means more time to actually learn things, fix bugs, and find
+              solutions.</strong
+            >
+          </p>
+        </div>
+        <div class="accelerateSection__illustration">
+          <img
+            src="/images/pages/accelerate/reliably-timeline.png"
+            alt=""
+            width="709"
+          />
+        </div>
+      </div>
+    </section>
+    <section class="accelerateSection accelerateSection--pricing">
+      <div class="container">
+        <div class="accelerateSection__content">
+          <header>
+            <span class="supTitle">Open Source</span>
+            <h2>Choose your pace</h2>
+          </header>
+          <p>
+            Reliably allows you to start small and grow at your own speed.
+          </p>
+          <p class="links">
+            <a href="/pricing/" class="button button--primary">Install now</a>
+          </p>
+        </div>
+        <div class="accelerateSection__illustration"></div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<script is:inline>
+  let isVideoPausedByUser = false;
+  const deploymentsVideo = document.getElementById("deploymentsVideo");
+  const deploymentsButton = document.getElementById("deploymentsButton");
+  deploymentsButton.addEventListener("click", () => {
+    if (deploymentsVideo.paused || deploymentsVideo.ended) {
+      deploymentsVideo.play();
+      deploymentsButton.classList.remove("paused");
+      isVideoPausedByUser = false;
+    } else {
+      deploymentsVideo.pause();
+      deploymentsButton.classList.add("paused");
+      isVideoPausedByUser = true;
+    }
+  });
+
+  const videoObserverOptions = { rootMargin: "0%", threshold: 0 };
+  var videoObserver = new IntersectionObserver(
+    videoObserverCallback,
+    videoObserverOptions
+  );
+  function videoObserverCallback(entries, observer) {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        if (!isVideoPausedByUser) {
+          deploymentsVideo.play();
+        }
+      } else {
+        deploymentsVideo.pause();
+      }
+    });
+  }
+  videoObserver.observe(deploymentsVideo);
+
+  const activities = document.getElementById("accelerateActivities");
+  const activitiesObserverOptions = { rootMargin: "0%", threshold: 0 };
+  var activitiesObserver = new IntersectionObserver(
+    activitiesObserverCallback,
+    activitiesObserverOptions
+  );
+  function activitiesObserverCallback(entries, observer) {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        activities.classList.add("isVisible");
+      } else {
+        activities.classList.remove("isVisible");
+      }
+    });
+  }
+  activitiesObserver.observe(activities);
+</script>
+
+<style lang="scss">
+  .accelerate {
+    .accelerateHeader {
+      display: grid;
+      place-items: center;
+      margin-top: calc(-1 * var(--space-large));
+      min-height: 50vh;
+
+      background-color: var(--blue-800);
+      background-image: url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-800.jpg");
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: cover;
+
+      @media (min-width: 401px) {
+        background-image: -webkit-image-set(
+          url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-800.jpg")
+            1x,
+          url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-1080.jpg")
+            2x
+        );
+        background-image: image-set(
+          url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-800.jpg")
+            1x,
+          url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-1080.jpg")
+            2x
+        );
+      }
+
+      @media (min-width: 541px) {
+        background-image: -webkit-image-set(
+          url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-800.jpg")
+            1x,
+          url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-1440.jpg")
+            2x
+        );
+        background-image: image-set(
+          url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-800.jpg")
+            1x,
+          url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-1440.jpg")
+            2x
+        );
+      }
+
+      @media (min-width: 721px) {
+        background-image: -webkit-image-set(
+          url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-800.jpg")
+            1x,
+          url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-1920.jpg")
+            2x
+        );
+        background-image: image-set(
+          url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-800.jpg")
+            1x,
+          url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-1920.jpg")
+            2x
+        );
+      }
+
+      @media (min-width: 801px) {
+        min-height: 90vh;
+
+        background-image: -webkit-image-set(
+          url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-1080.jpg")
+            1x,
+          url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-1920.jpg")
+            2x
+        );
+        background-image: image-set(
+          url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-1080.jpg")
+            1x,
+          url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-1920.jpg")
+            2x
+        );
+      }
+
+      @media (min-width: 1081px) {
+        background-attachment: fixed;
+
+        background-image: -webkit-image-set(
+          url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-1440.jpg")
+            1x,
+          url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-1920.jpg")
+            2x
+        );
+        background-image: image-set(
+          url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-1440.jpg")
+            1x,
+          url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-1920.jpg")
+            2x
+        );
+      }
+
+      @media (min-width: 1441px) {
+        background-image: url("/images/pages/accelerate/leonardo-sanches-ttgvum3OWII-unsplash-generative-60-1920.jpg");
+      }
+
+      h1 {
+        display: flex;
+        flex-direction: column;
+        margin: 0;
+
+        color: var(--blue-100);
+        color: white;
+        font-size: clamp(3rem, 5vw, 8rem);
+        text-shadow: var(--box-shadow-sharp);
+
+        span {
+          &:first-child {
+            font-size: clamp(6rem, 16vw, 20rem);
+            line-height: 1;
+          }
+
+          &:last-child {
+            font-size: clamp(2rem, 3vw, 6rem);
+            line-height: 1.5;
+          }
+        }
+      }
+    }
+
+    .introduction {
+      margin-right: auto;
+      margin-left: auto;
+      padding-right: var(--space-small);
+      padding-left: var(--space-small);
+
+      max-width: 50ch;
+
+      font-size: clamp(2rem, 5vw, 3rem);
+    }
+
+    .accelerateSection {
+      padding-top: var(--space-large);
+      padding-bottom: var(--space-large);
+
+      background-color: white;
+
+      font-size: 2rem;
+
+      .container {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--space-large);
+
+        @media (min-width: 60rem) {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      &__content,
+      &__illustration {
+        min-width: 30rem;
+      }
+
+      header {
+        h2 {
+          margin-top: 0;
+        }
+
+        .supTitle {
+          color: var(--pink-500);
+          font-size: 2.4rem;
+          font-weight: 600;
+          letter-spacing: 0.02rem;
+          text-transform: uppercase;
+        }
+      }
+
+      &__illustration {
+        position: relative;
+
+        iframe,
+        video,
+        > img {
+          border-radius: var(--border-radius-m);
+          box-shadow: var(--box-shadow-diffuse);
+        }
+
+        &--yt {
+          height: 0;
+          padding-bottom: 57.25%;
+
+          iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+
+            height: 100%;
+            width: 100%;
+
+            border: none;
+          }
+        }
+      }
+
+      &:nth-child(even) {
+        background-color: var(--grey-100);
+
+        @media (min-width: 60rem) {
+          .accelerateSection__content,
+          .accelerateSection__illustration {
+            grid-row-start: 1;
+          }
+
+          .accelerateSection__content {
+            grid-column-start: 2;
+          }
+
+          .accelerateSection__illustration {
+            grid-column-start: 1;
+          }
+        }
+      }
+
+      &--pricing {
+        margin-bottom: calc(-1 * var(--space-large));
+
+        background-color: var(--blue-800);
+
+        color: var(--blue-100);
+
+        header {
+          h2 {
+            color: white;
+          }
+
+          .supTitle {
+            color: var(--yellow-500);
+          }
+        }
+
+        .links {
+          display: flex;
+          gap: var(--space-small);
+        }
+      }
+    }
+
+    .accelerateActivities {
+      position: relative;
+
+      height: 50rem;
+      overflow: hidden;
+
+      &::before,
+      &::after {
+        content: "";
+
+        position: absolute;
+        left: 0;
+        z-index: 2;
+
+        display: block;
+        height: 8rem;
+        width: 100%;
+      }
+
+      &.isVisible {
+        .accelerateActivities__track {
+          animation: scroll 30s linear infinite;
+        }
+      }
+
+      &::before {
+        top: 0;
+
+        background: linear-gradient(
+          to bottom,
+          var(--grey-100) 0,
+          transparent 100%
+        );
+      }
+
+      &::after {
+        bottom: 0;
+
+        background: linear-gradient(
+          to top,
+          var(--grey-100) 0,
+          transparent 100%
+        );
+      }
+
+      &__track {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-medium);
+        height: calc(15rem * 28);
+      }
+
+      img {
+        border-radius: var(--border-radius-m);
+      }
+
+      @keyframes scroll {
+        0% {
+          transform: translateY(0);
+        }
+        100% {
+          transform: translateY(calc(-15rem * 14));
+          // 15rem = image height + gap
+        }
+      }
+    }
+
+    .deploymentsVideoContainer {
+      position: relative;
+
+      button {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 2;
+
+        display: block;
+        height: 44.7rem;
+        width: 49rem;
+
+        background-color: rgba(0, 0, 0, 0.2);
+        border: none;
+        border-radius: var(--border-radius-m);
+        cursor: pointer;
+        opacity: 0;
+
+        color: white;
+
+        &:hover,
+        &.paused {
+          opacity: 1;
+        }
+
+        &.paused {
+          svg {
+            &:nth-last-child(2) {
+              display: none;
+            }
+
+            &:last-child {
+              display: block;
+            }
+          }
+        }
+
+        svg {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+
+          height: 4.8rem;
+
+          transform: translate(-50%, -50%);
+
+          &:last-child {
+            display: none;
+          }
+        }
+      }
+    }
+  }
+</style>

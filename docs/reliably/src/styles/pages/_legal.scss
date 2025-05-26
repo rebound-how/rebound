@@ -1,0 +1,122 @@
+.page-legal {
+  dl {
+    margin-left: var(--space-large);
+  }
+  dt {
+    font-weight: 700;
+  }
+  dd {
+    margin-bottom: var(--space-small);
+    margin-left: 0;
+  }
+  > section + section {
+    margin-top: var(--space-large);
+  }
+  .terms,
+  .schedule,
+  .annex {
+    margin-bottom: var(--sace-medium);
+  }
+  .terms,
+  .schedule {
+    counter-reset: heading;
+    h3 {
+      counter-reset: paragraph;
+
+      display: block;
+      margin-top: var(--space-large);
+      margin-bottom: var(--space-medium);
+      padding: var(--space-small) var(--space-large);
+      width: 100%;
+
+      background: #f4f4f4;
+      border-radius: var(--border-radius-l);
+
+      color: var(--text-color-bright);
+      font-size: 2.4rem;
+      font-weight: 700;
+      line-height: 2.4rem;
+
+      &::before {
+        counter-increment: heading;
+        content: counter(heading) ". ";
+      }
+    }
+    p {
+      position: relative;
+
+      margin: 1em 0 1em 6em;
+      &::before {
+        counter-increment: paragraph;
+        content: counter(heading) "." counter(paragraph) " ";
+
+        position: absolute;
+        left: -3em;
+      }
+    }
+    > ol {
+      counter-reset: item;
+
+      margin-left: 10em;
+      padding: 0;
+
+      list-style-type: none;
+      > li {
+        position: relative;
+        &::before {
+          counter-increment: item;
+          content: counter(heading) "." counter(paragraph) "." counter(item) " ";
+
+          position: absolute;
+          left: -4em;
+        }
+        ol {
+          list-style-type: lower-alpha;
+        }
+      }
+      li {
+        margin-bottom: 0.5em;
+      }
+    }
+  }
+  .annex {
+    table {
+      table-layout: fixed;
+      width: 100%;
+
+      border-collapse: collapse;
+
+      vertical-align: top;
+      thead {
+        tr {
+          // background-color: var(--grey-100);
+
+          color: var(--text-color-bright);
+        }
+        th {
+          padding: 0.5em;
+
+          background-color: var(--grey-200);
+          border: 0.1rem solid var(--grey-300);
+
+          text-align: left;
+          &:first-child {
+            width: 30%;
+          }
+        }
+      }
+      tbody {
+        tr {
+          &:nth-child(even) {
+            background-color: var(--grey-100);
+          }
+        }
+        td {
+          padding: 0.5em;
+
+          border: 0.1rem solid var(--grey-300);
+        }
+      }
+    }
+  }
+}

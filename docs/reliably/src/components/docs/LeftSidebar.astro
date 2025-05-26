@@ -1,0 +1,189 @@
+---
+export interface Props {
+  currentPage: string;
+}
+
+import { Icon } from "astro-icon";
+
+import { DOCS_SIDEBAR } from "@/config/config";
+import {
+  removeLeadingSlash,
+  removeTrailingSlash,
+  addTrailingSlash,
+} from "@/utils/strings";
+const { currentPage } = Astro.props;
+const url = new URL(Astro.request.url);
+const currentPath = url.pathname;
+
+const currentPageMatch = removeLeadingSlash(removeTrailingSlash(currentPath));
+const sidebarSections = DOCS_SIDEBAR.reduce((col, item) => {
+  if (item.header) {
+    col.push({ ...item, children: [] });
+  } else {
+    col[col.length - 1].children.push(item);
+  }
+  return col;
+}, []);
+---
+
+<nav class="leftSidebar" aria-labelledby="grid-left">
+  <ul class="list-reset">
+    {sidebarSections.map((section) => (
+      <li>
+        <details class="navSection" open>
+          <summary>
+            <h2 class="navSection__title js-sidebarTitle">{section.label}</h2>
+            <Icon name="chevron-down" />
+          </summary>
+          <ul class="list-reset js-sidebarLinks">
+            {section.children.map((child) => (
+              <li class="navSection__link">
+                <a
+                  href={addTrailingSlash(Astro.site.pathname + child.link)}
+                  aria-current={`${
+                    currentPageMatch === child.link ? "page" : "false"
+                  }`}
+                >
+                  {child.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<script is:inline>
+  window.addEventListener("DOMContentLoaded", (event) => {
+    var target = document.querySelector('[aria-current="page"]');
+    if (target && target.offsetTop > window.innerHeight - 100) {
+      document.querySelector(".list-reset").scrollTop = target.offsetTop;
+    }
+
+    // let menuTitles = document.querySelectorAll(".js-sidebarTitle");
+    // let menuLinks = document.querySelectorAll(".js-sidebarLinks");
+  });
+</script>
+
+<style lang="scss">
+  .leftSidebar {
+    width: 100%;
+
+    --scrollbar-foreground: var(--grey-300);
+    --scrollbar-background: var(--grey-200);
+    /* Foreground, Background */
+    scrollbar-color: var(--scrollbar-foreground) var(--scrollbar-background);
+
+    ::-webkit-scrollbar {
+      scrollbar-width: thin;
+      width: 1rem; /* Mostly for vertical scrollbars */
+      height: 1rem; /* Mostly for horizontal scrollbars */
+    }
+    ::-webkit-scrollbar-thumb {
+      /* Foreground */
+      background: var(--scrollbar-foreground);
+      border: 0.2rem solid var(--scrollbar-background);
+      border-radius: var(--border-radius-s);
+    }
+    ::-webkit-scrollbar-track {
+      /* Background */
+      background: var(--scrollbar-background);
+    }
+
+    > ul {
+      height: 100%;
+      max-height: calc(100vh - 6.9rem);
+      padding: var(--space-small) 0;
+      overflow-x: visible;
+      overflow-y: auto;
+
+      @media (min-width: 50rem) {
+        max-height: calc(100vh - 3.2rem);
+      }
+
+      > li {
+        padding: 0 0 var(--space-medium);
+
+        details {
+          summary {
+            display: flex;
+            align-items: center;
+
+            list-style: none;
+
+            svg {
+              height: 1.4rem;
+            }
+
+            &::-webkit-details-marker {
+              display: none;
+            }
+          }
+
+          &:not([open]) {
+            summary {
+              svg {
+                transform: rotate(-90deg);
+              }
+            }
+          }
+        }
+      }
+
+      > li + li {
+        margin-top: 0.2rem;
+      }
+
+      > :last-child {
+        margin-bottom: var(--theme-navbar-height);
+        padding-bottom: var(--space-small);
+      }
+    }
+
+    .navSection {
+      &__title {
+        margin-bottom: 0.2rem;
+        padding: 0.1rem 0.2rem 0.1rem 1rem;
+
+        font-size: 1.6rem;
+        font-weight: 500;
+        text-transform: uppercase;
+      }
+
+      &__link {
+        a {
+          display: block;
+          padding: 0.5rem 1rem;
+
+          color: var(--text-color);
+          text-decoration: none;
+
+          border-radius: var(--border-radius-s);
+
+          &:hover,
+          &:focus {
+            background-color: var(--grey-200);
+
+            color: var(--text-color-bright);
+          }
+
+          &[aria-current="page"] {
+            color: var(--accentColorSecondary);
+            font-weight: 500;
+          }
+        }
+      }
+    }
+
+    > ul {
+      padding-right: var(--space-small);
+      padding-left: var(--space-small);
+
+      @media (min-width: 50rem) {
+        padding-left: 0;
+      }
+    }
+  }
+</style>

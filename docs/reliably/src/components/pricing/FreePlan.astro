@@ -1,0 +1,110 @@
+---
+import { Icon } from "astro-icon";
+---
+
+<div class="pricing-plan pricing-plan--free">
+  <h2 class="pricing-plan__name">Free</h2>
+  <p class="pricing-plan__price"><span>£</span>0</p>
+  <p class="pricing-plan__billing">No credit card required</p>
+  <p class="pricing-plan__description">
+    Champion Reliability in your Organization
+  </p>
+  <ul class="pricing-plan__features-list list-reset">
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      <strong>1</strong> Team Member
+    </li>
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      <strong>Unlimited</strong> Custom Executions
+      <span class="featureHelp">
+        <Icon name="info" />
+        <span class="featureHelp__tip">
+          Those are experiments you run<br />
+          in your own environment,<br />
+          such as a CI/CD pipeline.
+        </span>
+      </span>
+    </li>
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      <strong>Unlimited</strong> GitHub Executions
+      <span class="featureHelp">
+        <Icon name="info" />
+        <span class="featureHelp__tip">
+          Experiments you run as GitHub Actions.<br />
+          Additional billing from GitHub might occur<br />
+          depending on usage.
+        </span>
+      </span>
+    </li>
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      <strong>180</strong> minutes Cloud Executions per Month
+      <span class="featureHelp">
+        <Icon name="info" />
+        <span class="featureHelp__tip">
+          Experiments you run in Reliably Cloud.
+        </span>
+      </span>
+    </li>
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      <strong>10</strong> minutes Cloud Execution Limit
+      <span class="featureHelp">
+        <Icon name="info" />
+        <span class="featureHelp__tip">
+          Maximum duration for an experiment<br /> you run in Reliably Cloud.
+        </span>
+      </span>
+    </li>
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      <strong>5</strong> Custom Experiments
+      <span class="featureHelp">
+        <Icon name="info" />
+        <span class="featureHelp__tip">
+          Import your own Chaos Toolkit experiments
+        </span>
+      </span>
+    </li>
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      <strong>1</strong> Custom Template
+    </li>
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      <strong>1</strong> Concurrent Execution
+    </li>
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      <strong>2 weeks</strong> Data Retention
+      <span class="featureHelp">
+        <Icon name="info" />
+        <span class="featureHelp__tip">
+          Data older than 2 weeks is not visible<br />
+          with a free plan.
+        </span>
+      </span>
+    </li>
+    <li class="pricing-plan__feature">
+      <Icon name="check" />
+      3rd Party Integrations
+    </li>
+    <li class="pricing-plan__feature pricing-plan__feature--locked">
+      <Icon name="minus" />
+      Email Support <span class="screen-reader-text">not included</span>
+    </li>
+    <li class="pricing-plan__feature pricing-plan__feature--locked">
+      <Icon name="minus" />
+      Private SaaS and On-Prem Installation <span class="screen-reader-text"
+        >not included</span
+      >
+    </li>
+  </ul>
+  <div class="pricing-plan__action">
+    <a href="/docs/getting-started/" class="button button--large">
+      Get started
+    </a>
+  </div>
+</div>

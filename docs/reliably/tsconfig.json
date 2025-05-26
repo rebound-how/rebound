@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "es2020",
+    "paths": {
+      "@/assets/*": ["src/assets/*"],
+      "@/components/*": ["src/components/*"],
+      "@/types/*": ["src/types/*"],
+      "@/config/*": ["src/config/*"],
+      "@/layouts/*": ["src/layouts/*"],
+      "~/layouts/*": ["src/layouts/*"],
+      "@/utils/*": ["src/utils/*"]
+    },
+    "moduleResolution": "node",
+    "jsx": "preserve"
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue", "src/**/*.astro", "tests/**/*.ts"]
+}

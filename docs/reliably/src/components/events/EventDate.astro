@@ -1,0 +1,20 @@
+---
+import { machineDate, humanDateWithDay } from "@/utils/dates";
+
+export interface Props {
+  event: unknown;
+}
+
+const { event } = Astro.props; // Expect prop is the frontmatter
+---
+
+<time datetime={machineDate(event.date)}>
+  {event.displayed_date ? event.displayed_date : humanDateWithDay(event.date)}
+</time>
+
+<style lang="scss">
+  time {
+    color: var(--pink-500);
+    font-weight: 700;
+  }
+</style>

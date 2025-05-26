@@ -1,0 +1,89 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import MessageSent from "@/components/contact/MessageSent.vue";
+---
+
+<BaseLayout
+  title="Book a demo"
+  description="Contact us today to learn how Reliably can support your devops teams. Speak to our SRE engineers who can advise you on the best way to use our SRE tools."
+>
+  <div class="contact">
+    <div class="container container--mini">
+      <h1 class="contact__suptitle">Book a demo</h1>
+      <h2 class="contact__title">Want to see Reliably in action?</h2>
+      <div class="contact__introduction">
+        <p>
+          If you want to know more about how Reliably works, book a demo and a
+          Reliably engineer will get in touch!
+        </p>
+        <p>
+          You can also <a href="/docs/">read the docs</a> or <a href="/contact/"
+            >send us a message</a
+          >.
+        </p>
+      </div>
+      <MessageSent client:load />
+      <form
+        class="form"
+        action="https://formspree.io/f/xoqrdwkj"
+        method="POST"
+        id="demoForm"
+      >
+        <div class="input-wrapper">
+          <label for="firstName">
+            First Name<span class="required">*</span>
+          </label>
+          <input type="text" name="_firstName" id="firstName" required />
+        </div>
+        <div class="input-wrapper">
+          <label for="lastName">Last Name<span class="required">*</span></label>
+          <input type="text" name="_lastName" id="lastName" required />
+        </div>
+        <div class="input-wrapper">
+          <label for="companyName">
+            Company Name<span class="required">*</span>
+          </label>
+          <input type="text" name="_companyName" id="companyName" required />
+        </div>
+        <div class="input-wrapper formspreeMisc">
+          <label for="misc">
+            Additional information<span class="required">*</span>
+          </label>
+          <input type="text" id="misc" name="_gotcha" />
+        </div>
+        <div class="input-wrapper">
+          <label for="jobTitle">Job title</label>
+          <input type="text" name="_jobTitle" id="jobTitle" />
+        </div>
+        <div class="input-wrapper">
+          <label for="email">Your Email<span class="required">*</span></label>
+          <input type="email" name="_replyto" id="email" required />
+        </div>
+        <div class="input-wrapper">
+          <label for="message">
+            Your Message<span class="required">*</span>
+          </label>
+          <textarea name="message" id="message" required></textarea>
+        </div>
+        <div class="input-wrapper">
+          <input
+            type="hidden"
+            name="contact-origin"
+            id="contact-origin"
+            value=""
+          />
+          <input type="hidden" name="_next" value="/contact/demo#thankyou" />
+          <input type="hidden" name="_subject" value="Reliably Demo Request" />
+          <p><span class="required">*</span> Required fields</p>
+          <button
+            class="button button--secondary form-submit"
+            id="demoSubmit"
+            type="submit"
+          >
+            Send
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</BaseLayout>

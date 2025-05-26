@@ -1,0 +1,20 @@
+---
+import ProductLayout from "@/layouts/ProductLayout.astro";
+import ChaosHero from "@/components/product/ChaosHero.astro";
+import ChaosContent from "@/components/product/ChaosContent.astro";
+
+const image = new URL("https://reliably.com/reliably-chaos-social.jpg", Astro.site);
+---
+
+<ProductLayout
+  title="Resiliency Engineering Platform"
+  description="Reliably is at its heart a chaos engineering platform, allowing teams to explore their services' resilience through experiments."
+  {image}
+>
+  <ChaosHero />
+  <ChaosContent />
+</ProductLayout>
+
+<style lang="scss">
+
+</style>

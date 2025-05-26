@@ -1,0 +1,51 @@
+.appBar {
+  // Fake screenshots illustration
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  height: 3.2rem;
+  padding-left: 6.2rem;
+
+  border-bottom-width: 0.1rem;
+  border-bottom-style: solid;
+  border-radius: var(--border-radius-s) var(--border-radius-s) 0 0;
+
+  &__buttons {
+    top: 1rem;
+    left: 2.6rem;
+
+    background-color: rgb(253, 188, 46);
+
+    &,
+    &::before,
+    &::after {
+      position: absolute;
+      height: 1.2rem;
+      width: 1.2rem;
+
+      border-radius: 50%;
+    }
+
+    &::before,
+    &::after {
+      content: "";
+
+      top: 0;
+
+      display: block;
+    }
+
+    &::before {
+      left: -1.6rem;
+
+      background-color: rgb(255, 96, 88);
+    }
+
+    &::after {
+      left: 1.6rem;
+
+      background-color: rgb(40, 200, 65);
+    }
+  }
+}

@@ -1,0 +1,71 @@
+---
+import { Icon } from "astro-icon";
+import MenuToggle from "@/components/_ui/MenuToggle.vue";
+import FeaturesMenu from "@/components/_ui/FeaturesMenu.astro";
+import ConceptsMenu from "@/components/_ui/ConceptsMenu.astro";
+import MobileMenu from "@/components/_ui/MobileMenu.astro";
+import { removeTrailingSlash } from "@/utils/strings";
+
+const url = new URL(Astro.request.url);
+const currentPath = url.pathname;
+const items = [
+  { href: "/docs/", label: "Docs" },
+];
+
+const isHeaderLinkActive = (itemHref) => {
+  if (itemHref === "/") {
+    return currentPath === "/" ? "page" : false;
+  } else {
+    return currentPath.startsWith(removeTrailingSlash(itemHref))
+      ? "page"
+      : false;
+  }
+};
+
+let classList: string = "header";
+if (currentPath === "/") {
+  classList += " header--home";
+} else if (
+  currentPath.startsWith("/events") ||
+  currentPath.startsWith("/blog")
+) {
+  classList += " header--grey";
+}
+---
+
+<header class={classList} id="siteHeader">
+  <div class="container">
+    <MenuToggle client:load />
+    <a href="/" class="header__logo">
+      <Icon name="reliably-logo" />
+      <span class="screen-reader-text">Reliably</span>
+    </a>
+    <nav class="header__nav">
+      <ul class="list-reset">
+        <li>
+          <button class="subMenuButton">Product</button>
+          <FeaturesMenu />
+        </li>
+        <li>
+          <button class="subMenuButton">Concepts</button>
+          <ConceptsMenu />
+        </li>
+        {items.map((item) => (
+          <li>
+            <a href={item.href} aria-current={isHeaderLinkActive(item.href)}>
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <div class="header__actions">
+      <a
+        class="button button--secondary"
+        href="/docs/getting-started/"
+        id="docsHeaderRegister"
+      >
+        Get Started
+      </a>
+  </div>
+</header>

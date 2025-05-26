@@ -91,9 +91,7 @@
                 <LockIcon /> Your OpenAI key is now safely stored!
               </p>
               <p class="AiDialogItem__help">
-                Reliably Assistant uses ChatGPT-4 1106 Preview ("ChatGPT-4
-                Turbo"). Using the Assistant does not result in additional
-                billing from Reliably but uses OpenAI tokens.
+                Reliably Assistant uses GPT-4.1.
               </p>
               <p
                 v-if="isSecretInvalid"
@@ -708,7 +706,7 @@ async function submitOpenAiKey() {
         envvars: [
           {
             var_name: "OPENAI_MODEL",
-            value: "gpt-4-1106-preview",
+            value: "gpt-4.1",
           },
         ],
         secrets: [
@@ -746,7 +744,7 @@ const tagsList: { tag: string; label: string }[] = [
   { tag: "google cloud", label: "Google Cloud" },
   { tag: "kubernetes", label: "Kubernetes" },
   { tag: "on-premise", label: "On-Premise" },
-];
+];  
 const tags = ref<string[]>([]);
 const isTagsSelectionDisplayed = ref<boolean>(false);
 const isTagsWarningDisplayed = ref<boolean>(false);

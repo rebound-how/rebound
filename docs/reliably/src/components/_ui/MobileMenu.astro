@@ -1,0 +1,139 @@
+<nav class="mobileMenu">
+  <ul class="list-reset">
+    <li class="mobileMenu__title">Product</li>
+    <li><a href="/product/experiment-builder/">Experiment Builder</a></li>
+    <li><a href="/product/resiliency-engineering/">Resiliency Engineering Platform</a></li>
+    <li><a href="/docs/concepts/custom-templates/">Custom Templates</a></li>
+  </ul>
+  <ul class="list-reset">
+    <li class="mobileMenu__title">Concepts</li>
+    <li><a href="/docs/concepts/plans/">Plans</a></li>
+    <li><a href="/docs/concepts/deployments/">Deployments</a></li>
+    <li><a href="/docs/concepts/environments/">Environments</a></li>
+    <li><a href="/docs/concepts/experiments/">Experiments</a></li>
+    <li><a href="/docs/concepts/executions/">Executions</a></li>
+    <li><a href="/docs/concepts/executions/">Starters</a></li>
+  </ul>
+  <ul class="list-reset">
+    <li class="mobileMenu__title">Resources</li>
+    <li><a href="/docs/">Docs</a></li>
+  </ul>
+  <a href="/product/assistant/" class="featureGpt">
+    <img src="/images/pages/gpt/jr-korpa-9XngoIpxcEo-unsplash-60-800.jpg" alt=""
+    />
+    <span>Reliably</span>
+    <span>Assistant</span>
+  </a>
+</nav>
+
+<style lang="scss">
+  .mobileMenu {
+    position: fixed;
+    // top: 4.8rem;
+    top: 0;
+    // right: var(--space-small);
+    // left: var(--space-small);
+    left: 0;
+
+    pointer-events: none;
+
+    display: block;
+    height: 100vh;
+    width: 100vw;
+    overflow-y: auto;
+    padding: var(--space-large) var(--space-small) var(--space-small);
+
+    background-color: white;
+    border-radius: var(--border-radius-m);
+    box-shadow: var(--box-shadow-diffuse);
+    opacity: 0;
+
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out, opacity 0.1s ease 0.3s;
+
+    ul + ul {
+      margin-top: var(--space-medium);
+    }
+
+    &__title {
+      color: var(--text-color-dim);
+      font-size: 1.4rem;
+      text-transform: uppercase;
+    }
+
+    a {
+      display: inline-block;
+      padding: 0.1rem 0.6rem;
+
+      border-radius: var(--border-radius-s);
+
+      color: var(--text-color-bright);
+      text-decoration: none;
+
+      &:hover {
+        background-color: var(--pink-100);
+      }
+    }
+
+    a.featureGpt {
+      position: relative;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      grid-column-end: span 1;
+      height: 18.8rem;
+      margin-top: var(--space-medium);
+      padding: 0;
+      overflow: hidden;
+
+      color: white;
+      font-family: var(--heading-font);
+      text-align: center;
+
+      img {
+        position: absolute;
+
+        display: block;
+        height: 100%;
+        width: 100%;
+        object-fit: cover;
+
+        transition: transform 0.2s ease-in-out;
+      }
+
+      > span {
+        position: relative;
+
+        display: block;
+
+        &:nth-child(2) {
+          position: relative;
+          z-index: 2;
+
+          color: var(--pink-100);
+          font-size: 2.4rem;
+          text-shadow: var(--box-shadow-sharp);
+          font-weight: 900;
+        }
+
+        &:nth-child(3) {
+          margin-top: -4.4rem;
+
+          font-weight: 900;
+
+          font-size: 7.2rem;
+        }
+      }
+
+      &:hover {
+        background-color: transparent;
+
+        img {
+          transform: scale(1.2);
+        }
+      }
+    }
+  }
+</style>

@@ -1,0 +1,4 @@
+---
+name: Slack
+svg: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><defs><style>.cls-1{fill:#e01e5a;}.cls-2{fill:#36c5f0;}.cls-3{fill:#2eb67d;}.cls-4{fill:#ecb22e;}</style></defs><path class="cls-1" d="M142,226.38a21,21,0,1,1-21-21h21Z"/><path class="cls-1" d="M152.61,226.38a21,21,0,0,1,42,0V279a21,21,0,0,1-42,0Z"/><path class="cls-2" d="M173.62,142a21,21,0,1,1,21-21v21Z"/><path class="cls-2" d="M173.62,152.61a21,21,0,0,1,0,42H121a21,21,0,0,1,0-42Z"/><path class="cls-3" d="M258,173.62a21,21,0,1,1,21,21H258Z"/><path class="cls-3" d="M247.39,173.62a21,21,0,0,1-42,0V121a21,21,0,1,1,42,0Z"/><path class="cls-4" d="M226.38,258a21,21,0,1,1-21,21V258Z"/><path class="cls-4" d="M226.38,247.39a21,21,0,0,1,0-42H279a21,21,0,0,1,0,42Z"/></svg>
+---

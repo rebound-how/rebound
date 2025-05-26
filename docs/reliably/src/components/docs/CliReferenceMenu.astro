@@ -1,0 +1,134 @@
+---
+export interface ReferenceItem {
+  title: string;
+  url: string;
+  main: boolean;
+}
+
+import { Icon } from "astro-icon";
+import { removeTrailingSlash, addTrailingSlash } from "@/utils/strings";
+
+const url = new URL(Astro.request.url);
+const currentPath = url.pathname;
+const currentPageMatch = removeTrailingSlash(currentPath);
+
+const commands: any[] = await Astro.glob(
+  "/src/pages/docs/reference/cli/*.md"
+);
+let links: ReferenceItem[] = [];
+commands.forEach((c) => {
+  let title = c.frontmatter.title;
+  if (title.startsWith("reliably ")) {
+    // All except root command
+    title = title.substring("reliably ".length);
+    if (title.indexOf(" ") === -1) {
+      // No space character in title. It is not a subcommand.
+      links.push({
+        title: title,
+        url: addTrailingSlash(c.url),
+        main: true,
+      });
+    } else {
+      // It's a subcommand
+      // Remove the first word: it's the parent command
+      title = title.substring(title.indexOf(" ") + 1);
+      links.push({
+        title: title,
+        url: c.url,
+        main: false,
+      });
+    }
+  } else {
+    links.push({
+      title: title,
+      url: c.url,
+      main: true,
+    });
+  }
+});
+---
+
+<li>
+  <a href="/docs/" class="back">
+    <Icon name="arrow-left" />
+    Back to Docs home
+  </a>
+</li>
+<li>
+  <h2 class="title">CLI Reference</h2>
+</li>
+{links.map((link) => (
+  <li class={link.main ? "main" : ""}>
+    <a
+      href={link.url}
+      aria-current={`${currentPageMatch === link.url ? "page" : "false"}`}
+    >
+      {link.title}
+    </a>
+  </li>
+))}
+
+<style lang="scss" scoped>
+  li {
+    &:first-child {
+      margin-bottom: var(--space-medium);
+
+      a {
+        display: flex;
+        align-items: center;
+        gap: 0.2rem;
+
+        svg {
+          height: 1.6rem;
+
+          transition: all 0.3s ease-in-out;
+        }
+
+        &:hover {
+          svg {
+            transform: translateX(-0.3rem);
+          }
+        }
+      }
+    }
+
+    h2 {
+      margin-bottom: 0.2rem;
+      padding: 0.1rem 1rem;
+
+      font-size: 1.6rem;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    a {
+      display: block;
+      padding: 0.5rem 1rem;
+
+      color: var(--text-color);
+      text-decoration: none;
+
+      border-radius: var(--border-radius-s);
+
+      &:hover,
+      &:focus {
+        background-color: var(--blue-800);
+
+        color: var(--text-color-bright);
+      }
+
+      &[aria-current="page"] {
+        color: var(--accentColorPrimary);
+        font-weight: 500;
+      }
+    }
+
+    &.main {
+      margin-top: var(--space-small);
+
+      a {
+        font-weight: 500;
+      }
+    }
+  }
+</style>

@@ -1,0 +1,173 @@
+---
+import FeaturesMenuItem from "@/components/_ui/FeaturesMenuItem.astro";
+import { DocPage } from "@/types/types";
+
+const pages: DocPage[] = [
+  {
+    title: "Resiliency Engineering Platform",
+    description:
+      "At the core of Reliably, is its chaos engineering platform, based the on the industry-approved open-source Chaos Toolkit",
+    url: "/product/resiliency-engineering/",
+  },
+  {
+    title: "Custom Templates",
+    description:
+      "Import your existing experiments, and let other teams re-use them for their custom needs.",
+    url: "/docs/concepts/custom-templates/",
+  },
+];
+---
+
+<div class="submenu">
+  <div class="featuresMenu">
+    <ul class="list-reset featuresList">
+      {pages.map((page) => (
+        <li>
+          <FeaturesMenuItem page={page} />
+        </li>
+      ))}
+    </ul>
+    <a href="/product/assistant/" class="featureGpt">
+      <img
+        src="/images/pages/gpt/jr-korpa-9XngoIpxcEo-unsplash-60-800.jpg"
+        alt=""
+      />
+      <span>Reliably</span>
+      <span>Assistant</span>
+    </a>
+    <a href="/product/experiment-builder/" class="featureBuilder">
+      <span>New</span> Experiment Builder
+    </a>
+  </div>
+</div>
+
+<style scoped lang="scss">
+  .submenu {
+    .featuresMenu {
+      position: relative;
+      top: 2.4rem;
+
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-small);
+      padding: var(--space-small);
+
+      background-color: white;
+      border-radius: var(--border-radius-m);
+      box-shadow: var(--box-shadow-diffuse);
+
+      &::after {
+        content: "";
+
+        position: absolute;
+        top: calc(-1 * var(--space-small));
+        left: calc(50% - var(--space-small));
+
+        display: block;
+        height: 0;
+        width: 0;
+
+        border-right: solid var(--space-small) transparent;
+        border-left: solid var(--space-small) transparent;
+        border-bottom: solid var(--space-small) white;
+      }
+
+      .featuresList {
+        grid-column: 1 / span 2;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        column-gap: var(--space-small);
+      }
+
+      a.featureGpt {
+        position: relative;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        grid-column-end: span 1;
+        height: 18.8rem;
+        padding: 0;
+        overflow: hidden;
+
+        color: white;
+        font-family: var(--heading-font);
+        text-align: center;
+
+        img {
+          position: absolute;
+
+          display: block;
+          height: 100%;
+          width: 100%;
+          object-fit: cover;
+
+          transition: transform 0.2s ease-in-out;
+        }
+
+        > span {
+          position: relative;
+
+          display: block;
+
+          &:nth-child(2) {
+            position: relative;
+            z-index: 2;
+
+            color: var(--pink-100);
+            font-size: 2.4rem;
+            text-shadow: var(--box-shadow-sharp);
+            font-weight: 900;
+          }
+
+          &:nth-child(3) {
+            margin-top: -4.4rem;
+
+            font-weight: 900;
+
+            font-size: 7.2rem;
+          }
+        }
+
+        &:hover {
+          background-color: transparent;
+
+          img {
+            transform: scale(1.2);
+          }
+        }
+      }
+
+      a.featureBuilder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        color: var(--text-color-bright);
+        font-size: 3.2rem;
+        font-weight: 700;
+
+        background-color: var(--grey-200);
+
+        span {
+          padding: 0.3rem 0.6rem 0.4rem;
+
+          background-color: var(--pink-500);
+          border-radius: var(--border-radius-s);
+
+          color: white;
+          font-size: 1.2rem;
+          text-transform: uppercase;
+
+          transition: opacity 0.3s ease-in-out;
+        }
+
+        &:hover {
+          background-color: var(--pink-100);
+        }
+      }
+    }
+  }
+</style>

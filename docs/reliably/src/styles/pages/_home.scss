@@ -1,0 +1,154 @@
+.home {
+  .homeFeature {
+    padding-top: var(--sectionPadding);
+    padding-bottom: var(--sectionPadding);
+
+    background-color: var(--grey-100);
+
+    &__header {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-large);
+      margin-bottom: var(--space-large);
+      padding-bottom: var(--space-large);
+
+      border-bottom: 0.1rem solid var(--grey-300);
+
+      @media (min-width: 60rem) {
+        grid-template-columns: 4fr 6fr;
+      }
+    }
+
+    &__presentation {
+      align-self: end;
+      h2 {
+        span {
+          display: block;
+
+          &:first-child {
+            font-size: 2.4rem;
+
+            color: var(--pink-500);
+            text-transform: uppercase;
+          }
+        }
+      }
+    }
+
+    &__cover {
+      position: relative;
+
+      justify-self: center;
+      margin-top: var(--space-large);
+      max-width: 74rem;
+      width: 100%;
+
+      background-color: var(--grey-200);
+      border-radius: var(--border-radius-s);
+
+      .reliablyApp {
+        position: relative;
+
+        height: 100%;
+        width: 100%;
+
+        &__bar {
+          border-bottom-color: var(--grey-300);
+        }
+
+        &__container {
+          padding: 1.6rem 4.8rem;
+        }
+
+        &__header {
+          display: grid;
+          grid-template-columns: 5fr 1fr;
+          gap: 6rem;
+        }
+
+        &__title,
+        &__button {
+          height: 1.6rem;
+
+          border-radius: 0.3rem;
+        }
+
+        &__title {
+          background-color: var(--grey-300);
+        }
+
+        &__button {
+          position: relative;
+
+          background-color: var(--green-500);
+          // opacity: 1;
+        }
+
+        &__content {
+          position: relative;
+          z-index: 1;
+
+          transform: rotate(0deg); // Fix stacking context
+
+          height: 28rem;
+          margin-top: 2.4rem;
+          padding: 1.6rem;
+
+          background-color: var(--grey-300);
+          border-radius: 0.3rem;
+        }
+      }
+    }
+
+    &__list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-large);
+
+      @media (min-width: 60rem) {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-medium);
+      }
+    }
+
+    &__item {
+      h3 {
+        margin-top: var(--space-small);
+      }
+    }
+  }
+
+  .homeFeatureIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 6rem;
+    width: 6rem;
+
+    background-color: var(--pink-200);
+    border-radius: var(--border-radius-m);
+
+    color: var(--pink-500);
+
+    svg {
+      height: 3.6rem;
+    }
+  }
+
+  .reliablyApp__json {
+    code {
+      .key {
+        color: var(--yellow-500);
+      }
+
+      .value {
+        color: var(--blue-100);
+
+        &.boolean,
+        &.number {
+          color: var(--pink-500);
+        }
+      }
+    }
+  }
+}

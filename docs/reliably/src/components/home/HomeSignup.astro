@@ -1,0 +1,112 @@
+---
+import { Icon } from "astro-icon";
+import ArrowLink from "@/components/_ui/ArrowLink.astro";
+---
+
+<section class="signup">
+  <div class="signup__content container">
+    <div class="signup__actions">
+      <h2>Ready to get started?</h2>
+      <p>
+        Start better understanding how your system works, to make it more
+        reliable and easier to debug.
+      </p>
+      <p>
+        Download and install the platform and get started in a matter of
+        minutes.
+      </p>
+      <div>
+        <a
+          href="/docs/getting-started/"
+          class="button button--tertiary"
+          id="homeBookDemo2"
+        >
+          Get started now
+        </a>
+      </div>
+    </div>
+    <div class="signup__pricing">
+      <Icon name="tag" />
+      <h3>Open Source</h3>
+      <p>Straightforward no lock-in strategy.</p>
+    </div>
+    <div class="signup__why">
+      <Icon name="terminal" />
+      <h3>10-minute starting guide</h3>
+      <p>
+        Whether you're already using Chaos Toolkit or not, you could be sending
+        data to Reliably in minutes.
+      </p>
+      <p><ArrowLink href="/docs/getting-started/">Read the guide</ArrowLink></p>
+    </div>
+  </div>
+</section>
+
+<style lang="scss" scoped>
+  .signup {
+    position: relative;
+    z-index: 2;
+
+    margin-bottom: calc(-1 * var(--space-large));
+    padding-top: var(--sectionPadding);
+    padding-bottom: var(--sectionPadding);
+
+    background-color: var(--yellow-500);
+
+    color: var(--text-color-bright);
+
+    &__content {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-medium);
+
+      @media (min-width: 36rem) {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      @media (min-width: 60rem) {
+        grid-template-columns: minmax(44rem, 2fr) 1fr 1fr;
+      }
+
+      h2 {
+        font-size: 3rem;
+        // font-weight: 500;
+      }
+
+      h3 {
+        margin-top: 0.8rem;
+        // margin-bottom: 0;
+
+        font-size: 2rem;
+        // font-weight: 500;
+      }
+    }
+
+    &__actions {
+      a.button {
+        margin-top: var(--space-medium);
+      }
+      @media (min-width: 36rem) {
+        grid-column-end: span 2;
+        padding-right: var(--space-large);
+      }
+
+      @media (min-width: 60rem) {
+        grid-column-end: span 1;
+      }
+    }
+
+    &__pricing,
+    &__why {
+      font-size: 1.6rem;
+
+      @media (min-width: 36rem) {
+        padding-right: var(--space-small);
+      }
+
+      svg {
+        height: 3.4rem;
+      }
+    }
+  }
+</style>

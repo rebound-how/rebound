@@ -1,0 +1,22 @@
+---
+import { Icon } from "astro-icon";
+// The following import triggers an error in VS COde (js 2307)
+// Therre's an open issue in the Astro repo:
+// https://github.com/withastro/language-tools/issues/142
+import DocsSearch from "@/components/docs/DocsSearch.vue";
+import DocsMenuToggle from "@/components/docs/DocsMenuToggle.vue";
+---
+
+<header class="header">
+  <div class="container">
+    <DocsMenuToggle client:load />
+    <div class="header__logo">
+      <a href="/" title="To main site">
+        <Icon name="reliably-logo" />
+        <span class="screen-reader-text">Reliably</span>
+      </a>
+      <a href="/docs/">Docs</a>
+    </div>
+    <div class="header__search"></div>
+  </div>
+</header>

@@ -1,0 +1,19 @@
+---
+import { machineDate, humanDate } from "@/utils/dates";
+
+export interface Props {
+  date: string;
+}
+
+const { date } = Astro.props;
+---
+
+<time datetime={machineDate(date)}>
+  {humanDate(date)}
+</time>
+
+<style lang="scss">
+  time {
+    /* font-weight: 500; */
+  }
+</style>

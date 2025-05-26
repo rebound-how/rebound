@@ -1,0 +1,51 @@
+---
+import { Icon } from "astro-icon";
+
+export interface Props {
+  href: string;
+  id?: string;
+  theme?: string;
+}
+
+const linkProps = Astro.props;
+let classes: string = "arrowLink";
+if (linkProps.theme === "dark") {
+  classes += " arrowLink--dark";
+}
+---
+
+<a href={linkProps.href} class={classes} id={linkProps.id}>
+  <slot />
+  <Icon name="arrow-right" />
+</a>
+
+<style lang="scss">
+  a.arrowLink {
+    display: inline-flex;
+    align-items: center;
+
+    color: var(--arrowLinkColor, var(--text-color-bright));
+    font-weight: 500;
+    white-space: nowrap;
+
+    &--dark {
+      color: var(--docsTextColorBright);
+    }
+
+    svg {
+      height: 0.8em;
+      margin-top: 0.14em;
+      margin-left: 0.2em;
+
+      transition: all 0.3s ease-in-out;
+    }
+
+    &:hover {
+      text-decoration: none;
+
+      svg {
+        transform: translateX(0.3em);
+      }
+    }
+  }
+</style>

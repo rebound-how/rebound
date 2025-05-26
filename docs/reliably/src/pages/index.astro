@@ -1,0 +1,31 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+import HomeHero from "@/components/home/HomeHero.astro";
+import HomeProblem from "@/components/home/HomeProblem.astro";
+import HomeSolution from "@/components/home/HomeSolution.astro";
+import HomeQuote from "@/components/home/HomeQuote.astro";
+import HomeFeatures from "@/components/home/HomeFeatures.astro";
+import HomeSignup from "@/components/home/HomeSignup.astro";
+---
+
+<BaseLayout
+  title="Build and scale your resilience engineering capability"
+  description="Reliably helps you tackle incidents and cost overruns, to build more reliable products with more confident and healthier teams."
+>
+  <div class="home">
+    <HomeHero />
+    <HomeProblem />
+    <HomeSolution />
+    <HomeQuote />
+    <HomeFeatures />
+    <HomeSignup />
+  </div>
+</BaseLayout>
+
+<style lang="scss">
+  .home {
+    margin-top: calc(-1 * var(--space-large));
+    background-color: var(--grey-100);
+  }
+</style>

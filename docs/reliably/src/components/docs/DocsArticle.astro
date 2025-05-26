@@ -1,0 +1,83 @@
+---
+// import MoreMenu from '../RightSidebar/MoreMenu.astro';
+// import TableOfContents from '../RightSidebar/TableOfContents.tsx';
+import { DOCS_SIDEBAR } from "@/config/config";
+
+import ArticleTitle from "@/components/docs/ArticleTitle.astro";
+import ContentTable from "@/components/docs/ContentTable.astro";
+
+const { content, currentPage } = Astro.props;
+const title = content.long_title ? content.long_title : content.title;
+const headers = content.astro?.headers;
+const links = DOCS_SIDEBAR.filter(
+  (x) => x.link && typeof x.header === "undefined"
+);
+// handle cases with a trailing slash or not
+const index = links.findIndex(
+  (x) => `/${x.link}/` === currentPage || `/${x.link}` === currentPage
+);
+const next =
+  index !== -1 ? (index === links.length - 1 ? null : links[index + 1]) : null;
+const previous = index !== -1 ? (index === 0 ? null : links[index - 1]) : null;
+---
+
+<article>
+  <section class="main-section">
+    <ArticleTitle
+      soon={content.soon !== undefined ? content.soon === "true" : false}
+    >
+      {title}
+    </ArticleTitle>
+    {headers && (
+      <nav class="contentTable">
+        <h2 class="heading">On this page</h2>
+        <ul class="list-reset">
+          <ContentTable content={headers} />
+        </ul>
+      </nav>
+    )}
+    <slot />
+  </section>
+  {(previous || next) && (
+    <aside class="relatedArticles">
+      {previous && (
+        <div>
+          Previous Article:{" "}
+          <a rel="prev" href={new URL(previous.link, Astro.site).pathname}>
+            {previous.label}
+          </a>
+        </div>
+      )}
+      {next && (
+        <div>
+          Next Article:{" "}
+          <a rel="next" href={new URL(next.link, Astro.site).pathname}>
+            {next.label}
+          </a>
+        </div>
+      )}
+    </aside>
+  )}
+</article>
+
+<style lang="scss">
+  article {
+    height: 100%;
+    width: 100%;
+    padding: 0 0 var(--space-large);
+
+    .contentTable {
+      @media (min-width: 72rem) {
+        display: none;
+      }
+    }
+
+    > section {
+      margin-bottom: 4rem;
+    }
+  }
+
+  .relatedArticles {
+    padding-top: var(--space-large);
+  }
+</style>

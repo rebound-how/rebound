@@ -1,0 +1,121 @@
+---
+name: fail_az
+target: AWS AZ
+category: AZ:ELB
+type: action
+module: azchaosaws.elb.actions
+description: Simulates the loss of an AZ in an AWS Region for classic LBs
+layout: src/layouts/ActivityLayout.astro
+---
+
+export const default_tags = '{"Key": "AZ_FAILURE", "Value": "True"}';
+
+|            |                        |
+| ---------- | ---------------------- |
+| **Type**   | action                 |
+| **Module** | azchaosaws.elb.actions |
+| **Name**   | fail_az                |
+| **Return** | mapping                |
+
+This function simulates the loss of an AZ in an AWS Region for classic LBs by detaching the LB from subnets of the 'failed' az. If LB is in a default VPC disables the 'failed' az for the LB.
+
+Notes:
+
+Detaching lb from subnets:
+After a subnet is removed, all EC2 instances registered with the load balancer in the removed subnet go into the OutOfService state.
+Then, the load balancer balances the traffic among the remaining routable subnets.
+
+Disabling az for lb:
+There must be at least one Availability Zone registered with a load balancer at all times. After an Availability Zone is removed, all instances registered with the load balancer that are in the removed Availability Zone go into the OutOfService state. Then, the load balancer attempts to equally balance the traffic among its remaining Availability Zones.
+
+**Usage**
+
+JSON
+
+```json
+{
+  "name": "fail_az",
+  "type": "action",
+  "provider": {
+    "type": "python",
+    "module": "azchaosaws.elb.actions",
+    "func": "fail_az",
+    "arguments": {
+      "az": "",
+      "dry_run": true
+    }
+  }
+}
+```
+
+YAML
+
+```yaml
+name: fail_az
+provider:
+  arguments:
+    az: ""
+    dry_run: true
+  func: fail_az
+  module: azchaosaws.elb.actions
+  type: python
+type: action
+```
+
+**Arguments**
+
+| Name         | Type                 | Default          | Required | Title               | Description                               |
+| ------------ | -------------------- | ---------------- | -------- | ------------------- | ----------------------------------------- |
+| **az**       | string               |                  | Yes      | Availability Zone   | AZ to target                              |
+| **tags**     | List[Dict[str, str]] | [{default_tags}] | No       | Tags                | Match only resources with these tags      |
+| **lb_names** | List[str]            | null             | No       | Load-Balancer Names | Name of the LB to target rather than tags |
+| **dry_run**  | bool                 | false            | No       | Dry Run             | Only perform a dry run for it             |
+
+Required:
+
+- az (str): An availability zone
+- dry_run (bool): The boolean flag to simulate a dry run or not. Setting to True will only run read-only operations and not make changes to resources. (Accepted values: True | False)
+
+Optional:
+
+- lb_names (List[str]): A list of LB names
+- tags (List[Dict[str, str]]): A list of key-value pairs to filter the ELB(s) by. (Default: `[{"Key": "AZ_FAILURE", "Value": "True"}]`)
+- state_path (str): Path to generate the state data (Default: fail_az.elb.json). This file is used for recover_az (rollback).
+
+**Return structure**
+
+```json
+{
+  "AvailabilityZone": str,
+  "DryRun": bool,
+  "LoadBalancers": [
+    {
+      "LoadBalancerName": str,
+      "Type": "Classic",
+      "Before": {
+        "SubnetIds": List[str],
+        "AvailabilityZones": List[str]
+      },
+      "After": {
+        "SubnetIds": List[str],
+        "AvailabilityZones": List[str]
+      }
+    }
+  ]
+}
+```
+
+**Signature**
+
+```python
+def fail_az(
+    az: str = None,
+    dry_run: bool = None,
+    lb_names: List[str] = None,
+    tags: List[Dict[str, Any]] = [{"Key": "AZ_FAILURE", "Value": "True"}],
+    state_path: str = "fail_az.{}.json".format(__package__.split(".", 1)[1]),
+    configuration: Configuration = None,
+) -> Dict[str, Any]:
+    pass
+
+```

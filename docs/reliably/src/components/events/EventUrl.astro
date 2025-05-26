@@ -1,0 +1,39 @@
+---
+import { Icon } from "astro-icon";
+import { addTrailingSlash } from "@/utils/strings";
+
+export interface Props {
+  event: any;
+}
+
+const { event } = Astro.props;
+const fm = event.frontmatter;
+
+const url = addTrailingSlash(fm.link ? fm.link : event.url);
+---
+
+<a
+  href={url}
+  rel={fm.link ? "noreferer noopener" : undefined}
+  target={fm.link ? "_blank" : "_self"}
+>
+  <slot />
+  {fm.link && <Icon name="external-link" />}
+</a>
+
+<style lang="scss">
+  a {
+    color: var(--text);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    svg {
+      display: inline;
+      height: 2rem;
+      vertical-align: -0.1rem;
+    }
+  }
+</style>

@@ -1,0 +1,14 @@
+---
+const { headings } = Astro.props;
+---
+{
+  headings
+    .filter(({ depth }) => depth > 1 && depth < 4)
+    .map((item) => (
+      <li
+        class={`header-link depth-${item.depth}`.trim()}
+      >
+        <a href={`#${item.slug}`}>{item.text}</a>
+      </li>
+    ))
+}

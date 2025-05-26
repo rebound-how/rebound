@@ -1,0 +1,59 @@
+---
+export interface Props {
+  soon?: boolean;
+}
+
+const { soon } = Astro.props;
+---
+
+<h1 class="articleTitle" id="overview">
+  <span>
+    <slot />
+  </span>
+  {soon && <span class="articleTitle__soon">Coming Soon</span>}
+</h1>
+
+<style lang="scss">
+  .articleTitle {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--space-large);
+
+    color: var(--text-color-bright);
+    font-size: 4.8rem;
+    font-weight: 700;
+    letter-spacing: -0.01rem;
+    line-height: 1;
+
+    // The 'backslash symbol'
+    span:first-child {
+      position: relative;
+
+      &::before {
+        content: "";
+
+        display: inline-block;
+        height: 0.715em;
+        width: 0.5em;
+        margin-right: -0.2em;
+
+        background-color: var(--pink-500);
+        clip-path: polygon(0 0, 40% 0, 100% 100%, 60% 100%);
+      }
+    }
+
+    &__soon {
+      align-self: flex-start;
+      margin-top: 2rem;
+      margin-left: var(--space-small);
+      padding: 0.3rem 0.6rem 0.4rem;
+
+      background-color: var(--pink-500);
+      border-radius: var(--border-radius-s);
+
+      color: white;
+      font-size: 1.6rem;
+      text-transform: uppercase;
+    }
+  }
+</style>

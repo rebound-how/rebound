@@ -1,0 +1,247 @@
+---
+import Head from "@/components/layout/Head.astro";
+import SiteHeader from "@/components/layout/SiteHeader.astro";
+import SiteFooter from "@/components/layout/SiteFooter.astro";
+import { Icon } from "astro-icon";
+
+let canonical = new URL(Astro.url.pathname, Astro.site);
+const image = new URL(
+  "https://reliably.com/reliably-assistant-social.jpg",
+  Astro.site,
+);
+
+const questions: { q: string; a: string }[] = [
+  {
+    q: "Is sensitive information sent to OpenAI?",
+    a: "Currently, the only data sent to OpenAI is the questions you ask as part of your experiments. It means the experiments themselves are not shared with any third parties.",
+  },
+  {
+    q: "What if I don't want to use Reliably Assistant?",
+    a: "The Assistant must be enabled with the Reliably OpenAI integration. If you don't activate the integration, no data is ever sent to OpenAI. You can also choose to use the integration for some experiments, and not for others.",
+  },
+  {
+    q: "Are the provided answers safe to use?",
+    a: "As everything that involves Large Language Models and chaos engineering, separately but even more when used in conjunction, you should always proceed with caution. A good rule is to never do or run something you don't understand.",
+  },
+  {
+    q: "Do I have to provide my own OpenAI API key?",
+    a: "Currently, yes. It will be stored by Reliably as an encrypted secret.",
+  },
+  {
+    q: "Does using Reliably Assistant introduces additional fees?",
+    a: "The Reliably OpenAI integration requires a valid OpenAI API key. While we won't be charging you, each question you ask will use tokens that you will be billed for by OpenAI.",
+  },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <Head
+      title="Reliably Assistant"
+      description="Your AI companion for reliability. Get advice and suggestions to make your services more resilient, based on your experiments and environment."
+      canonicalURL={canonical}
+      {image}
+    />
+  </head>
+  <body class="reliablyAssistant">
+    <div class="assistantHero">
+      <SiteHeader />
+      <div class="container">
+        <h1>
+          <span>Reliably</span>
+          <span>Assistant</span>
+        </h1>
+        <p class="assistantHero__description">
+          Your AI companion for reliability and resilience
+        </p>
+      </div>
+    </div>
+    <main class="assistantContent">
+      <section class="assistantContent__what container">
+        <div>
+          <h2>
+            Reliably Assistant helps you answer what is often the most difficult
+            question: &ldquo;<span>What now?</span>&rdquo;
+          </h2>
+        </div>
+        <div>
+          <p>
+            After each experiment execution, you can <strong
+              >ask the Assistant questions</strong
+            > related to your current concerns. It will give you advice on <strong
+              >how to mitigate common weaknesses</strong
+            >, and recommend <strong>new experiments ideas</strong> based on
+            your system. The Assistant can even <strong
+              >help you write new experiments</strong
+            >.
+          </p>
+        </div>
+      </section>
+      <section class="assistantContent__demo">
+        <div class="container">
+          <img
+            src="/images/pages/gpt/reliably-assistant-example.png"
+            alt="Example of Reliably Assistant being asked questions like Can you show me the Kubernetes scale change as a YAML diff to the original pod definition and providing a YAML answer."
+          />
+          <!-- <iframe
+            width="560"
+            height="315"
+            src="https://www.youtube.com/embed/MxbGf_JyvVs"
+            title="YouTube video player"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe> -->
+        </div>
+      </section>
+      <section class="assistantContent__actions">
+        <div class="container">
+          <a href="/docs/getting-started/" class="button button--secondary">
+            Get Started
+          </a>
+          <a href="/docs/features/assistant/" class="button button--tertiary">
+            Read the docs
+          </a>
+        </div>
+      </section>
+      <section class="roadmap">
+        <div class="container">
+          <div class="roadmap__intro">
+            <h2>Roadmap</h2>
+            <p>
+              The Reliably Assistant is still a work in progress, but we feel
+              it's one from which you can benefit immediately. The assistant is
+              already available, and we will deploy new features as soon as
+              they've been proven useful.
+            </p>
+            <p>
+              In the meantime, we'll continue exploring new ways to use LLMs to
+              make your reliability journey more exciting.
+            </p>
+          </div>
+          <ol class="list-reset roadmapList">
+            <li class="roadmapList__item">
+              <h3>Assistant</h3>
+              <p>
+                Reliably Starters embed questions about the experiments. Those
+                questions are passed to ChatGPT, which provides you with answers
+                and hints about what to do next.
+              </p>
+            </li>
+            <li class="roadmapList__item">
+              <h3>Custom Questions</h3>
+              <p>
+                Embed your own questions in your imported experiments to let
+                ChatGPT give you more specific answers about your system.
+              </p>
+            </li>
+            <li class="roadmapList__item">
+              <h3>Activity Suggestions</h3>
+              <p>
+                When using the <a href="/product/experiment-builder/"
+                  >experiment builder</a
+                >, Reliably Assistant suggests new activities that go along the
+                ones you've added.
+              </p>
+            </li>
+            <li class="roadmapList__item">
+              <h3>Assistant UI <small>New</small></h3>
+              <p>
+                Add new questions directly from the UI. No more JSON editing!
+              </p>
+            </li>
+            <li class="roadmapList__item">
+              <h3>GPT-4 and Experiment Companion <small>New</small></h3>
+              <p>
+                We're currently testing GPT-4's ability to build new experiments
+                for you. Describe your system, explain what you would like
+                Reliably to do, and get even the most complex experiments ready
+                to run in minutes.
+              </p>
+            </li>
+            <li class="roadmapList__item">
+              <h3>Let's explore together!</h3>
+              <p>
+                We're open to user feedback: <a href="/contact/"
+                  >submit your ideas and requests</a
+                >.
+              </p>
+            </li>
+          </ol>
+        </div>
+      </section>
+      <section class="assistantContent__faq">
+        <div class="container">
+          <h2 class="screen-reader-text">Frequently Asked Questions</h2>
+          {
+            questions.map((q) => (
+              <details>
+                <summary>
+                  {q.q} <Icon name="plus" />
+                </summary>
+                <p>{q.a}</p>
+              </details>
+            ))
+          }
+        </div>
+      </section>
+      <section
+        class="assistantContent__actions assistantContent__actions--last"
+      >
+        <div class="container">
+          <a href="/docs/getting-started/" class="button button--secondary">
+            Get Started
+          </a>
+          <a href="/docs/features/assistant/" class="button button--tertiary">
+            Read the docs
+          </a>
+        </div>
+      </section>
+      <section class="assistantContent__disclaimer">
+        <div class="container">
+          <p>
+            Reliably Assistant is an alpha feature. Like everything that
+            involves chaos engineering or tempering with your infrastructure, it
+            is to be used with caution. We hope you'll have fun with it, and it
+            will help you win time, but always remember to take what it says
+            with a pinch of salt.
+          </p>
+        </div>
+      </section>
+    </main>
+    <SiteFooter />
+    <!-- Cookie Consent by TermsFeed https://www.TermsFeed.com -->
+    <script
+      type="text/javascript"
+      src="/js/cookie-consent/4.0.0/cookie-consent.js"
+      charset="UTF-8"></script>
+    <script type="text/javascript" charset="UTF-8">
+      document.addEventListener("DOMContentLoaded", function () {
+        cookieconsent.run({
+          notice_banner_type: "simple",
+          consent_type: "express",
+          palette: "light",
+          language: "en",
+          page_load_consent_levels: ["strictly-necessary"],
+          notice_banner_reject_button_hide: false,
+          preferences_center_close_button_hide: true,
+          page_refresh_confirmation_buttons: true,
+          website_name: "Reliably",
+        });
+        let title = document.getElementById("cc-nb-title");
+        let text = document.getElementById("cc-nb-text");
+        let accept = document.querySelector(".cc-nb-okagree");
+        let decline = document.querySelector(".cc-nb-reject");
+        let pref = document.querySelector(".cc-nb-changep");
+        if (title !== null) {
+          title.innerHTML = "We have cookies";
+          text.innerHTML =
+            "We use cookies to analyze our website traffic, and to understand where our visitors are coming from.";
+          accept.innerHTML = "Accept";
+          decline.innerHTML = "Decline";
+          pref.innerHTML = "Preferences";
+        }
+      });
+    </script>
+    <!-- End Cookie Consent by TermsFeed https://www.TermsFeed.com -->
+  </body>
+</html>

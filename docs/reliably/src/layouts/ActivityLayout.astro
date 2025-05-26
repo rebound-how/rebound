@@ -1,0 +1,362 @@
+---
+import Head from "@/components/layout/Head.astro";
+import SiteHeader from "@/components/layout/SiteHeader.astro";
+import SiteFooter from "@/components/layout/SiteFooter.astro";
+import ActivityLogo from "@/components/activities/ActivityLogo.astro";
+import ActivityCard from "@/components/activities/ActivityCard.astro";
+
+const { content } = Astro.props;
+let canonical = new URL(Astro.url.pathname, Astro.site);
+const image = new URL(content.thumbnail || "social.png", Astro.site);
+
+const templateParam = canonical.pathname.split("/")[2];
+
+const breakableName = content.name.replaceAll("_", "_<wbr>");
+const imageFileName = canonical.pathname.split("/")[2];
+
+const relatedAll = await Astro.glob("../pages/activities/*.md");
+const relatedClose = relatedAll.filter((a) => {
+  return (
+    a.frontmatter.category === content.category &&
+    a.frontmatter.name !== content.name
+  );
+});
+const relatedFar = relatedAll.filter((a) => {
+  return (
+    a.frontmatter.target === content.target &&
+    a.frontmatter.name !== content.name
+  );
+});
+let related: typeof relatedAll = [];
+
+if (relatedClose.length > 3) {
+  for (let index = 0; index < 3; index++) {
+    let rand = relatedClose[Math.floor(Math.random() * relatedClose.length)];
+    related.push(rand);
+  }
+} else {
+  related.push(...relatedClose);
+}
+
+if (related.length < 3) {
+  const missing = 3 - related.length;
+  if (relatedFar.length > missing) {
+    for (let index = 0; index < missing; index++) {
+      let rand = relatedFar[Math.floor(Math.random() * relatedFar.length)];
+      related.push(rand);
+    }
+  } else {
+    related.push(...relatedFar);
+  }
+}
+
+if (related.length < 3) {
+  const missing = 3 - related.length;
+  for (let index = 0; index < missing; index++) {
+    let rand = relatedAll[Math.floor(Math.random() * relatedAll.length)];
+    if (rand.frontmatter.name !== content.name) {
+      related.push(rand);
+    }
+  }
+}
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <Head
+      title={content.name}
+      description={content.description}
+      canonicalURL={canonical}
+      {image}
+    />
+    <style>
+      .page {
+        padding: 0 0;
+        background-color: white;
+      }
+    </style>
+  </head>
+  <body class="activity">
+    <SiteHeader />
+    <main class="page">
+      <header class="activity__header text-center">
+        <div class="container">
+          <ActivityLogo target={content.target} large={true} />
+          <div class="activity__labels">
+            <span class={`activity__type activity__type--${content.type}`}>
+              {content.type}
+            </span>
+            <span class="activity__type">{content.category}</span>
+          </div>
+          <h1 set:html={breakableName} />
+          <p class="activity__description">{content.description}</p>
+          <div class="activity__form">
+            <img
+              src={`/images/pages/starters/${imageFileName}.webp`}
+              alt=""
+              width="491"
+            />
+          </div>
+        </div>
+      </header>
+
+      <div class="activity__content block-center">
+        <div class="activity__presentation">
+          <h2>Activity as code</h2>
+          <p>
+            Below are the details and signature of the activity Python module.
+          </p>
+        </div>
+        <slot />
+      </div>
+
+      <div class="activity__related">
+        <div class="container">
+          <h2 class="text-center">Related activities</h2>
+          <ul class="list-reset">
+            {
+              related.map((activity) => (
+                <li>
+                  <ActivityCard post={activity} />
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+    </main>
+    <SiteFooter />
+    <!-- Cookie Consent by TermsFeed https://www.TermsFeed.com -->
+    <script
+      type="text/javascript"
+      src="/js/cookie-consent/4.0.0/cookie-consent.js"
+      charset="UTF-8"
+    ></script>
+    <script type="text/javascript" charset="UTF-8">
+      document.addEventListener("DOMContentLoaded", function () {
+        cookieconsent.run({
+          notice_banner_type: "simple",
+          consent_type: "express",
+          palette: "light",
+          language: "en",
+          page_load_consent_levels: ["strictly-necessary"],
+          notice_banner_reject_button_hide: false,
+          preferences_center_close_button_hide: true,
+          page_refresh_confirmation_buttons: true,
+          website_name: "Reliably",
+        });
+        let title = document.getElementById("cc-nb-title");
+        let text = document.getElementById("cc-nb-text");
+        let accept = document.querySelector(".cc-nb-okagree");
+        let decline = document.querySelector(".cc-nb-reject");
+        let pref = document.querySelector(".cc-nb-changep");
+        if (title !== null) {
+          title.innerHTML = "We have cookies";
+          text.innerHTML =
+            "We use cookies to analyze our website traffic, and to understand where our visitors are coming from.";
+          accept.innerHTML = "Accept";
+          decline.innerHTML = "Decline";
+          pref.innerHTML = "Preferences";
+        }
+      });
+    </script>
+    <!-- End Cookie Consent by TermsFeed https://www.TermsFeed.com -->
+    <script>
+      const cards = document.querySelectorAll(".activityCard");
+      Array.prototype.forEach.call(cards, (card) => {
+        let down,
+          up,
+          link = card.querySelector("h2 a");
+        card.onmousedown = () => (down = +new Date());
+        card.onmouseup = () => {
+          up = +new Date();
+          if (up - down < 200) {
+            link.click();
+          }
+        };
+      });
+    </script>
+  </body><style lang="scss" is:global>
+    .activity {
+      padding-bottom: var(--space-large);
+
+      &__header {
+        padding-top: var(--sectionPadding);
+        padding-bottom: var(--space-large);
+
+        background-color: var(--grey-100);
+
+        h1 {
+          color: var(--text-color-bright);
+          font-family: var(--monospace-font);
+          font-size: clamp(3rem, 8vw, 4.8rem);
+        }
+      }
+
+      &__labels {
+        display: flex;
+        justify-content: center;
+        gap: var(--space-small);
+        margin-top: var(--space-medium);
+      }
+
+      &__type {
+        padding: 0.3rem 0.6rem;
+
+        background-color: var(--grey-200);
+        border-radius: var(--border-radius-s);
+
+        font-size: 2rem;
+        font-weight: 700;
+        text-transform: uppercase;
+
+        &--action {
+          background-color: var(--pink-100);
+
+          color: var(--pink-500);
+        }
+
+        &--probe {
+          background-color: var(--green-100);
+
+          color: var(--green-500);
+        }
+      }
+
+      &__description {
+        font-size: 2.4rem;
+      }
+
+      &__form {
+        margin: var(--space-medium) auto 0;
+        padding: 0.6rem 0.2rem 0.4rem;
+        width: 49.5rem;
+        max-width: 100%;
+
+        border-radius: var(--border-radius-s);
+        box-shadow: var(--box-shadow-diffuse);
+
+        img {
+          width: 100%;
+          max-width: 49.1rem;
+        }
+      }
+
+      &__try {
+        margin-top: var(--space-medium);
+      }
+
+      &__presentation {
+        text-align: center;
+      }
+
+      &__content {
+        max-width: 80rem;
+        padding: var(--sectionPadding) var(--space-small);
+
+        > * + * {
+          margin-top: var(--space-medium);
+        }
+
+        > table:first-child {
+          display: block;
+          overflow-x: auto;
+
+          background-color: var(--grey-100);
+          box-shadow: none;
+
+          thead {
+            display: none;
+          }
+
+          tbody {
+            display: flex;
+            flex-direction: column;
+            padding: var(--space-small);
+
+            // background-color: var(--grey-100);
+            border-radius: var(--border-radius-m);
+
+            @media (min-width: 42rem) {
+              flex-direction: row;
+            }
+
+            tr {
+              display: flex;
+              flex-direction: column;
+              flex: 1 0 auto;
+              // padding: 0;
+
+              background-color: transparent;
+
+              &:not(:first-child) {
+                padding-top: var(--space-small);
+                @media (min-width: 42rem) {
+                  padding-top: 0;
+                  padding-left: var(--space-small);
+
+                  border-left: 0.1rem solid var(--grey-300);
+                }
+              }
+
+              &:not(:last-child) {
+                padding-right: var(--space-small);
+              }
+
+              &:nth-child(3) td:last-child {
+                font-family: var(--monospace-font);
+                font-size: 1.6rem;
+              }
+
+              td {
+                padding: 0;
+
+                border-bottom: 0;
+
+                &:first-child {
+                  font-size: 1.4rem;
+                  text-transform: uppercase;
+
+                  strong {
+                    color: var(--text-color-dim);
+                    font-weight: 400;
+                  }
+                }
+
+                &:last-child {
+                  color: var(--text-color-bright);
+                }
+              }
+            }
+          }
+        }
+
+        > table:not(:first-child) {
+          overflow-x: auto;
+        }
+
+        table {
+          width: 100%;
+        }
+      }
+
+      &__related {
+        padding-top: var(--sectionPadding);
+        padding-bottom: var(--sectionPadding);
+
+        background-color: var(--grey-100);
+
+        ul {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(32rem, 1fr));
+          gap: var(--space-medium);
+
+          li {
+            align-self: stretch;
+          }
+        }
+      }
+    }
+  </style>
+</html>

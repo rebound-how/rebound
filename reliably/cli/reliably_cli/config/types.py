@@ -51,7 +51,7 @@ class AgentSection(BaseModel):
 
 
 class ServiceSection(BaseModel):
-    host: str = "https://app.reliably.com"
+    host: str = "http://localhost:8090"
     token: SecretStr | None = None
 
 

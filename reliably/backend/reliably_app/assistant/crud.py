@@ -54,6 +54,12 @@ async def update_scenario_suggestion(
     scenario_id: UUID4,
     item: schemas.ScenarioItem,
 ) -> None:
+    # we force unsetting the default value when it's an empty string
+    # to ensure the client triggers the user's input
+    for p in item.parameters:
+        if p.default == "":
+            p.default = None
+
     q = (
         update(models.AssistantScenario)
         .where(models.AssistantScenario.id == str(scenario_id))

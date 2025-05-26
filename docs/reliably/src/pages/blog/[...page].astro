@@ -1,0 +1,57 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PageTitle from "@/components/_ui/PageTitle.astro";
+import PostCard from "@/components/blog/PostCard.astro";
+import Pager from "@/components/_ui/Pager.vue";
+
+export async function getStaticPaths({ paginate }) {
+  // Why ".map(post => {...})" ?
+  // See https://github.com/withastro/astro/issues/2092
+  // const posts: any[] = await Astro.glob("./*.md").map((post) => {
+  //   const { Content, ...data } = post;
+  //   return data;
+  // });
+  const posts = await Astro.glob("./*.md");
+  posts.sort(
+    (a, b) =>
+      new Date(b.frontmatter.date).getTime() -
+      new Date(a.frontmatter.date).getTime()
+  );
+  // Return a paginated collection of paths for all posts
+  return paginate(posts, { pageSize: 5 });
+}
+// If set up correctly, The page prop now has everything that
+// you need to render a single page (see next section).
+const { page } = Astro.props;
+---
+
+<BaseLayout
+  title="Blog"
+  description="Discover more about modern reliability methods for developers including best SRE practices, tips and guides helping you develop a culture of reliability."
+>
+  <div class="container">
+    <PageTitle center={true}>The Reliably Blog</PageTitle>
+
+    <section class="posts">
+      <ul class="list-reset">
+        {page.data.map((post) => (
+          <li>
+            <PostCard {post} />
+          </li>
+        ))}
+      </ul>
+    </section>
+    <Pager {page} client:load />
+  </div>
+</BaseLayout>
+
+<style lang="scss">
+  .posts {
+    padding-top: var(--space-large);
+    padding-bottom: var(--space-large);
+
+    li + li {
+      margin-top: calc(3 * var(--space-large));
+    }
+  }
+</style>

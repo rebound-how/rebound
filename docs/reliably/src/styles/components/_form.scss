@@ -1,0 +1,49 @@
+form {
+  .input-wrapper {
+    &.formspreeMisc {
+      display: none;
+    }
+
+    + .input-wrapper {
+      margin-top: 1em;
+    }
+
+    label {
+      display: block;
+    }
+
+    input,
+    select,
+    textarea {
+      display: block;
+      height: 3.6rem;
+      width: 100%;
+      max-width: 60rem;
+      padding: 0.5em;
+
+      background-color: var(--grey-100);
+      border: none;
+      border-radius: 0.5rem;
+
+      color: var(--text-color-bright);
+      font-weight: 300;
+
+      &:focus {
+        outline: 2px solid var(--pink-500);
+      }
+    }
+
+    textarea {
+      min-height: 6em;
+    }
+
+    select {
+      height: auto;
+      min-width: 16rem;
+    }
+  }
+
+  .required {
+    color: var(--pink-500);
+  }
+}

@@ -1,0 +1,171 @@
+---
+import { Icon } from "astro-icon";
+
+import PageTitle from "@/components/_ui/PageTitle.astro";
+import HomeHeroSlider from "@/components/home/HomeHeroSlider.astro";
+---
+
+<section class="hero">
+  <div class="hero__content">
+    <PageTitle>Build and scale your resilience engineering capability</PageTitle
+    >
+    <p>
+      Reliably helps you tackle incidents and cost overruns, to build more
+      reliable products with more confident and healthier teams.
+    </p>
+    <div class="hero__links">
+      <a
+        href="/product/accelerate/"
+        class="button button--tertiary button"
+        id="homeBookDemo1"
+      >
+        Discover how
+      </a>
+      <a
+        href="/docs/getting-started/"
+        class="button button--secondary button"
+        id="homeBookDemo1"
+      >
+        Get started
+      </a>
+    </div>
+  </div>
+  <div class="hero__illustration">
+    <HomeHeroSlider />
+  </div>
+  <div class="hero__wave">
+    <Icon name="bubble-background" />
+  </div>
+  <div class="hero__wave hero__wave--mobile">
+    <Icon name="bubble-background-2" />
+  </div>
+</section>
+
+<style lang="scss" scoped>
+  .hero {
+    position: relative;
+
+    padding-top: var(--space-large);
+    padding-bottom: var(--sectionPadding);
+    padding-right: var(--space-small);
+    padding-left: var(--space-small);
+    width: 100%;
+
+    background-color: var(--homeHeroBackground);
+
+    @media (min-width: 66rem) {
+      display: grid;
+      grid-template-columns:
+        calc(50vw - (var(--max-width) + var(--space-medium)) / 2)
+        1fr
+        var(--space-medium)
+        1fr
+        calc(50vw - (var(--max-width) + var(--space-medium)) / 2);
+      overflow: hidden;
+      padding-right: 0;
+      padding-left: 0;
+    }
+
+    > .container {
+      position: relative;
+      z-index: 2;
+    }
+
+    &__content {
+      position: relative;
+      z-index: 2;
+
+      grid-column: 2 / span 1;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      margin-bottom: 12rem;
+
+      @media (min-width: 66rem) {
+        padding-right: var(--space-medium);
+        padding-left: var(--space-medium);
+      }
+
+      p {
+        margin: 0 0 var(--space-medium);
+        max-width: 60ch;
+
+        color: var(--text-color-bright);
+        font-size: 2.4rem;
+
+        @media (min-width: 32rem) {
+          max-width: 40rem;
+        }
+
+        @media (min-width: 80rem) {
+          max-width: 45rem;
+        }
+
+        @media (min-width: 86rem) {
+          max-width: 50rem;
+        }
+      }
+    }
+
+    &__links {
+      display: flex;
+      gap: var(--space-medium);
+      margin-top: var(--space-medium);
+    }
+
+    &__illustration {
+      position: relative;
+      z-index: 2;
+      grid-column: 4 / span 2;
+
+      display: none;
+
+      @media (min-width: 66rem) {
+        display: block;
+      }
+
+      img {
+        display: block;
+        height: auto;
+      }
+    }
+
+    &__wave {
+      position: absolute;
+      top: 0;
+      right: 0;
+
+      // display: none;
+      min-height: 100%;
+      min-width: 100%;
+
+      opacity: 0;
+
+      @media (min-width: 88rem) {
+        // display: block;
+        opacity: 1;
+      }
+
+      &--mobile {
+        // display: block;
+        min-height: unset;
+
+        top: unset;
+        bottom: 0;
+
+        opacity: 1;
+
+        @media (min-width: 88rem) {
+          // display: none;
+          opacity: 0;
+        }
+      }
+
+      svg {
+        display: block;
+        height: 100%;
+      }
+    }
+  }
+</style>

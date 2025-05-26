@@ -1,0 +1,294 @@
+---
+import { Icon } from "astro-icon";
+
+export interface Props {
+  src: string;
+  poster: string;
+  alt: string;
+  height: string;
+  width: string;
+  rounded?: boolean;
+  shadow?: boolean;
+  isExpandable?: boolean;
+}
+
+const props = Astro.props;
+
+let nativeWidth = props.width;
+let videoRatio: number = parseInt(props.height) / parseInt(props.width);
+let padding: string = `${(videoRatio * 100).toString()}%`;
+let radius: string = "0";
+let shadow: string = "none";
+
+if (props.rounded) {
+  radius = "var(--border-radius-m)";
+}
+if (props.shadow) {
+  shadow = "var(--box-shadow-diffuse)";
+}
+
+const buttonClass: string = props.isExpandable ? "play play--mini" : "play";
+---
+
+<video-container>
+  <video
+    data-video-height={props.height}
+    data-video-width={props.width}
+    src={props.src}
+    poster={props.poster}
+    height={props.height}
+    width={props.width}
+    autoplay
+    playsinline
+    loop
+    muted
+    playsinline
+    preload="auto"
+  >
+    <img src={props.poster} alt={props.alt} />
+  </video>
+  <button class={buttonClass}>
+    <span class="screen-reader-text">Play</span>
+    <Icon name="pause" />
+    <Icon name="play" />
+  </button>
+  {props.isExpandable && (
+    <button class="expand">
+      <span class="screen-reader-text">Expand</span>
+      <Icon name="maximize-2" />
+      <Icon name="minimize-2" />
+    </button>
+  )}
+</video-container>
+
+<script>
+  class VideoContainer extends HTMLElement {
+    constructor() {
+      super();
+
+      let isVideoPausedByUser: boolean = false;
+      let isVideoExpanded: boolean = false;
+      const v = this.querySelector("video");
+      const p = this.querySelector(".play");
+      const e = this.querySelector(".expand");
+
+      p.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (v.paused || v.ended) {
+          v.play();
+          p.classList.remove("paused");
+          isVideoPausedByUser = false;
+        } else {
+          v.pause();
+          p.classList.add("paused");
+          isVideoPausedByUser = true;
+        }
+      });
+
+      if (e) {
+        e.addEventListener("click", (event) => {
+          event.preventDefault();
+          let isExpanded = e.classList.contains("expand--expanded");
+          if (isExpanded) {
+            // Minimize
+            isVideoExpanded = false;
+            document.body.style.removeProperty("overflow");
+            e.parentElement.parentElement.remove();
+          } else {
+            // Maximize
+            let expandedVideo = document.createElement("div");
+            expandedVideo.id = "expandedVideo";
+            expandedVideo.classList.add("expandedVideo");
+            expandedVideo.innerHTML = v.parentElement.parentElement.innerHTML;
+            document.body.append(expandedVideo);
+            expandedVideo.style.cssText =
+              "position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 99; padding: var(--space-medium); background-color: rgba(0, 0, 0, 0.5);";
+            const newVid = expandedVideo.querySelector(
+              "video-container"
+            ) as HTMLElement;
+            newVid.dataset.isExpanded = "true";
+            let videoHeight = parseInt(v.dataset.videoHeight);
+            let videoWidth = parseInt(v.dataset.videoWidth);
+            const vh = window.innerHeight - 60; // Account for padding
+            const vw = window.innerWidth - 60; // Account for padding
+
+            if (videoHeight > vh) {
+              const ratio = vh / videoHeight;
+              videoWidth = videoWidth * ratio;
+              videoHeight = videoHeight * ratio;
+              newVid.style.width = `${videoWidth.toString()}px`;
+              newVid.style.paddingTop = `${videoHeight.toString()}px`;
+            }
+
+            if (videoWidth > vw) {
+              const ratio = vw / videoWidth;
+              videoWidth = videoWidth * ratio;
+              videoHeight = videoHeight * ratio;
+              newVid.style.width = `${videoWidth.toString()}px`;
+              newVid.style.paddingTop = `${videoHeight.toString()}px`;
+            }
+
+            newVid.style.cssText +=
+              "position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);";
+
+            const button = newVid.querySelector(".expand");
+            button.classList.add("expand--expanded");
+          }
+        });
+      }
+
+      const videoObserverOptions = { rootMargin: "0%", threshold: 0 };
+      var videoObserver = new IntersectionObserver(
+        videoObserverCallback,
+        videoObserverOptions
+      );
+      function videoObserverCallback(entries, observer) {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            if (!isVideoPausedByUser) {
+              v.play();
+            }
+          } else {
+            v.pause();
+          }
+        });
+      }
+      videoObserver.observe(v);
+    }
+  }
+
+  customElements.define("video-container", VideoContainer);
+</script>
+
+<style lang="scss" define:vars={{ padding, radius, shadow, nativeWidth }}>
+  video-container {
+    position: relative;
+
+    display: block;
+    height: 0;
+    padding-top: var(--padding);
+    overflow: hidden;
+
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+
+    &:hover {
+      button {
+        opacity: 1;
+      }
+    }
+
+    video {
+      position: absolute;
+      top: 0;
+
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    button {
+      position: absolute;
+      z-index: 2;
+
+      display: block;
+      background-color: rgba(0, 0, 0, 0.2);
+      border: none;
+      cursor: pointer;
+      opacity: 0;
+
+      color: white;
+
+      svg {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+
+        transform: translate(-50%, -50%);
+
+        &:last-child {
+          display: none;
+        }
+      }
+    }
+
+    .play {
+      top: 0;
+      left: 0;
+
+      height: 100%;
+      width: 100%;
+
+      border-radius: var(--radius);
+
+      svg {
+        height: 4.8rem;
+      }
+
+      &.paused {
+        opacity: 1;
+
+        svg {
+          &:nth-last-child(2) {
+            display: none;
+          }
+
+          &:last-child {
+            display: block;
+          }
+        }
+      }
+
+      &--mini {
+        top: unset;
+        bottom: var(--space-medium);
+        left: var(--space-medium);
+
+        height: 3.6rem;
+        width: 3.6rem;
+
+        border-radius: var(--border-radius-s);
+
+        &:hover {
+          background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        svg {
+          height: 1.6rem;
+        }
+      }
+    }
+
+    .expand {
+      top: var(--space-medium);
+      right: var(--space-medium);
+
+      height: 3.6rem;
+      width: 3.6rem;
+
+      border-radius: var(--border-radius-s);
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.4);
+      }
+
+      &--expanded {
+        opacity: 1;
+
+        svg {
+          &:nth-last-child(2) {
+            display: none;
+          }
+
+          &:last-child {
+            display: block;
+          }
+        }
+      }
+
+      svg {
+        height: 1.6rem;
+      }
+    }
+  }
+</style>

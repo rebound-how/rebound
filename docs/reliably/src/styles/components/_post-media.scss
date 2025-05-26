@@ -1,0 +1,26 @@
+.post__content,
+.event__content {
+  p {
+    img {
+      display: block;
+      width: 100%;
+
+      border-radius: var(--border-radius-m);
+      box-shadow: var(--box-shadow-diffuse);
+    }
+  }
+
+  iframe {
+    height: 100%;
+    width: 100%;
+    margin-top: var(--space-small);
+    margin-bottom: var(--space-small);
+
+    aspect-ratio: 16/9;
+
+    &[src*="youtube"] {
+      border-radius: var(--border-radius-m);
+      box-shadow: var(--box-shadow-diffuse);
+    }
+  }
+}

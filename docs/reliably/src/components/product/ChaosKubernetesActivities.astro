@@ -1,0 +1,55 @@
+---
+export interface KubernetesActivities {
+  category: string;
+  number: number;
+}
+
+export interface Props {
+  category: KubernetesActivities;
+}
+
+const { category } = Astro.props;
+---
+
+<div class="kubernetesActivities">
+  <span class="kubernetesActivities__category">{category.category}</span>
+  <span class="kubernetesActivities__number">{category.number}</span>
+  <span class="kubernetesActivities__label">activities</span>
+</div>
+
+<style lang="scss">
+  .kubernetesActivities {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-small);
+
+    background-color: var(--pink-800);
+    border-radius: var(--border-radius-m);
+    opacity: 0.5;
+
+    transition: all 0.3s ease-in-out;
+
+    &:hover {
+      opacity: 1;
+    }
+
+    &__category {
+      font-family: var(--monospace-font);
+    }
+
+    &__number {
+      font-size: 6rem;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    &__label {
+      opacity: 0.5;
+
+      font-size: 1.4rem;
+      text-transform: uppercase;
+    }
+  }
+</style>

@@ -1,0 +1,75 @@
+<section class="homeQuote">
+  <div class="container">
+    <figure class="homeQuote__item">
+      <blockquote>
+        <p>
+          Reliably is Open-Source. It is part of the
+          <a href="https://rebound.how">Rebound</a> toolset family and works
+          alongside <a href="https://chaostoolkit.org/">Chaos Toolkit</a> and
+          <a href="https://fault-project.com/">fault</a>
+        </p>
+      </blockquote>
+      <figcaption>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<style lang="scss">
+  .homeQuote {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: var(--sectionPadding);
+    padding-bottom: var(--sectionPadding);
+
+    background-color: var(--grey-100);
+
+    &__item {
+      blockquote {
+        margin: 0;
+        padding: 0;
+
+        border: none;
+
+        font-style: normal;
+        quotes: "\201C""\201D""\2018""\2019";
+
+        p {
+          // font-size: clamp(3.6rem, 4vw, 4.8rem);
+          font-size: clamp(2.4rem, 4vw, 4.8rem);
+          font-weight: 800;
+          line-height: 1.25;
+
+          @media (min-width: 60rem) {
+            font-size: clamp(2.4rem, 4vw, 4.8rem);
+          }
+
+          &::before,
+          &::after {
+            color: var(--text-color-dim);
+            font-weight: 900;
+          }
+
+          &::before {
+            content: open-quote;
+          }
+
+          &::after {
+            content: close-quote;
+          }
+        }
+      }
+
+      figcaption {
+        margin-top: var(--space-medium);
+        font-style: normal;
+        text-align: center;
+
+        cite {
+          font-style: normal;
+        }
+      }
+    }
+  }
+</style>

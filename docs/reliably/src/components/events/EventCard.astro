@@ -1,0 +1,137 @@
+---
+import EventDate from "@/components/events/EventDate.astro";
+import TagsList from "@/components/_ui/TagsList.astro";
+
+import { addTrailingSlash } from "@/utils/strings";
+
+export interface Props {
+  event: {
+    frontmatter: {
+      title: string;
+      description: string;
+      thumbnail: string;
+      labels: string[];
+    };
+    url: string;
+  };
+  hero?: boolean;
+}
+
+const { event, hero } = Astro.props;
+const fm = event.frontmatter;
+const url = addTrailingSlash(event.url);
+
+let hasTags: boolean = fm.labels !== undefined;
+---
+
+<article class={hero ? "eventCard eventCard--hero" : "eventCard"}>
+  <div class="eventCard__content">
+    <h3 class="eventCard__title">
+      <a href={url}>
+        {fm.title}
+      </a>
+    </h3>
+    <div class="eventCard__date">
+      <EventDate event={fm} />
+    </div>
+    <p class="eventCard__description">
+      {fm.description}
+    </p>
+    <div class="eventCard__tags">
+      {hasTags && <TagsList tags={fm.labels} />}
+    </div>
+  </div>
+  <div class="eventCard__image">
+    <img src={fm.thumbnail} alt="" height="260" width="340" loading="lazy" />
+  </div>
+</article>
+
+<style lang="scss">
+  .eventCard {
+    display: flex;
+    flex-direction: column-reverse;
+    height: 100%;
+    overflow: hidden;
+
+    background-color: white;
+    border-radius: var(--border-radius-l);
+    box-shadow: var(--box-shadow-sharp);
+    cursor: pointer;
+
+    transition: all 0.3s ease-in-out;
+
+    &:hover {
+      box-shadow: var(--box-shadow-diffuse);
+    }
+
+    &--hero {
+      margin-top: var(--space-large);
+      margin-bottom: var(--space-large);
+
+      @media (min-width: 40em) {
+        flex-direction: row-reverse;
+        min-height: 36rem;
+        max-height: 42rem;
+        > * {
+          width: 50%;
+        }
+
+        .eventCard__image {
+          height: unset;
+        }
+      }
+    }
+
+    &__content {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      padding: var(--space-small);
+
+      > .tags:last-child {
+        margin-top: auto;
+      }
+    }
+
+    &__title {
+      margin-top: 0;
+      margin-bottom: 0;
+
+      font-size: 2.4rem;
+      font-weight: 500;
+      line-height: 1.25;
+
+      a {
+        color: var(--text-color-bright);
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    &__date {
+      margin-top: 0;
+      margin-bottom: var(--space-small);
+    }
+
+    &__tags {
+      margin-top: auto;
+      padding-top: var(--space-small);
+    }
+
+    &__image {
+      height: 26rem;
+      width: 100%;
+
+      img {
+        display: block;
+        height: 100%;
+        width: 100%;
+
+        object-fit: cover;
+      }
+    }
+  }
+</style>

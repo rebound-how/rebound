@@ -1,0 +1,76 @@
+.codeTerminal {
+  --terminalBackground: var(--grey-100);
+  --terminalBarBackground: var(--grey-200);
+  --terminalBorder: var(--grey-200);
+  --terminalText: var(--grey-700);
+  --terminalTextDimmed: var(--grey-400);
+  --terminalTextHighlighted: #27a80d;
+  --terminalCommand: #27a80d;
+  --terminalPrompt: var(--pink-500);
+
+  &--dark {
+    --terminalBackground: var(--blue-800);
+    --terminalBarBackground: var(--blue-900);
+    --terminalBorder: var(--blue-800);
+    --terminalText: hsl(209, 100%, 93%);
+    --terminalTextDimmed: hsl(209, 30%, 42%);
+    --terminalTextHighlighted: rgb(84, 226, 200);
+    --terminalCommand: hsl(122, 74%, 43%);
+    --terminalPrompt: var(--yellow-500);
+  }
+
+  position: relative;
+
+  overflow: auto;
+  padding: 4rem 1.6rem 1.6rem;
+
+  background-color: var(--terminalBackground);
+  border: .1rem solid var(--terminalBorder);
+  border-radius: var(--border-radius-s);
+  box-shadow: var(--box-shadow-diffuse);
+
+  color: var(--terminalText);
+  font-family: var(--monospace-font);
+
+  &::before {
+    content: "~ (-zsh)";
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    display: block;
+    padding: .4rem 1.6rem;
+    width: 100%;
+
+    background-color: var(--terminalBarBackground);
+
+    text-align: center;
+  }
+
+  &__line {
+    &--new {
+      &:not(:first-child) {
+        margin-top: 1.6rem;
+      }
+    }
+  }
+
+  &__prompt {
+    color: var(--terminalPrompt);
+  }
+
+  &__element {
+    &--dimmed {
+      color: var(--terminalTextDimmed);
+    }
+
+    &--highlighted {
+      color: var(--terminalTextHighlighted);
+    }
+  }
+
+  &__command {
+    color: var(--terminalCommand);
+  }
+}

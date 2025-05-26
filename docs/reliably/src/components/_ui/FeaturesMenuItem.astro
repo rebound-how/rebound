@@ -1,0 +1,43 @@
+---
+import { DocPage } from "@/types/types";
+
+interface Props {
+  page: DocPage;
+}
+
+const { page } = Astro.props;
+---
+
+<a class="featuresMenuItem" href={page.url}>
+  <strong>{page.title}</strong>
+  <span>{page.description}</span>
+</a>
+
+<style lang="scss" scoped>
+  .featuresMenuItem {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-small);
+
+    background-color: transparent;
+    border-radius: var(--border-radius-s);
+
+    color: var(--text-color-dim);
+    text-decoration: none;
+
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      background-color: var(--pink-100);
+
+      color: var(--text-color);
+    }
+
+    strong,
+    span {
+      font-size: 1.6rem;
+    }
+  }
+</style>

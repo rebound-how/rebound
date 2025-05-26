@@ -142,11 +142,11 @@ def get_initial_system_message(tags: List[str]) -> SystemMessage:
 
                 Be smart about it. Assume the following:
 
-                * run load traffic that spans across the entire scenario when this helps
-                * try to use an incremental approach when appropriate, I want to learn how my system to a gradual change or by ramping up the degradation
-                * use the purpose property to explain the rationale for each operation in the context of the scenario
+                * try to use an incremental approach when appropriate
+                * DO NOT run the load test more than once
+                * use the `purpose` property to explain the rationale for each operation in the context of the scenario
                 * keep only required parameters of each operation
-                * make sure required parameters are present in the output for each operation
+                * make sure required parameters are present in the output for each operation, even when they have a default value
                 * update the name property so it reflects the purpose of the operation, but make the title human oriented. It should neatly convey the reason for this operation at this time
                 * use the related operations, when an operation declares any, to help you complete the scenario. Notably the rollbacks. Make sure you match the number of rollbacks with the number of operations you introduced.
                 """  # noqa E501
@@ -333,6 +333,102 @@ def get_assistant_examples() -> List[AssistantMessage]:
                     ],
                 ),
             ],
+        ),
+        AssistantMessage(
+            [
+                ScenarioItem(
+                    name="Run typical user traffic",
+                    ref="reliably-load-run_load_test",
+                    tags=["performance"],
+                    type="action",
+                    background=True,
+                    purpose="Load traffic into our application using a typical Monday morning shape",  # noqa E501
+                    parameters=[
+                        ScenarioItemParameter(
+                            key="url",
+                            type="string",
+                            title="URL under Test",
+                            required=True,
+                        ),
+                        ScenarioItemParameter(
+                            key="duration",
+                            type="integer",
+                            title="Duration of Test",
+                            required=True,
+                            default=60,
+                        ),
+                    ],
+                ),
+                ScenarioItem(
+                    name="Delete one pod",
+                    ref="k8s-pod-delete_pod",
+                    tags=["reliability", "availability"],
+                    type="action",
+                    background=False,
+                    purpose="Delete an applicationb pod and let the system self-heal",  # noqa E501
+                    parameters=[
+                        ScenarioItemParameter(
+                            key="ns",
+                            type="string",
+                            title="Pod Namespace",
+                            default="default",
+                            required=True,
+                        ),
+                        ScenarioItemParameter(
+                            key="label_selector",
+                            type="string",
+                            title="Pod Label Selector",
+                            required=True,
+                        ),
+                    ],
+                ),
+                ScenarioItem(
+                    name="Let system self-heal",
+                    ref="reliably-pauses-pause_execution",
+                    tags=["workflow"],
+                    type="action",
+                    background=False,
+                    purpose="Give our system a chance to self-heal",
+                    parameters=[
+                        ScenarioItemParameter(
+                            key="duration",
+                            type="integer",
+                            title="Pause Duration",
+                            required=True,
+                            default=5,
+                        )
+                    ],
+                ),
+                ScenarioItem(
+                    name="Let system self-heal",
+                    ref="k8s-deployment-deployment_available_and_healthy",
+                    tags=["reliability", "availability"],
+                    type="probe",
+                    background=False,
+                    purpose="Our application is now back and healthy",
+                    parameters=[
+                        ScenarioItemParameter(
+                            key="name",
+                            type="string",
+                            title="Deployment Name",
+                            required=True,
+                        ),
+                        ScenarioItemParameter(
+                            key="ns",
+                            type="string",
+                            title="Deployment Namespace",
+                            default="default",
+                            required=True,
+                        ),
+                        ScenarioItemParameter(
+                            key="label_selector",
+                            type="string",
+                            title="Deployment Label Selector",
+                            required=False,
+                        )
+                    ],
+                ),
+            ]
         ),
         AssistantMessage(
             [

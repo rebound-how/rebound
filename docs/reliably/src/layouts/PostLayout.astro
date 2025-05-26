@@ -1,0 +1,201 @@
+---
+import Head from "@/components/layout/Head.astro";
+import SiteHeader from "@/components/layout/SiteHeader.astro";
+import SiteFooter from "@/components/layout/SiteFooter.astro";
+import PageTitle from "@/components/_ui/PageTitle.astro";
+import PostDate from "@/components/blog/PostDate.astro";
+import PostAuthor from "@/components/blog/PostAuthor.astro";
+
+import { readingTime } from "@/utils/blog";
+
+const { content } = Astro.props;
+const words = Astro.props.rawContent().trim().split(/\s+/).length;
+let canonical = new URL(Astro.url.pathname, Astro.site);
+const image = new URL(content.featured_image.src || "social.png", Astro.site);
+let metaTitle = content.title;
+let metaDescription = content.description;
+if (content.seo) {
+  if (content.seo.title.length) {
+    metaTitle = content.seo.title;
+  }
+  if (content.seo.description.length) {
+    metaDescription = content.seo.description;
+  }
+}
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <Head
+      title={metaTitle}
+      description={metaDescription}
+      canonicalURL={canonical}
+      {image}
+    />
+    <style>
+      .page {
+        padding: 0 0 var(--space-large);
+        background-color: var(--grey-100);
+      }
+    </style>
+  </head>
+  <body class="default">
+    <SiteHeader />
+    <main class="page">
+      <div class="post">
+        <header class="post__header">
+          <div class="post__info">
+            <PageTitle color="pink">{content.title}</PageTitle>
+            <div class="post__category">{content.category}</div>
+            <div class="post__meta">
+              <div class="post__author">
+                <PostAuthor post={content} />
+              </div>
+              <div class="post__date">
+                Published<br />
+                <strong><PostDate date={content.date} /></strong>
+              </div>
+              <div class="post__readingTime">
+                Reading time<br />
+                <strong>{readingTime(words)} minutes</strong>
+              </div>
+            </div>
+          </div>
+          <div class="post__image">
+            <img
+              class="post__cover block-center"
+              src={content.featured_image.src}
+              alt={content.featured_image.alt}
+            />
+          </div>
+        </header>
+        <div class="container">
+          <div class="post__content block-center">
+            <slot />
+          </div>
+        </div>
+      </div>
+    </main>
+    <SiteFooter />
+    <!-- Cookie Consent by TermsFeed https://www.TermsFeed.com -->
+    <script
+      type="text/javascript"
+      src="/js/cookie-consent/4.0.0/cookie-consent.js"
+      charset="UTF-8"
+    >
+    </script>
+    <script type="text/javascript" charset="UTF-8">
+      document.addEventListener("DOMContentLoaded", function () {
+        cookieconsent.run({
+          notice_banner_type: "simple",
+          consent_type: "express",
+          palette: "light",
+          language: "en",
+          page_load_consent_levels: ["strictly-necessary"],
+          notice_banner_reject_button_hide: false,
+          preferences_center_close_button_hide: true,
+          page_refresh_confirmation_buttons: true,
+          website_name: "Reliably",
+        });
+        let title = document.getElementById("cc-nb-title");
+        let text = document.getElementById("cc-nb-text");
+        let accept = document.querySelector(".cc-nb-okagree");
+        let decline = document.querySelector(".cc-nb-reject");
+        let pref = document.querySelector(".cc-nb-changep");
+        if (title !== null) {
+          title.innerHTML = "We have cookies";
+          text.innerHTML =
+            "We use cookies to analyze our website traffic, and to understand where our visitors are coming from.";
+          accept.innerHTML = "Accept";
+          decline.innerHTML = "Decline";
+          pref.innerHTML = "Preferences";
+        }
+      });
+    </script>
+    <!-- End Cookie Consent by TermsFeed https://www.TermsFeed.com -->
+  </body>
+</html>
+
+<style lang="scss">
+  .post {
+    padding-bottom: var(--space-large);
+
+    &__header {
+      position: relative;
+
+      display: grid;
+      grid-template-columns: 1fr;
+
+      background-color: var(--yellow-500);
+
+      @media (min-width: 50rem) {
+        grid-template-columns:
+          calc(50vw - var(--max-width) / 2)
+          repeat(2, 1fr)
+          calc(50vw - var(--max-width) / 2);
+        margin-bottom: var(--space-large);
+        min-height: 40rem;
+      }
+    }
+
+    &__info {
+      grid-column: 2 / 3;
+
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-medium) var(--space-small);
+    }
+
+    &__category {
+      order: -1;
+
+      color: var(--pink-500);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    &__meta {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-medium);
+
+      @media (min-width: 40em) and (max-width: 50em), (min-width: 70em) {
+        flex-direction: row;
+        > * + * {
+          padding-left: var(--space-small);
+
+          border-left: 0.1rem solid var(--yellow-600);
+        }
+      }
+    }
+
+    &__image {
+      position: relative;
+      grid-column: 3 / 5;
+
+      overflow: hidden;
+    }
+
+    &__cover {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+
+      display: block;
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
+
+      transform: translate(-50%, -50%);
+    }
+
+    &__content {
+      max-width: 70rem;
+
+      > * + * {
+        margin-top: var(--space-medium);
+      }
+    }
+  }
+</style>

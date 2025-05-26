@@ -1,0 +1,75 @@
+---
+import { Icon } from "astro-icon";
+
+export interface Props {
+  target: string;
+  large?: boolean;
+}
+
+const { target, large } = Astro.props;
+
+const classString: string = `${
+  large === true ? "activityLogo activityLogo--large" : "activityLogo"
+}`;
+
+function targetToName(t: string): string {
+  if (t === "AWS") {
+    return "aws-logo";
+  } else if (t === "AWS AZ") {
+    return "aws-az-logo";
+  } else if (t === "Azure") {
+    return "azure-logo";
+  } else if (t === "Dynatrace") {
+    return "dynatrace-logo";
+  } else if (t === "Gandi") {
+    return "gandi-logo";
+  } else if (t === "Google Cloud") {
+    return "google-cloud-logo";
+  } else if (t === "k6") {
+    return "k6-logo";
+  } else if (t === "Honeycomb") {
+    return "honeycomb-mark";
+  } else if (t === "Istio") {
+    return "istio-logo";
+  } else if (t === "Kubernetes") {
+    return "kubernetes-logo";
+  } else if (t === "Prometheus") {
+    return "prometheus-logo";
+  } else if (t === "reliability") {
+    return "reliably-r";
+  } else if (t === "Service Fabric") {
+    return "service-fabric-logo";
+  } else if (t === "Spring") {
+    return "spring-logo";
+  } else if (t === "ToxiProxy") {
+    return "toxiproxy-logo";
+  } else if (t === "WireMock") {
+    return "wiremock-logo";
+  } else {
+    return "box";
+  }
+}
+---
+
+<div class={classString} title={target}>
+  <Icon name={targetToName(target)} />
+  <span class="screen-reader-text">{target}</span>
+</div>
+
+<style lang="scss">
+  .activityLogo {
+    padding-top: 0.6rem;
+
+    svg {
+      max-height: 3.6rem;
+      width: 3.6rem;
+    }
+
+    &--large {
+      svg {
+        max-height: unset;
+        width: 7.2rem;
+      }
+    }
+  }
+</style>

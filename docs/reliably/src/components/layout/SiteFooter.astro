@@ -1,0 +1,228 @@
+---
+import { Icon } from "astro-icon";
+import { addTrailingSlash } from "@/utils/strings";
+import { DocPage } from "@/types/types";
+
+const primaryNav = [
+  { href: "/blog/", label: "Blog" },
+  { href: "/contact/", label: "Contact Us", id: "footerContact" },
+];
+
+const secondaryNav = [
+  { href: "/legal/", label: "Terms & Conditions" },
+  { href: "/legal/privacy-cookies/", label: "Privacy & Cookies" },
+];
+
+const docsNav = [
+  { href: "/docs/getting-started/", label: "Getting Started" },
+  { href: "/docs/how-it-works/", label: "How it Works" },
+  { href: "/docs/", label: "Docs" },
+];
+
+const featuresPages: DocPage[] = [
+  {
+    title: "Assistant",
+    url: "/docs/features/assistant/",
+  },
+  {
+    title: "Plans",
+    url: "/docs/concepts/plans/",
+  },
+  {
+    title: "Starters",
+    url: "/docs/concepts/starters/",
+  },
+  {
+    title: "Deployments",
+    url: "/docs/concepts/deployments/",
+  },
+  {
+    title: "Environments",
+    url: "/docs/concepts/environments/",
+  },
+  {
+    title: "Experiments",
+    url: "/docs/concepts/experiments/",
+  },
+  {
+    title: "Executions",
+    url: "/docs/concepts/executions/",
+  },
+];
+
+const socialNav = [
+  {
+    href: "https://github.com/rebound-how/rebound",
+    label: "Our open-source code is on GitHub",
+    icon: "github-logo",
+  },
+  {
+    href: "https://www.linkedin.com/company/reliably",
+    label: "Reliably on LinkedIn",
+    icon: "linkedin-logo",
+  },
+];
+---
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__site">
+      <strong>About</strong>
+      <nav class="nav nav--primary">
+        <ul class="list-reset">
+          {primaryNav.map((item) => (
+            <li>
+              <a href={item.href} id={item.id ? item.id : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <nav class="nav nav--secondary">
+        <ul class="list-reset">
+          {secondaryNav.map((item) => (
+            <li>
+              <a href={item.href}>{item.label}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+    <div class="footer__product">
+      <strong>Product</strong>
+      <nav class="nav nav--product">
+        <ul class="list-reset">
+          {featuresPages.map((item) => (
+            <li>
+              <a href={addTrailingSlash(item.url)}>{item.title}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+    <div class="footer__developer">
+      <strong>Developer</strong>
+      <nav class="nav nav--docs">
+        <ul class="list-reset">
+          {docsNav.map((item) => (
+            <li>
+              <a href={item.href}>{item.label}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+    <div class="footer__social">
+      <Icon class="reliably-logo" name="reliably-logo-yellow" />
+      <span class="screen-reader-text">Reliably</span>
+      <nav class="nav nav--social">
+        <ul class="list-reset">
+          {socialNav.map((item) => (
+            <li>
+              <a href={item.href} title={item.label}>
+                <Icon name={item.icon} />
+                <span class="screen-reader-text">{item.label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<style lang="scss" scoped>
+  .footer {
+    background-color: var(--footer-background);
+
+    padding: var(--space-large) 0;
+
+    > .container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-medium);
+
+      @media (min-width: 30rem) {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      @media (min-width: 60rem) {
+        grid-template-columns: repeat(5, 1fr);
+
+        .footer__social {
+          grid-column-end: span 2;
+        }
+      }
+    }
+
+    .nav {
+      margin-top: 0.2rem;
+
+      & + .nav,
+      & + strong {
+        margin-top: var(--space-small);
+      }
+
+      a {
+        color: var(--text-color);
+
+        &:hover {
+          color: var(--pink-500);
+        }
+      }
+    }
+
+    strong {
+      display: inline-block;
+    }
+
+    &__social {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-small);
+
+      color: var(--text-color-bright);
+
+      @media (min-width: 50rem) {
+        align-items: flex-end;
+      }
+
+      .reliably-logo {
+        width: 20rem;
+      }
+
+      .nav {
+        width: 20rem;
+
+        ul {
+          display: flex;
+          justify-content: center;
+          gap: var(--space-small);
+
+          a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 3.6rem;
+            width: 3.6rem;
+
+            border-radius: 50%;
+
+            color: var(--text-color);
+
+            &:hover {
+              background-color: var(--yellow-500);
+
+              color: var(--footer-icon-hover);
+            }
+
+            svg {
+              width: 2rem;
+            }
+          }
+        }
+      }
+    }
+  }
+</style>

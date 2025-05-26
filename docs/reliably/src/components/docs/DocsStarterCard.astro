@@ -1,0 +1,181 @@
+---
+import { Icon } from "astro-icon";
+import { addTrailingSlash } from "@/utils/strings";
+
+export interface Props {
+  starter: {
+    [key: string]: any;
+  };
+}
+
+const { starter } = Astro.props;
+const fm = starter.frontmatter;
+
+const url = addTrailingSlash(starter.url);
+---
+
+<article
+  class={fm.color ? `starterCard starterCard--${fm.color}` : "starterCard"}
+>
+  <div class="starterCard__wrapper">
+    <h3 class="starterCard__title">
+      <Icon class="starterCard__icon" name={fm.icon} />
+      <a href={url}>
+        {fm.title}
+      </a>
+    </h3>
+    <div class="starterCard__content">
+      <p class="starterCard__description">
+        {fm.introduction}
+      </p>
+      <p class="starterCard__tags">
+        {fm.tags.map((tag: string) => <span>{tag}</span>)}
+      </p>
+    </div>
+  </div>
+</article>
+
+<style lang="scss">
+  .starterCard {
+    position: relative;
+
+    height: 100%;
+
+    background-color: var(--grey-100);
+    border-radius: var(--border-radius-s);
+    box-shadow: var(--box-shadow-diffuse);
+    cursor: pointer;
+
+    transition: box-shadow 0.3s ease-in-out;
+
+    &__wrapper {
+      height: 30rem;
+      overflow: hidden;
+
+      border-radius: var(--border-radius-s);
+    }
+
+    &__title {
+      position: relative;
+
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-small);
+      justify-content: flex-start;
+      height: 100%;
+      margin-bottom: 0;
+      padding: calc(var(--space-medium) + var(--space-small)) var(--space-small)
+        var(--space-large);
+
+      background-color: var(--starterBackgroundColor);
+
+      color: var(--starterHeadingColor);
+
+      transition: all 0.3s ease-in-out;
+
+      a {
+        font-size: 3.2rem;
+        text-decoration: none;
+
+        transition: font-size 0.3s ease-in-out;
+
+        &,
+        &:visited {
+          color: inherit;
+        }
+      }
+    }
+
+    &__icon {
+      position: absolute;
+      top: var(--space-small);
+      right: var(--space-small);
+      height: 2.4rem;
+
+      transition: transform 0.3s ease-in-out;
+    }
+
+    &__content {
+      display: flex;
+      flex: 1 0 auto;
+      flex-direction: column;
+      padding: var(--space-small);
+    }
+
+    &__tags {
+      position: absolute;
+      bottom: var(--space-small);
+
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-small);
+      width: calc(100% - 2 * var(--space-small));
+      margin-top: auto;
+      margin-bottom: 0;
+
+      span {
+        // display: inline-block;
+        padding: 0.4rem 0.6rem;
+        background-color: var(--tagBackgroundColor);
+        border-radius: var(--border-radius-s);
+
+        color: var(--starterTextColor);
+        font-size: 1.6rem;
+
+        transition: all 0.1s ease-in-out 0.2s;
+      }
+    }
+
+    &--pink {
+      --starterBackgroundColor: var(--pink-500);
+      --tagBackgroundColor: var(--pink-600);
+      --starterHeadingColor: white;
+      --starterTextColor: white;
+    }
+
+    &--yellow {
+      --starterBackgroundColor: var(--yellow-500);
+      --tagBackgroundColor: var(--yellow-600);
+      --starterHeadingColor: var(--text-color-bright);
+      --starterTextColor: var(--text-color-bright);
+    }
+
+    &--darkBlue {
+      --starterBackgroundColor: var(--blue-900);
+      --tagBackgroundColor: var(--blue-800);
+      --starterHeadingColor: var(--blue-100);
+      --starterTextColor: var(--blue-200);
+    }
+
+    &--k8sBlue {
+      --starterBackgroundColor: #2e6de7;
+      --tagBackgroundColor: #104dc8;
+      --starterHeadingColor: white;
+      --starterTextColor: var(--blue-100);
+    }
+
+    &:hover {
+      --tagBackgroundColor: var(--grey-300);
+      --starterTextColor: var(--text-color);
+
+      box-shadow: var(--box-shadow-sharp);
+
+      .starterCard__title {
+        height: 12rem;
+        padding: var(--space-small);
+
+        a {
+          font-size: 2.4rem;
+        }
+      }
+
+      .starterCard__tags,
+      .starterCard__icon {
+        opacity: 0;
+        // span {
+        //   transition: all 0.25s ease-in-out 0.05s;
+        // }
+      }
+    }
+  }
+</style>

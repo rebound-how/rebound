@@ -1,0 +1,149 @@
+---
+import { Image } from "astro:assets";
+import { Icon } from "astro-icon";
+
+import dashboard from "src/assets/images/reliably-dashboard.webp";
+
+
+import requestsTimeline from "@/assets/images/reliably-features-requests-timeline.webp";
+import requestsDistribution from "@/assets/images/reliably-features-requests-distribution.webp";
+
+const features: string[] = [
+  "Experiment builder",
+  "Reusable experiment templates",
+  "Import JSON Chaos Toolkit experiments",
+  "Run from your CI/CD, in the cloud, or on-premises with Docker or Kubernetes",
+  "Schedule executions",
+  "Over 300 attacks and probes",
+  "Target AWS, Google Cloud, Azure, Kubernetes, and more",
+  "Explore and learn with the execution timeline and dashboard",
+  "Native integrations with Honeycomb, Grafana, Slack, and more",
+  "Built on top of Chaos Toolkit, the developer-favorite open source chaos engineering toolkit",
+];
+---
+
+<section class="homeFeatures">
+  <div class="container">
+    <div class="homeFeatures__content">
+      <h2>
+        <span>Features</span>
+        The Reliability Platform
+      </h2>
+      <p>
+        Reliably helps organizations of all sizes deliver more reliable
+        products.
+      </p>
+      <ul class="homeFeatures__list list-reset">
+        {features.map((feature) => (
+          <li>
+            <span>
+              <Icon name="check" />
+            </span>{" "}
+            {feature}
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="homeFeatures__illustration">
+      <Image src={requestsDistribution} alt="" />
+      <Image src={requestsTimeline} alt="" />
+    </div>
+  </div>
+</section>
+
+<style lang="scss">
+  .homeFeatures {
+    padding-top: var(--sectionPadding);
+    padding-bottom: var(--sectionPadding);
+
+    background-color: white;
+
+    > .container {
+      display: grid;
+      gap: var(--space-large);
+
+      @media (min-width: 60rem) {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    &__content {
+      h2 {
+        span {
+          display: block;
+
+          color: var(--pink-500);
+          font-size: 2.4rem;
+          text-transform: uppercase;
+        }
+      }
+    }
+
+    &__list {
+      margin-top: var(--space-medium);
+
+      li {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-small);
+        margin-bottom: var(--space-small);
+
+        span {
+          flex: 0 0 auto;
+
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          height: 2.4rem;
+          width: 2.4rem;
+          margin-top: 0.4rem;
+
+          background-color: var(--pink-100);
+          border-radius: 50%;
+
+          color: var(--pink-500);
+
+          svg {
+            height: 1.4rem;
+
+            stroke-width: 3;
+          }
+        }
+      }
+    }
+
+    &__illustration {
+      display: none;
+      position: relative;
+      align-self: stretch;
+
+      @media (min-width: 60rem) {
+        display: block;
+      }
+
+      img {
+        position: absolute;
+        top: 50%;
+
+        display: block;
+        height: auto;
+        max-width: 70%;
+
+        border-radius: var(--border-radius-s);
+        box-shadow: var(--box-shadow-diffuse);
+
+        &:first-child {
+          left: 0;
+
+          transform: translateY(-70%);
+        }
+
+        &:last-child {
+          right: 0;
+
+          transform: translateY(-10%);
+        }
+      }
+    }
+  }
+</style>

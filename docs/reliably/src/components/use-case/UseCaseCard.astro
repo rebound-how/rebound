@@ -1,0 +1,105 @@
+---
+import ArrowLink from "@/components/_ui/ArrowLink.astro";
+
+import { addTrailingSlash } from "@/utils/strings";
+
+export interface Props {
+  post: Object;
+}
+
+const { post } = Astro.props;
+const fm = post.frontmatter;
+
+const url = addTrailingSlash(post.url);
+---
+
+<article class="useCaseCard">
+  <div class="useCaseCard__content">
+    <header class="useCaseCard__header">
+      <h2 class="useCaseCard__title">
+        <a href={url}>
+          {fm.title}
+        </a>
+      </h2>
+      <div class="useCaseCard__category">
+        {fm.category}
+      </div>
+    </header>
+    <p class="useCaseCard__description">
+      {fm.description}
+    </p>
+    <p class="useCaseCard__readMore">
+      <ArrowLink href={post.url}>Read more</ArrowLink>
+    </p>
+  </div>
+  <div class="useCaseCard__image">
+    <img
+      src={fm.featured_image.src}
+      alt={fm.featured_image.alt}
+      height="260"
+      width="340"
+    />
+  </div>
+</article>
+
+<style lang="scss">
+  .useCaseCard {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-small);
+
+    @media (min-width: 50em) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    &__header {
+      display: flex;
+      margin-top: auto;
+    }
+
+    &__title {
+      a {
+        color: var(--text-color-bright);
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    &__category {
+      color: var(--pink-500);
+      font-weight: 500;
+    }
+
+    &__content {
+      display: flex;
+      flex-direction: column;
+      max-width: 50ch;
+    }
+
+    &__readMore {
+      color: var(--pink-500);
+    }
+
+    &__image {
+      max-height: 40rem;
+      overflow: hidden;
+
+      border-radius: var(--border-radius-l);
+      box-shadow: var(--box-shadow-diffuse);
+      img {
+        position: relative;
+        top: 50%;
+        left: 50%;
+
+        display: block;
+        height: auto;
+        width: 100%;
+
+        object-fit: cover;
+        transform: translate(-50%, -50%);
+      }
+    }
+  }
+</style>

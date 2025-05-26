@@ -1,0 +1,145 @@
+.button {
+  display: inline-block;
+  padding: 0.8rem 1.6rem;
+
+  border: none;
+  border-radius: var(--border-radius-s);
+  box-shadow: var(--box-shadow-diffuse);
+  cursor: pointer;
+
+  color: var(--button-color);
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 1.5;
+  text-decoration: none;
+  white-space: nowrap;
+
+  transition: all 0.3s ease-in-out;
+
+  &:hover {
+    box-shadow: var(--box-shadow-sharp);
+
+    text-decoration: none;
+  }
+
+  &--large {
+    padding: 1.6rem 2.4rem;
+
+    border-radius: var(--border-radius-m);
+
+    font-size: 1.8rem;
+  }
+
+  &--primary {
+    background-color: var(--yellow-500);
+
+    &:hover {
+      background-color: var(--yellow-800);
+
+      color: white;
+    }
+
+    &:active {
+      background-color: var(--yellow-900);
+    }
+  }
+
+  &--secondary {
+    background-color: var(--pink-500);
+
+    color: white;
+
+    &:hover {
+      background-color: var(--pink-700);
+    }
+
+    &:active {
+      background-color: var(--pink-800);
+    }
+  }
+
+  &--tertiary {
+    background-color: white;
+
+    &:hover {
+      background-color: var(--pink-700);
+
+      color: white;
+    }
+
+    &:active {
+      background-color: var(--pink-800);
+    }
+  }
+
+  &--transparent {
+    background-color: transparent;
+    box-shadow: none;
+
+    color: var(--text-color);
+
+    &:hover {
+      box-shadow: none;
+
+      text-decoration: underline;
+    }
+  }
+
+  &--github {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+
+    background-color: #24292f;
+
+    color: white;
+
+    svg {
+      height: 2.1rem;
+    }
+  }
+
+  &--icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.8rem;
+
+    background-color: transparent;
+    border-radius: 50%;
+
+    color: inherit;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.2);
+      box-shadow: none;
+    }
+
+    &:active {
+      background-color: rgba(0, 0, 0, 0.4);
+      box-shadow: none;
+    }
+
+    svg {
+      height: 1.6rem;
+      width: 1.6rem;
+    }
+  }
+
+  &--noshadow {
+    box-shadow: none;
+  }
+
+  &.disabled,
+  &:disabled {
+    background-color: var(--grey-200) !important;
+    cursor: not-allowed;
+    opacity: 0.8;
+
+    color: var(--grey-700);
+
+    &:hover {
+      box-shadow: none;
+    }
+  }
+}

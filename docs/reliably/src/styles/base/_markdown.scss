@@ -1,0 +1,22 @@
+.markdown {
+  &-tip {
+    margin-top: var(--space-small);
+    margin-bottom: var(--space-medium);
+    padding: var(--space-small);
+
+    background-color: white;
+    border-radius: var(--border-radius-s);
+    border-left: 0.6rem solid var(--pink-500);
+    box-shadow: var(--box-shadow-diffuse);
+
+    color: var(--text-color-bright);
+
+    p {
+      margin: 0;
+    }
+
+    p + p {
+      margin-top: var(--space-small);
+    }
+  }
+}

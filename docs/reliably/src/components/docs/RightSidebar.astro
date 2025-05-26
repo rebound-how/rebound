@@ -1,0 +1,21 @@
+---
+import ContentTable from "./ContentTable.astro";
+
+const { headings } = Astro.props;
+// const headers = content.astro?.headers;
+---
+
+{headings && (
+  <nav
+    class="contentTable"
+    aria-labelledby="grid-right"
+  >
+    <h2 class="heading">On this page</h2>
+    <ul class="list-reset">
+      <li class={`header-link depth-2`.trim()}>
+        <a href="#overview">Overview</a>
+      </li>
+      <ContentTable headings={headings} />
+    </ul>
+  </nav>
+)}

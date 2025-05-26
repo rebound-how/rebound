@@ -1,0 +1,117 @@
+---
+import { Image } from "astro:assets";
+
+import reliablyDashboard from "src/assets/images/reliably-dashboard-1600.webp";
+import reliablyExperiments from "src/assets/images/reliably-experiments-list-1600.webp";
+import reliablyBuilderActivities from "src/assets/images/reliably-builder-activities.webp";
+
+const images: ImageMetadata[] = [
+  reliablyDashboard,
+  reliablyExperiments,
+  reliablyBuilderActivities,
+];
+
+const descriptions: string[] = [
+  "The Reliably dashboard displays various charts, such as a pie chart of executions by users, a breakdown of executions of the last seven days, a scatter chart of the executions impact, and more.",
+  "A list of experiments. Each experiment as a score and a freshness indicator.",
+  "The list of activities is the first step in building experiments. A list of activities is displayed, with a select element open, showing different activites categories such as AWS, Azure, Google Cloud, Kubernetes, and more.",
+];
+---
+
+<div class="homeHeroSlider" id="homeHeroSlider">
+  <ul class="track list-reset">
+    {images.map((image, index) => (
+      <li>
+        <Image src={image} alt={descriptions[index]} />
+      </li>
+    ))}
+  </ul>
+  <div class="controls">
+    <ul class="list-reset">
+      {images.map((_, index) => (
+        <li>
+          <button class="sliderControlButton" data-slider-index={index}>
+            <span class="screen-reader-text">Display image {index}</span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+
+<script>
+  const buttons = document.querySelectorAll(".sliderControlButton");
+  const slides = document.querySelectorAll(".track li");
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      const index = (event.target as HTMLElement).dataset.sliderIndex;
+
+      slides.forEach((slide) => {
+        (slide as HTMLElement).style.transform = `translateX(${
+          parseInt(index) * -100
+        }%`;
+      });
+    });
+  });
+</script>
+
+<style lang="scss">
+  .homeHeroSlider {
+    .track {
+      position: relative;
+
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+
+      li {
+        flex: 1 0 auto;
+
+        display: grid;
+        place-content: center;
+        overflow: hidden;
+        padding: var(--space-small);
+        width: 100%;
+
+        transition: all 0.3s ease-in-out;
+
+        img {
+          display: block;
+          height: auto;
+
+          background-color: white;
+          border-radius: var(--border-radius-m);
+          box-shadow: var(--box-shadow-diffuse);
+        }
+      }
+    }
+
+    .controls {
+      ul {
+        display: flex;
+        justify-content: center;
+        gap: var(--space-small);
+
+        li {
+          button {
+            all: unset;
+
+            display: block;
+            height: 1.2rem;
+            width: 1.2rem;
+
+            background-color: white;
+            border-radius: 50%;
+            cursor: pointer;
+
+            &:hover {
+              background-color: var(--grey-300);
+            }
+          }
+        }
+      }
+    }
+  }
+</style>

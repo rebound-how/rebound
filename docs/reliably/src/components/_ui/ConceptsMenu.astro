@@ -1,0 +1,94 @@
+---
+import FeaturesMenuItem from "@/components/_ui/FeaturesMenuItem.astro";
+import { DocPage } from "@/types/types";
+
+const pages: DocPage[] = [
+  {
+    title: "Plans",
+    description:
+      "Schedule chaos engineering experiments to run against your infrastructure",
+    url: "/docs/concepts/plans/",
+  },
+  {
+    title: "Deployments",
+    description:
+      "Run your plans in the cloud, a GitHub worflow, or your own environment",
+    url: "/docs/concepts/deployments/",
+  },
+  {
+    title: "Environments",
+    description:
+      "Store variables and secrets that will be used by your experiments",
+    url: "/docs/concepts/environments/",
+  },
+  {
+    title: "Experiments",
+    description: "Import, create, and edit Chaos Toolkit experiments",
+    url: "/docs/concepts/experiments/",
+  },
+  {
+    title: "Executions",
+    description:
+      "Display and store detailed information about your chaos engineering experiments runs and results",
+    url: "/docs/concepts/executions/",
+  },
+  {
+    title: "Starters",
+    description: "Run your first experiments and verifications in minutes",
+    url: "/docs/concepts/starters/",
+  },
+];
+---
+
+<div class="submenu">
+  <div class="featuresMenu">
+    <ul class="list-reset featuresList">
+      {pages.map((page) => (
+        <li>
+          <FeaturesMenuItem page={page} />
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+
+<style scoped lang="scss">
+  .submenu {
+    .featuresMenu {
+      position: relative;
+      top: 2.4rem;
+
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-small);
+      padding: var(--space-small);
+
+      background-color: white;
+      border-radius: var(--border-radius-m);
+      box-shadow: var(--box-shadow-diffuse);
+
+      &::after {
+        content: "";
+
+        position: absolute;
+        top: calc(-1 * var(--space-small));
+        left: calc(50% - var(--space-small));
+
+        display: block;
+        height: 0;
+        width: 0;
+
+        border-right: solid var(--space-small) transparent;
+        border-left: solid var(--space-small) transparent;
+        border-bottom: solid var(--space-small) white;
+      }
+
+      .featuresList {
+        grid-column: 1 / span 2;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        column-gap: var(--space-small);
+      }
+    }
+  }
+</style>

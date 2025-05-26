@@ -1,0 +1,46 @@
+---
+export interface Props {
+  post: unknown;
+}
+
+const { post } = Astro.props; // Expected data is the frontmatter
+---
+
+<div class="postAuthor">
+  <div class="postAuthor__image">
+    <img src={post.author_image} alt={`A portrait photo of ${post.author}`} />
+  </div>
+  <div class="postAuthor__info">
+    <span class="postAuthor__name">{post.author}</span>
+    <span class="postAuthor__role">{post.author_role}</span>
+  </div>
+</div>
+
+<style lang="scss">
+  .postAuthor {
+    display: flex;
+    align-items: center;
+    gap: var(--space-small);
+
+    &__image {
+      img {
+        display: block;
+        height: 5rem;
+        width: 5rem;
+
+        border: 0.2rem solid var(--pink-500);
+        border-radius: 50%;
+      }
+    }
+
+    &__info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    &__name {
+      color: var(--text-color-bright);
+      font-weight: 500;
+    }
+  }
+</style>

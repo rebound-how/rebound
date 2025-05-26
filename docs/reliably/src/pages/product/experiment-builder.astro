@@ -1,0 +1,324 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { Image } from "astro:assets";
+
+import VideoContainer from "@/components/_ui/VideoContainer.astro";
+
+import heroImage from "@/assets/images/experiment-builder-hero.webp";
+import PageTitle from "@/components/_ui/PageTitle.astro";
+import ArrowLink from "@/components/_ui/ArrowLink.astro";
+
+const image = new URL("https://reliably.com/social.png", Astro.site).toString();
+---
+
+<BaseLayout
+  title="Reliably Experiment Builder"
+  description="Reliably's experiment builder simplifies building valuable experiment to explore your system and surface hard to find behaviours."
+  {image}
+>
+  <div class="experimentBuilder">
+    <header class="header">
+      <div class="header__content">
+        <PageTitle>Experiment Builder</PageTitle>
+        <p>
+          The experiment builder is the easiest –and probably the fastest–
+          method for creating new experiments. It helps both beginners and
+          advanced users visualize the experiment's structure and modify it in a
+          straighforward way.
+        </p>
+      </div>
+      <div class="header__image">
+        <Image
+          src={heroImage}
+          alt="A screenshot of the turbulence block in the builder, showing activities to cordon a Kubernetes node, terminiate a pod, and list the existing nodes."
+        />
+      </div>
+    </header>
+    <section>
+      <div class="container">
+        <div class="sectionContent">
+          <h2>Choose from over 300 activities</h2>
+          <p>
+            Reliably supports over 300 actions (or &laquo;attacks&raquo;) and
+            probes built by Reliably and the open-source Chaos Toolkit
+            community.They allow you to target services on AWS (EC2, ECS, EKS,
+            IAM, Lambda, and more), Google Cloud (such as Cloud Run, or GKE),
+            Azure, Kubernetes, and many others.
+          </p>
+          <p>
+            Just select one as your experiment's starting point and let the
+            builder guide you.
+          </p>
+          <p>
+            <ArrowLink href="/activities/">Browse actions and probes</ArrowLink>
+          </p>
+        </div>
+        <div class="sectionImage">
+          <VideoContainer
+            src="/images/pages/experiment-builder/experiment-builder-1.webm"
+            poster="/images/pages/experiment-builder/experiment-builder-1.webp"
+            alt="Browsing the experiment activities."
+            height="720"
+            width="1176"
+            shadow={true}
+            rounded={true}
+          />
+        </div>
+      </div>
+    </section>
+    <section>
+      <div class="container">
+        <div class="sectionContent">
+          <h2>Smart recommandations</h2>
+          <p>
+            The Reliably Assistant knows when activities are often used
+            together, so it can suggest activities that will play nicely with
+            the one you just selected. It speeds up your experiment creation,
+            and helps you discover new activities.
+          </p>
+        </div>
+        <div class="sectionImage">
+          <VideoContainer
+            src="/images/pages/experiment-builder/experiment-builder-2.webm"
+            poster="/images/pages/experiment-builder/experiment-builder-2.webp"
+            alt="The Reliably assistant suggests activities related to the ones you're using."
+            height="720"
+            width="1176"
+            shadow={true}
+            rounded={true}
+          />
+        </div>
+      </div>
+    </section>
+    <section>
+      <div class="container">
+        <div class="sectionContent">
+          <h2>Reorder and reorganize</h2>
+          <p>
+            Did you change your mind and want to rearrange the order of the
+            actions in your turbulence block? Or maybe move one to the warm up
+            section? Just drag it there, and it will remember it's
+            configuration.
+          </p>
+        </div>
+        <div class="sectionImage">
+          <VideoContainer
+            src="/images/pages/experiment-builder/experiment-builder-3.webm"
+            poster="/images/pages/experiment-builder/experiment-builder-3.webp"
+            alt="Video of activities being reorder with drag and drop."
+            height="720"
+            width="2384"
+            shadow={true}
+            rounded={true}
+          />
+        </div>
+      </div>
+    </section>
+    <section>
+      <div class="container">
+        <div class="sectionContent">
+          <h2>Pick a strategy</h2>
+          <p>
+            Reliably allows you to precisely configure how section is played
+            during your experiment run. Do you want it to be a simple
+            verification? Or a full-fledged chaos engineering experiment? We
+            have you covered.
+          </p>
+        </div>
+        <div class="sectionImage">
+          <VideoContainer
+            src="/images/pages/experiment-builder/experiment-builder-4.webm"
+            poster="/images/pages/experiment-builder/experiment-builder-4.webp"
+            alt="Choosing the verification block settings"
+            height="720"
+            width="820"
+            shadow={true}
+            rounded={true}
+          />
+        </div>
+      </div>
+    </section>
+    <section class="try">
+      <div class="container">
+        <h2 class="text-center">Try it now now</h2>
+        <p class="text-center">
+          Create your free Reliably account.
+        </p>
+        <div class="try__links">
+          <a href="/activities/" class="button button--primary">
+            Browse actions and probes
+          </a>
+          <a
+            href="/docs/account/"
+            target="_blank"
+            rel="noopener noreferer"
+            class="button button--secondary"
+          >
+            Create an account
+          </a>
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<script is:inline></script>
+
+<style lang="scss">
+  .experimentBuilder {
+    .header {
+      display: grid;
+      grid-template-columns: 1fr;
+      overflow: hidden;
+      padding: var(--space-large) var(--space-small) var(--sectionPadding);
+
+      @media (min-width: 66rem) {
+        grid-template-columns:
+          calc(50vw - (var(--max-width) + var(--space-medium)) / 2)
+          1fr
+          var(--space-medium)
+          1fr
+          calc(50vw - (var(--max-width) + var(--space-medium)) / 2);
+        padding-right: 0;
+        padding-left: 0;
+      }
+
+      &__content {
+        position: relative;
+        z-index: 2;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        @media (min-width: 66rem) {
+          grid-column: 2 / span 1;
+          padding-right: var(--space-medium);
+          padding-left: var(--space-medium);
+        }
+
+        p {
+          margin: 0 0 var(--space-medium);
+          max-width: 60ch;
+
+          color: var(--text-color-bright);
+          font-size: 2.4rem;
+        }
+      }
+
+      &__image {
+        position: relative;
+        z-index: 2;
+
+        display: none;
+
+        @media (min-width: 66rem) {
+          grid-column: 4 / span 3;
+
+          display: block;
+        }
+
+        img {
+          display: block;
+          height: 30rem;
+          max-width: unset;
+          width: auto;
+
+          border: 0.1rem solid var(--grey-300);
+          border-radius: var(--border-radius-m);
+          box-shadow: var(--box-shadow-diffuse);
+        }
+      }
+    }
+
+    section {
+      padding-top: var(--sectionPadding);
+      padding-bottom: var(--sectionPadding);
+
+      background-color: white;
+
+      .container {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--space-medium);
+
+        @media (min-width: 66rem) {
+          gap: var(--space-large);
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .sectionContent,
+        .sectionImage {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+
+        .sectionImage {
+          position: relative;
+
+          padding-top: var(--space-large);
+          padding-bottom: var(--space-large);
+
+          &::before {
+            content: "";
+
+            position: absolute;
+            top: 0;
+            right: var(--space-large);
+            bottom: 0;
+            left: var(--space-large);
+
+            display: block;
+
+            background-color: var(--grey-200);
+            border-radius: var(--border-radius-m);
+          }
+        }
+      }
+
+      &:nth-child(2n + 1) {
+        @media (min-width: 66rem) {
+          .container {
+            .sectionContent,
+            .sectionImage {
+              grid-row-start: 1;
+            }
+
+            .sectionContent {
+              grid-column-start: 2;
+            }
+
+            .sectionImage {
+              grid-column-start: 1;
+            }
+          }
+        }
+      }
+    }
+
+    .try {
+      padding-top: var(--sectionPadding);
+      padding-bottom: var(--space-large);
+
+      background-color: var(--grey-100);
+
+      .container {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-medium);
+
+        h2 {
+          margin-bottom: 0;
+        }
+      }
+
+      &__links {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: var(--space-small);
+      }
+    }
+  }
+</style>

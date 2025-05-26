@@ -1,0 +1,113 @@
+---
+import { Icon } from "astro-icon";
+
+export interface Provider {
+  provider: string;
+  logo: string;
+  activities: number;
+  supported: string[];
+  filter: string;
+}
+
+export interface Props {
+  provider: Provider;
+}
+
+const { provider } = Astro.props;
+---
+
+<a href={`/activities/?t=${provider.filter}`} class="chaosProvider">
+  <div class="chaosProvider__name">
+    <span class="screen-reader-text">{provider.provider}</span>
+    <Icon name={provider.logo} />
+  </div>
+  <div class="chaosProvider__activities">
+    <span class="chaosProvider__label">Activities</span>
+    {(Math.floor(provider.activities / 10) * 10).toString()}+
+  </div>
+  <div class="chaosProvider__supported">
+    <span class="chaosProvider__label">Supported Services</span>
+    {provider.supported.join(", ")}, and more
+  </div>
+  <div class="chaosProvider__overlay">
+    Explore {provider.provider} activities
+  </div>
+</a>
+
+<style lang="scss">
+  .chaosProvider {
+    position: relative;
+
+    display: flex;
+    gap: var(--space-small);
+    padding: var(--space-small);
+
+    background-color: var(--pink-800);
+    border-radius: var(--border-radius-m);
+
+    color: white;
+    text-decoration: none;
+
+    > :not(:first-child) {
+      padding-left: var(--space-small);
+
+      border-left: 0.1rem solid var(--pink-900);
+    }
+
+    &__name {
+      display: flex;
+      justify-content: center;
+      width: 9rem;
+
+      svg {
+        height: 4.8rem;
+      }
+    }
+
+    &__activities {
+      width: 13rem;
+    }
+
+    &__supported {
+      flex: 1 0 auto;
+    }
+
+    &__label {
+      display: block;
+
+      opacity: 0.8;
+
+      font-size: 1.4rem;
+      text-transform: uppercase;
+    }
+
+    &__overlay {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 2;
+
+      display: grid;
+      padding: 0;
+      place-items: center;
+
+      background-color: hsla(329.21, 79.17%, 18.82%, 0.95); // --pink-800
+      border-radius: var(--border-radius-m);
+      opacity: 0;
+      pointer-events: none;
+
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    &:hover {
+      .chaosProvider__overlay {
+        opacity: 1;
+        pointer-events: all;
+
+        transition: opacity 0.1s ease-in-out;
+      }
+    }
+  }
+</style>

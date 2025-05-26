@@ -1,0 +1,155 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import FreePlan from "@/components/pricing/FreePlan.astro";
+import StartPlan from "@/components/pricing/StartPlan.astro";
+import ScalePlan from "@/components/pricing/ScalePlan.astro";
+import EnterprisePlan from "@/components/pricing/EnterprisePlan.astro";
+import PageTitle from "@/components/_ui/PageTitle.astro";
+---
+
+<BaseLayout
+  title="Pricing Plans"
+  description="View our pricing plans for Reliably and help make your products and systems more reliable. Try Reliably now."
+>
+  <div class="pricing container">
+    <header class="pricing__header">
+      <PageTitle center={true}>Pricing</PageTitle>
+      <p class="introduction text-center">
+        All the features to help you build predictable, reliable, and more
+        empathetic systems, with plans for teams of all sizes.
+      </p>
+    </header>
+
+    <div class="pricing-table">
+      <FreePlan />
+      <StartPlan />
+      <ScalePlan />
+      <EnterprisePlan />
+    </div>
+  </div>
+</BaseLayout>
+
+<script is:inline>
+  let lists = document.querySelectorAll(".pricing-plan__features-list");
+  let features = document.querySelectorAll(".pricing-plan__feature");
+  features.forEach((f) => {
+    f.addEventListener("mouseover", (event) => {
+      let index = Array.from(event.currentTarget.parentNode.children).indexOf(
+        event.currentTarget
+      );
+      features.forEach((ff) => {
+        ff.classList.add("notFocused");
+        lists.forEach((l) => {
+          if (l.children.length > index) {
+            l.children[index].classList.remove("notFocused");
+          }
+        });
+      });
+    });
+    f.addEventListener("mouseout", (event) => {
+      features.forEach((ff) => {
+        ff.classList.remove("notFocused");
+      });
+    });
+  });
+</script>
+
+<script is:inline>
+  const fetchWithFallback = async (links, obj) => {
+    let response;
+    for (let link of links) {
+      try {
+        response = await fetch(link, obj);
+        if (response.ok) return response;
+      } catch (e) {}
+    }
+    return response;
+  };
+
+  let converters = document.querySelectorAll(".priceConverter");
+
+  async function getSetCurrency() {
+    for (c of converters) {
+      let eur = null;
+      let usd = null;
+      const source = c.querySelector(".priceConverter__gbp");
+      const price = source.dataset.value;
+      const eurWrapper = c.querySelector(".priceConverter__eur");
+      const usdWrapper = c.querySelector(".priceConverter__usd");
+
+      try {
+        const responseEur = await fetchWithFallback([
+          "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/gbp/eur.min.json",
+          "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/gbp/eur.json",
+          "https://raw.githubusercontent.com/fawazahmed0/currency-api/1/latest/currencies/gbp/eur.min.json",
+          "https://raw.githubusercontent.com/fawazahmed0/currency-api/1/latest/currencies/gbp/eur.json",
+        ]);
+        if (!responseEur.ok) {
+          throw new Error(responseEur.statusText);
+        } else {
+          const eurData = await responseEur.json();
+          eur = price * eurData.eur;
+          roundedEur = Math.round((eur + Number.EPSILON) * 100) / 100;
+          eurWrapper.innerText = `€${roundedEur.toString()}`;
+        }
+      } catch (e) {
+        console.log(e);
+      }
+
+      try {
+        const responseUsd = await fetchWithFallback([
+          "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/gbp/usd.min.json",
+          "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/gbp/usd.json",
+          "https://raw.githubusercontent.com/fawazahmed0/currency-api/1/latest/currencies/gbp/usd.min.json",
+          "https://raw.githubusercontent.com/fawazahmed0/currency-api/1/latest/currencies/gbp/usd.json",
+        ]);
+        if (!responseUsd.ok) {
+          throw new Error(responseUsd.statusText);
+        } else {
+          const usdData = await responseUsd.json();
+          usd = price * usdData.usd;
+          roundedUsd = Math.round((usd + Number.EPSILON) * 100) / 100;
+          usdWrapper.innerText = `$${roundedUsd.toString()}`;
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", async function () {
+    await getSetCurrency();
+  });
+</script>
+
+<style lang="scss">
+  .pricing {
+    &__header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: var(--space-large);
+
+      .introduction {
+        margin-top: 0;
+        max-width: 50ch;
+
+        font-size: 2rem;
+      }
+    }
+
+    .pricing-table {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-medium);
+      margin-right: auto;
+      margin-left: auto;
+      max-width: 40rem;
+
+      @media (min-width: 60rem) {
+        grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+        max-width: none;
+      }
+    }
+  }
+</style>

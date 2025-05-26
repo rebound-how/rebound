@@ -1,0 +1,152 @@
+---
+import Head from "@/components/layout/Head.astro";
+import SiteHeader from "@/components/layout/SiteHeader.astro";
+import SiteFooter from "@/components/layout/SiteFooter.astro";
+import PageTitle from "@/components/_ui/PageTitle.astro";
+import TagsList from "@/components/_ui/TagsList.astro";
+import EventDate from "@/components/events/EventDate.astro";
+
+const { content } = Astro.props;
+let canonical = new URL(Astro.url.pathname, Astro.site);
+let hasTags: boolean = content.labels !== undefined;
+const image = new URL(content.thumbnail || "social.png", Astro.site);
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <Head
+      title={content.title}
+      description={content.description}
+      canonicalURL={canonical}
+      {image}
+    />
+    <style>
+      .page {
+        padding: var(--space-large) 0;
+        background-color: var(--grey-100);
+      }
+    </style>
+  </head>
+  <body class="default">
+    <SiteHeader />
+    <main class="page">
+      <div class="event container">
+        <PageTitle center={true}>{content.title}</PageTitle>
+        <div class="event__meta">
+          <EventDate event={content} />
+          {hasTags && <TagsList tags={content.labels} />}
+        </div>
+        <div class="event__intro block-center">
+          {content.description}
+        </div>
+        <img class="event__cover block-center" src={content.thumbnail} alt="" />
+
+        <div class="event__content block-center">
+          <slot />
+        </div>
+        {content.link && (
+          <div class="event__info block-center">
+            <a
+              href={content.link}
+              class="button button--primary button--large"
+              target="_blank"
+              rel="noreferer noopener"
+            >
+              Registration and additional information
+            </a>
+          </div>
+        )}
+      </div>
+    </main>
+    <SiteFooter />
+    <!-- Cookie Consent by TermsFeed https://www.TermsFeed.com -->
+    <script
+      type="text/javascript"
+      src="/js/cookie-consent/4.0.0/cookie-consent.js"
+      charset="UTF-8"
+    >
+    </script>
+    <script type="text/javascript" charset="UTF-8">
+      document.addEventListener("DOMContentLoaded", function () {
+        cookieconsent.run({
+          notice_banner_type: "simple",
+          consent_type: "express",
+          palette: "light",
+          language: "en",
+          page_load_consent_levels: ["strictly-necessary"],
+          notice_banner_reject_button_hide: false,
+          preferences_center_close_button_hide: true,
+          page_refresh_confirmation_buttons: true,
+          website_name: "Reliably",
+        });
+        let title = document.getElementById("cc-nb-title");
+        let text = document.getElementById("cc-nb-text");
+        let accept = document.querySelector(".cc-nb-okagree");
+        let decline = document.querySelector(".cc-nb-reject");
+        let pref = document.querySelector(".cc-nb-changep");
+        if (title !== null) {
+          title.innerHTML = "We have cookies";
+          text.innerHTML =
+            "We use cookies to analyze our website traffic, and to understand where our visitors are coming from.";
+          accept.innerHTML = "Accept";
+          decline.innerHTML = "Decline";
+          pref.innerHTML = "Preferences";
+        }
+      });
+    </script>
+    <!-- End Cookie Consent by TermsFeed https://www.TermsFeed.com -->
+  </body>
+</html>
+
+<style lang="scss">
+  .event {
+    padding-top: var(--space-large);
+    padding-bottom: var(--space-large);
+
+    &__meta {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-small);
+
+      > :first-child {
+        font-size: 2rem;
+      }
+    }
+
+    &__intro {
+      margin-top: var(--space-large);
+      margin-bottom: var(--space-large);
+      max-width: 70rem;
+
+      font-size: 2rem;
+    }
+
+    &__cover {
+      margin: var(--space-large) auto;
+
+      border-radius: var(--border-radius-l);
+      box-shadow: var(--box-shadow-diffuse);
+    }
+
+    &__content {
+      max-width: 70rem;
+
+      > * + * {
+        margin-top: var(--space-medium);
+      }
+    }
+
+    &__info {
+      display: flex;
+      justify-content: center;
+      margin-top: var(--space-large);
+      margin-bottom: var(--space-large);
+      max-width: 70rem;
+
+      a {
+      }
+    }
+  }
+</style>

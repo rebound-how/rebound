@@ -1,0 +1,128 @@
+---
+import ActivityLogo from "@/components/activities/ActivityLogo.astro";
+import { addTrailingSlash } from "@/utils/strings";
+
+export interface Props {
+  post: Object;
+}
+
+const { post } = Astro.props;
+const fm = post.frontmatter;
+
+const url = addTrailingSlash(post.url);
+const breakableName = fm.name.replaceAll("_", "_<wbr>");
+
+const moduleArray = fm.module.split(".");
+---
+
+<article
+  class="activityCard"
+  data-target={moduleArray[0]}
+  data-category={moduleArray[1]}
+  data-type={moduleArray[2]}
+>
+  <div class="activityCard__target">
+    <ActivityLogo target={fm.target} />
+  </div>
+  <div class="activityCard__content">
+    <div class="activityCard__meta">
+      <span class={`activityCard__type activityCard__type--${fm.type}`}>
+        {fm.type}
+      </span>
+      <span class="activityCard__type">{fm.category}</span>
+    </div>
+    <h2 class="activityCard__title">
+      <a href={url}>
+        <code set:html={breakableName}></code>
+      </a>
+    </h2>
+    <div class="activityCard__description">
+      {fm.description}
+    </div>
+  </div>
+</article>
+
+<style lang="scss">
+  .activityCard {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    height: 100%;
+    padding: var(--space-small);
+
+    background-color: white;
+    border-radius: var(--border-radius-m);
+    cursor: pointer;
+
+    transition: all 0.3s ease-in-out;
+
+    &:hover {
+      box-shadow: var(--box-shadow-diffuse);
+
+      transform: translateY(-0.1rem);
+      transition: all 0.1s ease-in-out;
+    }
+
+    &__target {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-small);
+      padding-right: var(--space-small);
+    }
+
+    &__meta {
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    &__type {
+      padding: 0.1rem 0.3rem;
+
+      background-color: var(--grey-200);
+      border-radius: var(--border-radius-s);
+
+      font-size: 1.2rem;
+      font-weight: 700;
+      text-transform: uppercase;
+
+      &--action {
+        background-color: var(--pink-100);
+
+        color: var(--pink-500);
+      }
+
+      &--probe,
+      &--tolerance {
+        background-color: var(--green-100);
+
+        color: var(--green-500);
+      }
+    }
+
+    &__content {
+      max-width: 30rem;
+    }
+
+    &__title {
+      margin-top: 0;
+
+      font-size: 2rem;
+
+      a {
+        color: var(--text-color-bright);
+        text-decoration: none;
+
+        code {
+          padding: 0;
+
+          background-color: transparent;
+          border: none;
+        }
+      }
+    }
+
+    &__description {
+      color: var(--text-color-dim);
+      font-size: 1.4rem;
+    }
+  }
+</style>

@@ -1,0 +1,1380 @@
+---
+import StarGrade from "@/components/product/StarGrade.astro";
+import CloudProvider from "@/components/product/ChaosCloudProvider.astro";
+import KubernetesActivities from "@/components/product/ChaosKubernetesActivities.astro";
+import PythonCode from "@/components/product/ChaosPythonCode.astro";
+import { Icon } from "astro-icon";
+
+const providers = [
+  {
+    provider: "AWS",
+    logo: "aws-logo-white",
+    activities: 127,
+    supported: ["Lambda, EC2"],
+    filter: "chaosaws",
+  },
+  {
+    provider: "Azure",
+    logo: "azure-logo",
+    activities: 42,
+    supported: ["VMSS, AKS"],
+    filter: "chaosazure",
+  },
+  {
+    provider: "Google Cloud",
+    logo: "google-cloud-logo",
+    activities: 32,
+    supported: ["Cloud Run, GKE"],
+    filter: "chaosgcp",
+  },
+];
+
+const activities = [
+  {
+    category: "crd",
+    number: 12,
+  },
+  {
+    category: "deployment",
+    number: 7,
+  },
+  {
+    category: "networking",
+    number: 8,
+  },
+  {
+    category: "node",
+    number: 6,
+  },
+  {
+    category: "pod",
+    number: 9,
+  },
+  {
+    category: "statefulset",
+    number: 4,
+  },
+  {
+    category: "others",
+    number: 9,
+  },
+];
+---
+
+<main class="chaosContent">
+  <section class="chaosIntro container">
+    <p>
+      Whether you're new to resiliency engineering or already a Chaos Toolkit expert,
+      Reliably provides you with the tools to help you and your organization <span
+        >understand how you system works (and fails) in production</span
+      >.
+    </p>
+  </section>
+  <section class="chaosSection">
+    <div class="container">
+      <div class="chaosSection__title">
+        <h2>
+          The most secure and versatile way of running chaos engineering
+          experiments
+        </h2>
+      </div>
+      <div class="chaosSection__intro">
+        <p>
+          Reliably uses the open-source Chaos Toolkit in the background and
+          benefits from its ability to <strong>run virtually anywhere</strong> and
+          <strong>target any system</strong>.
+        </p>
+        <p>
+          Reliably builds on these proven open-source foundations to offer a
+          user- and enterprise-friendly experience, allowing you to <strong
+            >set the needle between greater ease of use and maximum security</strong
+          >.
+        </p>
+      </div>
+      <div class="chaosSection__item">
+        <div>
+          <h3>
+            <span>Run</span>
+            <span>Cloud</span>
+            <span>+</span>
+            <span>Data</span>
+            <span>Cloud</span>
+          </h3>
+          <button
+            class="button button--icon js-openDetails"
+            data-id="chaosSectionCloudCloud"
+          >
+            <span class="screen-reader-text">View details</span>
+            <Icon name="chevron-right" />
+          </button>
+        </div>
+      </div>
+      <div
+        class="chaosSection__detail chaosSection__detail--triple"
+        id="chaosSectionCloudCloud"
+      >
+        <div>
+          <div class="chaosSection__icon"><Icon name="cloud" /></div>
+          <h4>Cloud <span>Run</span></h4>
+          <p>
+            Run your experiments in the Reliably Cloud with minimum
+            configuration and get started in minutes.
+          </p>
+          <p>
+            The Reliably Cloud creates and deploys an environment to run your
+            experiment, allowing teams to focus on the experiment and its
+            results. It also makes it easier to onboard new users, drastically
+            cutting the prerequisites to run experiments autonomously.
+          </p>
+        </div>
+        <div>
+          <div class="chaosSection__icon"><Icon name="cloud" /></div>
+          <h4>Cloud <span>Data</span></h4>
+          <p>
+            All your results are collected and easily accessible in our SaaS
+            platform.
+          </p>
+          <p>
+            Chaos engineering makes more sense when everyone benefits from it.
+            Reliably makes it easier than ever to share results and findings and
+            allows everyone to collaborate to make your system more resilient.
+            No more sharing JSON journals in Slack!
+          </p>
+        </div>
+        <div>
+          <div class="chaosSection__grade">
+            <span>Ease of use</span>
+            <StarGrade grade={5} />
+          </div>
+          <div class="chaosSection__grade">
+            <span>Versatility</span>
+            <StarGrade grade={3} />
+          </div>
+          <div class="chaosSection__grade">
+            <span>Security</span>
+            <StarGrade grade={4} />
+          </div>
+        </div>
+        <button class="button button--icon" onclick="closeDetails(event)">
+          <span class="screen-reader-text">Close</span>
+          <Icon name="x" />
+        </button>
+      </div>
+      <div class="chaosSection__item">
+        <div>
+          <h3>
+            <span>Run</span>
+            <span>GitHub Action</span>
+            <span>+</span>
+            <span>Data</span>
+            <span>Cloud</span>
+          </h3>
+          <button
+            class="button button--icon js-openDetails"
+            data-id="chaosSectionGitHubCloud"
+          >
+            <span class="screen-reader-text">View details</span>
+            <Icon name="chevron-right" />
+          </button>
+        </div>
+      </div>
+      <div
+        class="chaosSection__detail chaosSection__detail--triple"
+        id="chaosSectionGitHubCloud"
+      >
+        <div>
+          <div class="chaosSection__icon"><Icon name="github-logo" /></div>
+          <h4>GitHub Action <span>Run</span></h4>
+          <p>
+            If you already use GitHub Workflows, running your experiments as
+            GitHub Actions allows you to access all your existing environment
+            variables.
+          </p>
+          <p>
+            Reliably seamlessly creates a GitHub Action to run your experiment,
+            so you don't have to handle the work of redeclaring environment
+            variables and secrets. They're all securely stored where you want
+            them to, and your experiments run without configuration.
+          </p>
+        </div>
+        <div>
+          <div class="chaosSection__icon"><Icon name="cloud" /></div>
+          <h4>Cloud <span>Data</span></h4>
+          <p>
+            All your results are collected and easily accessible in our SaaS
+            platform.
+          </p>
+          <p>
+            Chaos engineering makes more sense when everyone benefits from it.
+            Reliably makes it easier than ever to share results and findings and
+            allows everyone to collaborate to make your system more resilient.
+            No more sharing JSON journals in Slack!
+          </p>
+        </div>
+        <div>
+          <div class="chaosSection__grade">
+            <span>Ease of use</span>
+            <StarGrade grade={5} />
+          </div>
+          <div class="chaosSection__grade">
+            <span>Versatility</span>
+            <StarGrade grade={3} />
+          </div>
+          <div class="chaosSection__grade">
+            <span>Security</span>
+            <StarGrade grade={4} />
+          </div>
+        </div>
+        <button class="button button--icon" onclick="closeDetails(event)">
+          <span class="screen-reader-text">Close</span>
+          <Icon name="x" />
+        </button>
+      </div>
+      <div class="chaosSection__item">
+        <div>
+          <h3>
+            <span>Run</span>
+            <span>On-Premise</span>
+            <span>+</span>
+            <span>Data</span>
+            <span>Cloud</span>
+          </h3>
+          <button
+            class="button button--icon js-openDetails"
+            data-id="chaosSectionOnPremCloud"
+          >
+            <span class="screen-reader-text">View details</span>
+            <Icon name="chevron-right" />
+          </button>
+        </div>
+      </div>
+      <div
+        class="chaosSection__detail chaosSection__detail--triple"
+        id="chaosSectionOnPremCloud"
+      >
+        <div>
+          <div class="chaosSection__icon"><Icon name="server" /></div>
+          <h4>On-Premise <span>Run</span></h4>
+          <p>Use the Reliably CLI to run experiments and plans anywhere.</p>
+          <p>
+            Reliably plays nicely wherever you want it to. The most common
+            scenario is running experiments as part of your CI/CD workflow. You
+            can now leverage the power of Reliably plans in your own
+            environment, and still get the benefits of sharing the results in
+            Reliably.
+          </p>
+        </div>
+        <div>
+          <div class="chaosSection__icon"><Icon name="cloud" /></div>
+          <h4>Cloud <span>Data</span></h4>
+          <p>
+            All your results are collected and easily accessible in our SaaS
+            platform.
+          </p>
+          <p>
+            Chaos engineering makes more sense when everyone benefits from it.
+            Reliably makes it easier than ever to share results and findings and
+            allows everyone to collaborate to make your system more resilient.
+            No more sharing JSON journals in Slack!
+          </p>
+        </div>
+        <div>
+          <div class="chaosSection__grade">
+            <span>Ease of use</span>
+            <StarGrade grade={4} />
+          </div>
+          <div class="chaosSection__grade">
+            <span>Versatility</span>
+            <StarGrade grade={5} />
+          </div>
+          <div class="chaosSection__grade">
+            <span>Security</span>
+            <StarGrade grade={4} />
+          </div>
+        </div>
+        <button class="button button--icon" onclick="closeDetails(event)">
+          <span class="screen-reader-text">Close</span>
+          <Icon name="x" />
+        </button>
+      </div>
+      <div class="chaosSection__item">
+        <div>
+          <h3>
+            <span>Run</span>
+            <span>On-Premise</span>
+            <span>+</span>
+            <span>Data</span>
+            <span>On-Premise</span>
+          </h3>
+          <button
+            class="button button--icon js-openDetails"
+            data-id="chaosSectionOnPremOnPrem"
+          >
+            <span class="screen-reader-text">View details</span>
+            <Icon name="chevron-right" />
+          </button>
+        </div>
+      </div>
+      <div
+        class="chaosSection__detail chaosSection__detail--triple"
+        id="chaosSectionOnPremOnPrem"
+      >
+        <div>
+          <div class="chaosSection__icon"><Icon name="server" /></div>
+          <h4>On-Premise <span>Run</span></h4>
+          <p>Use the Reliably CLI to run experiments and plans anywhere.</p>
+          <p>
+            Reliably plays nicely wherever you want it to. The most common
+            scenario is running experiments as part of your CI/CD workflow. You
+            can now leverage the power of Reliably plans in your own
+            environment, and still get the benefits of sharing the results in
+            Reliably.
+          </p>
+        </div>
+        <div>
+          <div class="chaosSection__icon"><Icon name="server" /></div>
+          <h4>On-Premise <span>Data</span></h4>
+          <p>
+            If you're feeling extra-cautious, you can even keep your data
+            in-house.
+          </p>
+          <p>
+            Reliably Enterprise gives you the option to run the Reliably
+            platform as a private SaaS or your data center. You get all the
+            benefits from using Reliably, while keeping your security team
+            happy.
+          </p>
+        </div>
+        <div>
+          <div class="chaosSection__grade">
+            <span>Ease of use</span>
+            <StarGrade grade={4} />
+          </div>
+          <div class="chaosSection__grade">
+            <span>Versatility</span>
+            <StarGrade grade={5} />
+          </div>
+          <div class="chaosSection__grade">
+            <span>Security</span>
+            <StarGrade grade={5} />
+          </div>
+        </div>
+        <button class="button button--icon" onclick="closeDetails(event)">
+          <span class="screen-reader-text">Close</span>
+          <Icon name="x" />
+        </button>
+      </div>
+    </div>
+  </section>
+  <section class="chaosSection">
+    <div class="container">
+      <div class="chaosSection__title">
+        <h2>Accelerate onboarding and adoption</h2>
+      </div>
+      <div class="chaosSection__intro">
+        <p>
+          We've heard many stories from reliability-dedicated teams struggling
+          to expand the practice of chaos engineering to other product teams.
+        </p>
+        <p>
+          Reliably makes it <strong>easier to onboard new users</strong> without
+          the requirements of a deep understanding of the chaos engineering principles,
+          <strong>speeding up organization-wide adoption</strong>.
+        </p>
+      </div>
+      <div class="chaosSection__item">
+        <div>
+          <h3>
+            <Icon name="zap" />
+            Starters
+          </h3>
+          <button
+            class="button button--icon js-openDetails"
+            data-id="chaosSectionStarters"
+          >
+            <span class="screen-reader-text">View details</span>
+            <Icon name="chevron-right" />
+          </button>
+        </div>
+      </div>
+      <div
+        class="chaosSection__detail chaosSection__detail--double"
+        id="chaosSectionStarters"
+      >
+        <div>
+          <div class="chaosSection__icon"><Icon name="zap" /></div>
+          <h4>Starters</h4>
+          <p>Create experiments in minutes</p>
+          <p>
+            You can use over 300 activities to perform actions and run probes on
+            your system, and turn them into ready-to-run experiments.
+          </p>
+          <p>
+            Simulate Kubernetes failures, the loss of an AWS Availability Zone,
+            or increase disk operations on an Azure Virtual Machine, all without
+            configuring or installing anything.
+          </p>
+          <p>
+            <a href="/activities/" class="button button--secondary">
+              Browse starters
+            </a>
+          </p>
+        </div>
+        <div>
+          <div class="chaosSection__image">
+            <img
+              src="/images/pages/chaos/reliably-activities-666.png"
+              alt=""
+              width="666"
+            />
+          </div>
+        </div>
+        <button class="button button--icon" onclick="closeDetails(event)">
+          <span class="screen-reader-text">Close</span>
+          <Icon name="x" />
+        </button>
+      </div>
+      <div class="chaosSection__item">
+        <div>
+          <h3>
+            <Icon name="sliders" />
+            Custom Templates
+          </h3>
+          <button
+            class="button button--icon js-openDetails"
+            data-id="chaosSectionCustomTemplates"
+          >
+            <span class="screen-reader-text">View details</span>
+            <Icon name="chevron-right" />
+          </button>
+        </div>
+      </div>
+      <div
+        class="chaosSection__detail chaosSection__detail--double"
+        id="chaosSectionCustomTemplates"
+      >
+        <div>
+          <div class="chaosSection__icon"><Icon name="sliders" /></div>
+          <h4>Custom Templates</h4>
+          <p>Create easily-customizable experiments that everyone can use.</p>
+          <p>
+            Custom templates allow you to provide other teams with experiments
+            they can customize to their particular needs by changing a service
+            URL, a label selector, or any other parameter to make it fill their
+            specific use case.
+          </p>
+          <p>
+            View custom templates as your way to create infinite starters,
+            drastically simplifying the adoption of chaos engineering in your
+            organization.
+          </p>
+        </div>
+        <div>
+          <div class="chaosSection__image">
+            <img
+              src="/images/pages/chaos/reliably-custom-template-1040.png"
+              alt="The form for custom templates that prompts a user for a latency and a service URL, allowing them to create an experiment they can then run on-demand."
+              width="570"
+            />
+          </div>
+        </div>
+        <button class="button button--icon" onclick="closeDetails(event)">
+          <span class="screen-reader-text">Close</span>
+          <Icon name="x" />
+        </button>
+      </div>
+      <div class="chaosSection__item">
+        <div>
+          <h3>
+            <Icon name="settings" />
+            Environments
+          </h3>
+          <button
+            class="button button--icon js-openDetails"
+            data-id="chaosSectionEnvironments"
+          >
+            <span class="screen-reader-text">View details</span>
+            <Icon name="chevron-right" />
+          </button>
+        </div>
+      </div>
+      <div
+        class="chaosSection__detail chaosSection__detail--double"
+        id="chaosSectionEnvironments"
+      >
+        <div>
+          <div class="chaosSection__icon"><Icon name="settings" /></div>
+          <h4>Environments</h4>
+          <p>
+            Store and share environment variables and secrets for better
+            reusability.
+          </p>
+          <p>
+            Environments allow users to share configuration variables and
+            secrets, letting them concentrate on creating experiments. No more
+            secrets spread around in each experiment also mean a more consistent
+            developer experience.
+          </p>
+        </div>
+        <div>
+          <div class="chaosSection__image">
+            <img
+              src="/images/pages/chaos/reliably-environment-1528.png"
+              alt=""
+              width="764"
+            />
+          </div>
+        </div>
+        <button class="button button--icon" onclick="closeDetails(event)">
+          <span class="screen-reader-text">Close</span>
+          <Icon name="x" />
+        </button>
+      </div>
+      <div class="chaosSection__item">
+        <div>
+          <h3>
+            <Icon name="list" />
+            Execution Timeline
+          </h3>
+          <button
+            class="button button--icon js-openDetails"
+            data-id="chaosSectionExecutionTimeline"
+          >
+            <span class="screen-reader-text">View details</span>
+            <Icon name="chevron-right" />
+          </button>
+        </div>
+      </div>
+      <div
+        class="chaosSection__detail chaosSection__detail--double"
+        id="chaosSectionExecutionTimeline"
+      >
+        <div>
+          <div class="chaosSection__icon"><Icon name="list" /></div>
+          <h4>Execution Timeline</h4>
+          <p>A more user-friendly approach to the execution journal.</p>
+          <p>
+            An experiment's worth is in its results, and what you get from them.
+            Reliably presents executions journals in an easier-to-read way,
+            making potential deviations easier to spot. Being accessible to all
+            your teammates, they also make collaboration easier.
+          </p>
+        </div>
+        <div>
+          <div class="chaosSection__image">
+            <img
+              src="/images/pages/chaos/reliably-timeline-1048.png"
+              alt="A timeline presenting the timestamped events in an experiment execution."
+              width="524"
+            />
+          </div>
+        </div>
+        <button class="button button--icon" onclick="closeDetails(event)">
+          <span class="screen-reader-text">Close</span>
+          <Icon name="x" />
+        </button>
+      </div>
+    </div>
+  </section>
+  <section class="chaosMedia">
+    <div class="container">
+      <iframe
+        width="560"
+        height="315"
+        src="https://www.youtube.com/embed/LCs0rvTvEtA"
+        title="Custom template creation and usage demo"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen></iframe>
+    </div>
+  </section>
+  <section class="chaosSection">
+    <div class="container">
+      <div class="chaosSection__title">
+        <h2>
+          Target any system, from major cloud providers to Windows machines in
+          data centers
+        </h2>
+      </div>
+      <div class="chaosSection__intro">
+        <p>
+          With support for AWS, Azure, Google Cloud, Kubernetes, and being able
+          to run on Linux or Windows machines, Reliably allows you create even
+          the most complex experiments in both state-of-the-art and legacy
+          environments.
+        </p>
+      </div>
+      <div class="chaosSection__item">
+        <div>
+          <h3>
+            <Icon name="cloud" />
+            Cloud Providers
+          </h3>
+          <button
+            class="button button--icon js-openDetails"
+            data-id="chaosSectionCloud"
+          >
+            <span class="screen-reader-text">View details</span>
+            <Icon name="chevron-right" />
+          </button>
+        </div>
+      </div>
+      <div
+        class="chaosSection__detail chaosSection__detail--double"
+        id="chaosSectionCloud"
+      >
+        <div>
+          <div class="chaosSection__icon"><Icon name="cloud" /></div>
+          <h4>Cloud Providers</h4>
+          <p>
+            Native support for major cloud providers with over 300 probes and
+            actions.
+          </p>
+          <p>
+            Using open-source Chaos Toolkit extensions, Reliably provides native
+            support for AWS, Azure, and Google Cloud. Those actions are the
+            building bricks to create experiments, providing users with simple
+            mechanics to create and delete instances and machines, and probe
+            information while doing so.
+          </p>
+        </div>
+        <div>
+          {providers.map((p) => <CloudProvider provider={p} />)}
+        </div>
+        <button class="button button--icon" onclick="closeDetails(event)">
+          <span class="screen-reader-text">Close</span>
+          <Icon name="x" />
+        </button>
+      </div>
+      <div class="chaosSection__item">
+        <div>
+          <h3>
+            <Icon name="kubernetes-logo-colorless" />
+            Kubernetes
+          </h3>
+          <button
+            class="button button--icon js-openDetails"
+            data-id="chaosSectionKubernetes"
+          >
+            <span class="screen-reader-text">View details</span>
+            <Icon name="chevron-right" />
+          </button>
+        </div>
+      </div>
+      <div
+        class="chaosSection__detail chaosSection__detail--double"
+        id="chaosSectionKubernetes"
+      >
+        <div>
+          <div class="chaosSection__icon"><Icon name="sliders" /></div>
+          <h4>Kubernetes</h4>
+          <p>
+            The CNCF container orchestrator has always been a first-class
+            citizen for both Chaos Toolkit and Reliably.
+          </p>
+          <p>
+            Over 60 Kubernetes actions and probes work everywhere Kubernetes can
+            be used, regardless of the underlying architecture. They allow users
+            to create or delete a deployment, start or kill a microservice,
+            terminate pods, read logs, and more!
+          </p>
+          <p>
+            <a href="/activities/?t=chaosk8s" class="button button--secondary">
+              Explore the Kubernetes activities
+            </a>
+          </p>
+        </div>
+        <div>
+          <ul class="chaosSection__kubernetes list-reset">
+            {activities.map((a) => <KubernetesActivities category={a} />)}
+          </ul>
+        </div>
+        <button class="button button--icon" onclick="closeDetails(event)">
+          <span class="screen-reader-text">Close</span>
+          <Icon name="x" />
+        </button>
+      </div>
+      <div class="chaosSection__item">
+        <div>
+          <h3>
+            <div>
+              <Icon name="linux-logo" />
+              <Icon name="windows-logo" />
+            </div>
+            Linux and Windows
+          </h3>
+          <button
+            class="button button--icon js-openDetails"
+            data-id="chaosSectionLinWin"
+          >
+            <span class="screen-reader-text">View details</span>
+            <Icon name="chevron-right" />
+          </button>
+        </div>
+      </div>
+      <div
+        class="chaosSection__detail chaosSection__detail--double"
+        id="chaosSectionLinWin"
+      >
+        <div>
+          <div class="chaosSection__icon chaosSection__icon--wide">
+            <Icon name="linux-logo" /><Icon name="windows-logo" />
+          </div>
+          <h4>Linux and Windows</h4>
+          <p>
+            The Reliably CLI can run on both Linux and Windows machines, making
+            it a perfect choice for legacy or composite systems.
+          </p>
+          <p>
+            Users maintaining and running complex systems don't always have the
+            luxury to work on a single, modern, architecture. For those
+            situations when you need a bit of agility, Reliably's ability to run
+            on Windows and Linux machines makes it your ideal chaos engineering
+            companion.
+          </p>
+        </div>
+        <div>
+          <div class="chaosSection__image">
+            <img
+              src="/images/pages/chaos/imgix-klWUhr-wPJ8-unsplash-1200.jpg"
+              alt=""
+              width="600"
+            />
+          </div>
+        </div>
+        <button class="button button--icon" onclick="closeDetails(event)">
+          <span class="screen-reader-text">Close</span>
+          <Icon name="x" />
+        </button>
+      </div>
+      <div class="chaosSection__item">
+        <div>
+          <h3>
+            <Icon name="grid" />
+            Extendable
+          </h3>
+          <button
+            class="button button--icon js-openDetails"
+            data-id="chaosSectionExtend"
+          >
+            <span class="screen-reader-text">View details</span>
+            <Icon name="chevron-right" />
+          </button>
+        </div>
+      </div>
+      <div
+        class="chaosSection__detail chaosSection__detail--double"
+        id="chaosSectionExtend"
+      >
+        <div>
+          <div class="chaosSection__icon"><Icon name="grid" /></div>
+          <h4>Extendable</h4>
+          <p>
+            Full support for Chaos Toolkit extensions makes Reliably extendable
+            to your most specific needs.
+          </p>
+          <p>
+            Community-supported extensions have made Reliably able to run in and
+            target most systems. If your system, or parts of your stack, are
+            specific enough that no extension currently fit your needs, building
+            a new extension will allow you use all Reliably features.
+          </p>
+        </div>
+        <div>
+          <PythonCode />
+        </div>
+        <button class="button button--icon" onclick="closeDetails(event)">
+          <span class="screen-reader-text">Close</span>
+          <Icon name="x" />
+        </button>
+      </div>
+    </div>
+    <div class="chaosActivities">
+      <a href="/activities/" class="button button--secondary">
+        View all probes and actions
+      </a>
+    </div>
+  </section>
+  <section class="chaosContent__actions chaosContent__actions--last">
+    <div class="container">
+      <a href="/docs/getting-started/" class="button button--secondary">
+        Get Started
+      </a>
+      <a href="/docs/features/assistant/" class="button button--tertiary">
+        Read the docs
+      </a>
+    </div>
+  </section>
+</main>
+
+<script lang="ts">
+  const buttons = document.querySelectorAll(".js-openDetails");
+  Array.prototype.forEach.call(buttons, (button) => {
+    let id = button.dataset.id;
+    let target = document.getElementById(id);
+    button.onclick = () => {
+      target.classList.add("isVisible");
+    };
+  });
+
+  function closeDetails(event) {
+    let b = event.currentTarget;
+    b.parentElement.classList.remove("isVisible");
+  }
+</script>
+
+<style lang="scss">
+  .chaosContent {
+    position: relative;
+    z-index: 1;
+
+    contain: paint;
+    padding: 0;
+
+    background-color: var(--grey-100);
+
+    > section {
+      padding-top: var(--sectionPadding);
+      padding-bottom: var(--sectionPadding);
+    }
+
+    .chaosIntro {
+      display: flex;
+      align-items: center;
+      min-height: 100vh;
+
+      p {
+        color: var(--grey-700);
+        font-size: clamp(2.4rem, 8vw, 6rem);
+        font-weight: 800;
+        line-height: 1.25;
+
+        span {
+          color: var(--text-color-bright);
+        }
+
+        @media (min-width: 60rem) {
+          font-size: clamp(2.4rem, 4vw, 4.8rem);
+        }
+      }
+    }
+
+    .chaosSection {
+      background-color: white;
+
+      .container {
+        position: relative;
+
+        display: grid;
+        gap: var(--space-medium);
+
+        @media (min-width: 50rem) {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (min-width: 70rem) {
+          grid-template-columns: 2fr repeat(2, 1fr);
+          grid-template-rows: repeat(2, 1fr);
+        }
+
+        > div:not(.chaosSection__detail),
+        > a {
+          background-color: var(--grey-100);
+          border-radius: var(--border-radius-l);
+        }
+
+        h2 {
+          margin-bottom: 0;
+
+          background-clip: text;
+          -webkit-background-clip: text;
+          background-image: url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-800.jpg");
+
+          color: transparent;
+        }
+      }
+
+      &__title {
+        padding: var(--space-medium);
+
+        @media (min-width: 50rem) {
+          grid-area: 1 / 1 / 2 / 2;
+        }
+      }
+
+      &__intro {
+        padding: var(--space-medium);
+
+        font-size: 2.4rem;
+
+        @media (min-width: 70rem) {
+          grid-area: 2 / 1 / 3 / 2;
+        }
+      }
+
+      &__item {
+        position: relative;
+
+        align-self: stretch;
+        overflow: hidden;
+        min-height: 20rem;
+
+        &::before {
+          content: "";
+
+          position: absolute;
+          top: 0;
+          left: 0;
+
+          display: block;
+          height: 100%;
+          width: 100%;
+
+          background: var(--pink-500)
+            url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-800.jpg")
+            no-repeat center center / cover;
+
+          transform: translate(-100%, -100%);
+          transition: transform 0.2s ease-in-out;
+        }
+
+        > div {
+          position: absolute;
+          top: 1rem;
+          right: 1rem;
+          bottom: 1rem;
+          left: 1rem;
+          z-index: 2;
+
+          display: grid;
+          place-items: center;
+          padding: 0.6rem;
+
+          background-color: var(--grey-100);
+          border-radius: 0.4rem;
+
+          h3 {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            span {
+              &:nth-child(1),
+              &:nth-child(4) {
+                color: var(--text-color-dim);
+                font-family: var(--body-font);
+                font-size: 1.4rem;
+                font-weight: 400;
+                text-transform: uppercase;
+              }
+
+              &:nth-child(4) {
+                order: 2;
+              }
+            }
+
+            svg {
+              height: 3.6rem;
+              margin-bottom: var(--space-small);
+
+              color: var(--text-color-dim);
+              color: var(--pink-600);
+            }
+          }
+
+          button {
+            position: absolute;
+            right: 0.6rem;
+            bottom: 0.6rem;
+
+            background-color: transparent;
+            box-shadow: none;
+
+            color: var(--text-color-bright);
+
+            &:hover {
+              background: transparent
+                url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-800.jpg")
+                no-repeat center center / cover;
+
+              color: white;
+            }
+
+            svg {
+              height: 2.4rem;
+              width: 2.4rem;
+
+              stroke-width: 3;
+            }
+          }
+        }
+
+        &:hover {
+          &::before {
+            transform: translate(0, 0);
+          }
+        }
+
+        &:has(button:hover)::before {
+          transform: translate(-100%, -100%);
+        }
+      }
+
+      &__detail {
+        pointer-events: none;
+
+        z-index: 9;
+
+        display: grid;
+        height: 0;
+        min-height: 0;
+        overflow: hidden;
+        padding: var(--space-medium);
+
+        background-color: var(--homeHeroBackground);
+        background-color: var(--pink-900);
+        border-radius: var(--border-radius-l);
+        box-shadow: var(--box-shadow-diffuse);
+        opacity: 0;
+
+        color: white;
+
+        transform: scale(0);
+        transition: transform 0.2s ease-in-out;
+
+        @media (min-width: 50rem) {
+          position: absolute;
+
+          height: 100%;
+          width: 100%;
+        }
+
+        &--double {
+          @media (min-width: 70rem) {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: 100%;
+            gap: calc(2 * var(--space-large));
+          }
+        }
+
+        &--triple {
+          @media (min-width: 50rem) {
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-large);
+
+            > :nth-last-child(2) {
+              grid-column-end: span 2;
+            }
+          }
+
+          @media (min-width: 70rem) {
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: 100%;
+            gap: calc(2 * var(--space-large));
+          }
+        }
+
+        &.isVisible {
+          @media (max-width: 50rem) {
+            height: auto;
+          }
+
+          pointer-events: all;
+
+          opacity: 1;
+
+          transform: scale(1);
+        }
+
+        > div:nth-last-child(2) {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          gap: var(--space-medium);
+        }
+
+        h4 {
+          display: flex;
+          flex-direction: column-reverse;
+          margin-top: var(--space-small);
+
+          color: white;
+          font-size: 3.6rem;
+
+          span {
+            display: block;
+
+            color: var(--pink-300);
+            font-size: 2rem;
+            font-weight: 400;
+            text-transform: uppercase;
+          }
+        }
+
+        h4 + p {
+          opacity: 1;
+
+          color: white;
+          font-size: 2.4rem;
+        }
+
+        p {
+          opacity: 0.8;
+        }
+
+        > .button {
+          position: absolute;
+          top: var(--space-small);
+          right: var(--space-small);
+
+          color: white;
+        }
+      }
+
+      &__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-small);
+        height: 6rem;
+        width: 6rem;
+
+        background-color: var(--pink-800);
+        border-radius: var(--border-radius-m);
+
+        color: var(--pink-100);
+
+        &--wide {
+          width: 12rem;
+        }
+
+        svg {
+          height: 3.6rem;
+        }
+      }
+
+      &__grade {
+        > span {
+          color: var(--pink-300);
+          font-size: 2rem;
+          text-transform: uppercase;
+        }
+      }
+
+      &__image {
+        position: relative;
+
+        height: 100%;
+
+        img {
+          position: absolute;
+          left: 50%;
+
+          display: block;
+
+          border-radius: var(--border-radius-m);
+          box-shadow: var(--box-shadow-diffuse);
+
+          transform: translate(-50%, -50%);
+
+          @media (min-width: 70rem) {
+            top: var(--space-large);
+            right: calc(-2 * var(--space-medium));
+            left: unset;
+
+            transform: translate(0, 0);
+          }
+        }
+      }
+
+      &__kubernetes {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-medium);
+      }
+    }
+
+    .chaosTestimony {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 100vh;
+
+      &__item {
+        blockquote {
+          margin: 0;
+          padding: 0;
+
+          border: none;
+
+          font-style: normal;
+          quotes: "\201C""\201D""\2018""\2019";
+
+          p {
+            font-size: clamp(3.6rem, 8vw, 7.2rem);
+            font-weight: 800;
+            line-height: 1.25;
+
+            @media (min-width: 60rem) {
+              font-size: clamp(2.4rem, 4vw, 4.8rem);
+            }
+
+            &::before,
+            &::after {
+              color: var(--text-color-dim);
+              font-weight: 900;
+            }
+
+            &::before {
+              content: open-quote;
+            }
+
+            &::after {
+              content: close-quote;
+            }
+          }
+        }
+
+        figcaption {
+          font-style: normal;
+          text-align: center;
+
+          cite {
+            font-style: normal;
+          }
+        }
+      }
+    }
+
+    .chaosMedia {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 100vh;
+      padding-top: var(--sectionPadding);
+      padding-bottom: var(--sectionPadding);
+
+      iframe {
+        height: 100%;
+        width: 100%;
+        margin-top: var(--space-small);
+        margin-bottom: var(--space-small);
+
+        aspect-ratio: 16/9;
+
+        border-radius: var(--border-radius-m);
+        box-shadow: var(--box-shadow-diffuse);
+      }
+
+      img {
+        width: 100%;
+        margin-top: var(--space-small);
+        margin-bottom: var(--space-small);
+
+        border-radius: var(--border-radius-m);
+        box-shadow: var(--box-shadow-diffuse);
+      }
+    }
+
+    .chaosActivities {
+      display: grid;
+      place-content: center;
+      padding: var(--space-large) var(--space-small) 0;
+    }
+
+    &__actions {
+      padding-bottom: var(--sectionPadding);
+
+      background-color: var(--pink-800);
+      background-image: url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-800.jpg");
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: cover;
+
+      @media (min-width: 401px) {
+        background-image: -webkit-image-set(
+          url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-800.jpg") 1x,
+          url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1080.jpg")
+            2x
+        );
+        background-image: image-set(
+          url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-800.jpg") 1x,
+          url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1080.jpg")
+            2x
+        );
+      }
+
+      @media (min-width: 541px) {
+        background-image: -webkit-image-set(
+          url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-800.jpg") 1x,
+          url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1440.jpg")
+            2x
+        );
+        background-image: image-set(
+          url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-800.jpg") 1x,
+          url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1440.jpg")
+            2x
+        );
+      }
+
+      @media (min-width: 721px) {
+        background-image: -webkit-image-set(
+          url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-800.jpg") 1x,
+          url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1920.jpg")
+            2x
+        );
+        background-image: image-set(
+          url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-800.jpg") 1x,
+          url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1920.jpg")
+            2x
+        );
+      }
+
+      @media (min-width: 801px) {
+        background-image: -webkit-image-set(
+          url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1080.jpg")
+            1x,
+          url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1920.jpg")
+            2x
+        );
+        background-image: image-set(
+          url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1080.jpg")
+            1x,
+          url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1920.jpg")
+            2x
+        );
+      }
+
+      @media (min-width: 1081px) {
+        background-attachment: fixed;
+
+        background-image: -webkit-image-set(
+          url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1440.jpg")
+            1x,
+          url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1920.jpg")
+            2x
+        );
+        background-image: image-set(
+          url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1440.jpg")
+            1x,
+          url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1920.jpg")
+            2x
+        );
+      }
+
+      @media (min-width: 1441px) {
+        background-image: url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1920.jpg");
+      }
+
+      .container {
+        display: flex;
+        justify-content: center;
+        gap: var(--space-medium);
+      }
+
+      &--last {
+        background-color: var(--grey-200);
+      }
+    }
+  }
+</style>

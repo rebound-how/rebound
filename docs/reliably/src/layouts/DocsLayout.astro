@@ -1,0 +1,226 @@
+---
+export interface Props {
+  title: string;
+  long_title?: string;
+  soon?: boolean;
+  description: string;
+  content: any,
+  headings: {
+    depth: number,
+    text: string,
+    slug: string,
+  }[],
+  hideRightSidebar: boolean,
+  image?: string;
+  rawContent: () => string,
+}
+
+import Head from "@/components/layout/Head.astro";
+import DocsHeader from "@/components/docs/DocsHeader.astro";
+import SiteFooter from "@/components/layout/SiteFooter.astro";
+
+import DocsArticle from "@/components/docs/DocsArticle.astro";
+import LeftSidebar from "@/components/docs/LeftSidebar.astro";
+import RightSidebar from "@/components/docs/RightSidebar.astro";
+import { DOCS_SITE } from "@/config/config";
+
+const {
+  title,
+  long_title,
+  soon,
+  description,
+  content = {},
+  headings,
+  hideRightSidebar = false,
+  image,
+} = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const url = new URL(Astro.request.url);
+const currentUrl = url.pathname;
+const imageURL = new URL(
+  Astro.props.image || "https://reliably.com/social.png",
+  Astro.site
+);
+
+// const currentFile = `src/pages${currentUrl.replace(/\/$/, '')}.md`;
+const formatTitle = (title, siteInfo) =>
+  title ? `${title} · ${siteInfo.title}` : siteInfo.title;
+
+// console.log(content);
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <Head
+      title={formatTitle(title, DOCS_SITE)}
+      description={description}
+      canonicalURL={canonical}
+      image={imageURL}
+    />
+    <style lang="scss">
+      body {
+        display: grid;
+        grid-template-rows: var(--theme-navbar-height) 1fr;
+        width: 100%;
+
+        background-color: var(--grey-100);
+
+        --gutter: 0.5rem;
+
+        &.mobile-sidebar-on {
+          .gridSidebar--left {
+            display: block;
+          }
+        }
+      }
+      .layout {
+        display: grid;
+        grid-auto-flow: column;
+        grid-template-columns:
+          minmax(var(--gutter), 1fr)
+          minmax(0, var(--max-width))
+          minmax(var(--gutter), 1fr);
+        overflow-x: hidden;
+        padding-top: var(--space-large);
+        padding-right: var(--space-small);
+        padding-left: var(--space-small);
+      }
+
+      .layout :global(> *) {
+        height: 100%;
+        width: 100%;
+      }
+
+      .gridSidebar {
+        position: sticky;
+        top: 0;
+
+        height: 100vh;
+        padding: 0;
+
+        &--left {
+          position: fixed;
+          top: var(--header-height);
+          left: 0;
+          z-index: 10;
+
+          display: none;
+
+          background-color: var(--grey-100);
+          border-top: 0.1rem solid var(--grey-200);
+        }
+      }
+
+      .gridContent {
+        grid-column: 2;
+
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      .gridSidebar--right {
+        display: none;
+      }
+
+      @media (min-width: 50em) {
+        .layout {
+          grid-template-columns:
+            20rem
+            minmax(0, var(--max-width));
+          gap: var(--space-medium);
+          overflow: initial;
+        }
+        .gridSidebar--left {
+          position: sticky;
+          top: 0;
+          grid-column: 1;
+
+          display: flex;
+          padding-top: var(--space-medium);
+
+          border-top: none;
+        }
+      }
+
+      @media (min-width: 60em) {
+        .layout {
+          grid-template-columns: 30rem, minmax(0, var(--max-width));
+        }
+      }
+
+      @media (min-width: 72em) {
+        .layout {
+          grid-template-columns:
+            calc(30rem - var(--space-medium))
+            minmax(0, calc(var(--max-width) - 58rem))
+            calc(28rem - var(--space-medium));
+          margin: 0 auto;
+        }
+
+        .gridSidebar--right {
+          grid-column: 3;
+
+          display: flex;
+          padding-top: var(--space-medium);
+        }
+      }
+    </style>
+  </head>
+  <body class="docs">
+    <DocsHeader />
+    <main class="layout">
+      <aside class="gridSidebar gridSidebar--left">
+        <LeftSidebar currentPage={currentUrl} />
+      </aside>
+      <div class="gridContent">
+        <DocsArticle {content} currentPage={currentUrl}>
+          <slot />
+        </DocsArticle>
+      </div>
+      <aside class="gridSidebar gridSidebar--right">
+        {!hideRightSidebar && <RightSidebar
+          headings={headings}
+        />}
+      </aside>
+    </main>
+    <SiteFooter />
+    <!-- Cookie Consent by TermsFeed https://www.TermsFeed.com -->
+    <script
+      type="text/javascript"
+      src="/js/cookie-consent/4.0.0/cookie-consent.js"
+      charset="UTF-8"
+    >
+    </script>
+    <script type="text/javascript" charset="UTF-8">
+      document.addEventListener("DOMContentLoaded", function () {
+        cookieconsent.run({
+          notice_banner_type: "simple",
+          consent_type: "express",
+          palette: "light",
+          language: "en",
+          page_load_consent_levels: ["strictly-necessary"],
+          notice_banner_reject_button_hide: false,
+          preferences_center_close_button_hide: true,
+          page_refresh_confirmation_buttons: true,
+          website_name: "Reliably",
+        });
+        let title = document.getElementById("cc-nb-title");
+        let text = document.getElementById("cc-nb-text");
+        let accept = document.querySelector(".cc-nb-okagree");
+        let decline = document.querySelector(".cc-nb-reject");
+        let pref = document.querySelector(".cc-nb-changep");
+        if (title !== null) {
+          title.innerHTML = "We have cookies";
+          text.innerHTML =
+            "We use cookies to analyze our website traffic, and to understand where our visitors are coming from.";
+          accept.innerHTML = "Accept";
+          decline.innerHTML = "Decline";
+          pref.innerHTML = "Preferences";
+        }
+      });
+    </script>
+    <!-- End Cookie Consent by TermsFeed https://www.TermsFeed.com -->
+  </body>
+</html>

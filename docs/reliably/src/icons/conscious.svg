@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 32">
+  <g style="isolation:isolate">
+    <g id="qTranslate">
+      <g id="q">
+        <path d="M25.57,7.91,17.1,22.05a2,2,0,0,0,.73,2.73,1.88,1.88,0,0,0,1,.27H35.75a2,2,0,0,0,1.71-3L29,7.91a2,2,0,0,0-2.75-.67A2,2,0,0,0,25.57,7.91Z" style="fill:#fc1d90"/>
+        <path d="M27.18,19.27a1,1,0,0,1-.32-1.94c.6-.21,2.32-1,2.32-2.06a2,2,0,0,0-3.89-.66,1,1,0,0,1-1.89-.67,4,4,0,0,1,7.78,1.34c0,2.64-3.31,3.82-3.69,3.94A.84.84,0,0,1,27.18,19.27Z" style="fill:#fff"/>
+        <path d="M27.27,23.27a1,1,0,1,1,0-2h0a1,1,0,0,1,0,2Z" style="fill:#fff"/>
+        <animate
+          attributeType="CSS"
+          attributeName="opacity" 
+          dur="8s"
+          repeatCount="indefinite"
+          values="1; 1; 0; 0; 1"
+          keyTimes="0; 0.05; 0.1; 0.2; 1"
+        />
+      </g>
+      <animateTransform
+        attributeName="transform"
+        attributeType="XML"
+        type="translate"
+        values="0; 0; 25; 0; 0"
+        keyTimes="0; 0.05; 0.1; 0.2; 1"
+        dur="8s"
+        repeatCount="indefinite"
+      />
+    </g>
+    <g id="eTranslate">
+      <g id="e">
+        <path d="M25.57,7.91,17.1,22.05a2,2,0,0,0,.73,2.73,1.88,1.88,0,0,0,1,.27H35.75a2,2,0,0,0,1.71-3L29,7.91a2,2,0,0,0-2.75-.67A2,2,0,0,0,25.57,7.91Z" style="fill:#efdf0b;mix-blend-mode:multiply"/>
+        <path d="M27.1,18.27a1,1,0,0,1-1-1v-4a1,1,0,0,1,2,0v4A1,1,0,0,1,27.1,18.27Z"/>
+        <path d="M27.11,22.27a1,1,0,0,1,0-2h0a1,1,0,0,1,0,2Z"/>
+        <animate
+          attributeType="CSS"
+          attributeName="opacity" 
+          dur="8s"
+          repeatCount="indefinite"
+          values="0; 1; 1; 0"
+          keyTimes="0; 0.05; 0.95; 1"
+        />
+      </g>
+      <animateTransform
+        attributeName="transform"
+        attributeType="XML"
+        type="translate"
+        values="-32; 0; 0; 32"
+        keyTimes="0; 0.05; 0.95; 1"
+        dur="8s"
+        repeatCount="indefinite"
+      />
+    </g>
+    <g id="sparks">
+      <rect x="26" y="2" width="2" height="4" rx="1" style="fill:#fc1d90"/>
+      <rect x="36" y="6" width="2" height="4" rx="1" transform="translate(16.49 -23.82) rotate(45)" style="fill:#fc1d90"/>
+      <rect x="39" y="15" width="2" height="4" rx="1" transform="translate(57 -23) rotate(90)" style="fill:#fc1d90"/>
+      <rect x="36" y="23" width="2" height="4" rx="1" transform="translate(80.84 16.51) rotate(135)" style="fill:#fc1d90"/>
+      <rect x="26" y="28" width="2" height="4" rx="1" transform="translate(54 60) rotate(-180)" style="fill:#fc1d90"/>
+      <rect x="16" y="23" width="2" height="4" rx="1" transform="translate(11.34 54.7) rotate(-135)" style="fill:#fc1d90"/>
+      <rect x="13" y="15" width="2" height="4" rx="1" transform="translate(-3 31) rotate(-90)" style="fill:#fc1d90"/>
+      <rect x="16" y="6" width="2" height="4" rx="1" transform="translate(-0.68 14.36) rotate(-45)" style="fill:#fc1d90"/>
+      <animate
+        attributeType="CSS"
+        attributeName="opacity" 
+        dur="8s"
+        repeatCount="indefinite"
+        values="0; 0; 0; 1; 1; 0; 0"
+        keyTimes="0; 0.05; 0.2; 0.21; 0.85; 0.86; 1"
+      />
+    </g>
+  </g>
+</svg>

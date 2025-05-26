@@ -1,0 +1,635 @@
+---
+import { Icon } from "astro-icon";
+
+import ArrowLink from "@/components/_ui/ArrowLink.astro";
+import VideoContainer from "@/components/_ui/VideoContainer.astro";
+---
+
+<section class="homeSolution">
+  <h1>
+    <div class="container">
+      Reliably enables you to develop a strong reliability engineering
+      capability, supporting your teams in delivering more dependable products
+      on time and within budget.
+    </div>
+    <div class="decorate">
+      <Icon name="bubble-background-2" />
+    </div>
+  </h1>
+  <div class="solution container">
+    <div class="solution__item solution__item--1" data-step="1">
+      <div class="homeFeatureIcon">
+        <Icon name="pause-circle" />
+      </div>
+      <h2>Simplify building valuable experiments</h2>
+      <p>
+        Reliability engineering hinges on the art of experimentation—whether
+        it's peering into the unknown or validating expected outcomes. The
+        Reliably Experiment Builder <strong
+          >simplifies experiment creation</strong
+        > and
+        <strong>introduces a novel way to visualize your workflow</strong>.
+      </p>
+      <p>
+        <strong>Addressing two pivotal challenges</strong> faced by early
+        champions looking to expand reliability practices within their
+        organizations, our Experiment Builder <strong
+          >eliminates the need to learn a new &laquo;language&raquo;</strong
+        > for crafting experiments and significantly <strong
+          >accelerates the onboarding process</strong
+        > for teams and users.
+      </p>
+      <p>
+        The Reliably Experiment Builder provides an arsenal of <strong
+          >over 300 actions, from &laquo;attacks&raquo; to probes</strong
+        >, enabling you to construct experiments of any complexity with ease.
+      </p>
+      <p>
+        <ArrowLink href="/product/experiment-builder/">Read more</ArrowLink>
+      </p>
+    </div>
+    <div class="solution__illustration">
+      <VideoContainer
+        src="/images/pages/home/reliably-experiment-builder-1080.webm"
+        poster="/images/pages/home/reliably-experiment-builder.webp"
+        alt="The Reliably experiment builder lets users add, configure and reorder attacks and probes."
+        height="1080"
+        width="1904"
+        shadow={true}
+        rounded={true}
+      />
+    </div>
+    <div class="solution__item solution__item--2" data-step="2">
+      <div class="homeFeatureIcon">
+        <Icon name="list" />
+      </div>
+      <h2>Quickly discover where you're at risk</h2>
+      <p>
+        Reliably empowers software engineers with a suite of tools designed to
+        enhance their reliability initiatives. Whether you're <strong
+          >tracking the execution journal or assessing your organization's
+          overall progress</strong
+        >, we've got you covered.
+      </p>
+      <p>
+        The timeline takes the execution journal to a whole new level of
+        user-friendliness. It enables you to <strong
+          >monitor results for each activity in real-time</strong
+        > as they unfold.
+      </p>
+      <p>
+        Leverage the <strong>score and freshness indicators</strong> to assess
+        the performance of your services and identify areas where more effort is
+        needed.
+      </p>
+      <p>
+        The Reliably dashboard serves as your strategic vantage point for
+        gaining valuable insights into your organization's reliability
+        engineering efforts. <strong
+          >Dive into trends, assess impacts, scrutinize scores, and evaluate
+          contributions</strong
+        > from a single, high-level perspective.
+      </p>
+      <p><ArrowLink href="/docs/concepts/executions/">Read more</ArrowLink></p>
+    </div>
+    <div class="solution__illustration">
+      <VideoContainer
+        src="/images/pages/home/reliably-experiment-run-1080.webm"
+        poster="/images/pages/home/reliably-experiment-run.webp"
+        alt="Video of an experiment being planned and running in Reliably, and a view of the execution timeline."
+        height="1080"
+        width="1884"
+        shadow={true}
+        rounded={true}
+      />
+    </div>
+    <div class="solution__item solution__item--3" data-step="3">
+      <div class="homeFeatureIcon">
+        <Icon name="zap" />
+      </div>
+      <h2>As versatile as your system requires</h2>
+      <p>
+        Ensuring widespread adoption of resilience engineering practices within
+        your organization requires <strong
+          >aligning your tools with the diverse needs and preferences of all
+          your teams</strong
+        > and developers. Reliably is designed to seamlessly <strong
+          >integrate into a wide range of systems</strong
+        >, and <strong>operates across various platforms</strong>, from your
+        preferred CI/CD pipelines to the cloud.
+      </p>
+      <p>
+        With over 300 distinct activities at your disposal, Reliably empowers
+        you to effectively target <strong
+          >AWS, Azure, Google Cloud, Kubernetes, Prometheus, Spring</strong
+        >, and more.
+      </p>
+      <p>
+        You can execute experiments through popular CI/CD providers like
+        <strong>Jenkins, Travis, or CircleCI</strong>, as a <strong
+          >GitHub Action</strong
+        >, or directly within the
+        <strong>Reliably Cloud</strong>, including a <strong
+          >Private SaaS</strong
+        > option for enhanced data security. For those seeking even greater
+        control, Reliably offers the flexibility of <strong
+          >on-premises deployment</strong
+        > within your existing infrastructure. And it even runs on your machine.
+      </p>
+      <p><ArrowLink href="/docs/concepts/deployments/">Read more</ArrowLink></p>
+    </div>
+    <div class="solution__illustration">
+      <VideoContainer
+        src="/images/pages/home/reliably-deployments-1080.webm"
+        poster="/images/pages/home/reliably-deployments.webp"
+        alt="VA video of a deployment showing options to run experiments in the cloud, in Kubernetes, or as a GitHub action."
+        height="1080"
+        width="1928"
+        shadow={true}
+        rounded={true}
+      />
+    </div>
+    <div
+      class="storyBackground storyBackground--mobileStep1"
+      id="storyBackground"
+      aria-hidden="true"
+    >
+      <div class="reliablyWrapper" id="reliablyWrapper">
+        <div class="reliablyApp step1" id="reliablyApp">
+          <span class="screen-reader-text">
+            Illustration of a Reliably app screen
+          </span>
+          <div class="reliablyApp__bar appBar">
+            <div class="reliablyApp__barButtons appBar__buttons"></div>
+          </div>
+          <div class="reliablyApp__container">
+            <div class="reliablyApp__header">
+              <div class="reliablyApp__title"></div>
+              <div class="reliablyApp__button" id="pauseButton"></div>
+            </div>
+            <div class="reliablyApp__content"></div>
+          </div>
+        </div>
+      </div>
+      <div class="storyBuild isVisible" id="storyBuild" aria-hidden="true">
+        <VideoContainer
+          src="/images/pages/home/reliably-experiment-builder-1080.webm"
+          poster="/images/pages/home/reliably-experiment-builder.webp"
+          alt="The Reliably experiment builder lets users add, configure and reorder attacks and probes."
+          height="1080"
+          width="1904"
+          shadow={true}
+          rounded={true}
+          isExpandable={true}
+        />
+      </div>
+      <div class="storyExplore" id="storyExplore" aria-hidden="true">
+        <VideoContainer
+          src="/images/pages/home/reliably-experiment-run-1080.webm"
+          poster="/images/pages/home/reliably-experiment-run.webp"
+          alt="Video of an experiment being planned and running in Reliably, and a view of the execution timeline."
+          height="1080"
+          width="1884"
+          shadow={true}
+          rounded={true}
+          isExpandable={true}
+        />
+      </div>
+      <div class="storyVersatile" id="storyVersatile" aria-hidden="true">
+        <VideoContainer
+          src="/images/pages/home/reliably-deployments-1080.webm"
+          poster="/images/pages/home/reliably-deployments.webp"
+          alt="A video of a deployment showing options to run experiments in the cloud, in Kubernetes, or as a GitHub action."
+          height="1080"
+          width="1928"
+          shadow={true}
+          rounded={true}
+          isExpandable={true}
+        />
+      </div>
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+  let storyObserverOptions = {
+    rootMargin: "0%",
+    threshold: 0.5,
+  };
+
+  var storyObserver = new IntersectionObserver(
+    storyObserverCallback,
+    storyObserverOptions,
+  );
+
+  const storyBackground = document.getElementById("storyBackground");
+  const reliablyWrapper = document.getElementById("reliablyWrapper");
+  const reliablyApp = document.getElementById("reliablyApp");
+  const storyBuild = document.getElementById("storyBuild");
+  const buildVideo = storyBuild.querySelector("video");
+  const storyExplore = document.getElementById("storyExplore");
+  const exploreVideo = storyExplore.querySelector("video");
+  const storyVersatile = document.getElementById("storyVersatile");
+  const versatileVideo = storyVersatile.querySelector("video");
+
+  function storyObserverCallback(entries, observer) {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        let step = entry.target.dataset.step;
+        if (step === "1") {
+          storyBackground.classList.add("storyBackground--mobileStep1");
+          storyBackground.classList.remove(
+            "storyBackground--toLeft",
+            "storyBackground--mobileStep2",
+          );
+          reliablyWrapper.classList.remove("reliablyWrapper--toLeft");
+          reliablyApp.classList.remove("step2", "step3");
+          reliablyApp.classList.add("step1");
+          storyBuild.classList.add("isVisible");
+          storyExplore.classList.remove("isVisible");
+          buildVideo.play();
+          exploreVideo.pause();
+          versatileVideo.pause();
+        } else if (step === "2") {
+          storyBackground.classList.add(
+            "storyBackground--toLeft",
+            "storyBackground--mobileStep2",
+          );
+          storyBackground.classList.remove(
+            "storyBackground--mobileStep1",
+            "storyBackground--mobileStep3",
+          );
+          reliablyWrapper.classList.add("reliablyWrapper--toLeft");
+          reliablyApp.classList.add("step2");
+          reliablyApp.classList.remove("step1", "step3");
+          storyBuild.classList.remove("isVisible");
+          storyExplore.classList.add("isVisible");
+          storyVersatile.classList.remove("isVisible");
+          buildVideo.pause();
+          exploreVideo.play();
+          versatileVideo.pause();
+        } else if (step === "3") {
+          storyBackground.classList.remove(
+            "storyBackground--toLeft",
+            "storyBackground--mobileStep2",
+          );
+          storyBackground.classList.add("storyBackground--mobileStep3");
+          reliablyWrapper.classList.remove("reliablyWrapper--toLeft");
+          storyExplore.classList.remove("isVisible");
+          storyVersatile.classList.add("isVisible");
+          buildVideo.pause();
+          exploreVideo.pause();
+          versatileVideo.play();
+        }
+      }
+    });
+  }
+
+  document.querySelectorAll(".solution__item").forEach((i) => {
+    if (i) {
+      storyObserver.observe(i);
+    }
+  });
+</script>
+
+<style lang="scss">
+  .homeSolution {
+    // Because CSS custom properties don't work in media queries
+    $breakpoint: 66rem;
+
+    padding-bottom: var(--sectionPadding);
+
+    background-color: white;
+
+    h1 {
+      position: relative;
+      z-index: 2;
+
+      display: grid;
+      place-content: center;
+      margin-top: 0;
+      padding-top: var(--sectionPadding);
+      padding-bottom: var(--sectionPadding);
+
+      background-color: var(--grey-100);
+
+      color: var(--text-color-bright);
+      font-size: clamp(3rem, 4vw + 1rem, 4.8rem);
+
+      @media (min-width: $breakpoint) {
+        min-height: 100vh;
+      }
+
+      .container {
+        margin-bottom: 12rem;
+
+        @media (min-width: $breakpoint) {
+          margin-bottom: 0;
+          padding-right: 20%;
+        }
+      }
+
+      .decorate {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        z-index: -1;
+
+        width: 50%;
+
+        svg {
+          display: block;
+          height: 100%;
+          width: auto;
+        }
+      }
+    }
+
+    .solution {
+      position: relative;
+
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-large);
+
+      @media (min-width: $breakpoint) {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: repeat(3, auto);
+      }
+
+      &__item {
+        grid-column-end: span 1;
+        grid-row-end: span 1;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        @media (min-width: $breakpoint) {
+          min-height: 100vh;
+        }
+
+        h2 {
+          margin-top: 0;
+        }
+
+        h3 {
+          font-size: 2rem;
+        }
+
+        &--1 {
+          grid-row-start: 1;
+        }
+
+        &--2 {
+          grid-row-start: 3;
+        }
+
+        &--3 {
+          grid-row-start: 5;
+        }
+
+        @media (min-width: $breakpoint) {
+          &--1 {
+            grid-column-start: 1;
+            grid-row-start: 1;
+          }
+
+          &--2 {
+            grid-column-start: 2;
+            grid-row-start: 2;
+          }
+
+          &--3 {
+            grid-column-start: 1;
+            grid-row-start: 3;
+          }
+        }
+      }
+
+      &__illustration {
+        display: block;
+        padding-right: calc(50vw - 40rem);
+        padding-left: calc(50vw - 40rem);
+        // max-width: 40rem;
+
+        @media (min-width: $breakpoint) {
+          display: none;
+        }
+      }
+    }
+
+    .storyBackground {
+      top: var(--space-medium);
+
+      display: none;
+
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+
+      &--mobileStep1 {
+        @media (max-width: $breakpoint) {
+          grid-row: 2 / span 1;
+        }
+      }
+
+      &--mobileStep2 {
+        @media (max-width: $breakpoint) {
+          grid-row: 4 / span 1;
+        }
+      }
+
+      &--mobileStep3 {
+        @media (max-width: $breakpoint) {
+          grid-row: 6 / span 1;
+        }
+      }
+
+      @media (min-width: $breakpoint) {
+        position: sticky;
+
+        display: block;
+        grid-row: 1 / span 1;
+        grid-column: 2 / span 1;
+      }
+
+      &--toLeft {
+        @media (min-width: $breakpoint) {
+          transform: translateX(calc(-1 * (100% + var(--space-large))));
+        }
+      }
+
+      .reliablyWrapper {
+        position: relative;
+
+        height: 50rem;
+        width: 120%;
+        max-width: 80rem;
+        margin-right: auto;
+        margin-left: auto;
+
+        background-color: var(--grey-100);
+        border-radius: var(--border-radius-m);
+
+        transform-origin: center;
+        transition: all 0.3s ease-in-out;
+
+        @media (min-width: $breakpoint) {
+          position: absolute;
+          top: 40%;
+
+          transform: perspective(1000px) rotateX(-5deg) rotateY(-15deg)
+            rotateZ(2deg) translate(0, -50%);
+        }
+
+        &--toLeft {
+          @media (min-width: $breakpoint) {
+            transform: perspective(1000px) rotateX(5deg) rotateY(15deg)
+              rotateZ(-2deg) translate(-20%, -50%);
+          }
+        }
+      }
+
+      .reliablyApp {
+        position: relative;
+
+        height: 100%;
+        width: 100%;
+
+        opacity: 1;
+
+        transition: all 0.3s ease-in-out;
+
+        &.isHidden {
+          opacity: 0;
+          pointer-events: none;
+        }
+
+        &__bar {
+          border-bottom-color: var(--grey-200);
+        }
+
+        &__container {
+          padding: 1.6rem 4.8rem;
+        }
+
+        &__header {
+          display: grid;
+          grid-template-columns: 5fr 1fr;
+          gap: 6rem;
+        }
+
+        &__title,
+        &__button {
+          height: 1.6rem;
+
+          border-radius: 0.3rem;
+        }
+
+        &__title {
+          background-color: var(--grey-200);
+        }
+
+        &__button {
+          position: relative;
+
+          background-color: var(--green-500);
+        }
+
+        &__content {
+          position: relative;
+          z-index: 1;
+
+          transform: rotate(0deg); // Fix stacking context
+
+          height: 38rem;
+          margin-top: 2.4rem;
+          padding: 1.6rem;
+
+          background-color: var(--grey-200);
+          border-radius: 0.3rem;
+        }
+      }
+    }
+
+    .storyBuild,
+    .storyExplore,
+    .storyVersatile {
+      position: relative;
+      z-index: 3;
+
+      display: none;
+
+      transition: all 0.3s var(--custom-easing);
+
+      @media (min-width: $breakpoint) {
+        position: absolute;
+        top: 50%;
+        left: 10%;
+
+        display: block;
+        width: 100%;
+
+        opacity: 0;
+
+        transform: translate(10rem, -50%);
+
+        :global(video-container) {
+          pointer-events: none;
+        }
+
+        &.isVisible {
+          opacity: 1;
+
+          transform: translate(0, -50%);
+          transition: all 0.3s var(--custom-easing) 0.5s;
+
+          :global(video-container) {
+            pointer-events: all;
+          }
+        }
+      }
+
+      :global(> *) {
+        @media (min-width: $breakpoint) {
+          position: absolute;
+          top: 50%;
+
+          width: 100%;
+
+          transform: translateY(-50%);
+        }
+      }
+    }
+
+    .storyBuild {
+      grid-row-start: 2;
+
+      @media (min-width: $breakpoint) {
+        grid-column-start: 2;
+        grid-row-start: 1;
+      }
+    }
+
+    .storyExplore {
+      grid-row-start: 4;
+
+      @media (min-width: $breakpoint) {
+        grid-column-start: 1;
+        grid-row-start: 2;
+
+        &.isVisible {
+          transform: translate(-10rem, -50%);
+        }
+      }
+    }
+
+    .storyVersatile {
+      grid-row-start: 6;
+
+      @media (min-width: $breakpoint) {
+        grid-column-start: 2;
+        grid-row-start: 3;
+      }
+    }
+  }
+</style>

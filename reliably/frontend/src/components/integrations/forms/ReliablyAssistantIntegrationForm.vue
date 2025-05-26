@@ -31,8 +31,7 @@
         required
       />
       <p class="inputWrapper__help">
-        Reliably Assistant currently uses ChatGPT-4 1106 Preview (AKA ChatGPT-4
-        Turbo).
+        Reliably Assistant currently uses GPT-4.1.
       </p>
       <p
         v-if="!isKeyValid"

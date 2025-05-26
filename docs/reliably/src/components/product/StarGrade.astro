@@ -1,0 +1,45 @@
+---
+import { Icon } from "astro-icon";
+
+export interface Props {
+  grade: number;
+}
+
+const { grade } = Astro.props;
+
+const stars: boolean[] = [false, false, false, false, false];
+
+for (let g = 0; g < grade; g++) {
+  stars[g] = true;
+}
+---
+
+<div class="starGrade">
+  {stars.map((star) => (
+    <div class={`star ${star ? "star--active" : ""}`}>
+      <Icon name="star" />
+    </div>
+  ))}
+</div>
+
+<style lang="scss">
+  .starGrade {
+    display: flex;
+    gap: var(--space-medium);
+
+    .star {
+      svg {
+        height: 3.6rem;
+
+        color: var(--pink-800);
+      }
+    }
+
+    .star--active {
+      svg {
+        color: white;
+        fill: currentColor;
+      }
+    }
+  }
+</style>

@@ -1,0 +1,119 @@
+:root {
+  // Typography
+  --body-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --monospace-font: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+  --heading-font: Barlow, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Helvetica, Arial, sans-serif;
+  --base-font-size: 1.8rem;
+
+  --text-color: var(--grey-800);
+  --text-color-bright: var(--grey-900);
+  --text-color-dim: var(--grey-700);
+  --link-color: var(--pink-500);
+  --button-color: var(--grey-900);
+
+  // Brand
+  --accentColorPrimary: var(--yellow-500);
+  --accentColorSecondary: var(--pink-500);
+
+  // Layout
+  --max-width: 132rem;
+
+  // Vertical Rythm
+  --space-small: 1.6rem;
+  --space-medium: 3rem;
+  --space-large: 6rem;
+
+  --sectionPadding: calc(1.5 * var(--space-large));
+
+  @media (min-width: 60em) {
+    --sectionPadding: calc(2 * var(--space-large));
+  }
+
+  --header-height: 6.9rem;
+
+  // Border radiuses
+  --border-radius-s: 0.4rem;
+  --border-radius-m: 0.6rem;
+  --border-radius-l: 1rem;
+  --border-radius-xl: 3.6rem;
+  --border-radius-xxl: 7.2rem;
+
+  // Box shadow
+  --box-shadow-sharp: 0 0.1rem 0.3rem rgba(0, 0, 0, 0.025),
+    0 0.2rem 0.4rem rgba(0, 0, 0, 0.05), 0 0.8rem 0.8rem rgba(0, 0, 0, 0.08),
+    0 0.16rem 0.32rem rgba(0, 0, 0, 0.1);
+
+  --box-shadow-diffuse: 0 0.1rem 0.3rem rgba(0, 0, 0, 0.025),
+    0 0.2rem 0.4rem rgba(0, 0, 0, 0.05), 0 0.8rem 0.8rem rgba(0, 0, 0, 0.08),
+    0 0.8rem 2.4rem rgba(0, 0, 0, 0.1);
+
+  // Tags
+  --tag-background: var(--yellow-500);
+
+  // Footer
+  --footer-background: white;
+  --footer-icon-hover: var(--grey-800);
+
+  // Animations
+  --custom-easing: cubic-bezier(0.175, 0.885, 0.32, 1.1);
+
+  // Cookie Consent
+  --cc-button-primary-bg: var(--pink-500);
+  --cc-button-primary-hover-bg: var(--pink-600);
+  --cc-button-primary-color: white;
+  --cc-button-secondary-bg: var(--grey-200);
+  --cc-button-secondary-hover-bg: var(--grey-300);
+  --cc-button-tertiary-bg: var(--grey-100);
+  --cc-button-tertiary-hover-bg: var(--grey-200);
+  --cc-button-color: var(var(--text-color-bright));
+  --cc-focus-border: var(--pink-500);
+  --cc-nb-background: var(--grey-100);
+  --cc-pc-container-background: white;
+  --cc-pc-header-background: var(--grey-100);
+  --cc-pc-select-background: var(--blue-200);
+  --cc-cp-body-background: white;
+  --cc-pc-tab-background: var(--grey-200);
+  --cc-pc-tab-active-background: white;
+  --cc-pc-tab-hover-background: var(--grey-300);
+  --cc-pc-tab-border: var(--grey-400);
+  --cc-pc-footer-button-bg: var(--pink-500);
+  --cc-pc-footer-button-color: white;
+}
+
+// .docs {
+//   --text-color: var(--docsTextColor);
+//   --text-color-bright: var(--docsTextColorBright);
+//   --link-color: var(--accentColorPrimary);
+//   --inline-code-text: var(--text-color-bright);
+
+//   --footer-background: var(--blue-800);
+//   --footer-icon-hover: var(--blue-800);
+
+//   // Buttons
+//   --button-primary-hover-background: var(--yellow-400);
+//   --button-secondary-hover-background: var(--pink-400);
+//   --button-tertiary-hover-background: var(--blue-900);
+
+//   // Cookie Consent
+//   --cc-button-primary-bg: var(--yellow-500);
+//   --cc-button-primary-hover-bg: var(--yellow-400);
+//   --cc-button-primary-color: var(--blue-900);
+//   --cc-button-secondary-bg: var(--blue-700);
+//   --cc-button-secondary-hover-bg: var(--blue-600);
+//   --cc-button-tertiary-bg: var(--blue-800);
+//   --cc-button-tertiary-hover-bg: var(--blue-700);
+//   --cc-focus-border: var(--yellow-500);
+//   --cc-nb-background: var(--blue-800);
+//   --cc-pc-container-background: var(--blue-900);
+//   --cc-pc-header-background: var(--blue-900);
+//   --cc-pc-select-background: var(--blue-800);
+//   --cc-cp-body-background: var(--blue-800);
+//   --cc-pc-tab-background: var(--blue-800);
+//   --cc-pc-tab-active-background: var(--blue-700);
+//   --cc-pc-tab-hover-background: var(--blue-900);
+//   --cc-pc-tab-border: var(--blue-900);
+//   --cc-pc-footer-button-bg: var(--yellow-500);
+//   --cc-pc-footer-button-color: var(--blue-900);
+// }

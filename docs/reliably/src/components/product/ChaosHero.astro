@@ -1,0 +1,130 @@
+---
+import SiteHeader from "@/components/layout/SiteHeader.astro";
+---
+
+<div class="productHero chaosHero">
+  <SiteHeader />
+  <div class="container">
+    <h1>
+      <span>Resiliency Engineering</span>
+      <span>Platform</span>
+    </h1>
+    <p class="chaosHero__description">
+      Explore your services' resilience and reliability
+    </p>
+  </div>
+</div>
+
+<style lang="scss">
+  .chaosHero {
+    background-color: var(--pink-800);
+    background-image: url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-800.jpg");
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    @media (min-width: 401px) {
+      background-image: -webkit-image-set(
+        url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-800.jpg") 1x,
+        url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1080.jpg") 2x
+      );
+      background-image: image-set(
+        url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-800.jpg") 1x,
+        url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1080.jpg") 2x
+      );
+    }
+
+    @media (min-width: 541px) {
+      background-image: -webkit-image-set(
+        url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-800.jpg") 1x,
+        url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1440.jpg") 2x
+      );
+      background-image: image-set(
+        url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-800.jpg") 1x,
+        url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1440.jpg") 2x
+      );
+    }
+
+    @media (min-width: 721px) {
+      background-image: -webkit-image-set(
+        url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-800.jpg") 1x,
+        url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1920.jpg") 2x
+      );
+      background-image: image-set(
+        url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-800.jpg") 1x,
+        url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1920.jpg") 2x
+      );
+    }
+
+    @media (min-width: 801px) {
+      background-image: -webkit-image-set(
+        url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1080.jpg") 1x,
+        url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1920.jpg") 2x
+      );
+      background-image: image-set(
+        url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1080.jpg") 1x,
+        url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1920.jpg") 2x
+      );
+    }
+
+    @media (min-width: 1081px) {
+      background-attachment: fixed;
+
+      background-image: -webkit-image-set(
+        url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1440.jpg") 1x,
+        url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1920.jpg") 2x
+      );
+      background-image: image-set(
+        url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1440.jpg") 1x,
+        url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1920.jpg") 2x
+      );
+    }
+
+    @media (min-width: 1441px) {
+      background-image: url("/images/pages/chaos/jr-korpa-SFT9G3pAxLY-unsplash-60-1920.jpg");
+    }
+
+    > .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-large);
+      height: calc(100vh - 6rem);
+      min-height: 72rem;
+
+      h1 {
+        margin: 0;
+
+        color: white;
+        text-align: center;
+
+        > span {
+          display: block;
+
+          font-weight: 900;
+
+          &:first-child {
+            font-size: clamp(4rem, 8vw, 12rem);
+          }
+
+          &:last-child {
+            position: relative;
+            z-index: 2;
+
+            color: var(--pink-100);
+            font-size: clamp(4rem, 8vw, 10rem);
+            text-shadow: var(--box-shadow-sharp);
+          }
+        }
+      }
+    }
+
+    &__description {
+      color: white;
+      font-size: 3.2rem;
+      font-weight: 200;
+      text-align: center;
+    }
+  }
+</style>

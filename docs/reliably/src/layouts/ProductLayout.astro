@@ -1,0 +1,163 @@
+---
+import Head from "@/components/layout/Head.astro";
+import SiteFooter from "@/components/layout/SiteFooter.astro";
+
+export interface Props {
+  title: string;
+  description: string;
+  image?: URL | string;
+}
+
+const { title, description } = Astro.props;
+const t = title;
+const d = description;
+let canonical = new URL(Astro.url.pathname, Astro.site);
+const image = new URL(
+  Astro.props.image || "https://reliably.com/social.png",
+  Astro.site
+);
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <Head title={t} description={d} canonicalURL={canonical} {image} />
+  </head>
+  <body class="product">
+    <slot />
+    <SiteFooter />
+    <!-- Cookie Consent by TermsFeed https://www.TermsFeed.com -->
+    <script
+      type="text/javascript"
+      src="/js/cookie-consent/4.0.0/cookie-consent.js"
+      charset="UTF-8"
+    >
+    </script>
+    <script type="text/javascript" charset="UTF-8">
+      document.addEventListener("DOMContentLoaded", function () {
+        cookieconsent.run({
+          notice_banner_type: "simple",
+          consent_type: "express",
+          palette: "light",
+          language: "en",
+          page_load_consent_levels: ["strictly-necessary"],
+          notice_banner_reject_button_hide: false,
+          preferences_center_close_button_hide: true,
+          page_refresh_confirmation_buttons: true,
+          website_name: "Reliably",
+        });
+        let title = document.getElementById("cc-nb-title");
+        let text = document.getElementById("cc-nb-text");
+        let accept = document.querySelector(".cc-nb-okagree");
+        let decline = document.querySelector(".cc-nb-reject");
+        let pref = document.querySelector(".cc-nb-changep");
+        if (title !== null) {
+          title.innerHTML = "We have cookies";
+          text.innerHTML =
+            "We use cookies to analyze our website traffic, and to understand where our visitors are coming from.";
+          accept.innerHTML = "Accept";
+          decline.innerHTML = "Decline";
+          pref.innerHTML = "Preferences";
+        }
+      });
+    </script>
+    <!-- End Cookie Consent by TermsFeed https://www.TermsFeed.com -->
+  </body>
+</html>
+
+<style is:global lang="scss">
+  .product {
+    .header {
+      &__logo {
+        color: white;
+      }
+
+      .toggle {
+        .toggleBar {
+          &,
+          &::before,
+          &::after {
+            background-color: white;
+          }
+        }
+      }
+
+      &__nav {
+        a:not(.button):not(.featuresMenuItem),
+        button.subMenuButton {
+          color: white;
+
+          &:hover {
+            background-color: var(--pink-700);
+          }
+        }
+      }
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+
+      contain: paint;
+      // overflow: hidden;
+      padding: var(--space-large) 0;
+
+      background-color: var(--grey-100);
+    }
+
+    .productFaq {
+      padding-top: var(--sectionPadding);
+      padding-bottom: var(--sectionPadding);
+
+      background-color: var(--grey-200);
+
+      details + details {
+        margin-top: var(--space-medium);
+      }
+
+      details {
+        background-color: white;
+        border-radius: var(--border-radius-m);
+
+        summary {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: var(--space-small);
+
+          cursor: pointer;
+          list-style: none;
+
+          color: var(--text-color-bright);
+          font-size: 2.4rem;
+
+          svg {
+            flex-shrink: 0;
+            width: 2.4rem;
+            margin-left: var(--space-medium);
+
+            transition: transform 0.2s ease-in-out;
+          }
+
+          &::-webkit-details-marker {
+            display: none;
+          }
+        }
+
+        p {
+          padding: 0 var(--space-small) var(--space-small);
+
+          font-size: 2rem;
+        }
+
+        &[open] {
+          summary {
+            svg {
+              transform: rotate(45deg);
+            }
+          }
+        }
+      }
+    }
+  }
+</style>
