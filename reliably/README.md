@@ -12,8 +12,9 @@
 </p>
 
 <p align="center">
-  <a href="#installation">Installation</a> •
-  <a href="https://reliably.com/">Documentation</a>
+  <a href="https://reliably.com/">Home</a>
+  <a href="https://reliably.com/docs/install/platform/">Installation</a> •
+  <a href="https://reliably.com/docs/">Documentation</a>
 </p>
 
 ---
