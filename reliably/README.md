@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <a href="https://reliably.com/">Home</a>
+  <a href="https://reliably.com/">Home</a> •
   <a href="https://reliably.com/docs/install/platform/">Installation</a> •
   <a href="https://reliably.com/docs/">Documentation</a>
 </p>
