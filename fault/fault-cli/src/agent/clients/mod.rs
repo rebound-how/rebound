@@ -21,11 +21,15 @@ pub enum SupportedLLMClient {
     Ollama,
 }
 
-pub trait LLM: SimplePrompt + EmbeddingModel + Send + Sync + std::fmt::Debug + DynClone {}
+pub trait LLM:
+    SimplePrompt + EmbeddingModel + Send + Sync + std::fmt::Debug + DynClone
+{
+}
 
 impl<T> LLM for T where
-    T: SimplePrompt + EmbeddingModel + Send + Sync + std::fmt::Debug + DynClone 
-{}
+    T: SimplePrompt + EmbeddingModel + Send + Sync + std::fmt::Debug + DynClone
+{
+}
 
 pub fn get_client(
     llm: SupportedLLMClient,

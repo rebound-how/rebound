@@ -67,13 +67,14 @@ pub async fn run_load_test(
     clients: usize,
     rps: usize,
 ) -> Result<ItemResult> {
+    tracing::debug!("Running load test for {:?}", duration);
     let cloned_item = item.clone();
     let url = cloned_item.call.url.clone();
     let _ = event.on_item_started(url.clone(), cloned_item.clone());
 
     // Each client will push its measured latencies (in ms) into its own vector.
     let mut tasks = Vec::new();
-    let mut failure_counts = 0;
+    let failure_counts = 0;
 
     let start_instant = Instant::now();
 

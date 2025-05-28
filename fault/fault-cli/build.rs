@@ -16,9 +16,7 @@ fn main() -> anyhow::Result<()> {
     #[cfg(all(target_os = "linux", feature = "stealth-auto-build"))]
     {
         let cargo_metadata::Metadata { packages, .. } =
-            cargo_metadata::MetadataCommand::new()
-                .no_deps()
-                .exec()?;
+            cargo_metadata::MetadataCommand::new().no_deps().exec()?;
 
         let ebpf_package = packages
             .into_iter()

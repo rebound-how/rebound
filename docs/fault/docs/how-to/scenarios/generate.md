@@ -154,7 +154,7 @@ requests to the target endpoint over a duration.
             - http://localhost:7070  # (3)!
           strategy:  # (4)!
             mode: load
-            duration: 10  # (5)!
+            duration: 10s  # (5)!
             clients: 3  # (6)!
             rps: 2  # (7)!
           faults:
@@ -182,7 +182,7 @@ requests to the target endpoint over a duration.
     2. You may group several calls, and their own context, per scenario
     3. This is the host impacted by the latency
     4. The `strategy` block defines how fault should run this scenario's call
-    5. The total duration, in seconds, of our test
+    5. The total duration of our test. We support the following [units](https://docs.rs/parse_duration/latest/parse_duration/#units)
     6. The number of connected clients
     7. The number of request per second per client
     8. Inject latency for each read/write operation, not just once

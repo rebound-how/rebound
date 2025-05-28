@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::fmt;
 use std::fs::File;
@@ -61,6 +62,22 @@ pub struct ScenarioItemSLO {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ScenarioItemProxySettings {
+    pub disable_http_proxies: bool,
+    pub proxies: Vec<String>
+}
+
+#[cfg(feature = "discovery")]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "platform", rename_all = "lowercase")]
+pub enum ScenarioItemRunsOn {
+    Kubernetes {
+        ns: String,
+        service: String
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScenarioItemContext {
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub upstreams: Vec<String>,
@@ -70,6 +87,35 @@ pub struct ScenarioItemContext {
     pub strategy: Option<ScenarioItemCallStrategy>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub slo: Option<Vec<ScenarioItemSLO>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub proxy: Option<ScenarioItemProxySettings>,
+
+    #[cfg(feature = "discovery")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub runs_on: Option<ScenarioItemRunsOn>,
+}
+
+impl ScenarioItemContext {
+    pub fn faults_to_environment_variables(&self) -> BTreeMap<String , String> {
+        let mut map = BTreeMap::<String, String>::default();
+
+        for f in &self.faults {
+            let vars = &mut f.to_environment_variables();
+            map.append(vars);
+        }
+
+        if let Some(strategy) = &self.strategy {
+            match strategy {
+                ScenarioItemCallStrategy::Repeat { .. } => {},
+                ScenarioItemCallStrategy::Load { duration, .. } => {
+                    map.insert("FAULT_PROXY_DURATION".to_string(), duration.to_string());
+                },
+                ScenarioItemCallStrategy::Single {  } => {},
+            }
+        }
+
+        map
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

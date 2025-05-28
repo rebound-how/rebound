@@ -31,6 +31,7 @@ use crate::event::TaskProgressReceiver;
 use crate::fault::FaultInjector;
 use crate::plugin::load_injectors;
 use crate::proxy;
+use crate::proxy::protocols::tcp::init::parse_proxy_protocols;
 use crate::proxy::ProxyState;
 use crate::proxy::monitor_and_update_proxy_config;
 use crate::proxy::protocols::http::init::initialize_http_proxy;
@@ -77,35 +78,39 @@ pub async fn execute_item(
         proxy_port: 3180,
     };
 
-    let proxy_address = format!("127.0.0.1:{}", "3180");
-
-    /*let mut proxy_map = Vec::new();
-    proxy_map.push(ProxyMap {
-        proxy: proxy_config,
-        remote: RemoteAddrConfig { remote_host: host, remote_port: port },
-        proto,
-    });*/
-
     let _proxy_updater_handle = tokio::spawn(monitor_and_update_proxy_config(
         proxy_state.clone(),
         config_rx,
     ));
 
-    /*let _proxy_handle = initialize_tcp_proxies(
-        proxy_map,
-        proxy_state.clone(),
-        proxy_shutdown_rx.clone(),
-        task_manager.clone(),
-    )
-    .await;*/
+    let mut enable_http_proxies = true;
+    let _proxy_handle;
 
-    let _proxy_handle = initialize_http_proxy(
-        &proxy_config,
-        proxy_state.clone(),
-        proxy_shutdown_rx.clone(),
-        task_manager.clone(),
-    )
-    .await;
+    if let Some(proxying) = item.context.proxy.clone() {
+        enable_http_proxies = !proxying.disable_http_proxies;
+
+        let proxy_map = parse_proxy_protocols(proxying.proxies).await?;
+        _proxy_handle = initialize_tcp_proxies(
+            proxy_map,
+            proxy_state.clone(),
+            proxy_shutdown_rx.clone(),
+            task_manager.clone(),
+        )
+        .await;
+    }
+
+    let proxy_address = format!("127.0.0.1:{}", "3180");
+    let _proxy_handle;
+
+    if enable_http_proxies {
+        _proxy_handle = initialize_http_proxy(
+            &proxy_config,
+            proxy_state.clone(),
+            proxy_shutdown_rx.clone(),
+            task_manager.clone(),
+        )
+        .await;
+    }
 
     let result;
 

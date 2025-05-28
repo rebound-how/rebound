@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use clap::Args;
 use clap::Parser;
 use clap::Subcommand;
@@ -8,6 +10,7 @@ use serde::Serialize;
 use crate::agent::clients::SupportedLLMClient;
 #[cfg(feature = "agent")]
 use crate::agent::insight::ReportReviewRole;
+use crate::discovery::types::ResourcePlatform;
 use crate::types::BandwidthUnit;
 use crate::types::Direction;
 use crate::types::LatencyDistribution;
@@ -218,13 +221,20 @@ pub struct StealthCommandCommon {
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    /// Resilience proxy
+    /// Resilience Proxy
     Run {
         #[command(flatten)]
         options: Box<RunCommandOptions>,
     },
 
-    /// Resilience automation
+    /// Resilience Fault Injection
+    #[cfg(feature = "fault-injection")]
+    Inject {
+        #[command(subcommand)]
+        inject: FaultInjectionCommands,
+    },
+
+    /// Resilience Automation
     Scenario {
         #[command(subcommand)]
         scenario: ScenarioCommands,
@@ -1015,6 +1025,65 @@ pub struct AgentAdviceConfig {
     pub report: String,
 }
 
+#[derive(Args, Clone, Debug, Serialize, Deserialize)]
+pub struct FaultInjectionCommandOptions {
+    // Http Error Options
+    #[command(flatten)]
+    pub http_error: HTTPResponseOptions,
+
+    // Latency Options
+    #[command(flatten)]
+    pub latency: LatencyOptions,
+
+    // Bandwidth Options
+    #[command(flatten)]
+    pub bandwidth: BandwidthOptions,
+
+    // Jitter Options
+    #[command(flatten)]
+    pub jitter: JitterOptions,
+
+    // Packet Loss Options
+    #[command(flatten)]
+    pub packet_loss: PacketLossOptions,
+
+    // Blackhole Options
+    #[command(flatten)]
+    pub blackhole: BlackholeOptions,
+}
+
+/// Subcommands for the fault command
+#[cfg(all(feature = "fault-injection", feature = "discovery"))]
+#[derive(Subcommand, Debug)]
+pub enum FaultInjectionCommands {
+    Kubernetes(FaultInjectionKubernetesConfig),
+}
+
+#[cfg(all(feature = "agent", feature = "discovery"))]
+#[derive(Args, Clone, Debug, Serialize, Deserialize)]
+pub struct FaultInjectionKubernetesConfig {
+    /// Namespace
+    #[arg(
+        long,
+        help = "Namespace.",
+        env = "FAULT_INJECTION_K8S_NS",
+        default_value = "default"
+    )]
+    pub ns: String,
+
+    /// Service to inject fault into
+    #[arg(
+        short,
+        long,
+        help = "Service to inject fault into.",
+        env = "FAULT_INJECTION_K8S_SERVICE"
+    )]
+    pub service: Option<String>,
+
+    #[command(flatten)]
+    pub options: Box<FaultInjectionCommandOptions>,
+}
+
 /// Configuration for executing the demo server
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]
 pub struct DemoConfig {
@@ -1077,5 +1146,197 @@ fn validate_http_status(val: &str) -> Result<u16, String> {
     match val.parse::<u16>() {
         Ok(code) if (100..=599).contains(&code) => Ok(code),
         _ => Err(String::from("HTTP status code must be between 100 and 599")),
+    }
+}
+
+impl FaultInjectionCommandOptions {
+    pub fn to_environment_variables(&self) -> BTreeMap<String, String> {
+        let mut map = BTreeMap::<String, String>::default();
+
+        if self.bandwidth.enabled {
+            map.insert("FAULT_WITH_BANDWIDTH".to_string(), "true".to_string());
+            map.insert(
+                "FAULT_BANDWIDTH_SIDE".to_string(),
+                self.bandwidth.side.to_string(),
+            );
+            map.insert(
+                "FAULT_BANDWIDTH_DIRECTION".to_string(),
+                self.bandwidth.bandwidth_direction.to_string(),
+            );
+            map.insert(
+                "FAULT_BANDWIDTH_RATE".to_string(),
+                self.bandwidth.bandwidth_rate.to_string(),
+            );
+            map.insert(
+                "FAULT_BANDWIDTH_UNIT".to_string(),
+                self.bandwidth.bandwidth_unit.to_string(),
+            );
+
+            match &self.bandwidth.bandwidth_sched {
+                Some(sched) => map.insert(
+                    "FAULT_BANDWIDTH_SCHED".to_string(),
+                    sched.to_string(),
+                ),
+                None => None,
+            };
+        }
+
+        if self.jitter.enabled {
+            map.insert("FAULT_WITH_JITTER".to_string(), "true".to_string());
+            map.insert(
+                "FAULT_JITTER_SIDE".to_string(),
+                self.jitter.jitter_side.to_string(),
+            );
+            map.insert(
+                "FAULT_JITTER_DIRECTION".to_string(),
+                self.jitter.jitter_direction.to_string(),
+            );
+            map.insert(
+                "FAULT_JITTER_AMPLITUDE".to_string(),
+                self.jitter.jitter_amplitude.to_string(),
+            );
+            map.insert(
+                "FAULT_JITTER_FREQ".to_string(),
+                self.jitter.jitter_frequency.to_string(),
+            );
+
+            match &self.jitter.jitter_sched {
+                Some(sched) => map.insert(
+                    "FAULT_JITTER_SCHED".to_string(),
+                    sched.to_string(),
+                ),
+                None => None,
+            };
+        }
+
+        if self.packet_loss.enabled {
+            map.insert(
+                "FAULT_WITH_PACKET_LOSS".to_string(),
+                "true".to_string(),
+            );
+            map.insert(
+                "FAULT_PACKET_LOSS_SIDE".to_string(),
+                self.packet_loss.side.to_string(),
+            );
+            map.insert(
+                "FAULT_PACKET_LOSS_DIRECTION".to_string(),
+                self.packet_loss.packet_loss_direction.to_string(),
+            );
+
+            match &self.packet_loss.packet_loss_sched {
+                Some(sched) => map.insert(
+                    "FAULT_PACKET_LOSS_SCHED".to_string(),
+                    sched.to_string(),
+                ),
+                None => None,
+            };
+        }
+
+        if self.blackhole.enabled {
+            map.insert("FAULT_WITH_BLACKHOLE".to_string(), "true".to_string());
+            map.insert(
+                "FAULT_BLACKHOLE_SIDE".to_string(),
+                self.blackhole.side.to_string(),
+            );
+            map.insert(
+                "FAULT_BLACKHOLE_DIRECTION".to_string(),
+                self.blackhole.blackhole_direction.to_string(),
+            );
+
+            match &self.blackhole.blackhole_sched {
+                Some(sched) => map.insert(
+                    "FAULT_BLACKHOLE_SCHED".to_string(),
+                    sched.to_string(),
+                ),
+                None => None,
+            };
+        }
+
+        if self.http_error.enabled {
+            map.insert("FAULT_WITH_HTTP_FAULT".to_string(), "true".to_string());
+
+            map.insert(
+                "FAULT_HTTP_FAULT_PROBABILITY".to_string(),
+                self.http_error.http_response_trigger_probability.to_string(),
+            );
+
+            map.insert(
+                "FAULT_HTTP_FAULT_STATUS".to_string(),
+                self.http_error.http_response_status_code.to_string(),
+            );
+
+            if let Some(body) = &self.http_error.http_response_body {
+                map.insert("FAULT_HTTP_FAULT_BODY".to_string(), body.clone());
+            }
+
+            match &self.http_error.http_response_sched {
+                Some(sched) => map.insert(
+                    "FAULT_HTTP_FAULT_SCHED".to_string(),
+                    sched.to_string(),
+                ),
+                None => None,
+            };
+        }
+
+        if self.latency.enabled {
+            map.insert("FAULT_WITH_LATENCY".to_string(), "true".to_string());
+            map.insert(
+                "FAULT_LATENCY_SIDE".to_string(),
+                self.latency.side.to_string(),
+            );
+            map.insert(
+                "FAULT_LATENCY_DIRECTION".to_string(),
+                self.latency.latency_direction.to_string(),
+            );
+
+            map.insert(
+                "FAULT_LATENCY_DISTRIBUTION".to_string(),
+                self.latency.latency_distribution.to_string(),
+            );
+
+            if let Some(v) = self.latency.latency_mean {
+                map.insert("FAULT_LATENCY_MEAN".to_string(), v.to_string());
+            }
+
+            if let Some(v) = self.latency.latency_stddev {
+                map.insert(
+                    "FAULT_LATENCY_STANDARD_DEVIATION".to_string(),
+                    v.to_string(),
+                );
+            }
+
+            if let Some(v) = self.latency.latency_shape {
+                map.insert("FAULT_LATENCY_SHAPE".to_string(), v.to_string());
+            }
+
+            if let Some(v) = self.latency.latency_scale {
+                map.insert("FAULT_LATENCY_SCALE".to_string(), v.to_string());
+            }
+
+            if let Some(v) = self.latency.latency_min {
+                map.insert("FAULT_LATENCY_MIN".to_string(), v.to_string());
+            }
+
+            if let Some(v) = self.latency.latency_max {
+                map.insert("FAULT_LATENCY_MAX".to_string(), v.to_string());
+            }
+
+            if self.latency.per_read_write {
+                map.insert(
+                    "FAULT_LATENCY_PER_READ_WRITE".to_string(),
+                    "true".to_string(),
+                );
+            }
+
+            match &self.latency.latency_sched {
+                Some(sched) => map.insert(
+                    "FAULT_LATENCY_SCHED".to_string(),
+                    sched.to_string(),
+                ),
+                None => None,
+            };
+        }
+
+        map
     }
 }

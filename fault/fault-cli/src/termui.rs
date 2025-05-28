@@ -6,6 +6,7 @@ use std::sync::Mutex;
 use std::time::Duration;
 use std::time::Instant;
 
+use anyhow::Result;
 use chrono::TimeDelta;
 use chrono_humanize::Accuracy;
 use chrono_humanize::HumanTime;
@@ -16,6 +17,8 @@ use indicatif::MultiProgress;
 use indicatif::ProgressBar;
 use indicatif::ProgressDrawTarget;
 use indicatif::ProgressStyle;
+use inquire::Confirm;
+use inquire::Select;
 use tokio::sync::RwLock;
 use tokio::sync::broadcast;
 
@@ -25,6 +28,8 @@ use crate::event::FaultEvent;
 use crate::event::TaskId;
 use crate::event::TaskProgressEvent;
 use crate::event::TaskProgressReceiver;
+#[cfg(feature = "discovery")]
+use crate::inject::k8s::Platform;
 use crate::plugin::rpc::RpcPluginManager;
 use crate::scenario;
 use crate::scenario::event::ScenarioEventPhase;
@@ -35,7 +40,6 @@ use crate::scenario::types::ItemExpectationDecision;
 use crate::sched::EventType;
 use crate::sched::FaultPeriodEvent;
 use crate::types::LatencyDistribution;
-use crate::types::OutputFormat;
 use crate::types::ProxyMap;
 
 /// Struct to hold information about each task
@@ -1060,23 +1064,6 @@ pub fn demo_prelude(demo_address: String) {
     );
 }
 
-pub fn get_output_format_result(
-    file_path: &str,
-) -> Result<OutputFormat, String> {
-    Path::new(file_path)
-        .extension()
-        .and_then(|ext| ext.to_str())
-        .ok_or_else(|| "File extension is missing or invalid.".to_string())
-        .and_then(|ext_str| match ext_str.to_lowercase().as_str() {
-            "md" | "markdown" => Ok(OutputFormat::Markdown),
-            "txt" => Ok(OutputFormat::Text),
-            "html" | "htm" => Ok(OutputFormat::Html),
-            "json" => Ok(OutputFormat::Json),
-            "yaml" | "yml" => Ok(OutputFormat::Yaml),
-            other => Err(format!("Unrecognized file extension: '{}'", other)),
-        })
-}
-
 #[derive(Debug, Clone)]
 pub struct FaultInterval {
     pub start: f64,
@@ -1265,15 +1252,27 @@ pub async fn scenario_ui(mut scenario_event_receiver: ScenarioEventReceiver) {
                     Ok(event) => {
                         match event {
                             ScenarioEventPhase::ItemStarted{ id: _, url, item } => {
+                                let mut runs_on = "".to_string();
+                                #[cfg(feature = "discovery")]
+                                {
+                                    if let Some(platform) = item.context.runs_on {
+                                        match platform {
+                                            scenario::types::ScenarioItemRunsOn::Kubernetes { ns, service } => {
+                                                runs_on = format!("{}", format!("[k8s: {}/{}] ", ns.yellow(), service.magenta()).dim())
+                                            },
+                                        }
+                                    }
+                                }
                                 match progress {
                                     Some(ref pb) => {
                                         pb.inc(1);
                                         pb.set_message(format!(
-                                            "{} {}{} {}",
+                                            "{} {}{} {}{}",
                                             scenario_title.clone().bold(),
                                             progress_state,
                                             "▮".to_string().dim().blink(),
-                                            format!("[{} {}]", item.call.method.light_yellow(), url.blue()).bold()
+                                            runs_on,
+                                            format!("[{} {}]", item.call.method.light_yellow(), url.blue()).bold(),
                                         ))
                                     }
                                     None => {}
@@ -1352,6 +1351,12 @@ pub async fn scenario_ui(mut scenario_event_receiver: ScenarioEventReceiver) {
                     }
                 }
             }
+        }
+    }
+
+    if let Some(pb) = progress {
+        if !pb.is_finished() {
+            pb.finish();
         }
     }
 }

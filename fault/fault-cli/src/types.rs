@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::fmt;
 use std::net::Ipv4Addr;
 use std::time::Duration;
@@ -577,6 +578,281 @@ impl FaultConfiguration {
             FaultConfiguration::Blackhole { .. } => FaultKind::Blackhole,
         }
     }
+
+    pub fn to_environment_variables(&self) -> BTreeMap<String, String> {
+        let mut map = BTreeMap::<String, String>::default();
+
+        match self {
+            FaultConfiguration::Latency {
+                distribution,
+                global,
+                side,
+                mean,
+                stddev,
+                min,
+                max,
+                shape,
+                scale,
+                direction,
+                period,
+            } => {
+                map.insert(
+                    "FAULT_WITH_LATENCY".to_string(),
+                    "true".to_string(),
+                );
+
+                if let Some(v) = side {
+                    map.insert("FAULT_LATENCY_SIDE".to_string(), v.to_string());
+                }
+
+                if let Some(v) = direction {
+                    map.insert(
+                        "FAULT_LATENCY_DIRECTION".to_string(),
+                        v.to_string(),
+                    );
+                }
+
+                if let Some(v) = distribution {
+                    map.insert(
+                        "FAULT_LATENCY_DISTRIBUTION".to_string(),
+                        v.to_string(),
+                    );
+                }
+
+                if let Some(v) = mean {
+                    map.insert("FAULT_LATENCY_MEAN".to_string(), v.to_string());
+                }
+
+                if let Some(v) = stddev {
+                    map.insert(
+                        "FAULT_LATENCY_STANDARD_DEVIATION".to_string(),
+                        v.to_string(),
+                    );
+                }
+
+                if let Some(v) = shape {
+                    map.insert(
+                        "FAULT_LATENCY_SHAPE".to_string(),
+                        v.to_string(),
+                    );
+                }
+
+                if let Some(v) = scale {
+                    map.insert(
+                        "FAULT_LATENCY_SCALE".to_string(),
+                        v.to_string(),
+                    );
+                }
+
+                if let Some(v) = min {
+                    map.insert("FAULT_LATENCY_MIN".to_string(), v.to_string());
+                }
+
+                if let Some(v) = max {
+                    map.insert("FAULT_LATENCY_MAX".to_string(), v.to_string());
+                }
+
+                if let Some(v) = global {
+                    match v {
+                        true => map.insert(
+                            "FAULT_LATENCY_PER_READ_WRITE".to_string(),
+                            "false".to_string(),
+                        ),
+                        false => map.insert(
+                            "FAULT_LATENCY_PER_READ_WRITE".to_string(),
+                            "true".to_string(),
+                        ),
+                    };
+                }
+
+                if let Some(v) = period {
+                    map.insert(
+                        "FAULT_LATENCY_SCHED".to_string(),
+                        v.to_string(),
+                    );
+                };
+            }
+            FaultConfiguration::PacketLoss { direction, side, period } => {
+                map.insert(
+                    "FAULT_WITH_PACKET_LOSS".to_string(),
+                    "true".to_string(),
+                );
+
+                if let Some(v) = side {
+                    map.insert(
+                        "FAULT_PACKET_LOSS_SIDE".to_string(),
+                        v.to_string(),
+                    );
+                }
+
+                if let Some(v) = direction {
+                    map.insert(
+                        "FAULT_PACKET_LOSS_DIRECTION".to_string(),
+                        v.to_string(),
+                    );
+                }
+
+                if let Some(v) = period {
+                    map.insert(
+                        "FAULT_PACKET_LOSS_SCHED".to_string(),
+                        v.to_string(),
+                    );
+                };
+            }
+            FaultConfiguration::Bandwidth {
+                rate,
+                unit,
+                direction,
+                side,
+                period,
+            } => {
+                map.insert(
+                    "FAULT_WITH_BANDWIDTH".to_string(),
+                    "true".to_string(),
+                );
+
+                if let Some(v) = side {
+                    map.insert(
+                        "FAULT_BANDWIDTH_SIDE".to_string(),
+                        v.to_string(),
+                    );
+                }
+
+                if let Some(v) = direction {
+                    map.insert(
+                        "FAULT_BANDWIDTH_DIRECTION".to_string(),
+                        v.to_string(),
+                    );
+                }
+
+                map.insert(
+                    "FAULT_BANDWIDTH_RATE".to_string(),
+                    rate.to_string(),
+                );
+
+                map.insert(
+                    "FAULT_BANDWIDTH_UNIT".to_string(),
+                    unit.to_string(),
+                );
+
+                if let Some(v) = period {
+                    map.insert(
+                        "FAULT_BANDWIDTH_SCHED".to_string(),
+                        v.to_string(),
+                    );
+                };
+            }
+            FaultConfiguration::Jitter {
+                amplitude,
+                frequency,
+                direction,
+                side,
+                period,
+            } => {
+                map.insert("FAULT_WITH_JITTER".to_string(), "true".to_string());
+
+                if let Some(v) = side {
+                    map.insert("FAULT_JITTER_SIDE".to_string(), v.to_string());
+                }
+
+                if let Some(v) = direction {
+                    map.insert(
+                        "FAULT_JITTER_DIRECTION".to_string(),
+                        v.to_string(),
+                    );
+                }
+
+                map.insert(
+                    "FAULT_JITTER_AMPLITUDE".to_string(),
+                    amplitude.to_string(),
+                );
+
+                map.insert(
+                    "FAULT_JITTER_FREQ".to_string(),
+                    frequency.to_string(),
+                );
+
+                if let Some(v) = period {
+                    map.insert("FAULT_JITTER_SCHED".to_string(), v.to_string());
+                };
+            }
+            FaultConfiguration::Dns { rate, period } => {
+                map.insert("FAULT_WITH_DNS".to_string(), "true".to_string());
+
+                map.insert(
+                    "FAULT_DNS_PROBABILITY".to_string(),
+                    rate.to_string(),
+                );
+
+                if let Some(v) = period {
+                    map.insert("FAULT_DNS_SCHED".to_string(), v.to_string());
+                };
+            }
+            FaultConfiguration::HttpError {
+                status_code,
+                body,
+                probability,
+                period,
+            } => {
+                map.insert(
+                    "FAULT_WITH_HTTP_FAULT".to_string(),
+                    "true".to_string(),
+                );
+
+                map.insert(
+                    "FAULT_HTTP_FAULT_STATUS".to_string(),
+                    status_code.to_string(),
+                );
+                map.insert(
+                    "FAULT_HTTP_FAULT_PROBABILITY".to_string(),
+                    probability.to_string(),
+                );
+
+                if let Some(v) = body {
+                    map.insert(
+                        "FAULT_HTTP_FAULT_BODY".to_string(),
+                        v.to_string(),
+                    );
+                };
+
+                if let Some(v) = period {
+                    map.insert(
+                        "FAULT_BLACKHOLE_SCHED".to_string(),
+                        v.to_string(),
+                    );
+                };
+            }
+            FaultConfiguration::Blackhole { direction, side, period } => {
+                map.insert(
+                    "FAULT_WITH_BLACKHOLE".to_string(),
+                    "true".to_string(),
+                );
+
+                if let Some(v) = side {
+                    map.insert(
+                        "FAULT_BLACKHOLE_SIDE".to_string(),
+                        v.to_string(),
+                    );
+                }
+
+                if let Some(v) = direction {
+                    map.insert(
+                        "FAULT_BLACKHOLE_DIRECTION".to_string(),
+                        v.to_string(),
+                    );
+                }
+
+                if let Some(v) = period {
+                    map.insert(
+                        "FAULT_BLACKHOLE_SCHED".to_string(),
+                        v.to_string(),
+                    );
+                };
+            }
+        }
+
+        map
+    }
 }
 
 pub struct ConnectRequest {
@@ -697,12 +973,4 @@ where
 {
     let s: Option<String> = period.as_ref().map(|p| p.to_string());
     s.serialize(serializer)
-}
-
-pub enum OutputFormat {
-    Markdown,
-    Text,
-    Html,
-    Json,
-    Yaml,
 }

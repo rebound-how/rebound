@@ -9,6 +9,8 @@ mod agent;
 mod cli;
 mod config;
 mod demo;
+#[cfg(feature = "discovery")]
+mod discovery;
 #[cfg(all(
     target_os = "linux",
     any(feature = "stealth", feature = "stealth-auto-build")
@@ -17,6 +19,8 @@ mod ebpf;
 mod errors;
 mod event;
 mod fault;
+#[cfg(feature = "discovery")]
+mod inject;
 mod logging;
 mod plugin;
 mod proxy;
@@ -28,6 +32,7 @@ mod state;
 mod termui;
 mod types;
 
+use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
@@ -41,6 +46,7 @@ use agent::insight::ReviewEventPhase;
 #[cfg(feature = "agent")]
 use agent::suggestion::CodeReviewEventPhase;
 use anyhow::Result;
+use anyhow::anyhow;
 #[cfg(all(
     target_os = "linux",
     any(feature = "stealth", feature = "stealth-auto-build")
@@ -56,9 +62,13 @@ use cli::ScenarioCommands;
 use colorful::Color;
 use colorful::Colorful;
 use config::ProxyConfig;
-use errors::ProxyError;
 use event::TaskManager;
 use fault::FaultInjector;
+#[cfg(feature = "discovery")]
+use inject::k8s::Platform;
+use inquire::Confirm;
+use inquire::Select;
+use kanal::AsyncReceiver;
 use logging::init_meter_provider;
 use logging::init_subscriber;
 use logging::init_tracer_provider;
@@ -82,12 +92,15 @@ use scenario::event::ScenarioEventManager;
 use scenario::event::ScenarioItemLifecycle;
 use scenario::event::capture_request_events;
 use scenario::executor::execute_item;
+#[cfg(feature = "discovery")]
+use scenario::types::ScenarioItemRunsOn;
 #[cfg(feature = "openapi")]
 use scenario::generator::openapi;
 use scenario::types::ScenarioResult;
 use scenario::types::ScenariosResults;
 use sched::build_schedule_events;
 use sched::run_fault_schedule;
+use scopeguard::guard;
 use serde_json::from_reader;
 #[cfg(all(target_family = "unix", feature = "agent"))]
 use swiftide::integrations::treesitter::SupportedLanguages;
@@ -97,6 +110,7 @@ use termui::lean_progress;
 use termui::long_operation;
 use termui::proxy_prelude;
 use termui::quiet_handle_displayable_events;
+use tokio::sync::Notify;
 use tokio::sync::watch;
 use tokio::task;
 use tokio::time::sleep;
@@ -194,7 +208,7 @@ async fn main() -> Result<()> {
                     }
                 });
             }
-            
+
             let http_proxy_nic_config = get_http_proxy_address(&options.common);
 
             // it's time to start our HTTP proxies
@@ -378,116 +392,14 @@ async fn main() -> Result<()> {
         },
         Commands::Scenario { scenario, .. } => match scenario {
             ScenarioCommands::Run(config) => {
-                let start_instant = Instant::now();
-                let start = Utc::now();
-
-                let addr_id_map: Arc<scc::HashMap<String, Uuid>> =
-                    Arc::new(scc::HashMap::default());
-                let id_events_map: Arc<
-                    scc::HashMap<Uuid, ScenarioItemLifecycle>,
-                > = Arc::new(scc::HashMap::default());
-
-                _scenario_event_capture_guard =
-                    tokio::spawn(capture_request_events(
-                        proxy_shutdown_rx,
-                        task_manager.new_subscriber(),
-                        addr_id_map.clone(),
-                        id_events_map.clone(),
-                    ));
-
-                println!(
-                    "\n{}\n",
-                    "================ Running Scenarios ================".dim()
-                );
-
-                let mut scenarios =
-                    scenario::load_scenarios(Path::new(&config.scenario));
-
-                let mut results = Vec::new();
-
-                while let Some(candidate) = scenarios.next().await {
-                    match candidate {
-                        Ok(scenario) => {
-                            let (event_manager, scenario_event_receiver) =
-                                ScenarioEventManager::new(500);
-
-                            tokio::spawn(termui::scenario_ui(
-                                scenario_event_receiver,
-                            ));
-
-                            let event = Arc::new(
-                                event_manager.new_event().await.unwrap(),
-                            );
-                            let _ = event.on_started(scenario.clone());
-
-                            let mut item_results = Vec::new();
-
-                            let cloned_scenario = scenario.clone();
-
-                            for i in scenario.items.into_iter() {
-                                let result = execute_item(
-                                    i,
-                                    event.clone(),
-                                    scenario.config.clone(),
-                                    addr_id_map.clone(),
-                                    id_events_map.clone(),
-                                    task_manager.clone(),
-                                )
-                                .await?;
-                                item_results.push(result);
-                            }
-
-                            results.push(ScenarioResult {
-                                scenario: cloned_scenario,
-                                results: item_results,
-                            });
-
-                            let _ = event.on_terminated();
-                        }
-                        Err(e) => error!("Failed to load scenario: {:?}", e),
-                    }
-                }
-
-                let final_results =
-                    ScenariosResults { start, end: Utc::now(), results };
-
-                let final_report = report::builder::to_report(&final_results);
-
-                println!("\n");
-                println!(
-                    "{}\n",
-                    "===================== Summary =====================".dim()
-                );
-
-                println!(
-                    "Tests run: {}, Tests failed: {}",
-                    final_report
-                        .scenario_summaries
-                        .iter()
-                        .map(|s| s.item_count)
-                        .sum::<usize>()
-                        .to_string()
-                        .cyan(),
-                    final_report
-                        .scenario_summaries
-                        .iter()
-                        .map(|s| s
-                            .item_summaries
-                            .iter()
-                            .map(|i| i.failure_count)
-                            .sum::<usize>())
-                        .sum::<usize>()
-                        .to_string()
-                        .light_red(),
-                );
-                println!(
-                    "Total time: {:.1}s",
-                    start_instant.elapsed().as_secs_f64()
-                );
-                println!("");
-
-                final_results.save(&config.result)?;
-                final_report.save(&config.report)?;
+                _scenario_event_capture_guard = run_scenario_command(
+                    proxy_shutdown_rx,
+                    task_manager.clone(),
+                    config.scenario.clone(),
+                    config.report.clone(),
+                    config.result.clone(),
+                )
+                .await?;
             }
             #[cfg(feature = "openapi")]
             ScenarioCommands::Generate(config) => {
@@ -674,6 +586,22 @@ async fn main() -> Result<()> {
                 report.save(&cfg.report)?;
             }
         },
+        Commands::Inject { inject } => match inject {
+            cli::FaultInjectionCommands::Kubernetes(cfg) => {
+
+                let fault_settings = cfg.options.to_environment_variables();
+                let plt = &mut inject::k8s::KubernetesPlatform::new(
+                    &cfg.ns,
+                    fault_settings,
+                )
+                .await?;
+
+                run_fault_injector_roundtrip(
+                    plt,
+                    cfg.service.clone()
+                ).await?;
+            }
+        },
     };
 
     match proxy_shutdown_tx.send(()).await {
@@ -717,4 +645,248 @@ fn is_stealth(cli: &RunCommandOptions) -> bool {
 #[cfg(not(target_os = "linux"))]
 fn is_stealth(cli: &RunCommandOptions) -> bool {
     false
+}
+
+#[cfg(feature = "discovery")]
+pub async fn run_fault_injector_roundtrip<P: Platform>(
+    plt: &mut P,
+    service: Option<String>,
+) -> Result<()> {
+    let svcs = plt.discover().await?;
+    let names: Vec<_> = svcs.iter().map(|s| s.name.clone()).collect();
+    let sel = match service {
+        Some(s) => s,
+        None => Select::new("Service:", names).prompt()?,
+    };
+    let svc = match svcs.into_iter().find(|s| s.name == sel) {
+        Some(m) => m,
+        None => {
+            return Err(anyhow!(format!("service {} could not be found", sel)));
+        }
+    };
+
+    let handle = plt.inject(&svc).await?;
+    println!("    Injected into service {} 🚀. You can now explore how your system reacts to its new conditions.", svc.name);
+
+    let _ = Confirm::new("    Press 'y' to finish and rollback").prompt();
+
+    plt.rollback(&svc, handle).await?;
+    println!("   Rolled back 🛑");
+
+    Ok(())
+}
+
+#[derive(Debug, Clone)]
+pub enum FaultInjectionScenarioEvent {
+    New {
+        fault_settings: BTreeMap<String, String>
+    },
+    Done {}
+}
+
+#[cfg(feature = "discovery")]
+pub async fn runs_item_on_platform(
+    platform: ScenarioItemRunsOn,
+    fault_settings: BTreeMap<String, String>, 
+    ready_on: Arc<Notify>,
+    wait_on: Arc<Notify>,
+    rolledback_on: Arc<Notify>,
+) -> Result<()> {
+    match platform {
+        ScenarioItemRunsOn::Kubernetes { ns, service } => {
+            runs_item_on_kubernetes(ns, service, fault_settings, ready_on, wait_on, rolledback_on).await
+        }
+    }
+}
+
+
+#[cfg(feature = "discovery")]
+pub async fn runs_item_on_kubernetes(
+    ns: String,
+    service: String,
+    fault_settings: BTreeMap<String, String>,
+    ready_on: Arc<Notify>,
+    wait_on: Arc<Notify>,
+    rolledback_on: Arc<Notify>,
+) -> Result<()> {
+    let plt = &mut inject::k8s::KubernetesPlatform::new(
+        &ns,
+        fault_settings,
+    )
+    .await?;
+
+    let svcs = plt.discover().await?;
+    let svc = match svcs.into_iter().find(|s| s.name == service) {
+        Some(m) => m,
+        None => {
+            return Err(anyhow!(format!("service {} could not be found", service)));
+        }
+    };
+
+    let handle = plt.inject(&svc).await?;
+    plt.wait_ready(&svc).await?;
+
+    ready_on.notify_one();
+
+    tracing::debug!("waiting to complete");
+    wait_on.notified().await;
+    tracing::debug!("completed, rollback now");
+
+    plt.rollback(&svc, handle).await?;
+
+    plt.wait_cleanup(&svc).await?;
+
+    rolledback_on.notify_one();
+
+    Ok(())
+}
+
+
+async fn run_scenario_command(
+    proxy_shutdown_rx: kanal::AsyncReceiver<()>,
+    task_manager: Arc<TaskManager>,
+    scenario: String,
+    report: String,
+    result: String
+) -> Result<task::JoinHandle<()>> {
+    let start_instant = Instant::now();
+    let start = Utc::now();
+
+    let addr_id_map: Arc<scc::HashMap<String, Uuid>> =
+        Arc::new(scc::HashMap::default());
+    let id_events_map: Arc<scc::HashMap<Uuid, ScenarioItemLifecycle>> =
+        Arc::new(scc::HashMap::default());
+
+    let scenario_event_capture_guard= tokio::spawn(capture_request_events(
+        proxy_shutdown_rx,
+        task_manager.new_subscriber(),
+        addr_id_map.clone(),
+        id_events_map.clone(),
+    ));
+
+    println!(
+        "\n{}\n",
+        "================ Running Scenarios ================".dim()
+    );
+
+    let mut scenarios = scenario::load_scenarios(Path::new(&scenario));
+
+    let mut results = Vec::new();
+
+    while let Some(candidate) = scenarios.next().await {
+        match candidate {
+            Ok(scenario) => {
+                let (event_manager, scenario_event_receiver) =
+                    ScenarioEventManager::new(500);
+
+                tokio::spawn(termui::scenario_ui(scenario_event_receiver));
+
+                let event = Arc::new(event_manager.new_event().await.unwrap());
+                let _ = event.on_started(scenario.clone());
+
+                let mut item_results = Vec::new();
+
+                let cloned_scenario = scenario.clone();
+
+                for mut i in scenario.items.into_iter() {
+                    let wait_on: Arc<Notify> = Arc::new(Notify::new());
+                    let mut rolledback_on = None;
+                    let mut original_faults = None;
+
+                    #[cfg(feature = "discovery")]
+                    {
+                        if let Some(ref platform) = i.context.runs_on {
+                            let ready_on: Arc<Notify> = Arc::new(Notify::new());
+                            let rb_on = Arc::new(Notify::new());
+
+                            original_faults = Some(i.context.faults.clone());
+                            let fault_settings = i.context.faults_to_environment_variables();
+                            i.context.faults.clear();
+
+                            tokio::spawn(runs_item_on_platform(
+                                platform.clone(), fault_settings, ready_on.clone(), wait_on.clone(), rb_on.clone()));
+                            
+                            rolledback_on = Some(rb_on);
+                            ready_on.notified().await;
+                        }
+                    }
+
+                    let result = execute_item(
+                        i.clone(),
+                        event.clone(),
+                        scenario.config.clone(),
+                        addr_id_map.clone(),
+                        id_events_map.clone(),
+                        task_manager.clone(),
+                    )
+                    .await?;
+                    item_results.push(result);
+
+                    #[cfg(feature = "discovery")]
+                    {
+                        tracing::debug!("notify completion");
+                        wait_on.notify_one();
+
+                        // restore the faults for next round
+                        if let Some(faults) = original_faults {
+                            i.context.faults.extend(faults);
+                        }
+
+                        if let Some(rb_on) = rolledback_on {
+                            tracing::debug!("waiting for rollback");
+                            rb_on.notified().await;
+                            tracing::debug!("done rollback");
+                        }
+                    }
+                }
+
+                results.push(ScenarioResult {
+                    scenario: cloned_scenario,
+                    results: item_results,
+                });
+
+                let _ = event.on_terminated();
+            }
+            Err(e) => error!("Failed to load scenario: {:?}", e),
+        }
+    }
+
+    let final_results = ScenariosResults { start, end: Utc::now(), results };
+
+    let final_report = report::builder::to_report(&final_results);
+
+    println!("\n");
+    println!(
+        "{}\n",
+        "===================== Summary =====================".dim()
+    );
+
+    println!(
+        "Tests run: {}, Tests failed: {}",
+        final_report
+            .scenario_summaries
+            .iter()
+            .map(|s| s.item_count)
+            .sum::<usize>()
+            .to_string()
+            .cyan(),
+        final_report
+            .scenario_summaries
+            .iter()
+            .map(|s| s
+                .item_summaries
+                .iter()
+                .map(|i| i.failure_count)
+                .sum::<usize>())
+            .sum::<usize>()
+            .to_string()
+            .light_red(),
+    );
+    println!("Total time: {:.1}s", start_instant.elapsed().as_secs_f64());
+    println!("");
+
+    final_results.save(&result)?;
+    final_report.save(&report)?;
+
+    Ok(scenario_event_capture_guard)
 }

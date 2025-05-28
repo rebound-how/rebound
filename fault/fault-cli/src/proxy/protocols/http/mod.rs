@@ -191,7 +191,7 @@ pub async fn run_http_proxy(
         }
     }
 
-    tracing::debug!("Proxy is now finised, bye bye");
+    tracing::debug!("Proxy is now finished, bye bye");
 
     Ok(())
 }

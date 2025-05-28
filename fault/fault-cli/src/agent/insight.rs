@@ -47,8 +47,8 @@ pub async fn analyze(
     let llm = get_client(client_type, prompt_model, embed_model)?;
 
     // upcast for later calls
-    let sp: Arc<dyn SimplePrompt>     = llm.clone();
-    let em: Arc<dyn EmbeddingModel>   = llm.clone();
+    let sp: Arc<dyn SimplePrompt> = llm.clone();
+    let em: Arc<dyn EmbeddingModel> = llm.clone();
 
     let qdrant: Qdrant = Qdrant::builder()
         .batch_size(50)
