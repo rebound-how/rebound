@@ -64,20 +64,20 @@ jobs:
 
       - name: Build on Windows
         if: matrix.os == 'windows-latest'
-        run: cargo build --verbose --target ${{ matrix.target }}
+        run: cargo +nightly build --verbose --target ${{ matrix.target }}
         working-directory: ./fault/fault-cli
 
       - name: Build on Unix-like
         if: matrix.os != 'windows-latest'
-        run: cargo build --verbose --target ${{ matrix.target }} --features agent
+        run: cargo +nightly build --verbose --target ${{ matrix.target }} --features agent
         working-directory: ./fault/fault-cli
 
       - name: Build ebpf programs
         if: matrix.os == 'ubuntu-24.04'
         run: |
           cargo install bpf-linker --git https://github.com/aya-rs/bpf-linker.git
-          cargo build --verbose --target ${{ matrix.target }} --features stealth
-          cargo build \
+          cargo +nightly build --verbose --target ${{ matrix.target }} --features stealth
+          cargo +nightly build \
             --release \
             -p fault-ebpf-programs \
             --target=bpfel-unknown-none \
