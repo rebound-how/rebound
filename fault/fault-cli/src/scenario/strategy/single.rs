@@ -131,6 +131,9 @@ pub async fn execute(
         requests_count: 1,
         failure_counts,
         total_time: start_instant.elapsed(),
+
+        #[cfg(feature = "discovery")]
+        resources: None,
     };
 
     let _ = event.on_item_terminated(&item, expect);

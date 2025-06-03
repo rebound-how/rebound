@@ -18,13 +18,13 @@ rustdoc-args = ["--cfg", "docsrs", "--generate-link-to-definition"]
 
 [dependencies]
 axum = { version = "0.8", features = ["http2", "json", "macros"] }
-tokio = { version = "1.44", features = ["full", "tracing", "sync"] }
-tonic = { version = "0.12", features = ["transport"] }
+tokio = { version = "1.45", features = ["full", "tracing", "sync"] }
+tonic = { version = "0.13", features = ["transport"] }
 tower = { version = "0.5.2", features = ["full", "make", "util"] }
 hyper = { version = "1.6", features = ["client", "server", "full"] }
 anyhow = "1.0"
 thiserror = "2.0"
-clap = { version = "4.5.32", features = ["derive", "env"] }
+clap = { version = "4.5.39", features = ["derive", "env"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tracing-subscriber = { version = "=0.3.19", features = ["fmt", "env-filter"] }
@@ -35,55 +35,55 @@ rand = "0.9"
 tokio-stream = "0.1"
 rand_distr = "0.5"
 bytes = "1.10.1"
-async-trait = "0.1.87"
+async-trait = "0.1.88"
 serde_yaml = "0.9.34"
 url = "2.5.4"
 oneshot = "0.1.11"
 tracing-appender = "0.2.3"
 hickory-resolver = "0.25"
-chrono = { version = "0.4.40", features = ["serde"] }
-libc = "0.2.171"
+chrono = { version = "0.4.41", features = ["serde"] }
+libc = "0.2.172"
 tracing-log = "0.2.0"
-reqwest = { version = "0.12.14", features = ["stream", "json"] }
-tokio-util = { version = "0.7.13", features = ["compat"] }
-hyper-util = "0.1.10"
+reqwest = { version = "0.12.16", features = ["stream", "json"] }
+tokio-util = { version = "0.7.15", features = ["compat"] }
+hyper-util = "0.1.13"
 pin-project = "1.1.10"
 async-std-resolver = "0.24.4"
-local-ip-address = "0.6.3"
-tower-http = { version = "0.6.2", features = ["compression-gzip", "decompression-gzip", "trace"] }
+local-ip-address = "0.6.5"
+tower-http = { version = "0.6.4", features = ["compression-gzip", "decompression-gzip", "trace"] }
 colorful = "0.3.2"
 walkdir = "2.5.0"
 async-stream = "0.3.6"
 prettytable = "0.10.0"
 tera = "1.20.0"
-governor = "0.9"
+governor = "0.10"
 opentelemetry = "0.29"
 opentelemetry-appender-tracing = "0.29"
-opentelemetry-semantic-conventions = { version = "0.29.0", features = ["semconv_experimental"] }
+opentelemetry-semantic-conventions = { version = "0.29", features = ["semconv_experimental"] }
 opentelemetry-stdout = "0.29"
 opentelemetry-otlp = { version = "0.29", features = ["grpc-tonic"] }
 opentelemetry_sdk = { version = "0.29", features = ["rt-tokio"] }
 tracing-opentelemetry = "0.30"
-axum-tracing-opentelemetry = "0.26"
+axum-tracing-opentelemetry = "0.28"
 tracing = { version = "0.1.41", features = ["attributes"] }
-openssl = { version = "0.10.71", features = ["vendored"] }
-log = "0.4.26"
+openssl = { version = "0.10", features = ["vendored"] }
+log = "0.4.27"
 parse_duration = "2.1.1"
 chrono-humanize = "0.2.3"
 indicatif = { version = "0.17.11", features = ["tokio", "improved_unicode"] }
 tokio-rustls = "0.26.2"
-rustls-pki-types = "1.11.0"
+rustls-pki-types = "1.12.0"
 rustls-native-certs = "0.8.1"
-rustls-platform-verifier = "0.5.1"
+rustls-platform-verifier = "0.5.3"
 arc-swap = "1.7.1"
-uuid = { version = "1.16.0", features = ["fast-rng", "serde", "v4"] }
+uuid = { version = "1.17.0", features = ["fast-rng", "serde", "v4"] }
 kanal = "0.1.1"
-scc = "2.3.3"
+scc = "2.3.4"
 http = "1.3.1"
 
 # openapi feature
-minijinja = { version = "2.9.0", features = ["loader"], optional = true }
-openapiv3 = { version = "2.0.0", optional = true }
+minijinja = { version = "2.10.2", features = ["loader"], optional = true }
+openapiv3 = { version = "2.1.0", optional = true }
 oas3 = { version = "0.16.1", optional = true }
 percent-encoding = { version = "2.3.1", optional = true }
 
@@ -106,10 +106,11 @@ rustls = { version = "0.23.27", features = ["ring"] }
 regex = { version = "1.11.1", default-features = false, features = ["std"] }
 
 # discovery
-kube = { version = "1.0.0", optional = true }
+kube = { version = "1.1.0", optional = true, features = ["jsonpatch"] }
 k8s-openapi = { version = "0.25.0", features = ["latest"], optional = true }
 jsonpath-rust = { version = "1.0.2", optional = true }
 scopeguard = "1.2.0"
+json-patch = { version = "4.0.0", features = ["utoipa"] }
 
 # ebpf feature
 [target.'cfg(target_os = "linux")'.dependencies]
@@ -117,13 +118,13 @@ aya-ebpf = { version = "0.1.1", optional = true }
 aya-log-ebpf = { version = "0.1.1", optional = true }
 aya = { version = "0.13.1", optional = true }
 aya-log = { version = "0.2.1", optional = true }
-nix = { version = "0.29.0", features = ["net"], optional = true }
-fault-ebpf-programs = { version = "0.5.0", optional = true }
+nix = { version = "0.30.1", features = ["net"], optional = true }
+fault-ebpf-programs = { version = "0.6.0", optional = true }
 
 [build-dependencies]
 anyhow = { workspace = true }
 which = { workspace = true }
-tonic-build = "0.12"
+tonic-build = "0.13"
 
 [target.'cfg(target_os = "linux")'.build-dependencies]
 aya-build = "0.1.2"
@@ -138,10 +139,13 @@ path = "src/main.rs"
 
 [features]
 default = [
-    "openapi",
-    "discovery",
-    "fault-injection",
-    "agent"
+    "demo",
+    "scenario",
+    "injection"
+]
+demo = []
+scenario = [
+    "openapi"
 ]
 stealth = [
     "aya-ebpf",
@@ -185,4 +189,7 @@ discovery = [
     "dep:k8s-openapi",
     "dep:jsonpath-rust"
 ]
-fault-injection = []
+injection = [
+    "discovery",
+    "dep:inquire",
+]

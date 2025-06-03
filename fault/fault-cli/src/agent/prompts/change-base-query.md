@@ -27,6 +27,8 @@ Given that somebody else might ask questions about each path, consider things li
 - Extend tracing and metrics to let operations be alerted as soon as possible.
 - Potential refactor the code to be more reliable and resilient.
 - Include link to resources that may provide more context.
+- If platform resources are provided, such as Kubernetes, GCP or AWS, review 
+  them and offer potential improvements as well.
 
 {% if advices %}
 ## Advices

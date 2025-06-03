@@ -17,7 +17,7 @@ use super::types::ScenarioItem;
 use crate::event::FaultEvent;
 use crate::event::TaskProgressEvent;
 use crate::event::TaskProgressReceiver;
-use crate::report::types::DnsTiming;
+use crate::types::DnsTiming;
 
 pub type ScenarioEventId = usize;
 pub type ScenarioEventSender = Sender<ScenarioEventPhase>;

@@ -14,6 +14,7 @@ use serde::de::Error as DeError;
 use crate::config;
 use crate::config::FaultConfig;
 use crate::config::FaultKind;
+#[cfg(feature = "scenario")]
 use crate::errors::ScenarioError;
 use crate::sched;
 
@@ -283,12 +284,13 @@ impl fmt::Display for PacketLossType {
     Deserialize,
 )]
 pub enum BandwidthUnit {
+    #[clap(name = "Bps")]
     Bps, // Bytes per second
-    #[clap(name = "kbps")]
+    #[clap(name = "KBps")]
     KBps, // Kilobytes per second
-    #[clap(name = "mbps")]
+    #[clap(name = "MBps")]
     MBps, // Megabytes per second
-    #[clap(name = "gbps")]
+    #[clap(name = "GBps")]
     GBps, // Gigabytes per second
 }
 
@@ -421,7 +423,7 @@ pub enum FaultConfiguration {
 }
 
 impl FaultConfiguration {
-    pub fn build(&self) -> Result<FaultConfig, ScenarioError> {
+    pub fn build(&self) -> Result<FaultConfig> {
         match self {
             FaultConfiguration::Bandwidth {
                 rate,
@@ -973,4 +975,17 @@ where
 {
     let s: Option<String> = period.as_ref().map(|p| p.to_string());
     s.serialize(serializer)
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DnsTiming {
+    pub host: String,
+    pub duration: f64,
+    pub resolved: bool,
+}
+
+impl DnsTiming {
+    pub fn new() -> Self {
+        DnsTiming { host: "".to_string(), duration: 0.0, resolved: false }
+    }
 }

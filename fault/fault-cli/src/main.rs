@@ -8,6 +8,7 @@
 mod agent;
 mod cli;
 mod config;
+#[cfg(feature = "demo")]
 mod demo;
 #[cfg(feature = "discovery")]
 mod discovery;
@@ -26,8 +27,10 @@ mod plugin;
 mod proxy;
 mod report;
 mod resolver;
+#[cfg(feature = "scenario")]
 mod scenario;
 mod sched;
+mod service;
 mod state;
 mod termui;
 mod types;
@@ -56,8 +59,10 @@ use chrono::Utc;
 use clap::Parser;
 use cli::Cli;
 use cli::Commands;
+#[cfg(feature = "demo")]
 use cli::DemoCommands;
 use cli::RunCommandOptions;
+#[cfg(feature = "scenario")]
 use cli::ScenarioCommands;
 use colorful::Color;
 use colorful::Colorful;
@@ -66,7 +71,9 @@ use event::TaskManager;
 use fault::FaultInjector;
 #[cfg(feature = "discovery")]
 use inject::k8s::Platform;
+#[cfg(feature = "injection")]
 use inquire::Confirm;
+#[cfg(feature = "injection")]
 use inquire::Select;
 use kanal::AsyncReceiver;
 use logging::init_meter_provider;
@@ -88,15 +95,21 @@ use proxy::protocols::http::init::get_http_proxy_address;
 use proxy::protocols::http::init::initialize_http_proxy;
 use proxy::protocols::tcp::init::initialize_tcp_proxies;
 use proxy::protocols::tcp::init::parse_proxy_protocols;
+#[cfg(feature = "scenario")]
 use scenario::event::ScenarioEventManager;
+#[cfg(feature = "scenario")]
 use scenario::event::ScenarioItemLifecycle;
+#[cfg(feature = "scenario")]
 use scenario::event::capture_request_events;
+#[cfg(feature = "scenario")]
 use scenario::executor::execute_item;
-#[cfg(feature = "discovery")]
-use scenario::types::ScenarioItemRunsOn;
-#[cfg(feature = "openapi")]
+#[cfg(feature = "scenario")]
 use scenario::generator::openapi;
+#[cfg(all(feature = "scenario", feature = "discovery"))]
+use scenario::types::ScenarioItemRunsOn;
+#[cfg(feature = "scenario")]
 use scenario::types::ScenarioResult;
+#[cfg(feature = "scenario")]
 use scenario::types::ScenariosResults;
 use sched::build_schedule_events;
 use sched::run_fault_schedule;
@@ -104,6 +117,7 @@ use scopeguard::guard;
 use serde_json::from_reader;
 #[cfg(all(target_family = "unix", feature = "agent"))]
 use swiftide::integrations::treesitter::SupportedLanguages;
+#[cfg(feature = "demo")]
 use termui::demo_prelude;
 use termui::full_progress;
 use termui::lean_progress;
@@ -118,6 +132,8 @@ use tokio_rustls::rustls;
 use tokio_stream::StreamExt;
 use tracing::error;
 use uuid::Uuid;
+
+use crate::types::FaultConfiguration;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -147,7 +163,10 @@ async fn main() -> Result<()> {
 
     let _fault_schedule_handle;
     let _progress_guard;
+    #[cfg(feature = "scenario")]
     let _scenario_event_capture_guard;
+    //let _forward_to_api_guard;
+    let _http_proxy_guard;
 
     #[cfg(all(
         target_os = "linux",
@@ -168,7 +187,8 @@ async fn main() -> Result<()> {
     let (ebpf_proxy_shutdown_tx, ebpf_proxy_shutdown_rx) =
         kanal::bounded_async(1);
 
-    let _http_proxy_guard;
+    //let api_address = service::get_api_service_address(&cli.api_address)?;
+    let api_address = "".to_string();
 
     match &cli.command {
         Commands::Run { options } => {
@@ -285,6 +305,16 @@ async fn main() -> Result<()> {
                 }
             }
 
+            // unclear if this is the right approach for now
+            // forward events to a remote api endpoint
+            /*if cli.api_address.is_some() {
+                _forward_to_api_guard = tokio::spawn(inject::event::forward_progress_to_remote(
+                    api_address.clone(),
+                    proxy_shutdown_rx.clone(),
+                    task_manager.new_subscriber(),
+                ));
+            }*/
+
             // let's turn the cli flags into a proxy configuration we can work
             // with
             let proxy_config = options.into();
@@ -380,6 +410,7 @@ async fn main() -> Result<()> {
                 }
             }
         }
+        #[cfg(feature = "demo")]
         Commands::Demo(demo_cmd) => match demo_cmd {
             DemoCommands::Run(demo_config) => {
                 demo_prelude(format!(
@@ -390,9 +421,18 @@ async fn main() -> Result<()> {
                 let _ = demo::run((*demo_config).clone()).await;
             }
         },
+        #[cfg(feature = "scenario")]
         Commands::Scenario { scenario, .. } => match scenario {
             ScenarioCommands::Run(config) => {
+                if let Some(api_address) = &cli.api_address {
+                    tokio::spawn(service::run(
+                        api_address.clone(),
+                        proxy_shutdown_rx.clone(),
+                    ));
+                }
+
                 _scenario_event_capture_guard = run_scenario_command(
+                    api_address,
                     proxy_shutdown_rx,
                     task_manager.clone(),
                     config.scenario.clone(),
@@ -401,7 +441,6 @@ async fn main() -> Result<()> {
                 )
                 .await?;
             }
-            #[cfg(feature = "openapi")]
             ScenarioCommands::Generate(config) => {
                 if let Some(spec_file) = &config.spec_file {
                     match openapi::build_from_file(spec_file, None) {
@@ -586,20 +625,20 @@ async fn main() -> Result<()> {
                 report.save(&cfg.report)?;
             }
         },
+        #[cfg(feature = "injection")]
         Commands::Inject { inject } => match inject {
             cli::FaultInjectionCommands::Kubernetes(cfg) => {
-
                 let fault_settings = cfg.options.to_environment_variables();
-                let plt = &mut inject::k8s::KubernetesPlatform::new(
+                let plt = &mut inject::k8s::KubernetesPlatform::new_proxy(
                     &cfg.ns,
+                    &cfg.service.clone().unwrap_or("".to_string()),
+                    &cfg.image,
+                    &api_address,
                     fault_settings,
                 )
                 .await?;
 
-                run_fault_injector_roundtrip(
-                    plt,
-                    cfg.service.clone()
-                ).await?;
+                run_fault_injector_roundtrip(plt, cfg.service.clone()).await?;
             }
         },
     };
@@ -658,96 +697,32 @@ pub async fn run_fault_injector_roundtrip<P: Platform>(
         Some(s) => s,
         None => Select::new("Service:", names).prompt()?,
     };
-    let svc = match svcs.into_iter().find(|s| s.name == sel) {
-        Some(m) => m,
-        None => {
-            return Err(anyhow!(format!("service {} could not be found", sel)));
-        }
-    };
 
-    let handle = plt.inject(&svc).await?;
-    println!("    Injected into service {} 🚀. You can now explore how your system reacts to its new conditions.", svc.name);
+    let _ = plt.set_service(&sel);
+    let svc = plt.get_service().await?;
+
+    plt.inject().await?;
+    println!(
+        "    Injected into service {} 🚀. You can now explore how your system reacts to its new conditions.",
+        svc.name
+    );
 
     let _ = Confirm::new("    Press 'y' to finish and rollback").prompt();
 
-    plt.rollback(&svc, handle).await?;
+    plt.rollback().await?;
     println!("   Rolled back 🛑");
 
     Ok(())
 }
 
-#[derive(Debug, Clone)]
-pub enum FaultInjectionScenarioEvent {
-    New {
-        fault_settings: BTreeMap<String, String>
-    },
-    Done {}
-}
-
-#[cfg(feature = "discovery")]
-pub async fn runs_item_on_platform(
-    platform: ScenarioItemRunsOn,
-    fault_settings: BTreeMap<String, String>, 
-    ready_on: Arc<Notify>,
-    wait_on: Arc<Notify>,
-    rolledback_on: Arc<Notify>,
-) -> Result<()> {
-    match platform {
-        ScenarioItemRunsOn::Kubernetes { ns, service } => {
-            runs_item_on_kubernetes(ns, service, fault_settings, ready_on, wait_on, rolledback_on).await
-        }
-    }
-}
-
-
-#[cfg(feature = "discovery")]
-pub async fn runs_item_on_kubernetes(
-    ns: String,
-    service: String,
-    fault_settings: BTreeMap<String, String>,
-    ready_on: Arc<Notify>,
-    wait_on: Arc<Notify>,
-    rolledback_on: Arc<Notify>,
-) -> Result<()> {
-    let plt = &mut inject::k8s::KubernetesPlatform::new(
-        &ns,
-        fault_settings,
-    )
-    .await?;
-
-    let svcs = plt.discover().await?;
-    let svc = match svcs.into_iter().find(|s| s.name == service) {
-        Some(m) => m,
-        None => {
-            return Err(anyhow!(format!("service {} could not be found", service)));
-        }
-    };
-
-    let handle = plt.inject(&svc).await?;
-    plt.wait_ready(&svc).await?;
-
-    ready_on.notify_one();
-
-    tracing::debug!("waiting to complete");
-    wait_on.notified().await;
-    tracing::debug!("completed, rollback now");
-
-    plt.rollback(&svc, handle).await?;
-
-    plt.wait_cleanup(&svc).await?;
-
-    rolledback_on.notify_one();
-
-    Ok(())
-}
-
-
+#[cfg(feature = "scenario")]
 async fn run_scenario_command(
+    api_address: String,
     proxy_shutdown_rx: kanal::AsyncReceiver<()>,
     task_manager: Arc<TaskManager>,
     scenario: String,
     report: String,
-    result: String
+    result: String,
 ) -> Result<task::JoinHandle<()>> {
     let start_instant = Instant::now();
     let start = Utc::now();
@@ -757,7 +732,7 @@ async fn run_scenario_command(
     let id_events_map: Arc<scc::HashMap<Uuid, ScenarioItemLifecycle>> =
         Arc::new(scc::HashMap::default());
 
-    let scenario_event_capture_guard= tokio::spawn(capture_request_events(
+    let scenario_event_capture_guard = tokio::spawn(capture_request_events(
         proxy_shutdown_rx,
         task_manager.new_subscriber(),
         addr_id_map.clone(),
@@ -789,29 +764,53 @@ async fn run_scenario_command(
                 let cloned_scenario = scenario.clone();
 
                 for mut i in scenario.items.into_iter() {
-                    let wait_on: Arc<Notify> = Arc::new(Notify::new());
-                    let mut rolledback_on = None;
-                    let mut original_faults = None;
+                    let fault_settings: BTreeMap<String, String>;
+                    let mut original_faults: Option<Vec<FaultConfiguration>> =
+                        None;
+                    #[cfg(feature = "discovery")]
+                    let mut runs_on = None;
 
                     #[cfg(feature = "discovery")]
                     {
                         if let Some(ref platform) = i.context.runs_on {
-                            let ready_on: Arc<Notify> = Arc::new(Notify::new());
-                            let rb_on = Arc::new(Notify::new());
-
+                            // when we run on a remore platform, we still
+                            // run the local proxy but it becomes a passthrough
+                            // as the real fault are executed by the remote
+                            // proxy loaded on the target platform.
+                            // thus what we do is to dump the faults into
+                            // env variables for the remote target and we
+                            // clear the fault from the local item here
+                            // we keep a copy of these faults to re-attach them
+                            // to the item once the iteration terminates
                             original_faults = Some(i.context.faults.clone());
-                            let fault_settings = i.context.faults_to_environment_variables();
+                            fault_settings =
+                                i.context.faults_to_environment_variables();
                             i.context.faults.clear();
 
-                            tokio::spawn(runs_item_on_platform(
-                                platform.clone(), fault_settings, ready_on.clone(), wait_on.clone(), rb_on.clone()));
-                            
-                            rolledback_on = Some(rb_on);
-                            ready_on.notified().await;
+                            match platform {
+                                ScenarioItemRunsOn::Kubernetes {
+                                    ns,
+                                    service,
+                                    image,
+                                } => {
+                                    let plt =
+                                    &mut inject::k8s::KubernetesPlatform::new_proxy(
+                                        &ns,
+                                        &service,
+                                        &image.clone().unwrap_or("ghcr.io/rebound-how/fault:latest".to_string()),
+                                        &api_address,
+                                        fault_settings
+                                    ).await?;
+                                    plt.inject().await?;
+                                    plt.wait_ready().await?;
+
+                                    runs_on = Some(plt.clone());
+                                }
+                            }
                         }
                     }
 
-                    let result = execute_item(
+                    let mut result = execute_item(
                         i.clone(),
                         event.clone(),
                         scenario.config.clone(),
@@ -820,24 +819,31 @@ async fn run_scenario_command(
                         task_manager.clone(),
                     )
                     .await?;
-                    item_results.push(result);
 
                     #[cfg(feature = "discovery")]
                     {
-                        tracing::debug!("notify completion");
-                        wait_on.notify_one();
+                        if let Some(plt) = runs_on {
+                            // restore the faults for next round
+                            if let Some(faults) = original_faults {
+                                i.context.faults.extend(faults);
+                            }
 
-                        // restore the faults for next round
-                        if let Some(faults) = original_faults {
-                            i.context.faults.extend(faults);
-                        }
+                            plt.rollback().await?;
+                            plt.wait_cleanup().await?;
 
-                        if let Some(rb_on) = rolledback_on {
-                            tracing::debug!("waiting for rollback");
-                            rb_on.notified().await;
-                            tracing::debug!("done rollback");
+                            let graph = discovery::get_resource_graph(
+                                &plt.get_concrete_resources(),
+                                &plt.get_concrete_service(),
+                            );
+
+                            result.resources = Some(graph);
+
+                            //let _ = service::send_result(&api_address,
+                            // &result)    .await?;
                         }
                     }
+
+                    item_results.push(result);
                 }
 
                 results.push(ScenarioResult {

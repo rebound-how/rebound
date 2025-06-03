@@ -201,7 +201,6 @@ pub fn build_item_summary(
         }
     }
 
-    // Step 5: Return
     ItemSummary {
         url,
         call: item.call.clone(),
@@ -214,6 +213,9 @@ pub fn build_item_summary(
         failure_count,
         error_count,
         final_status,
+
+        #[cfg(any(feature = "discovery", feature = "injection"))]
+        resources: result.resources.clone(),
     }
 }
 

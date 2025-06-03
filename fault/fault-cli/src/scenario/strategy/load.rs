@@ -157,6 +157,9 @@ pub async fn run_load_test(
         requests_count: total_requests,
         failure_counts,
         total_time: start_instant.elapsed(),
+
+        #[cfg(feature = "discovery")]
+        resources: None,
     };
 
     if let Some(expect) = item.expect.clone() {

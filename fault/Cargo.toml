@@ -22,7 +22,7 @@ include = [
 
 
 [workspace.dependencies]
-which = { version = "7.0.2", default-features = false }
+which = { version = "7.0.3", default-features = false }
 anyhow = { version = "1", default-features = false }
 
 [profile.release]

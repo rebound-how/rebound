@@ -14,10 +14,15 @@ use walkdir::WalkDir;
 
 use crate::errors::ScenarioError;
 
+#[cfg(feature = "scenario")]
 pub(crate) mod event;
+#[cfg(feature = "scenario")]
 pub(crate) mod executor;
+#[cfg(feature = "scenario")]
 pub(crate) mod generator;
+#[cfg(feature = "scenario")]
 pub(crate) mod strategy;
+#[cfg(feature = "scenario")]
 pub(crate) mod types;
 
 pub fn count_scenario_items(scenario: &Scenario) -> u64 {

@@ -12,11 +12,13 @@ use serde::Deserialize;
 use serde::Serialize;
 use url::Url;
 
+#[cfg(feature = "discovery")]
+use crate::discovery::types::Resource;
 use crate::errors::ScenarioError;
 use crate::event::FaultEvent;
-use crate::report::types::DnsTiming;
 use crate::report::types::LatencyPercentile;
 use crate::types::Direction;
+use crate::types::DnsTiming;
 use crate::types::FaultConfiguration;
 
 ///
@@ -64,7 +66,7 @@ pub struct ScenarioItemSLO {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScenarioItemProxySettings {
     pub disable_http_proxies: bool,
-    pub proxies: Vec<String>
+    pub proxies: Vec<String>,
 }
 
 #[cfg(feature = "discovery")]
@@ -73,8 +75,10 @@ pub struct ScenarioItemProxySettings {
 pub enum ScenarioItemRunsOn {
     Kubernetes {
         ns: String,
-        service: String
-    }
+        service: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        image: Option<String>,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -96,7 +100,7 @@ pub struct ScenarioItemContext {
 }
 
 impl ScenarioItemContext {
-    pub fn faults_to_environment_variables(&self) -> BTreeMap<String , String> {
+    pub fn faults_to_environment_variables(&self) -> BTreeMap<String, String> {
         let mut map = BTreeMap::<String, String>::default();
 
         for f in &self.faults {
@@ -106,11 +110,14 @@ impl ScenarioItemContext {
 
         if let Some(strategy) = &self.strategy {
             match strategy {
-                ScenarioItemCallStrategy::Repeat { .. } => {},
+                ScenarioItemCallStrategy::Repeat { .. } => {}
                 ScenarioItemCallStrategy::Load { duration, .. } => {
-                    map.insert("FAULT_PROXY_DURATION".to_string(), duration.to_string());
-                },
-                ScenarioItemCallStrategy::Single {  } => {},
+                    map.insert(
+                        "FAULT_PROXY_DURATION".to_string(),
+                        duration.to_string(),
+                    );
+                }
+                ScenarioItemCallStrategy::Single {} => {}
             }
         }
 
@@ -330,6 +337,10 @@ pub struct ItemResult {
     pub requests_count: usize,
     pub failure_counts: usize,
     pub total_time: Duration,
+
+    #[cfg(feature = "discovery")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resources: Option<Vec<Resource>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

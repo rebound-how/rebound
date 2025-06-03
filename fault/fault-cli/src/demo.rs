@@ -1,3 +1,4 @@
+#[cfg(feature = "demo")]
 use std::env;
 use std::fmt;
 use std::time::Instant;

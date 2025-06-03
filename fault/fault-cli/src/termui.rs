@@ -17,7 +17,9 @@ use indicatif::MultiProgress;
 use indicatif::ProgressBar;
 use indicatif::ProgressDrawTarget;
 use indicatif::ProgressStyle;
+#[cfg(feature = "injection")]
 use inquire::Confirm;
+#[cfg(feature = "injection")]
 use inquire::Select;
 use tokio::sync::RwLock;
 use tokio::sync::broadcast;
@@ -31,11 +33,17 @@ use crate::event::TaskProgressReceiver;
 #[cfg(feature = "discovery")]
 use crate::inject::k8s::Platform;
 use crate::plugin::rpc::RpcPluginManager;
+#[cfg(feature = "scenario")]
 use crate::scenario;
+#[cfg(feature = "scenario")]
 use crate::scenario::event::ScenarioEventPhase;
+#[cfg(feature = "scenario")]
 use crate::scenario::event::ScenarioEventReceiver;
+#[cfg(feature = "scenario")]
 use crate::scenario::event::ScenarioItemLifecycle;
+#[cfg(feature = "scenario")]
 use crate::scenario::types::ItemExpectation;
+#[cfg(feature = "scenario")]
 use crate::scenario::types::ItemExpectationDecision;
 use crate::sched::EventType;
 use crate::sched::FaultPeriodEvent;
@@ -1239,6 +1247,7 @@ pub fn schedule_timeline(faults: &[FaultSchedule], total_run_seconds: f64) {
     }
 }
 
+#[cfg(feature = "scenario")]
 pub async fn scenario_ui(mut scenario_event_receiver: ScenarioEventReceiver) {
     let m = MultiProgress::new();
     let mut progress: Option<ProgressBar> = None;
@@ -1257,7 +1266,7 @@ pub async fn scenario_ui(mut scenario_event_receiver: ScenarioEventReceiver) {
                                 {
                                     if let Some(platform) = item.context.runs_on {
                                         match platform {
-                                            scenario::types::ScenarioItemRunsOn::Kubernetes { ns, service } => {
+                                            scenario::types::ScenarioItemRunsOn::Kubernetes { ns, service, .. } => {
                                                 runs_on = format!("{}", format!("[k8s: {}/{}] ", ns.yellow(), service.magenta()).dim())
                                             },
                                         }

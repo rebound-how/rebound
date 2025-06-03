@@ -127,6 +127,7 @@ impl IntoResponse for ProxyError {
     }
 }
 
+#[cfg(feature = "scenario")]
 #[derive(Clone, Error, Debug, Serialize, Deserialize)]
 pub enum ScenarioError {
     #[error("IO error: {0}")]
@@ -190,3 +191,6 @@ pub enum SuggestionError {
     #[error("Failed to retrieve: {0}")]
     Retrieval(String),
 }
+
+#[derive(Error, Debug)]
+pub enum APIServiceError {}

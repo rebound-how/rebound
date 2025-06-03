@@ -11,7 +11,7 @@ use tokio::sync::Mutex;
 use tokio::sync::RwLock;
 
 use crate::event::ProxyTaskEvent;
-use crate::report::types::DnsTiming;
+use crate::types::DnsTiming;
 
 /// Custom DNS Resolver that measures DNS resolution time and records it.
 #[derive(Clone, Debug)]

@@ -163,6 +163,9 @@ pub async fn execute(
         requests_count: total_count,
         failure_counts,
         total_time: start_instant.elapsed(),
+
+        #[cfg(feature = "discovery")]
+        resources: None,
     })
 }
 

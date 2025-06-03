@@ -6,6 +6,8 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use super::render;
+#[cfg(feature = "discovery")]
+use crate::discovery::types::Resource;
 use crate::scenario::types::ScenarioItemCall;
 use crate::scenario::types::ScenarioItemCallOpenAPIMeta;
 use crate::scenario::types::ScenarioItemCallStrategy;
@@ -54,6 +56,10 @@ pub struct ItemSummary {
     pub failure_count: usize,
     pub error_count: usize,
     pub final_status: ItemStatus,
+
+    #[cfg(any(feature = "discovery", feature = "injection"))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resources: Option<Vec<Resource>>,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
@@ -120,18 +126,5 @@ impl Report {
         let md = render::render(&self, ReportFormat::Markdown);
         fs::write(path, md.clone())?;
         Ok(md)
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DnsTiming {
-    pub host: String,
-    pub duration: f64,
-    pub resolved: bool,
-}
-
-impl DnsTiming {
-    pub fn new() -> Self {
-        DnsTiming { host: "".to_string(), duration: 0.0, resolved: false }
     }
 }

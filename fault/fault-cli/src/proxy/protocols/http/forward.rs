@@ -18,8 +18,8 @@ use super::ProxyState;
 use crate::errors::ProxyError;
 use crate::event::ProxyTaskEvent;
 use crate::plugin::ProxyPlugin;
-use crate::report::types::DnsTiming;
 use crate::resolver::TimingResolver;
+use crate::types::DnsTiming;
 
 /// Converts Axum's HeaderMap to Reqwest's HeaderMap.
 fn convert_headers_to_reqwest(

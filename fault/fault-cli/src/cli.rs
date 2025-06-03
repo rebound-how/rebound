@@ -10,6 +10,7 @@ use serde::Serialize;
 use crate::agent::clients::SupportedLLMClient;
 #[cfg(feature = "agent")]
 use crate::agent::insight::ReportReviewRole;
+#[cfg(feature = "discovery")]
 use crate::discovery::types::ResourcePlatform;
 use crate::types::BandwidthUnit;
 use crate::types::Direction;
@@ -54,6 +55,18 @@ pub struct Cli {
         default_value_t = false
     )]
     pub with_otel: bool,
+
+    /// Listening address for the API service
+    #[arg(
+        hide = true,
+        help_heading = "API Service Options",
+        long = "api-address",
+        help = "Address for the API service.",
+        env = "FAULT_API_SERVICE_ADDRESS",
+        default_value = "0.0.0.0:7900",
+        value_parser
+    )]
+    pub api_address: Option<String>,
 
     #[command(subcommand)]
     pub command: Commands,
@@ -228,13 +241,14 @@ pub enum Commands {
     },
 
     /// Resilience Fault Injection
-    #[cfg(feature = "fault-injection")]
+    #[cfg(feature = "injection")]
     Inject {
         #[command(subcommand)]
         inject: FaultInjectionCommands,
     },
 
     /// Resilience Automation
+    #[cfg(feature = "scenario")]
     Scenario {
         #[command(subcommand)]
         scenario: ScenarioCommands,
@@ -254,6 +268,7 @@ pub enum Commands {
     },
 
     /// Run a simple demo server for learning purpose
+    #[cfg(feature = "demo")]
     #[command(subcommand)]
     Demo(DemoCommands),
 }
@@ -803,6 +818,7 @@ pub struct RunCommandOptions {
 }
 
 /// Subcommands for executing scenarios
+#[cfg(feature = "scenario")]
 #[derive(Subcommand, Debug)]
 pub enum ScenarioCommands {
     /// Execute a scenario from a file
@@ -825,6 +841,7 @@ pub enum AgentCommands {
 }
 
 /// Subcommands for executing a demo server
+#[cfg(feature = "demo")]
 #[derive(Subcommand, Debug)]
 pub enum DemoCommands {
     /// Execute a demo server for learning purpose
@@ -832,6 +849,7 @@ pub enum DemoCommands {
 }
 
 /// Configuration for executing scenarios
+#[cfg(feature = "scenario")]
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]
 pub struct ScenarioRunConfig {
     /// Path to the scenario file (YAML)
@@ -1025,6 +1043,7 @@ pub struct AgentAdviceConfig {
     pub report: String,
 }
 
+#[cfg(feature = "injection")]
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]
 pub struct FaultInjectionCommandOptions {
     // Http Error Options
@@ -1053,13 +1072,13 @@ pub struct FaultInjectionCommandOptions {
 }
 
 /// Subcommands for the fault command
-#[cfg(all(feature = "fault-injection", feature = "discovery"))]
+#[cfg(feature = "injection")]
 #[derive(Subcommand, Debug)]
 pub enum FaultInjectionCommands {
     Kubernetes(FaultInjectionKubernetesConfig),
 }
 
-#[cfg(all(feature = "agent", feature = "discovery"))]
+#[cfg(feature = "injection")]
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]
 pub struct FaultInjectionKubernetesConfig {
     /// Namespace
@@ -1080,11 +1099,22 @@ pub struct FaultInjectionKubernetesConfig {
     )]
     pub service: Option<String>,
 
+    /// Container image perfomring the fault
+    #[arg(
+        short,
+        long,
+        help = "Container image perfomring the fault.",
+        env = "FAULT_INJECTION_K8S_SERVICE",
+        default_value = "ghcr.io/rebound-how/fault:latest"
+    )]
+    pub image: String,
+
     #[command(flatten)]
     pub options: Box<FaultInjectionCommandOptions>,
 }
 
 /// Configuration for executing the demo server
+#[cfg(feature = "demo")]
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]
 pub struct DemoConfig {
     /// Listening address for the demo server
@@ -1149,6 +1179,7 @@ fn validate_http_status(val: &str) -> Result<u16, String> {
     }
 }
 
+#[cfg(feature = "injection")]
 impl FaultInjectionCommandOptions {
     pub fn to_environment_variables(&self) -> BTreeMap<String, String> {
         let mut map = BTreeMap::<String, String>::default();

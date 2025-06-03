@@ -92,6 +92,7 @@ pub fn render(report: &Report) -> String {
 
             let strategy = item.strategy_mode.clone();
 
+            #[cfg(feature = "scenario")]
             match strategy {
                 ScenarioItemCallStrategy::Load { duration, clients, rps } => {
                     md.push_str(&format!("**Strategy**: load for {} with {} clients @ {} RPS\n\n", 
@@ -250,6 +251,18 @@ pub fn render(report: &Report) -> String {
                     ));
                 }
                 md.push_str("\n");
+            }
+
+            #[cfg(feature = "discovery")]
+            {
+                if let Some(resources) = &item.resources {
+                    md.push_str("**Platform Resources**\n");
+                    md.push_str("Below are the platform resources gathered during execution for that endpoint.\n\n");
+                    md.push_str("```yaml\n");
+                    md.push_str(&serde_yaml::to_string(&resources).unwrap());
+                    md.push_str("```");
+                    md.push_str("\n");
+                }
             }
         }
 
