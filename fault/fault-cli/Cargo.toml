@@ -139,6 +139,7 @@ path = "src/main.rs"
 [features]
 default = [
     "demo",
+    "scenario",
     "injection"
 ]
 demo = []
