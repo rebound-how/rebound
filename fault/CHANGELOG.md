@@ -2,5 +2,6 @@
 
 ## Changed
 
-- Fully renamed from lueur to fault
-- Fixed a couple of issues with building ebpf
+- Added fault injection into Kubernetes
+- Added discovery of platform resources
+- Fixed a variety of minor issues
