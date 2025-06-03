@@ -67,6 +67,11 @@ use cli::ScenarioCommands;
 use colorful::Color;
 use colorful::Colorful;
 use config::ProxyConfig;
+#[cfg(all(
+    target_os = "linux",
+    any(feature = "stealth", feature = "stealth-auto-build")
+))]
+use errors::ProxyError;
 use event::TaskManager;
 use fault::FaultInjector;
 #[cfg(feature = "discovery")]
