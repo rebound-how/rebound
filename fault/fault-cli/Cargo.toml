@@ -132,6 +132,9 @@ aya-build = "0.1.2"
 # fault-ebpf-programs import above
 #fault-ebpf-programs = { path = "../fault-ebpf-programs", optional = true }
 
+[patch.crates-io]
+fastembed = { version = "4.8.0" }
+
 [[bin]]
 name = "fault"
 path = "src/main.rs"
