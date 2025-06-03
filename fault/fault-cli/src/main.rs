@@ -113,7 +113,6 @@ use scenario::types::ScenarioResult;
 use scenario::types::ScenariosResults;
 use sched::build_schedule_events;
 use sched::run_fault_schedule;
-use scopeguard::guard;
 use serde_json::from_reader;
 #[cfg(all(target_family = "unix", feature = "agent"))]
 use swiftide::integrations::treesitter::SupportedLanguages;
