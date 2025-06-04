@@ -3,6 +3,11 @@
 This guide will walk you through emulating faults into an application running
 in a Kubernetes cluster.
 
+!!! info
+
+    To get you started with Kubernetes, you may also want to look at the
+    [`fault inject kubernetes`](../inject/kubernetes.md) command.
+
 ## Run fault's proxy as a Deployment
 
 -   [X] Deploy fault's demo application in the cluster

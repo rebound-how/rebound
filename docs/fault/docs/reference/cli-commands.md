@@ -366,6 +366,29 @@ fault run \
   --with-bandwidth --bandwidth-rate 2000 --bandwidth-unit KBps
 ```
 
+## `injection` Command Options
+
+Inject {==fault==} into your platform resources.
+
+### Kubernetes Options
+
+- **`--ns <namespace>`**  
+  _Namespace of the target service._  
+  _Default:_ `default`  
+  **Example:** `--ns myapp`
+
+- **`--service <service>`**  
+  _Target service._  
+  **Example:** `--service web`
+
+- **`--image <image>`**  
+  _Container image to inject, its entrypoint must be the `fault` binary._  
+  _Default:_ `ghcr.io/rebound-how/fault:latest`  
+  **Example:** `--image myimage:latest`
+
+In addition, this subcommand supports all the fault options of the `run`
+command.
+
 ## `scenario` Command Options
 
 A fault scenario is a file containing test scenarios to execute automatically

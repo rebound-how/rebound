@@ -6,27 +6,35 @@ on your environment.
 
 ## Features Matrix
 
-fault disables some of its features depending on the platform. Below is a
-summary of the capabilities per target.
+From a very high-level, fault provides the following features:
 
-| Platform (OS) / Feature | Proxy | Scenario | Stealth (eBPF) | AI Agent |
-|-------------------------|:-----:|:---------------:|:------------------:|:-------------:|
-| Linux shared library    |  :white_check_mark:    | :white_check_mark:               | :white_check_mark:             | :white_check_mark:        |
-| Linux static (musl)    |  :white_check_mark:    | :white_check_mark:               | :white_check_mark:             | :no_entry:        |
-| MacOSX     |  :white_check_mark:    | :white_check_mark:              | :no_entry: (2)            | :white_check_mark:        |
-| Windows     |  :white_check_mark:    | :white_check_mark:               | :no_entry: (2)           | :no_entry: (3)       |
+* **Proxy**: a network proxy that model network traffic based on a configuration
+* **Scenario**: testing automation using the proxy
+* **Injection**: machinery to inject the network proxy into platform resources
+* **AI Agent**: review of results and code from a reliability and resilience perspective
+* **Stealth**: eBPF program to tranparently route network traffic via the proxy
 
-1. fault comes with binaries with and without eBPF support for the Linux
-   platform.
-2. Stealth mode relies on the Linux kernel technology called eBPF and therefore
+fault disables some of its features depending on the platform. When a feature is
+disabled, it won't appear in the CLI arguments. Below is a summary of the
+capabilities per target.
+
+| Platform (OS) / Feature | Proxy | Scenario | Injection | Stealth (eBPF) | AI Agent |
+|-------------------------|:-----:|:---------------:|:---------------:|:------------------:|:-------------:|
+| Linux shared library    |  :white_check_mark:    | :white_check_mark:               | :white_check_mark: | :white_check_mark:             | :white_check_mark:        |
+| Linux static (musl)    |  :white_check_mark:    | :white_check_mark:               | :white_check_mark: | :white_check_mark:             | :no_entry:       |
+| MacOSX     |  :white_check_mark:    | :white_check_mark:              | :white_check_mark: | :no_entry: (1)            | :white_check_mark:        |
+| Windows     |  :white_check_mark:    | :white_check_mark:               | :white_check_mark: | :no_entry: (1)           | :no_entry: (2)       |
+
+1. Stealth mode relies on the Linux kernel technology called eBPF and therefore
    is disabled elsewhere.
-3. AI Agent relies on the [swiftide](https://swiftide.rs/) rust framework which
+2. AI Agent relies on the [swiftide](https://swiftide.rs/) rust framework which
    [doesn't support Windows](https://github.com/bosun-ai/swiftide/issues/299).
    However, the agent runs fine on "Linux on Windows" via
    [WSL](https://learn.microsoft.com/en-us/windows/wsl/install).
-4. fault only supports 64 bits architectures: x86 and ARM.
 
-When a feature is disabled, it won't appear in the CLI arguments.
+fault only supports 64 bits architectures: x86 and ARM.
+
+
 
 ## Download the fault binary
 

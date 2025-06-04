@@ -7,7 +7,7 @@ This guide will walk you through integrating fault into your GitHub pipeline.
 You will learn how to run a fault scenario as part of your GitHub workflow
 and use the result to fail a GitHub job.
 
-!!! example "Start your applicatiopn first"
+!!! example "Start your application first"
 
     The guides below do not show how to run the target service from within
     your workflow. For instance, you could run a step like this first:

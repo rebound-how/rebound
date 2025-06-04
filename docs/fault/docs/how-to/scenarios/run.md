@@ -60,6 +60,28 @@ same directory.
 
     1. fault will load all YAML files in that directory.
 
+## Run a Scenario on Kubernetes
+
+The default behavior is to execute a scenario locally to where the command
+is started. A scenario offers a way to run the proxy [from within a Kubernetes
+cluster](../../reference/scenario-file-format.md#running-on-a-platform).
+
+-   [X] Configure the scenario to run on a Kubernetes cluster
+
+    ```yaml
+    context:
+      runs_on:
+        platform: kubernetes
+        ns: default  # (1)!
+        service: nginx  # (2)!
+    ```
+
+    1. The namespace of the target service
+    2. The target service which should be part of the test chain
+
+    The scenario will be executed locally but the proxy will be deployed inside
+    the cluster directly.
+
 ## Next Steps
 
 - **Learn how to explore the generated [report](./reporting.md)** from running these scenarios.

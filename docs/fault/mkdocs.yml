@@ -30,7 +30,7 @@ nav:
       - "TCP Proxies": how-to/proxy/protocols/tcp.md
       - "Stealth Mode (eBPF)": how-to/proxy/stealth/configure-stealth-mode.md
       - "Open Telemetry": how-to/observability/traces.md
-    - "Fault Injection":
+    - "Faults":
       - "Latency": how-to/proxy/faults/configure-latency.md
       - "Bandwidth": how-to/proxy/faults/configure-bandwidth.md
       - "Packet Loss": how-to/proxy/faults/configure-packet-loss.md
@@ -38,6 +38,8 @@ nav:
       - "Jitter": how-to/proxy/faults/configure-jitter.md
       - "Blackhole": how-to/proxy/faults/configure-blackhole.md
       - "Extend fault": how-to/proxy/faults/extending.md
+    - "Platform Injection":
+      - "Kubernetes": how-to/inject/kubernetes.md
     - "Scenarios":
       - "Generate": how-to/scenarios/generate.md
       - "Run": how-to/scenarios/run.md

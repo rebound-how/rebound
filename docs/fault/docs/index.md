@@ -132,7 +132,7 @@ hide:
 
 
   <div class="features-container">
-    <div class="feat" data-images="proxy-run.png,proxy-sched.png,proxy-any.png,proxy-plugin.png">
+    <div class="feat" data-images="proxy-run.png,inject-platform.png,proxy-sched.png,proxy-any.png,proxy-plugin.png">
       <div class="media">
         <img src="/assets/images/proxy-run.png" class="carousel-img">
       </div>
@@ -141,16 +141,19 @@ hide:
         <h2 class="menu-heading">Reliability Driven Proxy</h2>
         <ul class="menu-list">
           <li class="menu-item active" data-index="0">
-            <span><strong>Inject network failures</strong> and get immediate insights</span>
+            <span><strong>Run locally</strong> and get immediate insights</span>
           </li>
           <li class="menu-item" data-index="1">
-            <span><strong>Mix multiple faults </strong> to create realistic scenarios</span>
+            <span><strong>Inject network faults</strong> into your platform resources</span>
           </li>
           <li class="menu-item" data-index="2">
+            <span><strong>Mix multiple faults </strong> to create realistic scenarios</span>
+          </li>
+          <li class="menu-item" data-index="3">
             <span><strong>Explore all your layers</strong> and discover how your database or dependencies may impact
               your services</span>
           </li>
-          <li class="menu-item" data-index="3">
+          <li class="menu-item" data-index="4">
             <span><strong>Make it your own</strong> by extending fault with gRPC plugins</span>
           </li>
         </ul>

@@ -707,14 +707,14 @@ pub async fn run_fault_injector_roundtrip<P: Platform>(
 
     plt.inject().await?;
     println!(
-        "    Injected into service {} 🚀. You can now explore how your system reacts to its new conditions.",
-        svc.name
+        "   Injected into service {} 🚀.\n   You can now explore how your system reacts to its new conditions.",
+        svc.name.yellow()
     );
 
-    let _ = Confirm::new("    Press 'y' to finish and rollback").prompt();
+    let _ = Confirm::new(&format!("Press '{}' to finish and rollback", "y".to_string().green())).prompt();
 
     plt.rollback().await?;
-    println!("   Rolled back 🛑");
+    println!("  Rolled back.");
 
     Ok(())
 }

@@ -24,6 +24,11 @@ It specifies essential details such as the HTTP method
 are required. Essentially, it outlines the action that triggers the fault
 injection.
 
+!!! question "Only HTTP?"
+
+    fault currently supports HTTP-based scenarios. In a future version, we may
+    try to support more protocols.
+
 **Context:**  
 The context defines the environment in which the test runs. It lists the
 upstream endpoints that will be affected by fault injection and specifies the
@@ -109,7 +114,6 @@ your reliability objectives.
             status: 200
         ```
 
-
 ## Scenario Structure
 
 ### HTTP `call`
@@ -130,7 +134,7 @@ the fault agent when analyzing the scenario results.
 
 ### fault `context`
 
-Th `context` gathers the configuration for fault. These are the typical
+The `context` gathers the configuration for fault. These are the typical
 information fault's CLI uses already so you should be familiar with them
 hopefully.
 
@@ -150,6 +154,74 @@ you to declare what they might be for that endpoint (actually, they can
 represent real SLOs but fault doesn't link to them). These fake SLOs are useful
 when running a `strategy` of type `load` because the report fault generates
 will give you feedback about them in the context of the scenario.
+
+#### Running On a Platform
+
+The default behavior is to execute scenarios locally in the current
+`fault` process. Scenarios may be run on a different target. fault
+supports the following platforms:
+
+* Kubernetes
+* GCP (coming soon)
+* AWS (coming soon)
+
+To execute on a remote platform, use the `runs_on` property. When found, 
+fault creates the necessary resources on the platform and launch a dedicated
+fault instance to actually perform the injection of network faults.
+
+##### Kubernetes
+
+fault may run on Kubernetes by creating the following resources:
+
+* a job (CronJob are not supported yet)
+* a service
+* a dedicated service account
+* a config map that holds the environment variables used to configure the proxy
+
+```mermaid
+sequenceDiagram
+  autonumber
+  fault (local)->>Service Account: Create
+  fault (local)->>Config Map: Create with fault's proxy environment variables
+  fault (local)->>Target Service: Fetch target service's selectors and ports
+  fault (local)->>Target Service: Replace target service selectors to match new fault's pod
+  fault (local)->>fault Service: Create new service with target service's selectors and ports but listening on port 3180
+  fault (local)->>Job: Create to manage fault's pod, with proxy sending traffic to new service's address
+  Job->>fault Pod: Schedule fault's pod with config map attached
+  fault Pod->>Service Account: Uses
+  fault Pod->>Config Map: Loads
+  Target Service->>fault Pod: Matches
+  loop fault proxy
+      fault (local)->>Target Service: Starts scenario
+      Target Service->>fault Pod: Route traffic via fault
+      loop fault injection
+        fault Pod->>fault Pod: Apply faults
+      end
+      fault Pod->>fault Service: Forwards
+      fault Service->>Target Pods: forward traffic to final endpoints
+      Target Pods->>fault (local): Sends response back after faults applied
+  end
+```
+
+!!! note
+
+    Once a scenario completes, {==fault==} rollbacks the resources to their
+    original state.
+
+Below is an example to enable this feature in a scenario:
+
+```yaml
+context:
+  runs_on:
+    platform: kubernetes
+    service: <service name>  # (1)!
+    ns: default  # (2)!
+    image: "ghcr.io/rebound-how/fault:latest"  # (3)!
+```
+
+1. The service to inject fault into
+2. The namespace where this service is located
+3. (optional) The default image used to launch the pod's fault. If you create your own image, make sure that `fault` remains the entrypoint
 
 #### A word about SLO
 
@@ -203,9 +275,9 @@ service, and the extent of this impact.
 
     !!! note
     
-        fault supports two types of SLO: `latency` and `error`. 
+        {==fault==} supports two types of SLO: `latency` and `error`. 
 
-When a scenario runs, fault computes then a variety of latency and error
+When a scenario runs, {==fault==} computes then a variety of latency and error
 percentiles (p25, p50, p75, p95 and p99) to compare them with these SLO.
 
 !!! example "fault SLO reporting"
@@ -225,8 +297,8 @@ percentiles (p25, p50, p75, p95 and p99) to compare them with these SLO.
     | P95 < 300ms | ❌ | 95% < 300ms | Above by 307.7ms | 55 (90.2%) |
     | P99 < 1% errors | ✅ | 99% < 1% | Below by 1.0 | 0 (0.0%) |
 
-fault is well aware that the window of the scenario is short. fault takes the
-view that even from such a small period of time, we can extrapolate valuable
+{==fault==} is well aware that the window of the scenario is short. fault takes
+the view that even from such a small period of time, we can extrapolate valuable
 information.
 
 We believe fault `slo` bridges SRE to developers. SLO is a simple language
@@ -247,19 +319,30 @@ The `expect` block defines how you want to verify the results from the `call`.
 
 Note that, these two are ignored when `strategy` is set to `load`.
 
+## Scenario Flow
+
+{==fault==} scenarios are self-contained and standalone in their execution. When
+a scenario is executed, the proxy is configured with the appropriate fault
+settings. Next {==fault==} starts sending network traffic to the
+scenario's target URL following the configured strategy. Then, {==fault==}
+compares results with the optional expectations or SLOs.
+
+Once all the scenario items have been executed, {==fault==} makes a final
+report and writes to a markdown document.
+
 ## OpenAPI Support
 
-fault supports OpenAPI v3 (v3.0.x and v3.1.x). It may generate scenarios
+{==fault==} supports OpenAPI v3 (v3.0.x and v3.1.x). It may generate scenarios
 from an OpenAPI specification to rapidly bootstrap your catalog of scenarios.
 
-fault scans an OpenAPI specification and gather the following information:
+{==fault==} scans an OpenAPI specification and gather the following information:
 
 * the endpoint `url`
 * the HTTP `method`
 * if the method is either `POST` or `PUT`, it also scans the body definition.
   When this is a typical structured body, it creates a default payload as well.
 
-Then fault generates a variety of scenarios to create a solid baseline of
+Then {==fault==} generates a variety of scenarios to create a solid baseline of
 scenarios against each endpoint.
 
 The default behavior from fault is to create the following scenarios:
@@ -275,13 +358,13 @@ The default behavior from fault is to create the following scenarios:
 
 !!! tip "Make it your own"
 
-    A future version of fault should allow you to bring your own scenario
+    A future version of {==fault==} should allow you to bring your own scenario
     templates.
 
 !!! tip "More coverage in the future"
 
-    Right now, fault generates scenarios against the endpoints themselves, a
-    future release will also generate them for downstream dependencies.
+    Right now, {==fault==} generates scenarios against the endpoints themselves,
+    a future release will also generate them for downstream dependencies.
 
 ## Example
 
