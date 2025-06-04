@@ -566,7 +566,7 @@ pub struct DnsOptions {
 
     /// Dns period
     #[arg(
-        help_heading = "Dns Options",
+        help_heading = "DNS Options",
         long,
         help = "Dns schedule",
         env = "FAULT_DNS_SCHED"
