@@ -5,6 +5,7 @@
 - Talk to a {{ role }}.
 - Provide a clear second-level heading for the section, with a brief description in italic.
 - Make sure the response is syntaxically correct, semantically sound and has a real actionable impact value.
+- Explore the causes that might come from poorly configured resources (such as Kubernetes pods, GCP Cloud Run, Aws lambdas...)
 
 {# – Context from prior analysis –#}
 {% if previous_advice %}

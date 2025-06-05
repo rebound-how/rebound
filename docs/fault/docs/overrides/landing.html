@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
 {% block extrahead %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/landing.css">
 <script>
   document.addEventListener('DOMContentLoaded', () => {
@@ -50,9 +53,9 @@
   <article class="md-content__inner md-typeset">
     <div class="hero">
       <div class="hero__content">
-        <div class="logo scratchy">fault<span class="logo-dot twemoji">{% include ".icons/material/ethernet.svg"
+        <div class="logo scratchy" translate="no">fault<span class="logo-dot twemoji">{% include ".icons/material/ethernet.svg"
             %}</span></div>
-        <h1>Reliability is your unsung superpower.</h1>
+        <h1><span class="tagline">progress through failures</span></h1>
         <div class="hero__actions">
           <a class="md-button md-button--primary rounded" href="/tutorials/install/">
             Get Started

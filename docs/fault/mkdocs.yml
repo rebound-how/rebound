@@ -56,6 +56,7 @@ nav:
       - "Reliably": how-to/run-with-reliably.md
   - Reference:
     - "CLI Commands": reference/cli-commands.md
+    - "Platform Injection": reference/injection.md
     - "Scenario File Format": reference/scenario-file-format.md
     - "Environment Variables": reference/environment-variables.md
     - "Builtin Faults": reference/builtin-faults.md

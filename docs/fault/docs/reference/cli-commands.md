@@ -14,6 +14,10 @@ defined in a file or launch a local demo server.
 Run the proxy with fault injection enabled. This command applies the specified
 network faults to HTTP requests and tunnel streams.
 
+### `inject`
+
+Inject the fault proxy into your platform resources, such as Kubernetes.
+
 ### `scenario`
 
 Execute a predefined fault injection scenario. This command includes additional

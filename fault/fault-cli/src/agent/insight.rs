@@ -68,6 +68,7 @@ pub async fn analyze(
         ReviewEventPhase::Causes,
         ReviewEventPhase::Recommendations,
         ReviewEventPhase::Risks,
+        ReviewEventPhase::Next,
         ReviewEventPhase::Executive,
     ];
 
@@ -100,6 +101,7 @@ pub async fn analyze(
                 include_str!("prompts/report-recommendations.md")
             }
             ReviewEventPhase::Risks => include_str!("prompts/report-risks.md"),
+            ReviewEventPhase::Next => include_str!("prompts/report-next.md"),
             ReviewEventPhase::Executive => {
                 include_str!("prompts/report-executive.md")
             }
@@ -295,6 +297,7 @@ pub enum ReviewEventPhase {
     Causes,
     Recommendations,
     Risks,
+    Next,
     Executive,
     Completed,
 }
@@ -308,6 +311,7 @@ impl fmt::Display for ReviewEventPhase {
             ReviewEventPhase::Recommendations => write!(f, "recommendations"),
             ReviewEventPhase::Risks => write!(f, "risks"),
             ReviewEventPhase::Executive => write!(f, "executive"),
+            ReviewEventPhase::Next => write!(f, "next"),
             ReviewEventPhase::Completed => write!(f, "completed"),
         }
     }
@@ -327,6 +331,9 @@ impl ReviewEventPhase {
             ReviewEventPhase::Risks => "Deriving risks".to_string(),
             ReviewEventPhase::Executive => {
                 "Creating executive summary".to_string()
+            }
+            ReviewEventPhase::Next => {
+                "Generating further reliability use cases".to_string()
             }
             ReviewEventPhase::Completed => "Completed analysis".to_string(),
         }

@@ -578,6 +578,22 @@ from this application.
           - a hard deadline for every HTTP call  
           - real-time metrics you can hook into your alerting system  
 
+-   [X] Generate a PDF version of the report
+
+    {==fault==} only generates a markdown format. You may convert it to a
+    PDF document using [pandoc](https://pandoc.org/). We suggest that you also
+    use the [Eisvogel](https://github.com/Wandmalfarbe/pandoc-latex-template)
+    template for a sleek rendering. Once installed, you may run a command such
+    as:
+
+    ```bash
+    pandoc code-review-report.md -o code-review-report.pdf \
+        --listings --pdf-engine=xelatex \
+        --template eisvogel  # (1)!
+    ```
+
+    1. If you didn't installed the Eisvogel template, just remove this flag
+
 !!! tip
 
     In a future release, fault will be able to apply and try the changes

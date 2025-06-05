@@ -16,7 +16,7 @@
 ---
 {% endif %}
 
-# Step 6: Executive Summary
+# Step 7: Executive Summary
 
 You are a senior **{{ role | capitalize }}**.  
 Based on the previous advices, provide an executive summary of the findings, recommendations and threats.

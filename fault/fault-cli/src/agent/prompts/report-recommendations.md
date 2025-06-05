@@ -9,6 +9,7 @@
 - Make sure the recommendations can be clearly weighted against each other.
 - Use table (costs, complexity, benefits...) where appropriate to help prioritization.
 - Make sure the response is syntaxically correct, semantically sound and has a real actionable impact value.
+- Explore the improvements to the platform resources (such as Kubernetes pods, GCP Cloud Run, Aws lambdas...) as well.
 
 
 {# – Context from cause hypotheses –#}

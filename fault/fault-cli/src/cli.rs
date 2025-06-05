@@ -972,7 +972,8 @@ pub struct AgentReviewConfig {
     #[arg(
         long,
         help = "Path to the generated json results file",
-        env = "FAULT_SCENARIO_RESULTS_PATH"
+        default_value = "results.json",
+        env = "FAULT_SCENARIO_RESULTS_PATH",
     )]
     pub results: String,
 
@@ -1019,6 +1020,7 @@ pub struct AgentAdviceConfig {
     #[arg(
         long,
         help = "Path to the generated json results file",
+        default_value = "results.json",
         env = "FAULT_SCENARIO_RESULTS_PATH"
     )]
     pub results: String,

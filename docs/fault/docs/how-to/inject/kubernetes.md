@@ -8,12 +8,18 @@ While you may manually
 [deploy fault into Kubernetes](../platform/run-on-kubernetes.md), {==fault==}
 comes with a friendly automated fault injection command to simplify the process.
 
-??? abstract "Prerequisites"
+???+ abstract "Prerequisites"
 
     -   [X] Install fault
 
         If you haven’t installed fault yet, follow the
         [installation instructions](../install.md).
+
+    -   [X] Familiar yourself with how fault injects itself into Kubernetes
+
+        If you haven’t read it yet, please explore the
+        [related reference](../../reference/injection.md#kubernetes)
+        for kubernetes platform injection.
 
 ## Inject Latency Into a Kubernetes Service/Pod
 

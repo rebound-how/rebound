@@ -588,7 +588,7 @@ async fn main() -> Result<()> {
                     common.llm_prompt_reasoning_model.clone();
                 let llm_embed_model = common.llm_embed_model.clone();
 
-                let (sender, receiver) = kanal::bounded_async(7);
+                let (sender, receiver) = kanal::bounded_async(8);
 
                 let handle: task::JoinHandle<
                     Result<agent::insight::ReportReviews>,
@@ -606,7 +606,7 @@ async fn main() -> Result<()> {
 
                 let pb = long_operation(
                     "Analyzing! This could take a while...",
-                    Some(7),
+                    Some(8),
                 );
 
                 tokio::spawn(async move {

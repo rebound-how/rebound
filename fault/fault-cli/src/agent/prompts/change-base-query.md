@@ -21,7 +21,7 @@ Given that somebody else might ask questions about each path, consider things li
 - Idempotent: {{ idempotent }}
 - Repository directory: {{ source_dir }}
 
-## Good Solution Candidates
+## Good Solution Candidates
 
 - Add retries with exponential backoff and a request-scoped timeout.
 - Extend tracing and metrics to let operations be alerted as soon as possible.
