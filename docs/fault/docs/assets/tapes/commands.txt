@@ -1,4 +1,0 @@
-fault run --with-latency --latency-mean 300 --upstream '*' --tail
-fault scenario generate --scenario consumer.yaml --spec-url http://10.43.247.56:8080/openapi.json
-fault scenario run --scenario consumer.yaml
-fault agent code-review --results results.json --source-dir ./dev/misc/producer_consumer/ --source-lang python

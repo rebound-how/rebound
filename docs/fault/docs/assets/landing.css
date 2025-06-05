@@ -32,7 +32,7 @@
 
 
 
-@media (min-width: 480px) {
+@media (min-width: 992px) {
 main {
   background-image: url("/assets/images/social/fault-network-banner.png");
   background-size:contain;  
@@ -63,7 +63,7 @@ main {
 }
 
 
-@media (min-width: 480px) {
+@media (min-width: 1200px) {
     .logo {
         font-size: 124px;
     }
@@ -73,7 +73,7 @@ main {
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 1200px) {
     .logo {
         font-size: 84px;
     }
@@ -140,11 +140,24 @@ a.md-source {
 .hero {
     display: flex;
     flex-direction: column;
+    padding: 4rem 1rem;
+    padding-bottom: 0;
+}
+
+@media (min-width: 992px) {
+.hero {
+    justify-content: end;
+    align-items: end;
+    text-align: center;
+}
+}
+
+@media (min-width: 1200px) {
+.hero {
     justify-content: center;
     align-items: center;
     text-align: center;
-    padding: 4rem 1rem;
-    padding-bottom: 0;
+}
 }
 
 .hero__content {
@@ -170,8 +183,14 @@ a.md-source {
 .features-container {
     display: grid;
     row-gap: 200px;
+}
+
+
+@media (min-width: 480px) {
+.features-container {
     padding-top: 180px;
     padding-bottom: 80px;
+}
 }
 
 .feat {
@@ -362,13 +381,14 @@ a.md-source {
     justify-items: center;
     align-items: center;
     text-align: center;
+    margin-bottom: 80px;
 }
 
-.values h3 span {
-    color: hsl(45, 92%, 47%);
+.values h2 span {
+    color: #0095ff;
 }
 
-@media (min-width: 480px) {
+@media (min-width: 1200px) {
     .md-footer {
         position: relative;
         z-index: 2;
@@ -381,7 +401,7 @@ a.md-source {
 
 }
 
-@media (max-width: 480px) {
+@media (max-width: 1200px) {
     .subhero {
         margin-top: 0;
     }
@@ -392,12 +412,21 @@ a.md-source {
 }
 
 
-.animation-container {
-    position: relative;
-    aspect-ratio: 4 / 1;
-    background: #ffffff;
-    overflow: visible;
-    box-sizing: border-box;
+@media (min-width: 1200px) {
+    .animation-container {
+        position: relative;
+        aspect-ratio: 4 / 1;
+        background: #ffffff;
+        overflow: visible;
+        box-sizing: border-box;
+    }
+}
+
+
+@media (max-width: 1200px) {
+    .animation-container {
+        display: none;
+    }
 }
 
 .phase-svg {
@@ -446,7 +475,7 @@ a.md-source {
 .node {
     fill: var(--node-fill);
     stroke: var(--node-stroke);
-    stroke-width: 3;
+    stroke-width: 1;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
@@ -495,4 +524,14 @@ line {
 
 .proxy {
     stroke: var(--color-fast);
+}
+
+.trailer {
+    margin-top: 80px;
+    margin-bottom: 80px;
+}
+
+#player {
+
+    border-radius: var(--border-radius-m);
 }

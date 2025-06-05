@@ -12,6 +12,32 @@ hide:
     <div class="tagline">
       <h2>A Rust-powered CLI that simulates network disruptions.</h2>
     </div>
+    <div class="trailer">
+      <script src="https://asciinema.org/a/l2pc0o8bBTJULesRrevcMuugc.js" id="asciicast-l2pc0o8bBTJULesRrevcMuugc" async="true"></script>
+    </div>
+
+    <div class="values">
+      <div>
+        <h2><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path
+                d="m13.13 22.19-1.63-3.83c1.57-.58 3.04-1.36 4.4-2.27zM5.64 12.5l-3.83-1.63 6.1-2.77C7 9.46 6.22 10.93 5.64 12.5M21.61 2.39S16.66.269 11 5.93c-2.19 2.19-3.5 4.6-4.35 6.71-.28.75-.09 1.57.46 2.13l2.13 2.12c.55.56 1.37.74 2.12.46A19.1 19.1 0 0 0 18.07 13c5.66-5.66 3.54-10.61 3.54-10.61m-7.07 7.07c-.78-.78-.78-2.05 0-2.83s2.05-.78 2.83 0c.77.78.78 2.05 0 2.83s-2.05.78-2.83 0m-5.66 7.07-1.41-1.41zM6.24 22l3.64-3.64c-.34-.09-.67-.24-.97-.45L4.83 22zM2 22h1.41l4.77-4.76-1.42-1.41L2 20.59zm0-2.83 4.09-4.08c-.21-.3-.36-.62-.45-.97L2 17.76z" />
+            </svg>&nbsp;</span>Build A Core Strength</h2>
+        <p>Practicing reliability brings the best of your skills and creativity.</p>
+      </div>
+      <div>
+        <h2><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5z" />
+            </svg>&nbsp;</span>Protect Your Team</h2>
+        <p>Explore, automate, reflect and prioritize reliability improvements to reduce incident anxiety.</p>
+      </div>
+      <div>
+        <h2><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path
+                d="M14 19h8v-2h-8zm0-5.5h8v-2h-8zM14 8h8V6h-8zM2 12.5C2 8.92 4.92 6 8.5 6H9V4l3 3-3 3V8h-.5C6 8 4 10 4 12.5S6 17 8.5 17H12v2H8.5C4.92 19 2 16.08 2 12.5" />
+            </svg>&nbsp;</span>Lock In Your Reliability Budget</h2>
+        <p>Turn reliability from a "nice-to-have" into a can't-ignore line item.</p>
+      </div>
+    </div>
   <div class="animation-container">
 
     <!-- Phase 1 -->
@@ -105,28 +131,6 @@ hide:
 
   </div>
   
-    <div class="values">
-      <div>
-        <h3><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path
-                d="m13.13 22.19-1.63-3.83c1.57-.58 3.04-1.36 4.4-2.27zM5.64 12.5l-3.83-1.63 6.1-2.77C7 9.46 6.22 10.93 5.64 12.5M21.61 2.39S16.66.269 11 5.93c-2.19 2.19-3.5 4.6-4.35 6.71-.28.75-.09 1.57.46 2.13l2.13 2.12c.55.56 1.37.74 2.12.46A19.1 19.1 0 0 0 18.07 13c5.66-5.66 3.54-10.61 3.54-10.61m-7.07 7.07c-.78-.78-.78-2.05 0-2.83s2.05-.78 2.83 0c.77.78.78 2.05 0 2.83s-2.05.78-2.83 0m-5.66 7.07-1.41-1.41zM6.24 22l3.64-3.64c-.34-.09-.67-.24-.97-.45L4.83 22zM2 22h1.41l4.77-4.76-1.42-1.41L2 20.59zm0-2.83 4.09-4.08c-.21-.3-.36-.62-.45-.97L2 17.76z" />
-            </svg>&nbsp;</span>Build A Core Strength</h3>
-        <p>Practicing reliability brings the best of your skills and creativity.</p>
-      </div>
-      <div>
-        <h3><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5z" />
-            </svg>&nbsp;</span>Protect Your Team</h3>
-        <p>Explore, automate, reflect and prioritize reliability improvements to reduce incident anxiety.</p>
-      </div>
-      <div>
-        <h3><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path
-                d="M14 19h8v-2h-8zm0-5.5h8v-2h-8zM14 8h8V6h-8zM2 12.5C2 8.92 4.92 6 8.5 6H9V4l3 3-3 3V8h-.5C6 8 4 10 4 12.5S6 17 8.5 17H12v2H8.5C4.92 19 2 16.08 2 12.5" />
-            </svg>&nbsp;</span>Lock In Your Reliability Budget</h3>
-        <p>Turn reliability from a "nice-to-have" into a can’t-ignore line item.</p>
-      </div>
-    </div>
   </div>
 </div>
 
