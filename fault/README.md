@@ -22,6 +22,8 @@
 fault is a Rust-powered CLI to inject network faults into your system to
 learn about their impacts and how you recover from failures.
 
+[![asciicast](https://asciinema.org/a/l2pc0o8bBTJULesRrevcMuugc.svg)](https://asciinema.org/a/l2pc0o8bBTJULesRrevcMuugc)
+
 # Usage
 
 Please follow the [guidelines][] to walk you through how to download and
