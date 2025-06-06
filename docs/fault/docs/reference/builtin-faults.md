@@ -1,6 +1,6 @@
 # Built-in Faults
 
-fault comes with a set of builtin faults. This page explores each fault
+<span class="f">fault</span> comes with a set of builtin faults. This page explores each fault
 and how they get applied.
 
 ## Latency

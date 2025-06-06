@@ -2,18 +2,18 @@
 
 HTTP is one of the most common protocol used to communicate between services
 or from the external world in your system. It stands to reason to widely focus
-on that interface to build greater reliability. It is so ubiquitous that fault
+on that interface to build greater reliability. It is so ubiquitous that <span class="f">fault</span>
 supports it by default.
 
 However, we believe there is also great value to explore the impact of network
 issues on non-HTTP communication. For instance, how does your application deal
 with latency when it access the database, its cache server, etc.
 
-This is what fault supports through TCP proxying.
+This is what <span class="f">fault</span> supports through TCP proxying.
 
 ## What is a fault TCP proxy?
 
-A TCP proxy is a fault proxy that listens on a given port for incoming
+A TCP proxy is a <span class="f">fault</span> proxy that listens on a given port for incoming
 connections over the TCP protocol. When such a connection is made, the proxy
 also connects to a remote endpoint. During the life of these connections, any
 traffic received by the proxy is copied as-is and sent to the remote host.
@@ -45,7 +45,7 @@ actual remote host.
 
 ### Encryption
 
-When it comes to encryption, fault supports a simple use case for now. If the
+When it comes to encryption, <span class="f">fault</span> supports a simple use case for now. If the
 remote endpoint requires encryption over TLS, you can configure the mapping
 accordingly and the proxy will establish a secured connection with the remote
 host.
@@ -78,11 +78,11 @@ char       = any character except "=" and ":"
 !!! note "The protocol is optional"
 
     When you map to a remote endpoint, you may be explicit about the L7 protocol
-    that will transit. This is entirely optional and, for now, fault does not
+    that will transit. This is entirely optional and, for now, <span class="f">fault</span> does not
     interpret it beyond deciding if the communication between the proxy
     and the remote host should be encrypted.
 
-    In a future version, fault might use this information for more logic.
+    In a future version, <span class="f">fault</span> might use this information for more logic.
 
 ## Examples
 

@@ -1,17 +1,17 @@
-# Run fault on a Microsoft Windows host
+# Run <span class="f">fault</span> on a Microsoft Windows host
 
-This guide will show you how to run fault on a Microsoft Windows host.
+This guide will show you how to run <span class="f">fault</span> on a Microsoft Windows host.
 
 ## What You'll Achieve
 
-You will learn how to run fault from a PowerShell command line or
+You will learn how to run <span class="f">fault</span> from a PowerShell command line or
 via the Windows Subsystem for Linux.
 
-## Run fault via Windows PowerShell
+## Run fa<span class="f">fault</span>ult via Windows PowerShell
 
--   [X] Download fault for Windows
+-   [X] Download <span class="f">fault</span> for Windows
 
-    Download the latest Windows release of fault from the
+    Download the latest Windows release of <span class="f">fault</span> from the
     [releases](https://github.com/rebound-how/rebound/releases/latest) page.
 
 -   [X] Rename the binary
@@ -20,13 +20,13 @@ via the Windows Subsystem for Linux.
 
 -   [X] Add the directory to the `Path`
 
-    You may additionnaly update the `Path` so that fault is found.
+    You may additionnaly update the `Path` so that <span class="f">fault</span> is found.
 
     ```console
     $env:Path += ';C:\directoy\where\fault\lives' 
     ```
 
-## Run fault via Windows Subsystem for Linux (WSL)
+## Run <span class="f">fault</span> via Windows Subsystem for Linux (WSL)
 
 -   [X] Install a Ubuntu release
 
@@ -64,9 +64,9 @@ via the Windows Subsystem for Linux.
     export PATH=$PATH:$HOME/.local/bin
     ```
 
--   [X] Install fault
+-   [X] Install <span class="f">fault</span>
 
-    Install fault using our installer script:
+    Install <span class="f">fault</span> using our installer script:
 
     ```bash
     curl -sSL https://fault-project.com/get | bash

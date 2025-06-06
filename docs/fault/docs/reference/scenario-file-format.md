@@ -2,7 +2,7 @@
 
 ## Scenario Overview
 
-A fault scenario file is a structured document that defines a suite of tests
+A <span class="f">fault</span> scenario file is a structured document that defines a suite of tests
 designed to simulate adverse network conditions and assess your application's
 resilience.
 
@@ -26,7 +26,7 @@ injection.
 
 !!! question "Only HTTP?"
 
-    fault currently supports HTTP-based scenarios. In a future version, we may
+    <span class="f">fault</span> currently supports HTTP-based scenarios. In a future version, we may
     try to support more protocols.
 
 **Context:**  
@@ -123,19 +123,19 @@ make sense of the results. For instance, one approach is to group them by
 endpoint URL.
 
 A scenario is made of at least one `call`. A `call` describes an endpoint, a
-fault context and optionally a block to verify expectations.
+<span class="f">fault</span> context and optionally a block to verify expectations.
 
 The `call` thus declares the HTTP configuration. The endpoint URL, a valid
 HTTP method. Optional headers and body may also be provided.
 
 Note that the a `call` block also supports a `meta` structure that allows you
 to declare the `operation_id` (from [OpenAPI](https://swagger.io/docs/specification/v3_0/paths-and-operations/#operationid). This is a piece of information used by
-the fault agent when analyzing the scenario results.
+the <span class="f">fault</span> agent when analyzing the scenario results.
 
 ### fault `context`
 
-The `context` gathers the configuration for fault. These are the typical
-information fault's CLI uses already so you should be familiar with them
+The `context` gathers the configuration for <span class="f">fault</span>. These are the typical
+information <span class="f">fault</span>'s CLI uses already so you should be familiar with them
 hopefully.
 
 A list of `upstreams` servers which should be impacted by the network faults.
@@ -151,14 +151,14 @@ describing how to run the scenario.
 Finally, the `context` may take a `slo` block that describes a list of
 service level objectives (SLO). These SLOs are not meant to exist. They allow
 you to declare what they might be for that endpoint (actually, they can
-represent real SLOs but fault doesn't link to them). These fake SLOs are useful
-when running a `strategy` of type `load` because the report fault generates
+represent real SLOs but <span class="f">fault</span> doesn't link to them). These fake SLOs are useful
+when running a `strategy` of type `load` because the report <span class="f">fault</span> generates
 will give you feedback about them in the context of the scenario.
 
 #### Running On a Platform
 
 The default behavior is to execute scenarios locally in the current
-`fault` process. Scenarios may be run on a different target. fault
+`fault` process. Scenarios may be run on a different target. <span class="f">fault</span>
 supports the following platforms:
 
 * Kubernetes
@@ -166,8 +166,8 @@ supports the following platforms:
 * AWS (coming soon)
 
 To execute on a remote platform, use the `runs_on` property. When found, 
-fault creates the necessary resources on the platform and launch a dedicated
-fault instance to actually perform the injection of network faults.
+<span class="f">fault</span> creates the necessary resources on the platform and launch a dedicated
+<span class="f">fault</span> instance to actually perform the injection of network faults.
 
 ##### Kubernetes
 
@@ -208,9 +208,9 @@ requiring attention. By defining a level of health for a service, a team has a
 new capability called an error budget. Essentially, it's a room for a team to
 bring change safely.
 
-So, where does fault come into this?
+So, where does <span class="f">fault</span> come into this?
 
-In the context of a fault scenario, we can use SLO to help us figure out
+In the context of a <span class="f">fault</span> scenario, we can use SLO to help us figure out
 if a particular combination of network faults might impact the health of our
 service, and the extent of this impact.
 
@@ -240,14 +240,14 @@ service, and the extent of this impact.
 
     !!! note
     
-        {==fault==} supports two types of SLO: `latency` and `error`. 
+        <span class="f">fault</span> supports two types of SLO: `latency` and `error`. 
 
-When a scenario runs, {==fault==} computes then a variety of latency and error
+When a scenario runs, <span class="f">fault</span> computes then a variety of latency and error
 percentiles (p25, p50, p75, p95 and p99) to compare them with these SLO.
 
 !!! example "fault SLO reporting"
 
-    For instance, fault may generate the following report:
+    For instance, <span class="f">fault</span> may generate the following report:
 
     | Latency Percentile | Latency (ms) | Num. Requests (% of total) |
     |------------|--------------|-----------|
@@ -262,17 +262,17 @@ percentiles (p25, p50, p75, p95 and p99) to compare them with these SLO.
     | P95 < 300ms | ❌ | 95% < 300ms | Above by 307.7ms | 55 (90.2%) |
     | P99 < 1% errors | ✅ | 99% < 1% | Below by 1.0 | 0 (0.0%) |
 
-{==fault==} is well aware that the window of the scenario is short. fault takes
+<span class="f">fault</span> is well aware that the window of the scenario is short. <span class="f">fault</span> takes
 the view that even from such a small period of time, we can extrapolate valuable
 information.
 
-We believe fault `slo` bridges SRE to developers. SLO is a simple language
+We believe <span class="f">fault</span> `slo` bridges SRE to developers. SLO is a simple language
 which makes it explicit what a healthy service performs.
 
 !!! info
 
-    fault is not an APM/monitoring tool, it doesn't aim at becoming one. A slo
-    in the context of fault is only a language to help developers see the world
+    <span class="f">fault</span> is not an APM/monitoring tool, it doesn't aim at becoming one. A slo
+    in the context of <span class="f">fault</span> is only a language to help developers see the world
     as their operations expect it to be.
 
 ### An `expect` block
@@ -286,31 +286,31 @@ Note that, these two are ignored when `strategy` is set to `load`.
 
 ## Scenario Flow
 
-{==fault==} scenarios are self-contained and standalone in their execution. When
+<span class="f">fault</span> scenarios are self-contained and standalone in their execution. When
 a scenario is executed, the proxy is configured with the appropriate fault
-settings. Next {==fault==} starts sending network traffic to the
-scenario's target URL following the configured strategy. Then, {==fault==}
+settings. Next <span class="f">fault</span> starts sending network traffic to the
+scenario's target URL following the configured strategy. Then, <span class="f">fault</span>
 compares results with the optional expectations or SLOs.
 
-Once all the scenario items have been executed, {==fault==} makes a final
+Once all the scenario items have been executed, <span class="f">fault</span> makes a final
 report and writes to a markdown document.
 
 ## OpenAPI Support
 
-{==fault==} supports OpenAPI v3 (v3.0.x and v3.1.x). It may generate scenarios
+<span class="f">fault</span> supports OpenAPI v3 (v3.0.x and v3.1.x). It may generate scenarios
 from an OpenAPI specification to rapidly bootstrap your catalog of scenarios.
 
-{==fault==} scans an OpenAPI specification and gather the following information:
+<span class="f">fault</span> scans an OpenAPI specification and gather the following information:
 
 * the endpoint `url`
 * the HTTP `method`
 * if the method is either `POST` or `PUT`, it also scans the body definition.
   When this is a typical structured body, it creates a default payload as well.
 
-Then {==fault==} generates a variety of scenarios to create a solid baseline of
+Then <span class="f">fault</span> generates a variety of scenarios to create a solid baseline of
 scenarios against each endpoint.
 
-The default behavior from fault is to create the following scenarios:
+The default behavior from <span class="f">fault</span> is to create the following scenarios:
 
 * **Single high-latency spike**: single short client ingress
 * **Stair-step latency growth (5 x 100 ms)**: gradualy increase latency
@@ -323,12 +323,12 @@ The default behavior from fault is to create the following scenarios:
 
 !!! tip "Make it your own"
 
-    A future version of {==fault==} should allow you to bring your own scenario
+    A future version of <span class="f">fault</span> should allow you to bring your own scenario
     templates.
 
 !!! tip "More coverage in the future"
 
-    Right now, {==fault==} generates scenarios against the endpoints themselves,
+    Right now, <span class="f">fault</span> generates scenarios against the endpoints themselves,
     a future release will also generate them for downstream dependencies.
 
 ## Example

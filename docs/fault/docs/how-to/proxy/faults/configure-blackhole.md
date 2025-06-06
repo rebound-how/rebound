@@ -1,17 +1,17 @@
-# How to Blackhole Traffic Using fault
+# How to Blackhole Traffic Using <span class="f">fault</span>
 
 This guide will walk you through emulating network severe degradation into your
 application using fault proxy capabilities.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install fault
+    -   [X] Install <span class="f">fault</span>
 
-        If you haven’t installed fault yet, follow the
+        If you haven’t installed <span class="f">fault</span> yet, follow the
         [installation instructions](../../install.md).
 
     -   [X] Basic Proxy Setup
-        Be familiar with running fault run {==--with-[fault]==} commands from
+        Be familiar with running `fault run` {==--with-[fault]==} commands from
         your terminal.
 
 ## Completely Blackhole All Traffic

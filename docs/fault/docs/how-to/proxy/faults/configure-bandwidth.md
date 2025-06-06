@@ -1,18 +1,18 @@
-# How to Simulate Bandwidth Constraints Using fault
+# How to Simulate Bandwidth Constraints Using <span class="f">fault</span>
 
 This guide shows you how to reduce or throttle network bandwidth in your
-application flow with fault. You’ll see examples of slowing traffic on the
+application flow with <span class="f">fault</span>. You’ll see examples of slowing traffic on the
 server side, client side, or both directions.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install fault
+    -   [X] Install <span class="f">fault</span>
 
-        If you haven’t installed fault yet, follow the
+        If you haven’t installed <span class="f">fault</span> yet, follow the
         [installation instructions](../../install.md).
 
     -   [X] Basic Proxy Setup
-        Be familiar with running fault run {==--with-[fault]==} commands from
+        Be familiar with running `fault run` {==--with-[fault]==} commands from
         your terminal.
 
 ## Severe Upstream Slowdown

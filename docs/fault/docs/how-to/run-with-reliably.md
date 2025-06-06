@@ -1,6 +1,6 @@
-# Run fault as a Reliably Plan
+# Run <span class="f">fault</span> as a Reliably Plan
 
-This guide will walk you through running fault as part of a
+This guide will walk you through running <span class="f">fault</span> as part of a
 [Reliably Plan][reliably].
 
 [reliably]: https://reliably.com
@@ -41,7 +41,7 @@ This guide will walk you through running fault as part of a
         --latency-sched "duration:10s;start:25s,duration:17s" # (3)!
     ```
 
-    1. Run fault with a `latency` fault
+    1. Run `fault` with a `latency` fault
     2. Inject a `300ms` delay on responses
     3. Inject the fault only for around `60%` of the total duration of the run
 

@@ -2,7 +2,7 @@
 
 ## Duration
 
-The default behavior of the fault's proxy is to run indefinitely. You may
+The default behavior of the <span class="f">fault</span>'s proxy is to run indefinitely. You may
 change that by setting the `--duration` flag with a value in seconds. Once this
 duration has been reached, the proxy will automatically terminates.
 
@@ -21,11 +21,11 @@ fault injections can be declared relatively to this duration. For instance:
 fault run --duration 5m --latency-sched "start:5%;duration:30%;start:90%,duration:5%"
 ```
 
-* fault will run for `5 minutes`
+* <span class="f">fault</span> will run for `5 minutes`
 * A first wave of latency will start after `15s` and run for `90s`
 * A second wave of latency will start after `270s` and run for `15s`
 
-When a duration is set, fault displays a progress bar:
+When a duration is set, <span class="f">fault</span> displays a progress bar:
 
 ```bash
 ⠏ Progress: ------------------------------------------🐢-------- 🏁
@@ -34,7 +34,7 @@ When a duration is set, fault displays a progress bar:
 
 ## Scheduling
 
-fault applies faults for the entire duration of the run by default. You may
+<span class="f">fault</span> applies faults for the entire duration of the run by default. You may
 change this by setting a schedule for each enabled fault.
 
 A schedule defines a sequence of {==start, duration==} for the fault. These

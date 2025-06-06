@@ -1,29 +1,29 @@
-# How to Simulate Packet Loss Using fault
+# How to Simulate Packet Loss Using <span class="f">fault</span>
 
-This How-To guide shows you how to configure fault so that a portion of your
+This How-To guide shows you how to configure <span class="f">fault</span> so that a portion of your
 traffic is lost. You can keep a persistent level of packet loss or schedule it
 in specific bursts to test how your application handles intermittent
 unreliability.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install fault
+    -   [X] Install <span class="f">fault</span>
 
-        If you haven’t installed fault yet, follow the
+        If you haven’t installed <span class="f">fault</span> yet, follow the
         [installation instructions](../../install.md).
 
     -   [X] Basic Proxy Setup
-        Be familiar with running fault run {==--with-[fault]==} commands from
+        Be familiar with running `fault run` {==--with-[fault]==} commands from
         your terminal.
 
     -   [X] Check Available Packet Loss Strategies
 
-        fault implements the Multi-State Markov strategy. Familiarize yourself
+        <span class="f">fault</span> implements the Multi-State Markov strategy. Familiarize yourself
         with any advanced settings if needed.
 
 ## Constant Packet Loss
 
-In this scenario, fault starts with packet loss enabled throughout the entire
+In this scenario, <span class="f">fault</span> starts with packet loss enabled throughout the entire
 proxy run.
 
 -   [X] Start the proxy with packet loss on ingress from server side

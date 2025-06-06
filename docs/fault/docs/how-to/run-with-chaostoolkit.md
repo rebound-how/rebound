@@ -1,6 +1,6 @@
-# Run fault as a Chaos Toolkit Action
+# Run <span class="f">fault</span> as a Chaos Toolkit Action
 
-This guide will walk you through running fault as a [Chaos Toolkit][ctk] action
+This guide will walk you through running <span class="f">fault</span> as a [Chaos Toolkit][ctk] action
 in your Chaos Engineering experiments.
 
 [ctk]: https://chaostoolkit.org/
@@ -10,9 +10,9 @@ in your Chaos Engineering experiments.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install fault
+    -   [X] Install <span class="f">fault</span>
 
-        If you haven’t installed fault yet, follow the
+        If you haven’t installed <span class="f">fault</span> yet, follow the
         [installation instructions](../../install.md).
 
     -   [X] Install Chaos Toolkit
@@ -20,7 +20,7 @@ in your Chaos Engineering experiments.
         If you haven’t installed Chaos Toolkit yet, follow the
         [installation instructions](https://chaostoolkit.org/reference/usage/install/).
 
-## Run with the Chaos Toolkit fault Extension
+## Run with the Chaos Toolkit <span class="f">fault</span> Extension
 
 -   [X] Install the {==chaostoolkit-fault==} extension
 

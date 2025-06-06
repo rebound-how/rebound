@@ -1,12 +1,12 @@
-# Enable fault Observability
+# Enable <span class="f">fault</span> Observability
 
 This guide will walk you sending traces to an Open Telemetry aware stack.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install fault
+    -   [X] Install <span class="f">fault</span>
 
-        If you haven’t installed fault yet, follow the
+        If you haven’t installed <span class="f">fault</span> yet, follow the
         [installation instructions](../../install.md).
 
 ## Send Open Telemetry Traces to Jaeger
@@ -17,7 +17,7 @@ This guide will walk you sending traces to an Open Telemetry aware stack.
     [Jaeger instructions](https://www.jaegertracing.io/docs/2.4/getting-started/)
     to deploy a local instance
 
--   [X] Start demo application provided by fault
+-   [X] Start demo application provided by <span class="f">fault</span>
 
     ```bash
     fault demo run
@@ -43,7 +43,7 @@ This guide will walk you sending traces to an Open Telemetry aware stack.
     curl -x http://localhost:3180 http://localhost:7070
     ```
 
--   [X] View fault traces
+-   [X] View <span class="f">fault</span> traces
 
     Open your browser and
     [view your fault traces](http://localhost:16686/search?operation=apply_on_response&service=fault-cli).

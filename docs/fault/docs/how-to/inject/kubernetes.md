@@ -5,14 +5,14 @@ resources such as a service and its pods. You will not need to change any
 code.
 
 While you may manually 
-[deploy fault into Kubernetes](../platform/run-on-kubernetes.md), {==fault==}
+[deploy fault into Kubernetes](../platform/run-on-kubernetes.md), <span class="f">fault</span>
 comes with a friendly automated fault injection command to simplify the process.
 
 ???+ abstract "Prerequisites"
 
-    -   [X] Install fault
+    -   [X] Install <span class="f">fault</span>
 
-        If you haven’t installed fault yet, follow the
+        If you haven’t installed <span class="f">fault</span> yet, follow the
         [installation instructions](../install.md).
 
     -   [X] Familiar yourself with how fault injects itself into Kubernetes
@@ -85,13 +85,13 @@ comes with a friendly automated fault injection command to simplify the process.
     Total time: 0.000680s
     ```
 
--   [X] Inject {==fault==} into the nginx service
+-   [X] Inject <span class="f">fault</span> into the nginx service
 
     ```bash
     fault inject kubernetes --ns default --service nginx-service --with-latency --latency-mean 300
     ```
 
-    When you do not explicitly set the service, fault lets you pick up one
+    When you do not explicitly set the service, <span class="f">fault</span> lets you pick up one
     from the CLI:
 
     ```bash

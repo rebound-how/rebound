@@ -1,12 +1,12 @@
-# Installing the **fault** cli
+# Installing the <span class="f">fault</span> cli
 
-fault is a designed to be easily installed on major systems such as Linux,
-macOS and Windows. We provide a variety of approaches to install fault depending
+<span class="f">fault</span> is a designed to be easily installed on major systems such as Linux,
+macOS and Windows. We provide a variety of approaches to install <span class="f">fault</span> depending
 on your environment.
 
 ## Features Matrix
 
-From a very high-level, fault provides the following features:
+From a very high-level, <span class="f">fault</span> provides the following features:
 
 * **Proxy**: a network proxy that model network traffic based on a configuration
 * **Scenario**: testing automation using the proxy
@@ -14,7 +14,7 @@ From a very high-level, fault provides the following features:
 * **AI Agent**: review of results and code from a reliability and resilience perspective
 * **Stealth**: eBPF program to tranparently route network traffic via the proxy
 
-fault disables some of its features depending on the platform. When a feature is
+<span class="f">fault</span> disables some of its features depending on the platform. When a feature is
 disabled, it won't appear in the CLI arguments. Below is a summary of the
 capabilities per target.
 
@@ -32,15 +32,15 @@ capabilities per target.
    However, the agent runs fine on "Linux on Windows" via
    [WSL](https://learn.microsoft.com/en-us/windows/wsl/install).
 
-fault only supports 64 bits architectures: x86 and ARM.
+<span class="f">fault</span> only supports 64 bits architectures: x86 and ARM.
 
 
 
-## Download the fault binary
+## Download the `fault` binary
 
-The most direct route is to download the fault binary on your machine.
+The most direct route is to download the `fault` binary on your machine.
 
--   [X] Download fault
+-   [X] Download `fault`
 
     You can download the appropriate {==fault-cli==} binary for your platform
     from [here](https://github.com/rebound-how/rebound/releases).
@@ -71,12 +71,12 @@ The most direct route is to download the fault binary on your machine.
 
 ### Stealth Feature
 
-fault [stealth mode](../how-to/proxy/stealth/configure-stealth-mode.md)
+<span class="f">fault</span> [stealth mode](../how-to/proxy/stealth/configure-stealth-mode.md)
 requires additional dependencies only available on Linux. Follow
 these instructions only if you intend on using the stealth feature. Otherwise,
 you may skip this section.
 
--   [X] Download fault with ebpf support
+-   [X] Download `fault` with ebpf support
 
     Instead, of `fault-cli`, you will need to download and run `fault-cli-ebpf`
     which comes with the appropriate stealth mode enabled.
@@ -93,7 +93,7 @@ you may skip this section.
     chmod a+x fault
     ```
 
--   [X] Download fault's ebpf programs
+-   [X] Download <span class="f">fault</span>'s ebpf programs
 
     You can download {==fault-ebpf-programs==} from
     [here](https://github.com/faultdev/fault/releases/latest).
@@ -118,13 +118,13 @@ you may skip this section.
 
 ## Install using `cargo`
 
-fault is a [rust](https://www.rust-lang.org/) application. It can be installed
+<span class="f">fault</span> is a [rust](https://www.rust-lang.org/) application. It can be installed
 using [cargo](https://github.com/rust-lang/cargo) which will recompile it on the
 machine.
 
 -   [X] Requirements
 
-    fault expects rust 1.85+ and the {==nightly==}
+    <span class="f">fault</span> expects rust 1.85+ and the {==nightly==}
     [channel](https://rust-lang.github.io/rustup/concepts/channels.html).
 
     ```bash
@@ -141,7 +141,7 @@ machine.
 
 !!! info
 
-    fault AI Agent is not supported on Windows.
+    <span class="f">fault</span> AI Agent is not supported on Windows.
 
 -   [X] Install the `fault` executable with {==agent==} feature enabled
 
@@ -153,7 +153,7 @@ machine.
 
 !!! info
 
-    fault AI Agent is only available on Linux.
+    <span class="f">fault</span> AI Agent is only available on Linux.
 
 -   [X] Install the `fault` executable with {==stealth==} feature enabled
 

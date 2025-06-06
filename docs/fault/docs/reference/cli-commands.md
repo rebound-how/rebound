@@ -16,7 +16,7 @@ network faults to HTTP requests and tunnel streams.
 
 ### `inject`
 
-Inject the fault proxy into your platform resources, such as Kubernetes.
+Inject the <span class="f">fault</span> proxy into your platform resources, such as Kubernetes.
 
 ### `scenario`
 
@@ -73,7 +73,7 @@ configure its properties.
 
 ### UI Options
 
-These options define how the UI is setup on fault's output:
+These options define how the UI is setup on <span class="f">fault</span>'s output:
 
 - **`--no-ui`**  
   _Disable entirely the terminal UI and make the output fully silent._  
@@ -84,7 +84,7 @@ These options define how the UI is setup on fault's output:
 
 ### Proxy Configuration Options
 
-These options define how to configure the proxy started by fault:
+These options define how to configure the proxy started by <span class="f">fault</span>:
 
 - **`--duration <value>`**  
   _How long to run the proxy process for. See [here](https://docs.rs/parse_duration/latest/parse_duration/#syntax) for the supported syntax_  
@@ -372,7 +372,7 @@ fault run \
 
 ## `injection` Command Options
 
-Inject {==fault==} into your platform resources.
+Inject <span class="f">fault</span> into your platform resources.
 
 ### Kubernetes Options
 
@@ -396,7 +396,7 @@ command.
 ## `scenario` Command Options
 
 A fault scenario is a file containing test scenarios to execute automatically
-by fault generating report and result files for further analysis.
+by <span class="f">fault</span> generating report and result files for further analysis.
 
 ### Proxy Configuration Options
 

@@ -1,10 +1,10 @@
 # Install fault
 
-fault strives to get out of your way and it starts with a smooth installation.
+<span class="f">fault</span> strives to get out of your way and it starts with a smooth installation.
 
 ## Download fault
 
-fault is provided as a binary targetting the three major platforms: Linux,
+<span class="f">fault</span> is provided as a binary targetting the three major platforms: Linux,
 macOS and Windows.
 
 You may try the installation script:
@@ -61,8 +61,8 @@ effect.
 
 ## Next Steps
 
-You’ve successfully downloaded and made faulte. What’s next?
+You’ve successfully downloaded and installed <span class="f">fault</span>. What’s next?
 
-- **Explore our [Getting Started Tutorial](../getting-started/)** to learn how to first use fault.
+- **Explore our [Getting Started Tutorial](../getting-started/)** to learn how to first use <span class="f">fault</span>.
 - **Dive into [How-To Guides](../../how-to/)** to integrate fault deeper into
   your workflow, from automated testing to continuous integration.

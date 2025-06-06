@@ -1,11 +1,11 @@
-# Injecting **fault** Into Your Platform
+# Injecting <span class="f">fault</span> Into Your Platform
 
-This page references the information about how {==fault==} injects its resources
+This page references the information about how <span class="f">fault</span> injects its resources
 into the platform it supports.
 
 ## Kubernetes
 
-fault may run on Kubernetes by creating the following resources:
+<span class="f">fault</span> may run on Kubernetes by creating the following resources:
 
 * a job (CronJob are not supported yet)
 * a service
@@ -39,10 +39,10 @@ sequenceDiagram
 
 !!! note
 
-    Once a scenario completes, {==fault==} rollbacks the resources to their
+    Once a scenario completes, <span class="f">fault</span> rollbacks the resources to their
     original state.
 
-{==fault==} uses the default Kubernetes authentication mechanism to connect
+<span class="f">fault</span> uses the default Kubernetes authentication mechanism to connect
 to the cluster: `~/.kube/config`, `KUBECONFIG`...
 
 The authorizations for that user needs at least the following roles:

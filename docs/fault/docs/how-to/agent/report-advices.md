@@ -8,16 +8,16 @@ and remediations to consider for your application.
 
 !!! abstract "Prerequisites"
 
-    -   [X] Install fault
+    -   [X] Install <span class="f">fault</span>
 
-        If you haven’t installed fault yet, follow the
+        If you haven’t installed <span class="f">fault</span> yet, follow the
         [installation instructions](../../install.md).
 
     -   [X] Get an OpenAI Key
 
         For the purpose of the guide, we will be using OpenAI models. You
         need to create an API key. Then make sure the key is available for
-        fault:
+        <span class="f">fault</span>:
 
         ```bash
         export OPENAI_API_KEY=sk-...
@@ -25,7 +25,7 @@ and remediations to consider for your application.
 
     -   [X] Install a local qdrant database
 
-        fault uses [qdrant](https://qdrant.tech/) for its vector database. You
+        <span class="f">fault</span> uses [qdrant](https://qdrant.tech/) for its vector database. You
         can install a [local](https://qdrant.tech/documentation/quickstart/),
         free, qdrant using docker:
 
@@ -1134,7 +1134,7 @@ from this application.
         
 -   [X] Generate a PDF version of the report
 
-    {==fault==} only generates a markdown format. You may convert it to a
+    <span class="f">fault</span> only generates a markdown format. You may convert it to a
     PDF document using [pandoc](https://pandoc.org/). We suggest that you also
     use the [Eisvogel](https://github.com/Wandmalfarbe/pandoc-latex-template)
     template for a sleek rendering. Once installed, you may run a command such

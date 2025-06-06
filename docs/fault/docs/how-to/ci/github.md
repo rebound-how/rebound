@@ -1,10 +1,10 @@
 # Execute Scenarios From GitHub Action
 
-This guide will walk you through integrating fault into your GitHub pipeline.
+This guide will walk you through integrating <span class="f">fault</span> into your GitHub pipeline.
 
 ## What You'll Achieve
 
-You will learn how to run a fault scenario as part of your GitHub workflow
+You will learn how to run a <span class="f">fault</span> scenario as part of your GitHub workflow
 and use the result to fail a GitHub job.
 
 !!! example "Start your application first"
@@ -18,12 +18,12 @@ and use the result to fail a GitHub job.
         run: RUNNER_TRACKING_ID="" && (nohup ./my-app &)
     ```
 
-## Run fault's scenario
+## Run <span class="f">fault</span>'s scenario
 
-The basic approach to run fault scenarios in your GitHub workflows is to
+The basic approach to run <span class="f">fault</span> scenarios in your GitHub workflows is to
 use the dedicated [action](https://github.com/rebound-how/actions).
 
--   [X] Run fault's scenario
+-   [X] Run <span class="f">fault</span>'s scenario
 
     ```yaml title=".github/workflows/reliability.yaml"
     name: Run fault scenarios
@@ -47,7 +47,7 @@ use the dedicated [action](https://github.com/rebound-how/actions).
 
 ## Create an issue when at least one test failed
 
--   [X] Run fault's scenario
+-   [X] Run <span class="f">fault</span>'s scenario
 
     ```yaml title=".github/workflows/reliability.yaml"
     name: Run fault scenarios
@@ -69,7 +69,7 @@ use the dedicated [action](https://github.com/rebound-how/actions).
               github-token: ${{ secrets.GITHUB_TOKEN }}  # (5)!
     ```
 
-    1. Add the fault [action](https://github.com/rebound-how/actions)
+    1. Add the <span class="f">fault</span> [action](https://github.com/rebound-how/actions)
     2. Path to a [scenario file](../../tutorials/create-scenario.md) or a directory containing scenario files
     3. Export the report as a markdown document as it will be used as the body of the issue
     4. Tell the action to create the issue if at least one test failed

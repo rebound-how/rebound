@@ -8,11 +8,11 @@ in a Kubernetes cluster.
     To get you started with Kubernetes, you may also want to look at the
     [`fault inject kubernetes`](../inject/kubernetes.md) command.
 
-## Run fault's proxy as a Deployment
+## Run <span class="f">fault</span>'s proxy as a Deployment
 
--   [X] Deploy fault's demo application in the cluster
+-   [X] Deploy <span class="f">fault</span>'s demo application in the cluster
 
-    This steps serves only the purpose of demonstrating fault's working
+    This steps serves only the purpose of demonstrating <span class="f">fault</span>'s working
     in a Kubernetes cluster. You can safely ignore it if you have another
     application you wish to try.
 
@@ -94,9 +94,9 @@ in a Kubernetes cluster.
     ```
 
 
--   [X] Deploy fault's proxy Kubernetes Resources
+-   [X] Deploy <span class="f">fault</span>'s proxy Kubernetes Resources
 
-    Below is an example of running fault's proxy as a deployment, with a single
+    Below is an example of running <span class="f">fault</span>'s proxy as a deployment, with a single
     replica.
 
     ```yaml title="fault-proxy.yaml"
@@ -349,9 +349,9 @@ in a Kubernetes cluster.
       --from-file=scenario.yaml=scenario.yaml
     ```
 
--   [X] Deploy fault's scenario as a Kubernetes Job
+-   [X] Deploy <span class="f">fault</span>'s scenario as a Kubernetes Job
 
-    Below is an example of running fault's scenarior as a job without retry.
+    Below is an example of running <span class="f">fault</span>'s scenarior as a job without retry.
 
     ```yaml title="fault-scenario.yaml"
 
@@ -423,7 +423,7 @@ in a Kubernetes cluster.
 
     1. Do not restart the job if it failed
     2. Results contain the detailed events of the tests and all the applied faults
-    3. A report is a rough analysis of the results made by fault
+    3. A report is a rough analysis of the results made by <span class="f">fault</span>
     4. Mount the scenario into the job's container
 
     Apply it as follows:

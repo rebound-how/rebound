@@ -4,20 +4,20 @@ This guide will introduces you to generating code change suggestions, from an
 angle of resilience and reliability, using LLM.
 
 The proposed changes are proposed as unified diff that help you visualize
-what fault suggests you may want to add or remove from your code.
+what <span class="f">fault</span> suggests you may want to add or remove from your code.
 
 !!! abstract "Prerequisites"
 
-    -   [X] Install fault
+    -   [X] Install <span class="f">fault</span>
 
-        If you haven’t installed fault yet, follow the
+        If you haven’t installed <span class="f">fault</span> yet, follow the
         [installation instructions](../../install.md).
 
     -   [X] Get an OpenAI Key
 
         For the purpose of the guide, we will be using OpenAI models. You
         need to create an API key. Then make sure the key is available for
-        fault:
+        <span class="f">fault</span>:
 
         ```bash
         export OPENAI_API_KEY=sk-...
@@ -25,7 +25,7 @@ what fault suggests you may want to add or remove from your code.
 
     -   [X] Install a local qdrant database
 
-        fault uses [qdrant](https://qdrant.tech/) for its vector database. You
+        <span class="f">fault</span> uses [qdrant](https://qdrant.tech/) for its vector database. You
         can install a [local](https://qdrant.tech/documentation/quickstart/),
         free, qdrant using docker:
 
@@ -36,7 +36,7 @@ what fault suggests you may want to add or remove from your code.
 !!! danger "Windows not supported"
 
     Unfortunately, the {==agent==} feature is not supported on Windows because
-    the framework used by fault to interact with LLM does not support that
+    the framework used by <span class="f">fault</span> to interact with LLM does not support that
     platform.
 
 !!! info "Experimental feature"
@@ -219,7 +219,7 @@ from this application.
     3. The application's language (someday a heuristic will guess this)
     4. Use the arrow keys to select the endpoint you want to review and patch
 
-    Assuming we select the first endpoint, fault suggests the following changes:
+    Assuming we select the first endpoint, <span class="f">fault</span> suggests the following changes:
 
     ??? example "Generated code review changes report"
 
@@ -461,7 +461,7 @@ from this application.
     1. Pass the generated report. You can omit this, if the file exists in
        the current directory, it will be read.
 
-    Assuming again we select the first endpoint, fault suggests now the
+    Assuming again we select the first endpoint, <span class="f">fault</span> suggests now the
     following changes:
 
     ??? example "Generated code review changes report after scenario analysis"
@@ -580,7 +580,7 @@ from this application.
 
 -   [X] Generate a PDF version of the report
 
-    {==fault==} only generates a markdown format. You may convert it to a
+    <span class="f">fault</span> only generates a markdown format. You may convert it to a
     PDF document using [pandoc](https://pandoc.org/). We suggest that you also
     use the [Eisvogel](https://github.com/Wandmalfarbe/pandoc-latex-template)
     template for a sleek rendering. Once installed, you may run a command such
@@ -596,5 +596,5 @@ from this application.
 
 !!! tip
 
-    In a future release, fault will be able to apply and try the changes
+    In a future release, <span class="f">fault</span> will be able to apply and try the changes
     to verify they may be used safely.

@@ -1,6 +1,6 @@
 # Intercept Network Traffic Transparently
 
-This guide will walk you through enabling fault's {==stealth mode==} to capture
+This guide will walk you through enabling <span class="f">fault</span>'s {==stealth mode==} to capture
 network traffic without modifying your application.
 
 !!! warning "This feature requires eBPF and a Linux host"
@@ -12,9 +12,9 @@ network traffic without modifying your application.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install fault with Stealth mode support
+    -   [X] Install <span class="f">fault</span> with Stealth mode support
 
-        If you haven’t installed fault yet, follow the
+        If you haven’t installed <span class="f">fault</span> yet, follow the
         [installation instructions](../../install.md#stealth-feature).
 
 ## Capture HTTPS Traffic
@@ -144,11 +144,11 @@ network traffic without modifying your application.
     Time taken 0.30957818031311035  # (1)!
     ```
 
-    1. This shows the impact of the latency injected by fault into the exchange
+    1. This shows the impact of the latency injected by <span class="f">fault</span> into the exchange
 
     !!! info
 
         We use `uv` to ease the management of the Python environment for this
         particular script. When we run the script this way, the actual process
-        executing the script is indeed `python`. This is why fault captures
+        executing the script is indeed `python`. This is why <span class="f">fault</span> captures
         the network traffic from the `python` process, not from `uv`.

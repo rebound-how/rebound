@@ -1,13 +1,13 @@
-# Run fault Scenarios
+# Run <span class="f">fault</span> Scenarios
 
-In this guide, you will learn how to run fault scenarios and read the generated
+In this guide, you will learn how to run <span class="f">fault</span> scenarios and read the generated
 report.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install fault
+    -   [X] Install <span class="f">fault</span>
 
-        If you haven’t installed fault yet, follow the
+        If you haven’t installed <span class="f">fault</span> yet, follow the
         [installation instructions](../install.md).
 
     -   [X] Generate Scenario Files
@@ -19,9 +19,9 @@ report.
 ## Run a Scenario File
 
 We will explore now how to run scenarios generated to verify the resilience of
-the fault demo application itself.
+the <span class="f">fault</span> demo application itself.
 
--   [X] Start demo application provided by fault
+-   [X] Start demo application provided by <span class="f">fault</span>
 
     ```bash
     fault demo run  # (1)!
@@ -39,11 +39,11 @@ the fault demo application itself.
 ## Run Many Scenario Files
 
 We will explore now how to run scenarios generated to verify the resilience of
-the fault demo application itself. In this specific use case, we assume you want
+the <span class="f">fault</span> demo application itself. In this specific use case, we assume you want
 to run many scenario files at once and that they are located in the
 same directory.
 
--   [X] Start demo application provided by fault
+-   [X] Start demo application provided by <span class="f">fault</span>
 
     ```bash
     fault demo run  # (1)!
@@ -58,7 +58,7 @@ same directory.
     fault scenario run --scenario scenarios/  # (1)!
     ```
 
-    1. fault will load all YAML files in that directory.
+    1. <span class="f">fault</span> will load all YAML files in that directory.
 
 ## Run a Scenario on Kubernetes
 

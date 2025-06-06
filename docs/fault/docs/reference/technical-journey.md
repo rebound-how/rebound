@@ -1,4 +1,4 @@
-# My Technical Journey Through fault
+# My Technical Journey Through <span class="f">fault</span>
 
 ## Where it all started
 

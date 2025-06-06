@@ -1,6 +1,6 @@
 # Environment Variables
 
-fault is configured through its CLI arguments. However, in some cases, it may
+<span class="f">fault</span> is configured through its CLI arguments. However, in some cases, it may
 be simpler to populate these options via environment variables.
 
 ## Common Variables

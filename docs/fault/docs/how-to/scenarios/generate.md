@@ -1,14 +1,14 @@
 # Generate Automated Resilience Testing Scenarios
 
-This guide will walk you through generating fault resilience scenarios that you
+This guide will walk you through generating <span class="f">fault</span> resilience scenarios that you
 can run automatically to validate the capability of your endpoints to deal
 with network issues.
 
 !!! abstract "Prerequisites"
 
-    -   [X] Install fault
+    -   [X] Install <span class="f">fault</span>
 
-        If you haven’t installed fault yet, follow the
+        If you haven’t installed <span class="f">fault</span> yet, follow the
         [installation instructions](../install.md).
   
     -   [X] Scenario Reference
@@ -19,10 +19,10 @@ with network issues.
 ## Create Single Shot Scenarios
 
 In this guide, we will demonstrate how to create a single scenario against the
-fault demo application. Single call scenarios make only one request to the
+<span class="f">fault</span> demo application. Single call scenarios make only one request to the
 target endpoint.
 
--   [X] Start demo application provided by fault
+-   [X] Start demo application provided by <span class="f">fault</span>
 
     ```bash
     fault demo run
@@ -65,11 +65,11 @@ target endpoint.
 ## Create Repeated Call Scenarios
 
 In this guide, we will demonstrate how to create a repeated scenario against the
-fault demo application. Repated call scenarios make a determinitic number of
+<span class="f">fault</span> demo application. Repated call scenarios make a determinitic number of
 requests to the target endpoint, with the possibility to increase some of the
 fault parameters by a step on each iteration.
 
--   [X] Start demo application provided by fault
+-   [X] Start demo application provided by <span class="f">fault</span>
 
     ```bash
     fault demo run
@@ -110,7 +110,7 @@ fault parameters by a step on each iteration.
     1. A scenario file may have as many scenarios as you want
     2. You may group several calls, and their own context, per scenario
     3. This is the host impacted by the latency
-    4. The `strategy` block defines how fault should run this scenario's call
+    4. The `strategy` block defines how <span class="f">fault</span> should run this scenario's call
     5. The step by which we increase latency on each iteration
     6. How many iterations we iterate
     7. Do we have a baseline call, without fault, at the start?
@@ -121,16 +121,16 @@ fault parameters by a step on each iteration.
 ## Create Load Test Call Scenarios
 
 In this guide, we will demonstrate how to create a load test scenario against
-the fault demo application. Load test call scenarios make a number of
+the <span class="f">fault</span> demo application. Load test call scenarios make a number of
 requests to the target endpoint over a duration.
 
 !!! warning
 
-    fault is not a full-blown load testing tool. It doesn't aim at becoming
+    <span class="f">fault</span> is not a full-blown load testing tool. It doesn't aim at becoming
     one. The facility provided by this strategy is merely a convenience for
     very small load tests. It can prove very useful nonetheless.
 
--   [X] Start demo application provided by fault
+-   [X] Start demo application provided by <span class="f">fault</span>
 
     ```bash
     fault demo run
@@ -181,7 +181,7 @@ requests to the target endpoint over a duration.
     1. A scenario file may have as many scenarios as you want
     2. You may group several calls, and their own context, per scenario
     3. This is the host impacted by the latency
-    4. The `strategy` block defines how fault should run this scenario's call
+    4. The `strategy` block defines how <span class="f">fault</span> should run this scenario's call
     5. The total duration of our test. We support the following [units](https://docs.rs/parse_duration/latest/parse_duration/#units)
     6. The number of connected clients
     7. The number of request per second per client
@@ -236,7 +236,7 @@ quantity of endpoints discovered from an OpenAPI specification.
     1. Pass a directory where the files will be stored
 
 This approach is nice to quickly generate scenarios but if your specification
-is large, you will endup with hundreds of them. Indeed, fault will create
+is large, you will endup with hundreds of them. Indeed, <span class="f">fault</span> will create
 tests for single shot, repeated calls or load tests. All of these with a
 combination of faults.
 
@@ -281,7 +281,7 @@ items:
 In this guide, you will learn how to provide HTTP headers to the request made
 for a scenario.
 
--   [X] Start demo application provided by fault
+-   [X] Start demo application provided by <span class="f">fault</span>
 
     ```bash
     fault demo run
@@ -324,7 +324,7 @@ for a scenario.
 
 In this guide, you will learn how to pass a body string to the request.
 
--   [X] Start demo application provided by fault
+-   [X] Start demo application provided by <span class="f">fault</span>
 
     ```bash
     fault demo run
@@ -386,7 +386,7 @@ about the expectations that could be broken due to a typical faults combination.
       threshold: 1
 ```
 
-fault supports two types of SLO: `latency` and `error`. When a scenario is
+<span class="f">fault</span> supports two types of SLO: `latency` and `error`. When a scenario is
 executed, the generated report contains an analysis of the results of the run
 against these objectives. It will decide if broke them or not based on the
 volume of traffic and duration of the scenario.

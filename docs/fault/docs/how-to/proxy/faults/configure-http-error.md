@@ -1,17 +1,17 @@
-# How to Simulate HTTP Errors Using fault
+# How to Simulate HTTP Errors Using <span class="f">fault</span>
 
 This guide will walk you through emulating application level HTTP errors into your
-application using fault proxy capabilities.
+application using <span class="f">fault</span> proxy capabilities.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install fault
+    -   [X] Install <span class="f">fault</span>
 
-        If you haven’t installed fault yet, follow the
+        If you haven’t installed <span class="f">fault</span> yet, follow the
         [installation instructions](../../install.md).
 
     -   [X] Basic Proxy Setup
-        Be familiar with running fault run {==--with-[fault]==} commands from
+        Be familiar with running `fault run` {==--with-[fault]==} commands from
         your terminal.
 
 ## Constant Internal Server Error

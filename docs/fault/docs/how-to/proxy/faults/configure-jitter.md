@@ -1,4 +1,4 @@
-# How to Simulate Jitter Using fault
+# How to Simulate Jitter Using <span class="f">fault</span>
 
 This guide explains how to introduce variable latency (jitter) into your
 application flow. Jitter is random, short‐term fluctuations in latency that can
@@ -6,13 +6,13 @@ disrupt real‐time communication or stream quality.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install fault
+    -   [X] Install <span class="f">fault</span>
 
-        If you haven’t installed fault yet, follow the
+        If you haven’t installed <span class="f">fault</span> yet, follow the
         [installation instructions](../../install.md).
 
     -   [X] Basic Proxy Setup
-        Be familiar with running fault run {==--with-[fault]==} commands from
+        Be familiar with running `fault run` {==--with-[fault]==} commands from
         your terminal.
 
 ## Light Ingress Jitter

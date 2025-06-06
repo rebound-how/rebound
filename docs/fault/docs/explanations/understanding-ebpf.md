@@ -22,13 +22,13 @@ fault injection tasks.
 ## How fault Uses eBPF in Stealth Mode
 
 Traditionally, directing traffic through a proxy requires explicit configuration
-(e.g., setting the `HTTPS_PROXY` environment variable). fault’s stealth mode,
+(e.g., setting the `HTTPS_PROXY` environment variable). <span class="f">fault</span>'s stealth mode,
 powered by eBPF, takes a different approach:
 
 - **Transparent Traffic Capture:**  
-  fault leverages eBPF to intercept connection attempts at the kernel level.  
+  <span class="f">fault</span> leverages eBPF to intercept connection attempts at the kernel level.  
 - **Seamless Integration:**  
-  With eBPF, there's no need to reconfigure your applications or network clients. The traffic is transparently rerouted through fault’s TCP proxy, allowing you to inject faults without modifying client behavior.
+  With eBPF, there's no need to reconfigure your applications or network clients. The traffic is transparently rerouted through <span class="f">fault</span>'s TCP proxy, allowing you to inject faults without modifying client behavior.
 
 ## Benefits for Reliability Engineering
 
@@ -49,6 +49,6 @@ Leveraging eBPF in this way offers several advantages for engineers focused on b
 
 ## Conclusion
 
-Integrating eBPF into your reliability engineering practices with fault opens up a new, transparent way to simulate network faults. By capturing and manipulating traffic at the kernel level, you can inject faults without altering your application’s configuration, a more realistic, production-like testing environment.
+Integrating eBPF into your reliability engineering practices with <span class="f">fault</span> opens up a new, transparent way to simulate network faults. By capturing and manipulating traffic at the kernel level, you can inject faults without altering your application’s configuration, a more realistic, production-like testing environment.
 
 As you embrace these advanced techniques, you’ll gain deeper insights into your system’s behavior under stress and be better equipped to build resilient, high-performance applications.

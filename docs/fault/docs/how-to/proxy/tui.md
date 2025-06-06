@@ -1,6 +1,6 @@
 # Configure the TUI
 
-fault is a CLI. But it doesn't mean it shouldn't display the information with
+<span class="f">fault</span> is a CLI. But it doesn't mean it shouldn't display the information with
 a beautiful TUI (Terminal User Interface).
 
 ## Default TUI
@@ -17,7 +17,7 @@ A more comprehensive example:
 
 ## Disable the TUI
 
-Sometimes the verbosity of fault is not acceptable or useful. In that case,
+Sometimes the verbosity of <span class="f">fault</span> is not acceptable or useful. In that case,
 you can entirely hide it with the `--no-ui` flag.
 
 ## Tailing

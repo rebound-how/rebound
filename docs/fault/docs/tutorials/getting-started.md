@@ -1,14 +1,14 @@
-# Getting Started with fault
+# Getting Started with <span class="f">fault</span>
 
-Welcome to fault! Your new ally in exploring and understanding the impact of
+Welcome to <span class="f">fault</span>! Your new ally in exploring and understanding the impact of
 these petty network issues on your application.
-In this brief tutorial, we’ll help you get up and running with fault so that you
+In this brief tutorial, we’ll help you get up and running with <span class="f">fault</span> so that you
 can start experimenting with network faults and latency right from your own
 environment.
 
 By the end of this tutorial, you’ll have:
 
-- Installed fault on your machine.
+- Installed <span class="f">fault</span> on your machine.
 - Started a local proxy to simulate network conditions.
 - Started a local demo application for learning purpose
 - Made your first request through the proxy, observing how latency affects the
@@ -23,14 +23,21 @@ Before diving in, make sure you have the following:
 - **A supported operating system:** fault runs smoothly on most modern Linux,
   macOS, and Windows systems.
 
+!!! note
+
+    Enabled features may vary on each platform, you may look at the
+    [features matrix](../how-to/install.md#features-matrix)
+    to understand which are available based on your system. For the
+    purpose of this tutorial, all platforms are good to go!
+
 ## Step 1: Installation
 
-If you haven’t installed fault yet, please follow the
+If you haven’t installed <span class="f">fault</span> yet, please follow the
 [installation guide](../how-to/install.md).
 
 ## Step 2: Starting the Local Proxy
 
-fault operates by running a local proxy server. You can route your application’s
+<span class="f">fault</span> operates by running a local proxy server. You can route your application’s
 traffic through it to simulate network faults. Let’s start a simple latency
 scenario:
 
@@ -38,7 +45,7 @@ scenario:
 fault run --upstream http://localhost:7070 --with-latency --latency-mean 300
 ```
 
-This command launches the fault proxy on a local port
+This command launches the <span class="f">fault</span> proxy on a local port
 (by default, `127.0.0.1:3180`) and injects an average of `300ms` latency into
 outgoing requests. You can adjust the `--latency-mean` value to experiment with
 different latencies.
@@ -71,7 +78,7 @@ You are now ==ready to roll!==
 ## Step 3: Starting a demo application
 
 For the purpose of this tutorial, we will use a demo application built-in
-into fault.
+into <span class="f">fault</span>.
 
 Start the demo application in a different terminal:
 
@@ -133,10 +140,10 @@ point of view of the time taken to receive a response from the demo application.
 
 ## Step 4: Configuring Your Application to Use the Proxy
 
-Now that fault’s running, configure your application’s HTTP requests to pass
-through the proxy.
+Now that <span class="f">fault</span>'s running, configure your application's
+HTTP requests to pass through the proxy.
 
-For example, if you’re using `curl`, you might do:
+For example, if you're using `curl`, you might do:
 
 ```bash hl_lines="3"
 curl -I -o /dev/null -s \
@@ -183,15 +190,16 @@ slightly delayed. This delay simulates real-world network conditions.
 
 ## Next Steps
 
-You’ve successfully set up fault, run your first latency scenario, and routed
-traffic through it. What’s next?
+You’ve successfully set up <span class="f">fault</span>, run your first latency
+scenario, and routed traffic through it. What’s next?
 
 - **Try different latency values or other fault injection parameters** to get
   a feel for how your application responds to varied conditions.
 - **Explore our [Scenario Tutorial](./real-impact-use-case.md)** to learn how to
   simulate scenarios using files and generate detailed reports.
-- **Dive into [How-To Guides](../../how-to/)** to integrate fault deeper into
-  your workflow, from automated testing to continuous integration.
+- **Dive into [How-To Guides](../../how-to/)** to integrate
+- <span class="f">fault</span> deeper into your workflow, from automated
+- testing to continuous integration.
 
 With this initial setup under your belt, you’re well on your way to embracing
 a culture of resilience in your everyday development tasks. Happy experimenting!

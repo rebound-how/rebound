@@ -1,7 +1,7 @@
-# Extend fault with gRPC Plugins
+# Extend <span class="f">fault</span> with gRPC Plugins
 
-fault's fault are internally managed by design. To support any bespoke
-scenarios you may need to explore, fault offers an extension mechanism via
+<span class="f">fault</span>'s faults are internally managed by design. To support any bespoke
+scenarios you may need to explore, <span class="f">fault</span> offers an extension mechanism via
 remote plugins.
 
 In this guide, you will learn how to create a simple echo plugin before moving
@@ -9,9 +9,9 @@ to a more advanced use case by analyzing SQL queries on the fly.
 
 ??? abstract "Prerequisites"
 
-    -   [X] Install fault
+    -   [X] Install <span class="f">fault</span>
 
-        If you haven’t installed fault yet, follow the
+        If you haven’t installed <span class="f">fault</span> yet, follow the
         [installation instructions](../../install.md).
 
     -   [X] Python 3
@@ -23,7 +23,7 @@ to a more advanced use case by analyzing SQL queries on the fly.
 ## Register Plugins
 
 Before you create your first plugin, let's review how they are registered
-with fault's proxy.
+with <span class="f">fault</span>'s proxy.
 
 Use the `--grpc-plugin` flag, multiple times one for each plugin, on the
 `fault run` command:
@@ -41,11 +41,11 @@ fault run --grpc-plugin http://localhost:50051 --grpc-plugin http://localhost:50
 
 ??? question "Are plugins only written in Python?"
 
-    fault's plugins are gRPC servers so you can write plugins in any languages
+    <span class="f">fault</span>'s plugins are gRPC servers so you can write plugins in any languages
     that [support gRPC](https://grpc.io/docs/#official-support). 
     We use Python here but feel free to adjust to your own personal preferences.
 
--   [X] Get the fault gRPC protocol file
+-   [X] Get the <span class="f">fault</span> gRPC protocol file
 
     Download the [gRPC protocol file](https://github.com/rebound-how/rebound/blob/main/fault/fault-cli/src/plugin/rpc/protos/plugin.proto)
     on your machine.
@@ -76,7 +76,7 @@ fault run --grpc-plugin http://localhost:50051 --grpc-plugin http://localhost:50
     1. Execute the gRPC tool to convert the protocol file into a Python source file
     2. The directory where to save the generated modules
     3. The include directory, this is the directory where the `plugin.proto` file lives
-    4. The fault protocol file you just downloaded
+    4. The <span class="f">fault</span> protocol file you just downloaded
 
     This command should generate two files:
 
@@ -211,14 +211,14 @@ fault run --grpc-plugin http://localhost:50051 --grpc-plugin http://localhost:50
     We'll send traffic to this server via the proxy as an example of a target
     endpoint. Of course, you can use any server of your choosing.
 
--   [X] Use the echo plugin with fault
+-   [X] Use the echo plugin with <span class="f">fault</span>
 
     ```bash
     fault run --grpc-plugin http://localhost:50051 --with-latency --latency-mean 300 --upstream '*'
     ```
 
-    Use fault as you would without the plugin. All the other flags support
-    work the same way. Here fault will forward traffic to your plugin but
+    Use <span class="f">fault</span> as you would without the plugin. All the other flags support
+    work the same way. Here <span class="f">fault</span> will forward traffic to your plugin but
     also apply the latency fault.
 
 -   [X] Explore the plugin's behavior
@@ -246,7 +246,7 @@ wire format](https://www.postgresql.org/docs/current/protocol-message-formats.ht
 to parse some messages. This could be a skeletton to change the values
 returned by the database and observe the impacts on your application.
 
--   [X] Get the fault gRPC protocol file
+-   [X] Get the <span class="f">fault</span> gRPC protocol file
 
     Download the [gRPC protocol file](https://github.com/rebound-how/rebound/blob/main/fault/fault-cli/src/plugin/rpc/protos/plugin.proto)
     on your machine.
@@ -277,7 +277,7 @@ returned by the database and observe the impacts on your application.
     1. Execute the gRPC tool to convert the protocol file into a Python source file
     2. The directory where to save the generated modules
     3. The include directory, this is the directory where the `plugin.proto` file lives
-    4. The fault protocol file you just downloaded
+    4. The <span class="f">fault</span> protocol file you just downloaded
 
     This command should generate two files:
 
@@ -628,7 +628,7 @@ returned by the database and observe the impacts on your application.
     1. The address of the proxy
     2. The port of the proxy since we route our traffic via the proxy
 
--   [X] Use the plugin with fault
+-   [X] Use the plugin with <span class="f">fault</span>
 
     ```bash
     fault run --grpc-plugin http://localhost:50051 \   # (1)!

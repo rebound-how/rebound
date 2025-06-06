@@ -5,15 +5,15 @@ Docker containers.
 
 !!! info
 
-    fault container images are hosted on
+    <span class="f">fault</span> container images are hosted on
     [GitHub Container Registry](https://github.com/rebound-how/rebound/pkgs/container/fault).
 
     They are [distroless](https://github.com/GoogleContainerTools/distroless)
     images available for amd64 and arm64 architectures.
 
-## Run fault as A Container
+## Run <span class="f">fault</span> as A Container
 
--   [X] Pull the fault image
+-   [X] Pull the <span class="f">fault</span> image
 
     ```bash
     docker pull ghcr.io/rebound-how/fault
@@ -22,10 +22,10 @@ Docker containers.
     !!! warning
         
         This image is based on distroless and embeds the static version of the
-        fault cli which
+        `fault` cli which
         [doesn't support the AI Agent feature](../install.md#features-matrix).
 
--   [X] Run fault with a latency fault
+-   [X] Run <span class="f">fault</span> with a latency fault
 
     ```bash
     docker run \
@@ -79,7 +79,7 @@ Docker containers.
     requires a lot of provileges which likely you would not have in a production
     environment.
 
--   [X] Pull the fault image
+-   [X] Pull the <span class="f">fault</span> image
 
     ```bash
     docker pull ghcr.io/rebound-how/fault:0.6.0-stealth
@@ -93,7 +93,7 @@ Docker containers.
         [registry](https://github.com/rebound-how/rebound/pkgs/container/fault)
         for the newest version.
 
--   [X] Run fault with a latency fault
+-   [X] Run <span class="f">fault</span> with a latency fault
 
     ```bash
     docker run \
