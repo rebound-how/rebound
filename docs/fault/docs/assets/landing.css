@@ -535,3 +535,74 @@ line {
 
     border-radius: var(--border-radius-m);
 }
+
+.fault {
+    font-family: "Lexend", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-weight: 500;
+    display: inline-block;
+    transform: skew(-5deg);
+}
+
+.family {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 120px;
+    padding-bottom: 120px;
+}
+
+.rebound-logo {
+    color: hsl(240, 3.7%, 9%);
+    text-decoration: none;
+    text-transform: uppercase;
+
+    .letter {
+      font-weight: calc(200 + 600 * var(--w));
+
+      transition: font-weight 0.2s ease-in-out;
+
+      &:nth-child(1) {
+        --w: 0;
+      }
+      &:nth-child(2) {
+        --w: 0.16;
+      }
+      &:nth-child(3) {
+        --w: 0.33;
+      }
+      &:nth-child(4) {
+        --w: 0.5;
+      }
+      &:nth-child(5) {
+        --w: 0.67;
+      }
+      &:nth-child(6) {
+        --w: 0.83;
+      }
+      &:nth-child(7) {
+        --w: 1;
+      }
+    }
+
+    &:hover {
+      .letter {
+        --w: 0;
+
+        &:hover {
+          --w: 1;
+        }
+
+        &:hover + .letter,
+        &:has(+ .letter:hover) {
+          --w: 0.67;
+        }
+
+        &:hover + .letter + .letter,
+        &:has(+ .letter + .letter:hover) {
+          --w: 0.33;
+        }
+      }
+    }
+  }

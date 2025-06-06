@@ -158,7 +158,7 @@ hide:
               your services</span>
           </li>
           <li class="menu-item" data-index="4">
-            <span><strong>Make it your own</strong> by extending fault with gRPC plugins</span>
+            <span><strong>Make it your own</strong> by extending <span class="fault"  translate="no" style="padding-left: 0px;">fault</span> with gRPC plugins</span>
           </li>
         </ul>
       </div>
@@ -204,4 +204,15 @@ hide:
       </div>
     </div>
   </div>
+  <div class="family">
+    <h1><span class="fault" translate="no">fault</span> is proudly part of the <a href="https://rebound.how/"><span class="rebound-logo">
+  <span class="letter letter--1">R</span><span class="letter letter--2">e</span
+  ><span class="letter letter--3">b</span><span class="letter letter--4">o</span
+  ><span class="letter letter--5">u</span><span class="letter letter--6">n</span
+  ><span class="letter letter--7">d</span></a>
+</span> toolset.</h1>
+
+    <h3>Explore the <a href="https://chaostoolkit.org/">Chaos Toolkit</a>, a Chaos Engineering tool for developers, and <a href="https://reliably.com/">Reliably</a>, a full-blown platform for resilience.</h3>
+  </div>
 </div>
+
