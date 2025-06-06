@@ -144,6 +144,14 @@ a.md-source {
     padding-bottom: 0;
 }
 
+@media (max-width: 992px) {
+.hero {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+}
+
 @media (min-width: 992px) {
 .hero {
     justify-content: end;
