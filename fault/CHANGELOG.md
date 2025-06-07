@@ -2,6 +2,5 @@
 
 ## Changed
 
-- Added fault injection into Kubernetes
-- Added discovery of platform resources
-- Fixed a variety of minor issues
+- Extended documentation
+- Added support to take platform resources into accounts of the agents thinking
