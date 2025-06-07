@@ -15,7 +15,7 @@ TCP-oriented network traffic, even with TLS encryption.
         your terminal.
 
     -   [X] Understanding of TCP Proxying
-        Explore the [TCP proxy protocol reference](../../../reference/proto-syntax.md).
+        Explore the [TCP proxy protocol reference](../../../reference/proxy-mapping-syntax.md).
 
 
 ??? question "Do I still need `HTTP_PROXY` or `HTTPS_PROXY`?"
@@ -55,7 +55,7 @@ your applications to experiment with network fault impacts.
     the address {==0.0.0.0:9098==} will be transmitted to the endpoint, here
     `https://www.google.com`. <span class="f">fault</span> will apply any faults you have setup to the
     traffic. Please read the
-    [reference](../../../reference/proto-syntax.md#grammar). for the supported
+    [reference](../../../reference/proxy-mapping-syntax.md#grammar). for the supported
     definition of the proxy protocol.
 
 -   [X] Make a request to the endpoint via our proxy

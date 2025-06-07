@@ -195,9 +195,9 @@ scenario, and routed traffic through it. What’s next?
 
 - **Try different latency values or other fault injection parameters** to get
   a feel for how your application responds to varied conditions.
-- **Explore our [Scenario Tutorial](./real-impact-use-case.md)** to learn how to
+- **Explore our [Scenario Tutorial](./create-scenario.md)** to learn how to
   simulate scenarios using files and generate detailed reports.
-- **Dive into [How-To Guides](../../how-to/)** to integrate
+- **Dive into [How-To Guides](../how-to/proxy/faults/configure-latency.md)** to integrate
 - <span class="f">fault</span> deeper into your workflow, from automated
 - testing to continuous integration.
 

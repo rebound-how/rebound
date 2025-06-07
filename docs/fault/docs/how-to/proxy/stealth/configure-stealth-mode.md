@@ -55,7 +55,7 @@ network traffic without modifying your application.
 -   [X] Install fault's ebpf dependencies
     
     Follow the procedure to
-    [install](../../../tutorials/install.md#optional-configure-ebpf-support) the
+    [install](../../install.md#stealth-feature) the
     eBPF programs on your machine.
 
 -   [X] Start a local PostgreSQL server using a container

@@ -7,7 +7,7 @@ This guide will walk you sending traces to an Open Telemetry aware stack.
     -   [X] Install <span class="f">fault</span>
 
         If you haven’t installed <span class="f">fault</span> yet, follow the
-        [installation instructions](../../install.md).
+        [installation instructions](../install.md).
 
 ## Send Open Telemetry Traces to Jaeger
 
@@ -49,4 +49,4 @@ This guide will walk you sending traces to an Open Telemetry aware stack.
     [view your fault traces](http://localhost:16686/search?operation=apply_on_response&service=fault-cli).
 
     In the following snippet, you can quickly notice the `~308ms` delay on the
-    poll-read. ![Jaeger Traces](/assets/otel.png){ align=right }
+    poll-read. ![Jaeger Traces](../../assets/otel.png){ align=right }

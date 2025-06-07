@@ -63,6 +63,6 @@ effect.
 
 You’ve successfully downloaded and installed <span class="f">fault</span>. What’s next?
 
-- **Explore our [Getting Started Tutorial](../getting-started/)** to learn how to first use <span class="f">fault</span>.
-- **Dive into [How-To Guides](../../how-to/)** to integrate fault deeper into
+- **Explore our [Getting Started Tutorial](./getting-started.md)** to learn how to first use <span class="f">fault</span>.
+- **Dive into [How-To Guides](../how-to/proxy/faults/configure-latency.md)** to integrate fault deeper into
   your workflow, from automated testing to continuous integration.

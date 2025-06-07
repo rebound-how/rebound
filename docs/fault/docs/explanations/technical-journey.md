@@ -386,7 +386,7 @@ feel weakened when you move to a different ecosystem.
 
 I naively assumed I'd find the same richness and vibrant projects in rust. But,
 I'd say Python is much more comprehensive here. Sure, you can run `cargo fmt`
-and ̀ cargo clippy`. That is a good starting point.
+and ̀`cargo clippy`. That is a good starting point.
 
 But I haven't found anything that captures quite what `black` or `ruff` offer.
 The ability to say "this is how good rust code looks like". Clippy helps a lot
@@ -422,13 +422,21 @@ I think the rust ecosystem has some room for progress still there.
     If you're reading this and looking to improve your documentation, I suggest
     to explore some of the ideas developed on [Diátaxis](https://diataxis.fr/).
 
+## At the end of the day, Python or rust?
+
+**Both!**
+
+I don't think it makes sense to pick one over the other in absolute manner.
+
+rust and Python complement each other. If anything, we might see a future
+where both work so natively and fluentely together than we won't even think
+about it. Projects such [pyo3](https://github.com/PyO3/pyo3) are paving the way.
+
+Just do yourself a favour, don't pick one, use both!
+
 ---
 
 The rest will come soon...
-
-### Finally something that runs
-
-### More refactoring? Sure, why not?
 
 ## Bring on the features
 

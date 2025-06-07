@@ -11,7 +11,7 @@ what <span class="f">fault</span> suggests you may want to add or remove from yo
     -   [X] Install <span class="f">fault</span>
 
         If you haven’t installed <span class="f">fault</span> yet, follow the
-        [installation instructions](../../install.md).
+        [installation instructions](../install.md).
 
     -   [X] Get an OpenAI Key
 
