@@ -68,13 +68,28 @@ be simpler to populate these options via environment variables.
 
 ## `injection` Command Variables
 
+### `gcp` Subcommand Variables
+
+| **Name**                         | **Default Value**   | **Explanation**                                                                                  |
+|----------------------------------|---------------------|--------------------------------------------------------------------------------------------------|
+| `FAULT_INJECTION_GCP_PROJECT`                  | (none)    | Project hosting the service.                                                 |
+| `FAULT_INJECTION_GCP_REGION`                  | (none)    | Regions where the service lives.                                                 |
+| `FAULT_INJECTION_GCP_TRAFFIC_PERCENT`                  | 100    | Traffic percentage sent through the created revision.                                                 |
+| `FAULT_INJECTION_GCP_SERVICE`                  | (none)    | Target CloudRun service name to inject faults into.                                                 |
+| `FAULT_INJECTION_GCP_IMAGE`                  | (none)    | Container image to run as the sidecar of the service.                                                 |
+| `FAULT_INJECTION_GCP_DURATION`                  | (none)    | Duration for which the fault is applied. Follows [this format](https://docs.rs/parse_duration/latest/parse_duration/#syntax).                                                 |
+
+In addition, this subcommand supports the same proxy fault options as the
+`run` command.
+
 ### `kubernetes` Subcommand Variables
 
 | **Name**                         | **Default Value**   | **Explanation**                                                                                  |
 |----------------------------------|---------------------|--------------------------------------------------------------------------------------------------|
 | `FAULT_INJECTION_K8S_NS`                  | `default`    | Namespace of the target service.                                                 |
 | `FAULT_INJECTION_K8S_SERVICE`                  | (none)    | Target service to inject faults into.                                                 |
-| `FAULT_INJECTION_K8S_SERVICE`                  | `ghcr.io/rebound-how/fault:latest`    | Container image to run in the cluster. Its entrypoint must be the `fault` binary.                                                 |
+| `FAULT_INJECTION_K8S_IMAGE`                  | `ghcr.io/rebound-how/fault:latest`    | Container image to run in the cluster. Its entrypoint must be the `fault` binary.                                                 |
+| `FAULT_INJECTION_K8S_DURATION`                  | (none)    | Duration for which the fault is applied. Follows [this format](https://docs.rs/parse_duration/latest/parse_duration/#syntax).                                                 |
 
 In addition, this subcommand supports the same proxy fault options as the
 `run` command.

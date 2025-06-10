@@ -1168,7 +1168,7 @@ pub struct FaultInjectionKubernetesConfig {
     #[arg(
         long,
         help = "How long to run the injection for.",
-        env = "FAULT_INJECTION_GCP_DURATION",
+        env = "FAULT_INJECTION_K8S_DURATION",
         value_parser
     )]
     pub duration: Option<String>,

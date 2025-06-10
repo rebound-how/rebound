@@ -374,6 +374,36 @@ fault run \
 
 Inject <span class="f">fault</span> into your platform resources.
 
+### GCP Options
+
+- **`--project <project>`**  
+  _Project hosting of the target service._  
+  **Example:** `--project myproject-56x7xhg`
+
+- **`--region <region>`**  
+  Region of the target service._  
+  **Example:** `--project europe-west1`
+
+- **`--service <service>`**  
+  _Target service._  
+  **Example:** `--service web`
+
+- **`--percent <percent>`**  
+  Traffic volume to the revision._  
+  _Default:_ `100`  
+  **Example:** `--project europe-west1`
+
+- **`--image <image>`**  
+  _Container image to inject, its entrypoint must be the `fault` binary. The image must live inside GCP's artifact registry and accessible for this region._  
+  **Example:** `--image myimage:latest`
+
+- **`--duration <duration>`**  
+  _Duration for which the fault is injected. If unset, `fault` waits for the user input. Follows [this format](https://docs.rs/parse_duration/latest/parse_duration/#syntax)_  
+  **Example:** `--duration 30s`
+
+In addition, this subcommand supports all the fault options of the `run`
+command.
+
 ### Kubernetes Options
 
 - **`--ns <namespace>`**  
@@ -389,6 +419,10 @@ Inject <span class="f">fault</span> into your platform resources.
   _Container image to inject, its entrypoint must be the `fault` binary._  
   _Default:_ `ghcr.io/rebound-how/fault:latest`  
   **Example:** `--image myimage:latest`
+
+- **`--duration <duration>`**  
+  _Duration for which the fault is injected. If unset, `fault` waits for the user input. Follows [this format](https://docs.rs/parse_duration/latest/parse_duration/#syntax)_  
+  **Example:** `--duration 30s`
 
 In addition, this subcommand supports all the fault options of the `run`
 command.
