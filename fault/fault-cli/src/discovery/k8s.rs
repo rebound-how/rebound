@@ -198,7 +198,17 @@ where
 
     Ok(Resource {
         id: uid.clone(),
-        meta: Meta { name, ns, display, dt, kind, category, platform: None },
+        meta: Meta {
+            name,
+            ns,
+            display,
+            dt,
+            kind,
+            category,
+            platform: None,
+            region: None,
+            project: None,
+        },
         links,
         content,
     })

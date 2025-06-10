@@ -111,6 +111,9 @@ kube = { version = "1.1.0", features = ["jsonpatch"], optional = true }
 k8s-openapi = { version = "0.25.0", features = ["latest"], optional = true }
 jsonpath-rust = { version = "1.0.2", optional = true }
 json-patch = { version = "4.0.0", features = ["utoipa"], optional = true }
+google-cloud-run-v2 = { version = "0.3.0", optional = true }
+google-cloud-gax = { version = "0.22.0", optional = true }
+google-cloud-longrunning = { version = "0.24.0", optional = true }
 
 # ebpf feature
 [target.'cfg(target_os = "linux")'.dependencies]
@@ -196,7 +199,10 @@ discovery = [
     "dep:kube",
     "dep:k8s-openapi",
     "dep:jsonpath-rust",
-    "dep:json-patch"
+    "dep:json-patch",
+    "dep:google-cloud-run-v2",
+    "dep:google-cloud-gax",
+    "dep:google-cloud-longrunning"
 ]
 injection = [
     "discovery",

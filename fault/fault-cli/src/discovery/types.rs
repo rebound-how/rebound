@@ -38,6 +38,8 @@ pub struct Meta {
     pub kind: String,
     pub category: String,
     pub platform: Option<String>,
+    pub region: Option<String>,
+    pub project: Option<String>,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]

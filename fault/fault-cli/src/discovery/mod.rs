@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::collections::VecDeque;
 
+pub(crate) mod gcp;
 pub(crate) mod k8s;
 pub(crate) mod types;
 

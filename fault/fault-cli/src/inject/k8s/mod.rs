@@ -21,52 +21,9 @@ pub(crate) mod scenario;
 use crate::discovery::k8s::discover_kubernetes_resources;
 use crate::discovery::types::K8sSpecSnapshot;
 use crate::discovery::types::Resource;
-
-/// A discovered, addressable backend service.
-#[derive(Clone)]
-pub struct ServiceResource {
-    pub name: String,
-    pub address: String,
-}
-
-/// Data needed to roll back an injection.
-#[derive(Clone)]
-pub struct InjectionHandle {
-    pub rollback_token: String,
-}
-
-/// Common interface for fault‐proxy injection on different platforms.
-#[async_trait]
-pub trait Platform {
-    /// List all “services” available for injection.
-    async fn discover(&self) -> Result<Vec<ServiceResource>>;
-
-    /// Inject a proxy into the given service, returning a handle for rollback.
-    async fn inject(&mut self) -> Result<()>;
-
-    /// Roll back a previous injection.
-    async fn rollback(&self) -> Result<()>;
-
-    /// Set the service resource
-    fn set_service(&mut self, service: &str) -> Result<()>;
-
-    /// Get the service resource
-    async fn get_service(&self) -> Result<ServiceResource>;
-
-    /// Update the proxy parameters.
-    async fn update_fault_settings(
-        &mut self,
-        fault_settings: &mut BTreeMap<String, String>,
-    ) -> Result<()>;
-
-    async fn wait_ready(&self) -> Result<()>;
-
-    async fn wait_cleanup(&self) -> Result<()>;
-
-    fn get_concrete_resources(&self) -> &Vec<Resource>;
-
-    fn get_concrete_service(&self) -> &Resource;
-}
+use crate::inject::InjectionHandle;
+use crate::inject::Platform;
+use crate::inject::ServiceResource;
 
 /// Kubernetes implementation of `Platform`.
 #[derive(Clone)]
@@ -212,30 +169,35 @@ impl Platform for KubernetesPlatform {
         }
 
         let token = serde_json::to_string(&snapshot)?;
-        self.injection_handle = Some(InjectionHandle { rollback_token: token });
+        self.injection_handle =
+            Some(InjectionHandle::Kubernetes { rollback_token: token });
         Ok(())
     }
 
-    async fn rollback(&self) -> Result<()> {
+    async fn rollback(&mut self) -> Result<()> {
         if let Some(handle) = &self.injection_handle {
             let svc = self.get_service().await?;
-            let snapshot: K8sSpecSnapshot =
-                serde_json::from_str(&handle.rollback_token)?;
-            let full = self.find_resource(&svc.name);
-            if self.is_proxy() {
-                run::rollback_fault_injection(
-                    self.client.clone(),
-                    full,
-                    snapshot,
-                )
-                .await?;
-            } else {
-                scenario::rollback_fault_injection(
-                    self.client.clone(),
-                    full,
-                    snapshot,
-                )
-                .await?;
+            if let Some(InjectionHandle::Kubernetes { rollback_token }) =
+                self.injection_handle.take()
+            {
+                let snapshot: K8sSpecSnapshot =
+                    serde_json::from_str(&rollback_token)?;
+                let full = self.find_resource(&svc.name);
+                if self.is_proxy() {
+                    run::rollback_fault_injection(
+                        self.client.clone(),
+                        full,
+                        snapshot,
+                    )
+                    .await?;
+                } else {
+                    scenario::rollback_fault_injection(
+                        self.client.clone(),
+                        full,
+                        snapshot,
+                    )
+                    .await?;
+                }
             }
         }
 
@@ -254,7 +216,7 @@ impl Platform for KubernetesPlatform {
         Ok(())
     }
 
-    async fn wait_ready(&self) -> Result<()> {
+    async fn wait_ready(&mut self) -> Result<()> {
         let svc = self.get_service().await?;
         let ns = &self.namespace;
         let proxy_name = format!("{}-proxy", svc.name);
@@ -294,7 +256,7 @@ impl Platform for KubernetesPlatform {
         }
     }
 
-    async fn wait_cleanup(&self) -> Result<()> {
+    async fn wait_cleanup(&mut self) -> Result<()> {
         let svc = self.get_service().await?;
         let ns = &self.namespace;
         let proxy_name = format!("{}-proxy", svc.name);

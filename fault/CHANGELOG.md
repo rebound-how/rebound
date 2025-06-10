@@ -2,5 +2,4 @@
 
 ## Changed
 
-- Extended documentation
-- Added support to take platform resources into accounts of the agents thinking
+- Added GCP Cloud Run support for `fault inject`

@@ -28,13 +28,15 @@ pub async fn run_tcp_proxy(
         proxied_proto.proxy.proxy_port,
     );
 
+    tracing::debug!("Trying to bind to address {}", addr);
+
     let state_cloned = state.clone();
 
     let proxy_listener =
         tokio::net::TcpListener::bind(addr).await.map_err(|e| {
             ProxyError::IoError(std::io::Error::new(
                 e.kind(),
-                format!("Failed to bind ebpf proxy to address {}: {}", addr, e),
+                format!("Failed to bind proxy to address {}: {}", addr, e),
             ))
         })?;
 

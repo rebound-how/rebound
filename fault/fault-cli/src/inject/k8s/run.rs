@@ -2,9 +2,6 @@ use std::collections::BTreeMap;
 
 use anyhow::Result;
 use json_patch::Patch as JsonPatch;
-use k8s_openapi::api::apps::v1::Deployment;
-use k8s_openapi::api::apps::v1::DeploymentSpec;
-use k8s_openapi::api::apps::v1::DeploymentStrategy;
 use k8s_openapi::api::batch::v1::Job;
 use k8s_openapi::api::batch::v1::JobSpec;
 use k8s_openapi::api::core::v1::Capabilities;
@@ -13,7 +10,6 @@ use k8s_openapi::api::core::v1::ConfigMapEnvSource;
 use k8s_openapi::api::core::v1::Container;
 use k8s_openapi::api::core::v1::ContainerPort;
 use k8s_openapi::api::core::v1::EnvFromSource;
-use k8s_openapi::api::core::v1::Pod;
 use k8s_openapi::api::core::v1::PodSecurityContext;
 use k8s_openapi::api::core::v1::PodSpec;
 use k8s_openapi::api::core::v1::PodTemplateSpec;
@@ -22,13 +18,11 @@ use k8s_openapi::api::core::v1::SecurityContext;
 use k8s_openapi::api::core::v1::Service;
 use k8s_openapi::api::core::v1::ServiceAccount;
 use k8s_openapi::api::core::v1::TCPSocketAction;
-use k8s_openapi::apimachinery::pkg::apis::meta::v1::LabelSelector;
 use k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
 use k8s_openapi::apimachinery::pkg::util::intstr::IntOrString;
 use kube::Api;
 use kube::Client;
 use kube::api::DeleteParams;
-use kube::api::ListParams;
 use kube::api::Patch;
 use kube::api::PatchParams;
 use kube::api::PostParams;
@@ -39,7 +33,6 @@ use serde_json::json;
 use crate::discovery::types::K8sSpecSnapshot;
 use crate::discovery::types::Resource;
 
-/// Build the ServiceAccount
 fn build_service_account(
     ns: &str,
     name: &str,
@@ -57,7 +50,6 @@ fn build_service_account(
     }
 }
 
-/// Build the ConfigMap
 fn build_config_map(
     ns: &str,
     name: &str,
@@ -76,8 +68,6 @@ fn build_config_map(
     }
 }
 
-/// Build an intermediate “backend” Service that selects exactly the original
-/// pods
 fn build_backend_service(original: &Resource, backend_name: &str) -> Service {
     // Pull the original ports & selector out of the Resource’s `content`
     let spec = &original.content["spec"];
@@ -314,8 +304,6 @@ pub async fn inject_fault_proxy(
         })
         .collect();
 
-    //let patch = json!({ "spec": { "selector": labels.clone(), "ports":
-    // patched_ports } });
     let patch: JsonPatch = from_value(json!([
         {
           "op": "replace",
@@ -342,8 +330,6 @@ pub async fn inject_fault_proxy(
     Ok(snapshot)
 }
 
-/// Roll back: restore the Service selector, delete proxy objects & backend
-/// Service
 pub async fn rollback_fault_injection(
     client: Client,
     svc: &Resource,

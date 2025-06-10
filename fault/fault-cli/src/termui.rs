@@ -31,7 +31,7 @@ use crate::event::TaskId;
 use crate::event::TaskProgressEvent;
 use crate::event::TaskProgressReceiver;
 #[cfg(feature = "discovery")]
-use crate::inject::k8s::Platform;
+use crate::inject::Platform;
 use crate::plugin::rpc::RpcPluginManager;
 #[cfg(feature = "scenario")]
 use crate::scenario;

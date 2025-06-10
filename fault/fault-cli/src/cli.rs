@@ -973,7 +973,7 @@ pub struct AgentReviewConfig {
         long,
         help = "Path to the generated json results file",
         default_value = "results.json",
-        env = "FAULT_SCENARIO_RESULTS_PATH",
+        env = "FAULT_SCENARIO_RESULTS_PATH"
     )]
     pub results: String,
 
@@ -1077,7 +1077,52 @@ pub struct FaultInjectionCommandOptions {
 #[cfg(feature = "injection")]
 #[derive(Subcommand, Debug)]
 pub enum FaultInjectionCommands {
+    Gcp(FaultInjectionGcpConfig),
     Kubernetes(FaultInjectionKubernetesConfig),
+}
+
+#[cfg(feature = "injection")]
+#[derive(Args, Clone, Debug, Serialize, Deserialize)]
+pub struct FaultInjectionGcpConfig {
+    /// Project
+    #[arg(long, help = "Project.", env = "FAULT_INJECTION_GCP_PROJECT")]
+    pub project: String,
+
+    /// Region
+    #[arg(short, long, help = "Region.", env = "FAULT_INJECTION_GCP_REGION")]
+    pub region: String,
+
+    /// Service name
+    #[arg(
+        short,
+        long,
+        help = "Service name.",
+        env = "FAULT_INJECTION_GCP_SERVICE"
+    )]
+    pub service: String,
+
+    /// Traffic percentage
+    #[arg(
+        short,
+        long,
+        help = "Traffic percentage sent to the proxy.",
+        env = "FAULT_INJECTION_GCP_TRAFFIC_PERCENT",
+        default_value_t = 100
+    )]
+    pub percent: u32,
+
+    /// Container image performing the fault
+    #[arg(
+        short,
+        long,
+        help = "Container image performing the fault.",
+        env = "FAULT_INJECTION_GCP_IMAGE",
+        default_value = "ghcr.io/rebound-how/fault:latest"
+    )]
+    pub image: String,
+
+    #[command(flatten)]
+    pub options: Box<FaultInjectionCommandOptions>,
 }
 
 #[cfg(feature = "injection")]
@@ -1101,12 +1146,12 @@ pub struct FaultInjectionKubernetesConfig {
     )]
     pub service: Option<String>,
 
-    /// Container image perfomring the fault
+    /// Container image performing the fault
     #[arg(
         short,
         long,
-        help = "Container image perfomring the fault.",
-        env = "FAULT_INJECTION_K8S_SERVICE",
+        help = "Container image performing the fault.",
+        env = "FAULT_INJECTION_K8S_IMAGE",
         default_value = "ghcr.io/rebound-how/fault:latest"
     )]
     pub image: String,

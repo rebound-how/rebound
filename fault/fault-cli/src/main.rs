@@ -75,7 +75,7 @@ use errors::ProxyError;
 use event::TaskManager;
 use fault::FaultInjector;
 #[cfg(feature = "discovery")]
-use inject::k8s::Platform;
+use inject::Platform;
 #[cfg(feature = "injection")]
 use inquire::Confirm;
 #[cfg(feature = "injection")]
@@ -644,6 +644,21 @@ async fn main() -> Result<()> {
 
                 run_fault_injector_roundtrip(plt, cfg.service.clone()).await?;
             }
+            cli::FaultInjectionCommands::Gcp(cfg) => {
+                let fault_settings = cfg.options.to_environment_variables();
+                let plt = &mut inject::gcp::CloudRunPlatform::new_proxy(
+                    &cfg.project,
+                    &cfg.region,
+                    &cfg.service.clone(),
+                    cfg.percent,
+                    cfg.image.clone(),
+                    fault_settings,
+                )
+                .await?;
+
+                run_fault_injector_roundtrip(plt, Some(cfg.service.clone()))
+                    .await?;
+            }
         },
     };
 
@@ -706,14 +721,22 @@ pub async fn run_fault_injector_roundtrip<P: Platform>(
     let svc = plt.get_service().await?;
 
     plt.inject().await?;
+    println!("  Deploying fault...");
+    //plt.wait_ready().await?;
     println!(
         "   Injected into service {} 🚀.\n   You can now explore how your system reacts to its new conditions.",
         svc.name.yellow()
     );
 
-    let _ = Confirm::new(&format!("Press '{}' to finish and rollback", "y".to_string().green())).prompt();
+    let _ = Confirm::new(&format!(
+        "Press '{}' to finish and rollback",
+        "y".to_string().green()
+    ))
+    .prompt();
 
     plt.rollback().await?;
+    println!("  Rolling back fault...");
+    //plt.wait_cleanup().await?;
     println!("  Rolled back.");
 
     Ok(())
@@ -826,7 +849,7 @@ async fn run_scenario_command(
 
                     #[cfg(feature = "discovery")]
                     {
-                        if let Some(plt) = runs_on {
+                        if let Some(mut plt) = runs_on {
                             // restore the faults for next round
                             if let Some(faults) = original_faults {
                                 i.context.faults.extend(faults);
