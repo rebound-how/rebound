@@ -41,6 +41,20 @@ Platform Cloud Run. You will not need to change any code.
     3. The GCP CloudRun service name
     4. The <span class="f">fault</span> container image full url
 
+    When you do not explicitly set the service, <span class="f">fault</span>
+    lets you pick up one from the CLI:
+
+    ```bash
+    fault inject gcp \
+        --project <project> \
+        --region <region>  \
+        --image <image> \
+        --with-latency --latency-mean 800
+    ? Service:  
+    > hello
+    [↑↓ to move, enter to select, type to filter]
+    ```
+
     Once started, a new revision of the service will be deployed with the
     <span class="f">fault</span> process running as a sidecar container
     of the service's main container. It will expose a port to receive traffic

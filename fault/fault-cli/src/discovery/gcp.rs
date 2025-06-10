@@ -34,7 +34,7 @@ pub async fn discover_cloud_run_resources(
             meta: Meta {
                 name: id.clone(),
                 ns: region.to_string(),
-                display: format!("CloudRun/{}/{}", region, id),
+                display: format!("CloudRun/{}/{}", region, name),
                 dt: Utc::now(),
                 kind: "cloudrun".into(),
                 category: "serverless".into(),

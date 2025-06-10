@@ -8,6 +8,17 @@ into the platform it supports.
 <span class="f">fault</span> may run on Google Cloud Platform by 
 hooking into a Cloud Run service.
 
+When initializing, <span class="f">fault</span> creates a new revision of the
+service and injects a sidecar container into it. The container runs the
+`fault` cli.
+
+The new sidecar container also exposes a port between `50000` and `55000`.
+This means that traffic will now be sent to the <span class="f">fault</span>
+container which will reroute to `127.0.0.1:<service port>` where the
+`<service port>` is the original port exposed by the Cloud Run service.
+
+On rollback, a new revision is created with the previous specification of the
+service.
 
 ```mermaid
 sequenceDiagram

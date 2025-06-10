@@ -642,22 +642,31 @@ async fn main() -> Result<()> {
                 )
                 .await?;
 
-                run_fault_injector_roundtrip(plt, cfg.service.clone()).await?;
+                run_fault_injector_roundtrip(
+                    plt,
+                    cfg.service.clone(),
+                    &cfg.duration,
+                )
+                .await?;
             }
             cli::FaultInjectionCommands::Gcp(cfg) => {
                 let fault_settings = cfg.options.to_environment_variables();
                 let plt = &mut inject::gcp::CloudRunPlatform::new_proxy(
                     &cfg.project,
                     &cfg.region,
-                    &cfg.service.clone(),
+                    &cfg.service.clone().unwrap_or("".to_string()),
                     cfg.percent,
                     cfg.image.clone(),
                     fault_settings,
                 )
                 .await?;
 
-                run_fault_injector_roundtrip(plt, Some(cfg.service.clone()))
-                    .await?;
+                run_fault_injector_roundtrip(
+                    plt,
+                    cfg.service.clone(),
+                    &cfg.duration,
+                )
+                .await?;
             }
         },
     };
@@ -709,9 +718,11 @@ fn is_stealth(cli: &RunCommandOptions) -> bool {
 pub async fn run_fault_injector_roundtrip<P: Platform>(
     plt: &mut P,
     service: Option<String>,
+    duration: &Option<String>,
 ) -> Result<()> {
     let svcs = plt.discover().await?;
-    let names: Vec<_> = svcs.iter().map(|s| s.name.clone()).collect();
+    let names: Vec<String> = svcs.iter().map(|s| s.name.clone()).collect();
+
     let sel = match service {
         Some(s) => s,
         None => Select::new("Service:", names).prompt()?,
@@ -728,11 +739,21 @@ pub async fn run_fault_injector_roundtrip<P: Platform>(
         svc.name.yellow()
     );
 
-    let _ = Confirm::new(&format!(
-        "Press '{}' to finish and rollback",
-        "y".to_string().green()
-    ))
-    .prompt();
+    if let Some(duration) = duration {
+        match parse_duration::parse(duration.as_str()) {
+            Ok(total) => {
+                println!("  Injecting fault for {}", duration);
+                sleep(total).await
+            }
+            Err(_) => anyhow::bail!("failed to parse the duration flag"),
+        }
+    } else {
+        let _ = Confirm::new(&format!(
+            "Press '{}' to finish and rollback",
+            "y".to_string().green()
+        ))
+        .prompt();
+    }
 
     plt.rollback().await?;
     println!("  Rolling back fault...");

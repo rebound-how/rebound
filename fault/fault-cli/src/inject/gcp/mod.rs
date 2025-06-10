@@ -58,7 +58,7 @@ impl CloudRunPlatform {
     fn cached_services(&self) -> Vec<ServiceResource> {
         self.resources
             .iter()
-            .filter(|r| r.meta.kind == "Service")
+            .filter(|r| r.meta.kind == "cloudrun")
             .map(|r| ServiceResource {
                 name: r.meta.name.clone(),
                 address: r.content["uri"]

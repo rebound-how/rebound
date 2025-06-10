@@ -1099,7 +1099,7 @@ pub struct FaultInjectionGcpConfig {
         help = "Service name.",
         env = "FAULT_INJECTION_GCP_SERVICE"
     )]
-    pub service: String,
+    pub service: Option<String>,
 
     /// Traffic percentage
     #[arg(
@@ -1116,10 +1116,18 @@ pub struct FaultInjectionGcpConfig {
         short,
         long,
         help = "Container image performing the fault.",
-        env = "FAULT_INJECTION_GCP_IMAGE",
-        default_value = "ghcr.io/rebound-how/fault:latest"
+        env = "FAULT_INJECTION_GCP_IMAGE"
     )]
     pub image: String,
+
+    /// How long to run the injection for
+    #[arg(
+        long,
+        help = "How long to run the injection for.",
+        env = "FAULT_INJECTION_GCP_DURATION",
+        value_parser
+    )]
+    pub duration: Option<String>,
 
     #[command(flatten)]
     pub options: Box<FaultInjectionCommandOptions>,
@@ -1155,6 +1163,15 @@ pub struct FaultInjectionKubernetesConfig {
         default_value = "ghcr.io/rebound-how/fault:latest"
     )]
     pub image: String,
+
+    /// How long to run the injection for
+    #[arg(
+        long,
+        help = "How long to run the injection for.",
+        env = "FAULT_INJECTION_GCP_DURATION",
+        value_parser
+    )]
+    pub duration: Option<String>,
 
     #[command(flatten)]
     pub options: Box<FaultInjectionCommandOptions>,
