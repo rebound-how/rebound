@@ -27,12 +27,15 @@ Platform Cloud Run. You will not need to change any code.
 
 -   [X] Inject <span class="f">fault</span> into the nginx service
 
+    The following injects a `800ms` into the service response time.
+
     ```bash
     fault inject gcp \
         --project <project> \  # (1)!
         --region <region>  \  # (2)!
         --service <service> \  # (3)!
         --image <image> \  # (4)!
+        --duration 30s \  # (5)!
         --with-latency --latency-mean 800
     ```
 
@@ -40,6 +43,7 @@ Platform Cloud Run. You will not need to change any code.
     2. The GCP region where your CloudRun service is running
     3. The GCP CloudRun service name
     4. The <span class="f">fault</span> container image full url
+    5. Optional [duration](https://docs.rs/parse_duration/latest/parse_duration/#syntax) after which the injection rollbacks. If unset, the user input is expected
 
     When you do not explicitly set the service, <span class="f">fault</span>
     lets you pick up one from the CLI:
