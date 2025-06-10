@@ -3,6 +3,37 @@
 This page references the information about how <span class="f">fault</span> injects its resources
 into the platform it supports.
 
+## Google Cloud Platform
+
+<span class="f">fault</span> may run on Google Cloud Platform by 
+hooking into a Cloud Run service.
+
+
+```mermaid
+sequenceDiagram
+  autonumber
+  fault (local)->>CloudRun Service: Fetch
+  fault (local)->>CloudRun Service: Add fault's container as a sidecar, expose a random port between 50000 and 55000 as the public port of the service.
+  CloudRun Service->>fault CloudRun Container: Starts container and set traffic shapping on new revision
+  loop fault proxy
+      fault CloudRun Container->>CloudRun Application Container: Route traffic via fault on `127.0.0.1:<service port>`
+      loop fault injection
+        fault CloudRun Container->>fault CloudRun Container: Apply faults
+      end
+  end
+```
+
+<span class="f">fault</span> uses the default GCPO authentication mechanism to
+connect to the project.
+
+The roles for that user needs at least the following permissions:
+
+- run.services.get
+- run.services.list
+- run.services.update
+
+You should be fine with using the [roles/run.developer](https://cloud.google.com/run/docs/reference/iam/roles#run.developer) role.
+
 ## Kubernetes
 
 <span class="f">fault</span> may run on Kubernetes by creating the following resources:
