@@ -25,6 +25,19 @@ Platform Cloud Run. You will not need to change any code.
 
     Follow the [official documentation](https://cloud.google.com/artifact-registry/docs/docker/pushing-and-pulling#pushing) to upload the [fault image](https://github.com/rebound-how/rebound/pkgs/container/fault)
 
+    Something along the lines:
+
+    ```bash
+    # locally download the official fault image
+    docker pull ghcr.io/rebound-how/fault:<version>
+    
+    # tag it to match your nex GCP Artifactory repository
+    docker tag ghcr.io/rebound-how/fault:<version> <region>-docker.pkg.dev/<project>/<repository>/fault:<version>
+
+    # push it to the repository
+    docker push <region>-docker.pkg.dev/<project>/<repository>/fault:<version>
+    ```
+
 -   [X] Inject <span class="f">fault</span> into the nginx service
 
     The following injects a `800ms` into the service response time.
