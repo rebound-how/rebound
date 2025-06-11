@@ -10,11 +10,12 @@
    <img alt="License" src="https://img.shields.io/github/license/reliablyhq/cli">
 </p>
 
+<!--
 <p align="center">
   <a href="https://rebound.how/docs/tutorials/install/">Installation</a> •
   <a href="https://rebound.how/docs/">Documentation</a>
 </p>
-
+-->
 ---
 
 The Rebound toolbox is your companion to build and drive your resilience
