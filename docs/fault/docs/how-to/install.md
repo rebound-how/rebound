@@ -43,7 +43,7 @@ The most direct route is to download the `fault` binary on your machine.
 -   [X] Download `fault`
 
     You can download the appropriate {==fault-cli==} binary for your platform
-    from [here](https://github.com/rebound-how/rebound/releases).
+    from [here](https://github.com/rebound-how/rebound/releases/latest).
 
 -   [X] Ensure `fault` can be found in your `PATH`
 
