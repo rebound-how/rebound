@@ -10,6 +10,7 @@ use serde::Serialize;
 use crate::agent::clients::SupportedLLMClient;
 #[cfg(feature = "agent")]
 use crate::agent::insight::ReportReviewRole;
+#[cfg(feature = "agent")]
 use crate::agent::platform::PlatformReviewRole;
 #[cfg(feature = "discovery")]
 use crate::discovery::types::ResourcePlatform;
@@ -1053,7 +1054,7 @@ pub struct AgentAdviceConfig {
 }
 
 /// Subcommands for the fault command
-#[cfg(feature = "injection")]
+#[cfg(feature = "agent")]
 #[derive(Subcommand, Debug)]
 pub enum AgentPlatformCommands {
     Gcp(GcpPlatformAdviceConfig),
@@ -1061,6 +1062,7 @@ pub enum AgentPlatformCommands {
 }
 
 /// Configuration for suggesting advices on your platform resources
+#[cfg(feature = "agent")]
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]
 pub struct KubernetesPlatformAdviceConfig {
     /// Namespace
@@ -1093,6 +1095,7 @@ pub struct KubernetesPlatformAdviceConfig {
 }
 
 /// Configuration for suggesting advices on your platform resources
+#[cfg(feature = "agent")]
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]
 pub struct GcpPlatformAdviceConfig {
     /// Project
