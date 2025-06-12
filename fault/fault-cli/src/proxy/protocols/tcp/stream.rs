@@ -235,7 +235,7 @@ async fn wrap_tls(
     stream: Box<dyn Bidirectional + 'static>,
     hostname: String,
 ) -> Result<Box<dyn Bidirectional + 'static>, ProxyError> {
-    let config = ClientConfig::with_platform_verifier();
+    let config = ClientConfig::with_platform_verifier()?;
     let tls_config = Arc::new(config);
 
     let domain = ServerName::try_from(hostname)

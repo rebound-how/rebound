@@ -74,7 +74,7 @@ indicatif = { version = "0.17.11", features = ["tokio", "improved_unicode"] }
 tokio-rustls = "0.26.2"
 rustls-pki-types = "1.12.0"
 rustls-native-certs = "0.8.1"
-rustls-platform-verifier = "0.5.3"
+rustls-platform-verifier = "0.6.0"
 arc-swap = "1.7.1"
 uuid = { version = "1.17.0", features = ["fast-rng", "serde", "v4"] }
 kanal = "0.1.1"
@@ -86,14 +86,11 @@ minijinja = { version = "2.10.2", features = ["loader"], optional = true }
 openapiv3 = { version = "2.1.0", optional = true }
 oas3 = { version = "0.16.1", optional = true }
 percent-encoding = { version = "2.3.1", optional = true }
-
-# agent feature
-ort-sys = { version = "=2.0.0-rc.9", default-features = false, optional = true }
-swiftide = { version = "0.26.0", optional = true, features = ["duckdb", "fastembed", "ollama", "openai", "qdrant", "tree-sitter", "open-router"] }
-swiftide-macros = { version = "0.26.0", optional = true }
-swiftide-core = { version = "0.26.0", optional = true }
-swiftide-agents = { version = "0.26.0", optional = true }
-swiftide-indexing = { version = "0.26.0", features = ["tree-sitter"], optional = true }
+swiftide = { version = "0.27.1", optional = true, features = ["duckdb", "fastembed", "ollama", "openai", "qdrant", "tree-sitter", "open-router"] }
+swiftide-macros = { version = "0.27.1", optional = true }
+swiftide-core = { version = "0.27.1", optional = true }
+swiftide-agents = { version = "0.27.1", optional = true }
+swiftide-indexing = { version = "0.27.1", features = ["tree-sitter"], optional = true }
 duckdb = { version = "1.2.2", optional = true, features = ["bundled"] }
 tree-sitter-python = { version = "0.23.6", optional = true }
 ignore = { version = "0.4.23", optional = true }
@@ -136,8 +133,8 @@ aya-build = "0.1.2"
 # fault-ebpf-programs import above
 #fault-ebpf-programs = { path = "../fault-ebpf-programs", optional = true }
 
-[patch.crates-io]
-fastembed = { version = "4.8.0" }
+#[patch.crates-io]
+#fastembed = { version = "4.8.0" }
 
 [[bin]]
 name = "fault"
@@ -146,6 +143,7 @@ path = "src/main.rs"
 [features]
 default = [
     "demo",
+    "agent",
     "scenario",
     "injection"
 ]
@@ -186,8 +184,8 @@ agent = [
     "dep:pulldown-cmark",
     "dep:pulldown-cmark-to-cmark",
     "dep:rustls",
-    "dep:tera",
-    "dep:ort-sys"
+    "dep:tera"
+
 ]
 openapi = [
     "dep:oas3",

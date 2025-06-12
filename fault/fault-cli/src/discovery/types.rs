@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::fmt;
 
 use chrono::DateTime;
 use chrono::Utc;
@@ -12,6 +13,7 @@ use serde_json::Value;
 #[serde(rename_all = "lowercase")]
 pub enum ResourcePlatform {
     Kubernetes,
+    Gcp,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -42,10 +44,22 @@ pub struct Meta {
     pub project: Option<String>,
 }
 
+impl fmt::Display for Meta {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.display)
+    }
+}
+
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Resource {
     pub id: String,
     pub meta: Meta,
     pub links: Vec<Link>,
     pub content: Value,
+}
+
+impl fmt::Display for Resource {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.meta)
+    }
 }

@@ -628,6 +628,75 @@ async fn main() -> Result<()> {
                 let report = handle.await??;
                 report.save(&cfg.report)?;
             }
+            cli::AgentCommands::PlatformReview { platform } => {
+                let (platform_type, role, resources, report_path) = match platform {
+                    cli::AgentPlatformCommands::Gcp(cfg) => (
+                        discovery::types::ResourcePlatform::Gcp,
+                        cfg.role.clone(),
+                        discovery::gcp::discover_cloud_run_resources(
+                            &cfg.project,
+                            &cfg.region,
+                        )
+                        .await?,
+                        cfg.report.clone()
+                    ),
+                    cli::AgentPlatformCommands::Kubernetes(cfg) => (
+                        discovery::types::ResourcePlatform::Kubernetes,
+                        cfg.role.clone(),
+                        discovery::k8s::discover_kubernetes_resources(&cfg.ns).await?,
+                        cfg.report.clone()
+                    ),
+                };
+
+                let llm_client = common.llm_client.clone();
+                let llm_prompt_model =
+                    common.llm_prompt_reasoning_model.clone();
+                let llm_embed_model = common.llm_embed_model.clone();
+
+                let resource = Select::new("Service:", resources).prompt()?;
+
+                let (sender, receiver) = kanal::bounded_async(5);
+
+                let handle: task::JoinHandle<
+                    Result<agent::platform::PlatformReviews>,
+                > = tokio::spawn(async move {
+                    Ok(agent::platform::analyze(
+                        platform_type,
+                        resource,
+                        &role,
+                        sender,
+                        llm_client,
+                        &llm_prompt_model,
+                        &llm_embed_model,
+                    )
+                    .await?)
+                });
+
+                let pb = long_operation(
+                    "Analyzing! This could take a while...",
+                    Some(5),
+                );
+
+                tokio::spawn(async move {
+                    let mut stream = receiver.stream();
+                    let pb = pb.clone();
+                    while let Some(event) = stream.next().await {
+
+                        pb.inc(1);
+                        if event.phase == agent::platform::PlatformReviewEventPhase::Completed {
+                            pb.finish_and_clear();
+                            break;
+                        }
+                        pb.set_message(format!(
+                            "{}...",
+                            event.phase.long_form().bold()
+                        ));
+                    }
+                });
+
+                let report = handle.await??;
+                report.save(&report_path)?;
+            }
         },
         #[cfg(feature = "injection")]
         Commands::Inject { inject } => match inject {

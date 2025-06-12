@@ -2,4 +2,4 @@
 
 ## Changed
 
-- Added GCP Cloud Run support for `fault inject`
+- Added platform reviewing through resources

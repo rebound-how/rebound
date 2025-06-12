@@ -57,6 +57,9 @@ pub enum ProxyError {
 
     #[error("Internal error: {0}")]
     Internal(String),
+
+    #[error("rust tls error: {0}")]
+    TlsError(#[from] tokio_rustls::rustls::Error),
 }
 
 impl IntoResponse for ProxyError {
@@ -120,6 +123,10 @@ impl IntoResponse for ProxyError {
                 json!({ "error": format!("Invalid Axum body value") }),
             ),
             ProxyError::GrpcAbort(..) => todo!(),
+            ProxyError::TlsError(error) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                json!({ "error": format!("Tls error") }),
+            ),
         };
 
         // Convert the JSON error message and status code into a response

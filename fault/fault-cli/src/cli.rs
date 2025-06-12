@@ -10,6 +10,7 @@ use serde::Serialize;
 use crate::agent::clients::SupportedLLMClient;
 #[cfg(feature = "agent")]
 use crate::agent::insight::ReportReviewRole;
+use crate::agent::platform::PlatformReviewRole;
 #[cfg(feature = "discovery")]
 use crate::discovery::types::ResourcePlatform;
 use crate::types::BandwidthUnit;
@@ -838,6 +839,12 @@ pub enum AgentCommands {
 
     /// Analyze and offer advices of your scenario report
     ScenarioReview(AgentAdviceConfig),
+
+    /// Analyze and offer advices of your platform report
+    PlatformReview {
+        #[command(subcommand)]
+        platform: AgentPlatformCommands,
+    },
 }
 
 /// Subcommands for executing a demo server
@@ -1043,6 +1050,86 @@ pub struct AgentAdviceConfig {
         env = "FAULT_AGENT_SCENARIO_REVIEW_REPORT_FILE"
     )]
     pub report: String,
+}
+
+/// Subcommands for the fault command
+#[cfg(feature = "injection")]
+#[derive(Subcommand, Debug)]
+pub enum AgentPlatformCommands {
+    Gcp(GcpPlatformAdviceConfig),
+    Kubernetes(KubernetesPlatformAdviceConfig),
+}
+
+/// Configuration for suggesting advices on your platform resources
+#[derive(Args, Clone, Debug, Serialize, Deserialize)]
+pub struct KubernetesPlatformAdviceConfig {
+    /// Namespace
+    #[arg(
+        long,
+        help = "Namespace.",
+        env = "FAULT_AGENT_PLATFORM_ADVICE_K8S_NS",
+        default_value = "default"
+    )]
+    pub ns: String,
+
+    /// Path where to save the generated reviews report
+    #[arg(
+        long = "report",
+        help = "Path where to save the generated reviews report",
+        default_value = "platform-review-report.md",
+        env = "FAULT_AGENT_PLATFORM_ADVICE_REPORT_FILE"
+    )]
+    pub report: String,
+
+    /// Role to influence the advice
+    #[arg(
+        long,
+        default_value_t = PlatformReviewRole::Developer,
+        value_enum,
+        help = "Role to influence the advice",
+        env = "FAULT_AGENT_PLATFORM_ADVICE_ROLE"
+    )]
+    pub role: PlatformReviewRole,
+}
+
+/// Configuration for suggesting advices on your platform resources
+#[derive(Args, Clone, Debug, Serialize, Deserialize)]
+pub struct GcpPlatformAdviceConfig {
+    /// Project
+    #[arg(
+        long,
+        help = "Project.",
+        env = "FAULT_AGENT_PLATFORM_ADVICE_GCP_PROJECT"
+    )]
+    pub project: String,
+
+    /// Region
+    #[arg(
+        short,
+        long,
+        help = "Region.",
+        env = "FAULT_AGENT_PLATFORM_ADVICE_GCP_REGION"
+    )]
+    pub region: String,
+
+    /// Path where to save the generated reviews report
+    #[arg(
+        long = "report",
+        help = "Path where to save the generated reviews report",
+        default_value = "platform-review-report.md",
+        env = "FAULT_AGENT_PLATFORM_ADVICE_REPORT_FILE"
+    )]
+    pub report: String,
+
+    /// Role to influence the advice
+    #[arg(
+        long,
+        default_value_t = PlatformReviewRole::Developer,
+        value_enum,
+        help = "Role to influence the advice",
+        env = "FAULT_AGENT_PLATFORM_ADVICE_ROLE"
+    )]
+    pub role: PlatformReviewRole,
 }
 
 #[cfg(feature = "injection")]

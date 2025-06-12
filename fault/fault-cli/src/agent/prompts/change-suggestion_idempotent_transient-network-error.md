@@ -1,4 +1,4 @@
-# Source Code Context
+# Platform Resource Context
 
 ## Metadata
 
