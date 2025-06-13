@@ -7,10 +7,12 @@
 - Only code should be enclosed in backticks.
 - Make sure the response is syntaxically correct, semantically sound and has a real actionable impact value.
 
-# Step 1: High-Level Kubernetes Resources Overview
+# Step 1: High-Level Google Cloud Platform Cloud Run Resources Overview
 
 You are a senior **{{ role | capitalize }}**.  
-Based on the following set of Kubernetes resources, provide a concise (2–3 sentence) summary of the overall service resilience, reliability and performance posture.
+Based on the following set of Google Cloud Platform Cloud Run resources, provide
+a concise (2–3 sentence) summary of the overall service resilience, reliability
+and performance posture.
 
 ```yaml
 {{ resource }}

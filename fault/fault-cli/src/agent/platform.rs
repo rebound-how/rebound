@@ -28,6 +28,7 @@ use super::clients::SupportedLLMClient;
 use super::clients::get_client;
 use crate::discovery::types::Resource;
 use crate::discovery::types::ResourcePlatform;
+use crate::errors::ProxyError;
 
 pub async fn analyze(
     platform_type: ResourcePlatform,
@@ -54,7 +55,15 @@ pub async fn analyze(
         .collection_name(CODE_COLLECTION)
         .build()?;
 
-    let _ = qdrant.create_index_if_not_exists().await?;
+    let _ = qdrant.create_index_if_not_exists().await
+        .map_err(|e| {
+            tracing::error!("{}", e);
+            ProxyError::Other(
+                format!(
+                    "Failed to connect to a qdrant server. Make sure to properly configure your environment"
+                ).to_string(),
+            )
+        })?;
 
     // we carry a multiple shots analysis for better advices
     // each shot response is injected into the next shot

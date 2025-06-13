@@ -125,7 +125,7 @@ impl IntoResponse for ProxyError {
             ProxyError::GrpcAbort(..) => todo!(),
             ProxyError::TlsError(error) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                json!({ "error": format!("Tls error") }),
+                json!({ "error": format!("Tls error: {}", error) }),
             ),
         };
 

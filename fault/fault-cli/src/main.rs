@@ -629,24 +629,28 @@ async fn main() -> Result<()> {
                 report.save(&cfg.report)?;
             }
             cli::AgentCommands::PlatformReview { platform } => {
-                let (platform_type, role, resources, report_path) = match platform {
-                    cli::AgentPlatformCommands::Gcp(cfg) => (
-                        discovery::types::ResourcePlatform::Gcp,
-                        cfg.role.clone(),
-                        discovery::gcp::discover_cloud_run_resources(
-                            &cfg.project,
-                            &cfg.region,
-                        )
-                        .await?,
-                        cfg.report.clone()
-                    ),
-                    cli::AgentPlatformCommands::Kubernetes(cfg) => (
-                        discovery::types::ResourcePlatform::Kubernetes,
-                        cfg.role.clone(),
-                        discovery::k8s::discover_kubernetes_resources(&cfg.ns).await?,
-                        cfg.report.clone()
-                    ),
-                };
+                let (platform_type, role, resources, report_path) =
+                    match platform {
+                        cli::AgentPlatformCommands::Gcp(cfg) => (
+                            discovery::types::ResourcePlatform::Gcp,
+                            cfg.role.clone(),
+                            discovery::gcp::discover_cloud_run_resources(
+                                &cfg.project,
+                                &cfg.region,
+                            )
+                            .await?,
+                            cfg.report.clone(),
+                        ),
+                        cli::AgentPlatformCommands::Kubernetes(cfg) => (
+                            discovery::types::ResourcePlatform::Kubernetes,
+                            cfg.role.clone(),
+                            discovery::k8s::discover_kubernetes_resources(
+                                &cfg.ns,
+                            )
+                            .await?,
+                            cfg.report.clone(),
+                        ),
+                    };
 
                 let llm_client = common.llm_client.clone();
                 let llm_prompt_model =
@@ -681,7 +685,6 @@ async fn main() -> Result<()> {
                     let mut stream = receiver.stream();
                     let pb = pb.clone();
                     while let Some(event) = stream.next().await {
-
                         pb.inc(1);
                         if event.phase == agent::platform::PlatformReviewEventPhase::Completed {
                             pb.finish_and_clear();
