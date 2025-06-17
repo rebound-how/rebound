@@ -86,13 +86,15 @@ minijinja = { version = "2.10.2", features = ["loader"], optional = true }
 openapiv3 = { version = "2.1.0", optional = true }
 oas3 = { version = "0.16.1", optional = true }
 percent-encoding = { version = "2.3.1", optional = true }
+regex = { version = "1.11.1", default-features = false, features = ["std"], optional = true }
+
+# agent feature
 swiftide = { version = "0.27.1", optional = true, features = ["duckdb", "fastembed", "ollama", "openai", "qdrant", "tree-sitter", "open-router"] }
 swiftide-macros = { version = "0.27.1", optional = true }
 swiftide-core = { version = "0.27.1", optional = true }
-swiftide-agents = { version = "0.27.1", optional = true }
+swiftide-agents = { version = "0.27.1", optional = true, features = ["mcp"] }
 swiftide-indexing = { version = "0.27.1", features = ["tree-sitter"], optional = true }
 duckdb = { version = "1.2.2", optional = true, features = ["bundled"] }
-tree-sitter-python = { version = "0.23.6", optional = true }
 ignore = { version = "0.4.23", optional = true }
 similar = { version = "2.7.0", optional = true }
 inquire = { version = "0.7.5", optional = true }
@@ -101,7 +103,14 @@ similar-string = { version = "1.4.3", optional = true }
 pulldown-cmark = { version = "0.13.0", default-features = false, optional = true }
 pulldown-cmark-to-cmark = { version = "21.0.0", default-features = false, optional = true }
 rustls = { version = "0.23.27", features = ["ring"], optional = true }
-regex = { version = "1.11.1", default-features = false, features = ["std"], optional = true }
+rmcp = { version = "0.1.5", optional = true, features = ["transport-io"] }
+tree-sitter = { version = "0.25.6", optional = true }
+tree-sitter-python = { version = "0.23.6", optional = true }
+tree-sitter-rust = { version = "0.24.0", optional = true }
+tree-sitter-javascript = { version = "0.23.1", optional = true }
+tree-sitter-go = { version = "0.23.4", optional = true }
+tree-sitter-yaml = { version = "0.7.1", optional = true }
+schemars = { version = "0.9.0", optional = true }
 
 # discovery
 kube = { version = "1.1.0", features = ["jsonpatch"], optional = true }
@@ -174,7 +183,6 @@ agent = [
     "dep:swiftide-agents",
     "dep:swiftide-indexing",
     "dep:duckdb",
-    "dep:tree-sitter-python",
     "dep:ignore",
     "dep:similar",
     "dep:derive_builder",
@@ -183,8 +191,15 @@ agent = [
     "dep:pulldown-cmark",
     "dep:pulldown-cmark-to-cmark",
     "dep:rustls",
-    "dep:tera"
-
+    "dep:tera",
+    "dep:rmcp",
+    "dep:tree-sitter",
+    "dep:tree-sitter-javascript",
+    "dep:tree-sitter-yaml",
+    "dep:tree-sitter-rust",
+    "dep:tree-sitter-go",
+    "dep:tree-sitter-python",
+    "dep:schemars"
 ]
 openapi = [
     "dep:oas3",

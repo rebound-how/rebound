@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use std::sync::Arc;
 
 use anyhow::Result;
 use async_trait::async_trait;
@@ -18,15 +19,19 @@ use swiftide::integrations::fastembed::FastEmbed;
 use swiftide::integrations::qdrant::Qdrant;
 use swiftide::integrations::treesitter::SupportedLanguages;
 use swiftide::integrations::{self};
+use swiftide::query::query_transformers;
+use swiftide_core::EmbeddingModel;
+use swiftide_core::SimplePrompt;
 use swiftide_core::Transformer;
 use swiftide_core::WithBatchIndexingDefaults;
 use swiftide_core::WithIndexingDefaults;
+use swiftide_indexing::transformers::Embed;
+
+use crate::agent::clients::get_client;
 
 use super::CODE_COLLECTION;
 use super::clients::SupportedLLMClient;
-use super::clients::openai::get_client;
 use super::meta::Meta;
-use super::transformers::model::Embed as ClientEmbed;
 
 pub async fn index(
     source_dir: &str,
@@ -39,7 +44,10 @@ pub async fn index(
 ) -> Result<()> {
     let lang = SupportedLanguages::from_str(source_lang)?;
 
-    let llm = get_client(prompt_model, embed_model)?;
+    let llm = get_client(client_type, prompt_model, embed_model)?;
+
+    let sp: Arc<dyn SimplePrompt> = llm.clone();
+    let em: Arc<dyn EmbeddingModel> = llm.clone();
 
     let duckdb_client = Duckdb::builder()
         .connection(duckdb::Connection::open(cache_db_path).unwrap())
@@ -69,17 +77,17 @@ pub async fn index(
         source_lang,
         Some(chunk_size),
     )?)
-    .then(MetadataQACode::new(llm.clone()))
+    .then(MetadataQACode::new(sp.clone()))
     .then_chunk(ChunkCode::try_for_language_and_chunk_size(
         source_lang,
         10..chunk_size,
     )?)
-    .then(indexing::transformers::CompressCodeOutline::new(llm.clone()))
+    .then(indexing::transformers::CompressCodeOutline::new(sp.clone()))
     .then(indexing::transformers::MetadataRefsDefsCode::try_from_language(
         source_lang,
     )?)
     .then(TagOpId::new(opids))
-    .then_in_batch(llm.get_embed()?)
+    .then_in_batch(Embed::new(em.clone()).with_batch_size(10))
     .then_in_batch(SparseEmbed::new(fastembed_sparse.clone()))
     .then_store_with(qdrant.clone())
     .run()

@@ -3,8 +3,11 @@ use std::sync::Arc;
 use anyhow::Result;
 use serde::Deserialize;
 use serde::Serialize;
+use swiftide::integrations;
+use swiftide_core::ChatCompletion;
 use swiftide_core::DynClone;
 use swiftide_core::EmbeddingModel;
+use swiftide_core::LanguageModelWithBackOff;
 use swiftide_core::SimplePrompt;
 
 pub(crate) mod ollama;
@@ -21,13 +24,31 @@ pub enum SupportedLLMClient {
     Ollama,
 }
 
+impl Default for SupportedLLMClient {
+    fn default() -> Self {
+        SupportedLLMClient::OpenAI
+    }
+}
+
 pub trait LLM:
-    SimplePrompt + EmbeddingModel + Send + Sync + std::fmt::Debug + DynClone
+    ChatCompletion
+    + SimplePrompt
+    + EmbeddingModel
+    + Send
+    + Sync
+    + std::fmt::Debug
+    + DynClone
 {
 }
 
 impl<T> LLM for T where
-    T: SimplePrompt + EmbeddingModel + Send + Sync + std::fmt::Debug + DynClone
+    T: ChatCompletion
+        + SimplePrompt
+        + EmbeddingModel
+        + Send
+        + Sync
+        + std::fmt::Debug
+        + DynClone
 {
 }
 
@@ -45,6 +66,24 @@ pub fn get_client(
         }
         SupportedLLMClient::Ollama => {
             Ok(Arc::new(ollama::get_client(prompt_model, embed_model)?))
+        }
+    }
+}
+
+pub fn get_llm_client(
+    llm: SupportedLLMClient,
+    prompt_model: &str,
+    embed_model: &str,
+) -> Result<Box<dyn ChatCompletion>> {
+    match llm {
+        SupportedLLMClient::OpenAI => {
+            Ok(Box::new(openai::get_client(prompt_model, embed_model)?))
+        }
+        SupportedLLMClient::OpenRouter => {
+            Ok(Box::new(openrouter::get_client(prompt_model, embed_model)?))
+        }
+        SupportedLLMClient::Ollama => {
+            Ok(Box::new(ollama::get_client(prompt_model, embed_model)?))
         }
     }
 }

@@ -2,4 +2,4 @@
 
 ## Changed
 
-- Added platform reviewing through resources
+- Added MCP tools

@@ -846,6 +846,9 @@ pub enum AgentCommands {
         #[command(subcommand)]
         platform: AgentPlatformCommands,
     },
+
+    /// Execute a tool via MCP
+    Tool(AgentMCPConfig),
 }
 
 /// Subcommands for executing a demo server
@@ -1134,6 +1137,10 @@ pub struct GcpPlatformAdviceConfig {
     )]
     pub role: PlatformReviewRole,
 }
+
+#[cfg(feature = "agent")]
+#[derive(Args, Clone, Debug, Serialize, Deserialize)]
+pub struct AgentMCPConfig {}
 
 #[cfg(feature = "injection")]
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]

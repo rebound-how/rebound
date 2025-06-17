@@ -687,9 +687,9 @@ async fn main() -> Result<()> {
                     while let Some(event) = stream.next().await {
                         pb.inc(1);
                         if event.phase == agent::platform::PlatformReviewEventPhase::Completed {
-                            pb.finish_and_clear();
-                            break;
-                        }
+                                    pb.finish_and_clear();
+                                    break;
+                                }
                         pb.set_message(format!(
                             "{}...",
                             event.phase.long_form().bold()
@@ -699,6 +699,15 @@ async fn main() -> Result<()> {
 
                 let report = handle.await??;
                 report.save(&report_path)?;
+            }
+            cli::AgentCommands::Tool(cfg) => {
+                let llm_client = common.llm_client.clone();
+                let llm_prompt_model =
+                    common.llm_prompt_reasoning_model.clone();
+                let llm_embed_model = common.llm_embed_model.clone();
+
+                agent::mcp::run(llm_client, &llm_prompt_model, &llm_embed_model)
+                    .await?
             }
         },
         #[cfg(feature = "injection")]
