@@ -69,7 +69,9 @@ pub struct CodeChange {
     pub old: String,
     #[schemars(description = "the full content of the file after the changes")]
     pub new: String,
-    #[schemars(description = "a list of dependencies that may be required to install as part of the changes")]
+    #[schemars(
+        description = "a list of dependencies that may be required to install as part of the changes"
+    )]
     pub dependencies: Vec<String>,
     #[schemars(description = "the computed unified-diff between old and new")]
     pub diff: String,
