@@ -14,6 +14,18 @@ application using <span class="f">fault</span> proxy capabilities.
         Be familiar with running `fault run` {==--with-[fault]==} commands from
         your terminal.
 
+!!! warning
+
+    Currently HTTP errors can only be applied against HTTP proxy forwarding
+    traffic. It doesn't work yet with tunneling traffic. The reason is that,
+    when fault use the tunneling approach the network streams are opaque to
+    fault. Therefore it cannot figure the protocol going though. One could
+    write a [plugin](./extending.md) to achieve this but it's not a core feature
+    yet.
+
+    This HTTP error work against forward proxying but not tunneling proxy nor
+    raw TCP proxies.
+
 ## Constant Internal Server Error
 
 -   [X] Start the proxy with HTTP Error 500 from the remote server
