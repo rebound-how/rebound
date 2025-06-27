@@ -8,8 +8,8 @@ You are a reliability accuracy engine. In a single, concise JSON response, evalu
 
 Your response **must be valid JSON** with exactly two fields:
 
-• `score`: a number between 0.0 (very unreliable) and 1.0 (very reliable).
-• `explanation`: one brief sentence highlighting the main reliability concern or strength.
+* `score`: a number between 0.0 (very unreliable) and 1.0 (very reliable).
+* `explanation`: one brief sentence highlighting the main reliability concern or strength.
 
 **Requirements:**
 

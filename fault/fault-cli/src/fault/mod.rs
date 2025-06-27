@@ -12,6 +12,7 @@ use reqwest::ClientBuilder as ReqwestClientBuilder;
 use reqwest::Request as ReqwestRequest;
 use tokio::io::AsyncRead as TokioAsyncRead;
 use tokio::io::AsyncWrite as TokioAsyncWrite;
+use tokio::io::AsyncWriteExt;
 use tokio_rustls::client::TlsStream;
 
 pub mod bandwidth;
@@ -29,14 +30,18 @@ use crate::event::ProxyTaskEvent;
 use crate::types::StreamSide;
 
 /// A composite trait that combines AsyncRead, AsyncWrite, Unpin, and Send.
+#[async_trait::async_trait]
 pub trait Bidirectional:
     TokioAsyncRead + TokioAsyncWrite + Unpin + Send + std::fmt::Debug
 {
+    async fn shutdown(&mut self) -> std::io::Result<()>;
 }
 
-impl<T> Bidirectional for T where
-    T: TokioAsyncRead + TokioAsyncWrite + Unpin + Send + std::fmt::Debug
-{
+#[async_trait::async_trait]
+impl Bidirectional for tokio::net::TcpStream {
+    async fn shutdown(&mut self) -> std::io::Result<()> {
+        tokio::io::AsyncWriteExt::shutdown(&mut self).await
+    }
 }
 
 pub trait BidirectionalReadHalf:
@@ -64,6 +69,13 @@ impl<T> BidirectionalWriteHalf for T where
 pub struct TlsBidirectional {
     #[pin]
     pub inner: TlsStream<Box<dyn Bidirectional + 'static>>,
+}
+
+#[async_trait::async_trait]
+impl Bidirectional for TlsBidirectional {
+    async fn shutdown(&mut self) -> std::io::Result<()> {
+        self.inner.shutdown().await
+    }
 }
 
 impl tokio::io::AsyncRead for TlsBidirectional {

@@ -18,6 +18,7 @@ use reqwest::Body;
 use reqwest::Request as ReqwestRequest;
 use tokio::io::AsyncRead;
 use tokio::io::AsyncWrite;
+use tokio::io::AsyncWriteExt;
 use tokio::io::ReadBuf;
 use tokio::io::split;
 use tokio_util::io::ReaderStream;
@@ -150,6 +151,8 @@ impl<S> PacketLossLimitedRead<S> {
         settings: PacketLossSettings,
         event: Option<Box<dyn ProxyTaskEvent>>,
     ) -> Self {
+        tracing::info!("Setting up packet loss on {} side", settings.side);
+
         let strategy = PacketLossStrategy::default();
         let (transition_matrix, loss_probabilities) = match strategy {
             PacketLossStrategy::MultiStateMarkov {
@@ -378,6 +381,17 @@ where
     }
 }
 
+#[async_trait::async_trait]
+impl<R, W> Bidirectional for PacketLossLimitedBidirectional<R, W>
+where
+    R: AsyncRead + Unpin + Send + std::fmt::Debug,
+    W: AsyncWrite + Unpin + Send + std::fmt::Debug,
+{
+    async fn shutdown(&mut self) -> std::io::Result<()> {
+        self.writer.shutdown().await
+    }
+}
+
 impl<R, W> AsyncRead for PacketLossLimitedBidirectional<R, W>
 where
     R: AsyncRead + Send + Unpin + std::fmt::Debug,
@@ -416,6 +430,7 @@ where
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<IoResult<()>> {
+        tracing::debug!("shutting down write side of Packet Loss fault");
         self.project().writer.poll_shutdown(cx)
     }
 }

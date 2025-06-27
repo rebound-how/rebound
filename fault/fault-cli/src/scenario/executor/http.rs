@@ -74,14 +74,20 @@ pub async fn execute_request(
     proxy_address: String,
     addr_id_map: Arc<scc::HashMap<String, Uuid>>,
     id_events_map: Arc<scc::HashMap<Uuid, ScenarioItemLifecycle>>,
+    set_proxy: bool,
 ) -> Result<ItemMetrics, ScenarioError> {
     // atomic structure holding the local/remote addresses for the connection
     let addresses = Arc::new(ArcSwap::from_pointee(Addresses::new()));
     let log_layer = LoggingConnectorLayer { addresses: addresses.clone() };
 
+    let mut builder = reqwest::Client::builder();
+
+    if set_proxy {
+        builder = builder.proxy(reqwest::Proxy::http(&proxy_address).unwrap())
+    }
+
     let client = Arc::new(
-        reqwest::Client::builder()
-            .proxy(reqwest::Proxy::http(&proxy_address).unwrap())
+        builder
             .connector_layer(log_layer)
             .build()
             .map_err(|e| ScenarioError::HTTPError(e.to_string()))?,
@@ -108,10 +114,11 @@ pub async fn execute_request(
             if e.is_timeout() {
                 tracing::warn!("Request timed out");
                 timed_out = true;
+            } else {
+                tracing::error!("Error while receiving bytes: {}", e);
+                errored = true;
             }
 
-            tracing::error!("Error while receiving bytes: {}", e);
-            errored = true;
             None
         }
     };

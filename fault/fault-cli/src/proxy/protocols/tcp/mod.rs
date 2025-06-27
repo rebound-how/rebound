@@ -2,9 +2,13 @@ use std::io::ErrorKind;
 use std::net::IpAddr;
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::time::Duration;
 
 use anyhow::Result;
 use init::resolve_remote_host;
+use socket2::SockRef;
+use socket2::TcpKeepalive;
+use tokio::io::AsyncWriteExt;
 use tokio::sync::mpsc;
 use tokio::time::Instant;
 
@@ -16,6 +20,7 @@ use crate::types::ProxyMap;
 pub mod init;
 pub mod stream;
 
+#[tracing::instrument(skip_all)]
 pub async fn run_tcp_proxy(
     proxied_proto: ProxyMap,
     state: Arc<ProxyState>,
@@ -83,6 +88,8 @@ pub async fn run_tcp_proxy(
                             proto.remote.remote_port
                         );
 
+                        let stream = stream;
+
                         tokio::spawn(async move {
                             let proto = proto.clone();
 
@@ -102,15 +109,6 @@ pub async fn run_tcp_proxy(
                                         bytes_to_server,
                                     );
                                 },
-                                Err(e) if is_unexpected_eof(&e) => {
-                                    tracing::debug!("EOF reached on stream: {}", e);
-                                    let _ = event.on_response(0);
-                                    let _ = event.on_completed(
-                                        start.elapsed(),
-                                        0,
-                                        0,
-                                    );
-                                }
                                 Err(e) => {
                                     tracing::error!("Error handling stream from {}: {:?}", addr, e);
                                     let _ = event.on_error(Box::new(e));

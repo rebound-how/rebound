@@ -30,6 +30,7 @@ impl fmt::Display for HttpResponseFaultInjector {
 
 impl From<&HttpResponseSettings> for HttpResponseFaultInjector {
     fn from(settings: &HttpResponseSettings) -> Self {
+        tracing::info!("Setting up HTTP error");
         HttpResponseFaultInjector { settings: settings.clone() }
     }
 }

@@ -53,6 +53,7 @@ pub async fn execute(
         proxy_address.clone(),
         addr_id_map.clone(),
         id_events_map.clone(),
+        true,
     )
     .await
     {

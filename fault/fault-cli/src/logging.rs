@@ -21,6 +21,7 @@ use tracing_opentelemetry::OpenTelemetryLayer;
 use tracing_subscriber::EnvFilter;
 use tracing_subscriber::Layer;
 use tracing_subscriber::Registry;
+use tracing_subscriber::fmt::format::FmtSpan;
 use tracing_subscriber::layer::SubscriberExt;
 
 fn resource() -> Resource {
@@ -194,10 +195,11 @@ pub fn setup_logging(
         let file_filter = EnvFilter::builder().parse_lossy(log_level.clone());
 
         let file_layer = tracing_subscriber::fmt::layer()
+            .with_span_events(FmtSpan::NONE)
             .with_file(true)
             .with_line_number(true)
             .with_thread_ids(false)
-            .with_target(true)
+            .with_target(false)
             .with_writer(file_non_blocking)
             .with_filter(file_filter)
             .boxed();
@@ -214,9 +216,9 @@ pub fn setup_logging(
         stdoutguard = Some(stdout_guard);
 
         let stdout_layer = tracing_subscriber::fmt::layer()
-            .compact()
-            .with_file(true)
-            .with_line_number(true)
+            .with_span_events(FmtSpan::NONE)
+            .with_file(false)
+            .with_line_number(false)
             .with_thread_ids(false)
             .with_thread_names(false)
             .with_target(false)

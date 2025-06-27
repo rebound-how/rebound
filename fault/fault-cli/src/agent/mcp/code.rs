@@ -1,7 +1,10 @@
+use std::path::Path;
 use std::str::FromStr;
 use std::sync::Arc;
 
 use anyhow::Result;
+use rmcp::Error as McpError;
+use serde_json::json;
 use swiftide::indexing;
 use swiftide::indexing::EmbeddedField;
 use swiftide::indexing::transformers::ChunkCode;
@@ -29,6 +32,31 @@ use crate::agent::clients::get_client;
 pub struct SnippetComponents {
     pub full: String,
     pub body: String,
+}
+
+pub fn guess_file_language(file: &str) -> Result<String, McpError> {
+    let ext = Path::new(&file)
+        .extension()
+        .ok_or_else(|| {
+            McpError::internal_error(
+                "file_ext_not_found",
+                Some(json!({"file": file})),
+            )
+        })?
+        .to_str()
+        .unwrap();
+
+    Ok(match ext {
+        "rs" => "rust",
+        "py" => "python",
+        "js" => "javascript",
+        "ts" => "typescript",
+        "go" => "go",
+        "java" => "java",
+        "yaml" => "yaml",
+        _ => "text",
+    }
+    .to_string())
 }
 
 fn grammar_for_extension(ext: &str) -> Option<Language> {

@@ -10,6 +10,7 @@ use std::task::Poll;
 use async_trait::async_trait;
 use axum::http;
 use bytes::BytesMut;
+use futures::FutureExt;
 use futures::StreamExt;
 use governor::Quota;
 use governor::RateLimiter;
@@ -22,6 +23,7 @@ use reqwest::ClientBuilder;
 use reqwest::Request;
 use tokio::io::AsyncRead;
 use tokio::io::AsyncWrite;
+use tokio::io::AsyncWriteExt;
 use tokio::io::ReadBuf;
 use tokio::io::split;
 use tokio_util::io::ReaderStream;
@@ -29,14 +31,14 @@ use tokio_util::io::ReaderStream;
 use super::Bidirectional;
 use super::BidirectionalReadHalf;
 use super::BidirectionalWriteHalf;
-use super::DelayWrapper;
 use super::FaultInjector;
-use super::FutureDelay;
 use crate::config::BandwidthSettings;
 use crate::config::FaultKind;
 use crate::errors::ProxyError;
 use crate::event::FaultEvent;
 use crate::event::ProxyTaskEvent;
+use crate::fault::DelayWrapper;
+use crate::fault::FutureDelay;
 use crate::types::Direction;
 use crate::types::StreamSide;
 
@@ -50,9 +52,9 @@ pub struct BandwidthLimitedWrite<S> {
     #[pin]
     inner: S,
     limiter: Option<Arc<Limiter>>,
+    event: Option<Box<dyn ProxyTaskEvent>>,
     #[pin]
     delay: Option<Pin<Box<dyn FutureDelay>>>,
-    event: Option<Box<dyn ProxyTaskEvent>>,
     max_write_size: usize,
     side: StreamSide,
 }
@@ -87,11 +89,17 @@ where
                                         * created */
         };
 
+        tracing::info!(
+            "Setting bandwidth on {} side with max write size {}/Bps",
+            settings.side,
+            rate_bps
+        );
+
         Ok(BandwidthLimitedWrite {
             inner,
             limiter: Some(Arc::new(RateLimiter::direct(quota))),
-            delay: None,
             event,
+            delay: None,
             side: settings.side,
             max_write_size: rate_bps,
         })
@@ -141,11 +149,17 @@ where
                                         * created */
         };
 
+        tracing::info!(
+            "Setting bandwidth on {} side with max read size {}/Bps",
+            settings.side,
+            rate_bps
+        );
+
         Ok(BandwidthLimitedRead {
             inner,
             limiter: Some(Arc::new(RateLimiter::direct(quota))),
-            delay: None,
             event,
+            delay: None,
             side: settings.side,
             max_read_size: rate_bps,
         })
@@ -158,74 +172,60 @@ impl<S: AsyncWrite + Unpin> AsyncWrite for BandwidthLimitedWrite<S> {
         cx: &mut Context<'_>,
         buf: &[u8],
     ) -> Poll<IoResult<usize>> {
+        tracing::info!("poll_write: {}", buf.len());
+
         let mut this = self.project();
 
-        if let Some(limiter) = this.limiter.as_ref().cloned() {
-            let requested_write = buf.len();
-            let to_write = std::cmp::min(*this.max_write_size, requested_write);
-            if to_write == 0 {
-                return Poll::Ready(Ok(0));
-            }
+        let limiter = match this.limiter.as_ref().cloned() {
+            Some(l) => l,
+            None => return Pin::new(&mut this.inner).poll_write(cx, buf),
+        };
 
-            let permit_nz = match NonZeroU32::new(to_write as u32) {
-                Some(nz) => nz,
-                None => {
-                    // Handle the case where to_write exceeds u32::MAX
-                    return Poll::Ready(Ok(0));
+        let requested = buf.len();
+        let to_write = requested.min(*this.max_write_size);
+        if to_write == 0 {
+            return Poll::Ready(Ok(0));
+        }
+        let permit = NonZeroU32::new(to_write as u32).unwrap();
+
+        if this.delay.is_none() {
+            let lim = limiter.clone();
+            let fut = async move {
+                if let Err(err) = lim.until_n_ready(permit).await {
+                    tracing::warn!("Rate limiter error: {}", err);
                 }
             };
+            this.delay.set(Some(Box::pin(DelayWrapper::new(fut))));
+        }
 
-            match limiter.check_n(permit_nz) {
-                Ok(_) => {
-                    match Pin::new(&mut this.inner).poll_write(cx, buf) {
-                        Poll::Ready(Ok(written)) => {
-                            // Emit event
-                            if let Some(event) = &*this.event {
-                                let _ =
-                                    event.on_applied(FaultEvent::Bandwidth {
-                                        direction: Direction::Egress,
-                                        side: this.side.clone(),
-                                        bps: Some(written),
-                                    });
-                            }
-                            Poll::Ready(Ok(written))
-                        }
-                        Poll::Ready(Err(e)) => Poll::Ready(Err(e)),
-                        Poll::Pending => Poll::Pending,
-                    }
+        if let Some(delay) = this.delay.as_mut().as_pin_mut() {
+            match delay.poll(cx) {
+                Poll::Pending => {
+                    return Poll::Pending;
                 }
-                Err(_) => {
-                    // Rate limit exceeded
-                    if this.delay.is_none() {
-                        let limiter_clone = limiter.clone();
-                        let delay_future =
-                            async move { limiter_clone.until_ready().await };
-                        *this.delay =
-                            Some(Box::pin(DelayWrapper::new(delay_future)));
-                    }
-
-                    if let Some(ref mut delay) = *this.delay {
-                        match delay.as_mut().poll(cx) {
-                            Poll::Ready(_) => {
-                                // Delay completed, reset the delay
-                                *this.delay = None;
-                                // Return Poll::Pending to allow re-polling
-                                return Poll::Pending;
-                            }
-                            Poll::Pending => {
-                                // Still waiting
-                                return Poll::Pending;
-                            }
-                        }
-                    }
-
-                    // No delay set, return Poll::Pending
-                    Poll::Pending
+                Poll::Ready(_) => {
+                    this.delay.set(None);
                 }
             }
-        } else {
-            // No limiter, proceed normally
-            Pin::new(&mut this.inner).poll_write(cx, buf)
+        }
+
+        match Pin::new(&mut this.inner).poll_write(cx, &buf[..to_write]) {
+            Poll::Ready(Ok(written)) => {
+                tracing::info!(
+                    "Buffer size {} => limited bandwidth write {} bytes",
+                    requested,
+                    written
+                );
+                if let Some(evt) = &*this.event {
+                    let _ = evt.on_applied(FaultEvent::Bandwidth {
+                        direction: Direction::Egress,
+                        side: this.side.clone(),
+                        bps: Some(written),
+                    });
+                }
+                Poll::Ready(Ok(written))
+            }
+            other => other,
         }
     }
 
@@ -255,25 +255,22 @@ impl<S: AsyncRead + Unpin> AsyncRead for BandwidthLimitedRead<S> {
         let mut this = self.project();
 
         if let Some(limiter) = this.limiter.as_ref().cloned() {
-            // Cap the read size to the maximum allowed
             let requested_read = buf.remaining();
             let to_read = std::cmp::min(*this.max_read_size, requested_read);
             if to_read == 0 {
                 return Poll::Ready(Ok(()));
             }
 
-            // Attempt to reserve `to_read` permits
             let permit_nz = match NonZeroU32::new(to_read as u32) {
                 Some(nz) => nz,
-                None => {
-                    // Handle the case where to_read exceeds u32::MAX
-                    return Poll::Ready(Ok(()));
-                }
+                None => return Poll::Ready(Ok(())),
             };
 
-            match limiter.check_n(permit_nz) {
-                Ok(_) => {
-                    // Permits are available; proceed to read
+            let fut = limiter.until_n_ready(permit_nz);
+            let mut fut = Box::pin(fut);
+
+            match fut.as_mut().poll(cx) {
+                Poll::Ready(Ok(())) => {
                     let mut limited_buf =
                         ReadBuf::new(&mut buf.initialize_unfilled()[..to_read]);
 
@@ -282,6 +279,11 @@ impl<S: AsyncRead + Unpin> AsyncRead for BandwidthLimitedRead<S> {
                             let filled = limited_buf.filled().len();
                             buf.advance(filled);
 
+                            tracing::info!(
+                                "Buffer size {} => limited bandwidth to read {} bytes",
+                                requested_read,
+                                filled
+                            );
                             if let Some(event) = &*this.event {
                                 let _ =
                                     event.on_applied(FaultEvent::Bandwidth {
@@ -293,42 +295,16 @@ impl<S: AsyncRead + Unpin> AsyncRead for BandwidthLimitedRead<S> {
 
                             Poll::Ready(Ok(()))
                         }
-                        Poll::Ready(Err(e)) => Poll::Ready(Err(e)),
-                        Poll::Pending => Poll::Pending,
+                        other => other,
                     }
                 }
-                Err(_) => {
-                    // Rate limit exceeded
-                    if this.delay.is_none() {
-                        let limiter_clone = limiter.clone();
-                        let delay_future = async move {
-                            limiter_clone.until_ready().await;
-                        };
-                        *this.delay =
-                            Some(Box::pin(DelayWrapper::new(delay_future)));
-                    }
-
-                    if let Some(ref mut delay) = *this.delay {
-                        match delay.as_mut().poll(cx) {
-                            Poll::Ready(_) => {
-                                // Delay completed, reset the delay
-                                *this.delay = None;
-                                // Return Poll::Pending to allow re-polling
-                                Poll::Pending
-                            }
-                            Poll::Pending => {
-                                // Still waiting
-                                Poll::Pending
-                            }
-                        }
-                    } else {
-                        // No delay set, return Poll::Pending
-                        Poll::Pending
-                    }
-                }
+                Poll::Ready(Err(_)) => Poll::Ready(Err(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    "Rate limiter error",
+                ))),
+                Poll::Pending => Poll::Pending,
             }
         } else {
-            // No limiter, proceed normally
             this.inner.poll_read(cx, buf)
         }
     }
@@ -351,6 +327,17 @@ where
 {
     fn new(reader: R, writer: W) -> Self {
         Self { reader, writer }
+    }
+}
+
+#[async_trait::async_trait]
+impl<R, W> Bidirectional for BandwidthLimitedBidirectional<R, W>
+where
+    R: AsyncRead + Unpin + Send + std::fmt::Debug,
+    W: AsyncWrite + Unpin + Send + std::fmt::Debug,
+{
+    async fn shutdown(&mut self) -> std::io::Result<()> {
+        self.writer.shutdown().await
     }
 }
 
@@ -392,6 +379,7 @@ where
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<IoResult<()>> {
+        tracing::debug!("shutting down write side of bandwidth fault");
         self.project().writer.poll_shutdown(cx)
     }
 }

@@ -312,6 +312,16 @@ impl fmt::Display for BandwidthUnit {
 }
 
 impl BandwidthUnit {
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s.to_lowercase().as_str() {
+            "Bps" => Some(BandwidthUnit::Bps),
+            "KBps" => Some(BandwidthUnit::KBps),
+            "MBps" => Some(BandwidthUnit::MBps),
+            "GBps" => Some(BandwidthUnit::GBps),
+            _ => None,
+        }
+    }
+
     pub fn to_bytes_per_second(self, rate: usize) -> usize {
         match self {
             BandwidthUnit::Bps => rate,

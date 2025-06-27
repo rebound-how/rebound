@@ -72,6 +72,8 @@ pub struct GrpcResultWrapper<F> {
 
 impl<F> GrpcResultWrapper<F> {
     pub fn new(future: F) -> Self {
+        tracing::info!("Setting up a grpc wrapper");
+
         Self { future }
     }
 }
@@ -124,6 +126,13 @@ pub struct GrpcPluginStream {
     pending_write: Vec<u8>,
     #[pin]
     processing_future_write: Option<Pin<Box<dyn FutureGrpcResult>>>,
+}
+
+#[async_trait::async_trait]
+impl Bidirectional for GrpcPluginStream {
+    async fn shutdown(&mut self) -> std::io::Result<()> {
+        self.inner.shutdown().await
+    }
 }
 
 impl GrpcPluginStream {
@@ -426,6 +435,7 @@ impl AsyncWrite for GrpcPluginStream {
         mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<Result<(), io::Error>> {
+        tracing::debug!("shutting down write side of gRPC plugin fault");
         self.project().inner.poll_shutdown(cx)
     }
 }

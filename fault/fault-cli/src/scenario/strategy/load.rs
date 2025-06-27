@@ -36,6 +36,7 @@ pub async fn execute(
     duration: Duration,
     clients: usize,
     rps: usize,
+    set_proxy: bool,
 ) -> Result<ItemResult> {
     run_load_test(
         proxy_address,
@@ -48,6 +49,7 @@ pub async fn execute(
         duration,
         clients,
         rps,
+        set_proxy,
     )
     .await
 }
@@ -66,6 +68,7 @@ pub async fn run_load_test(
     duration: Duration,
     clients: usize,
     rps: usize,
+    set_proxy: bool,
 ) -> Result<ItemResult> {
     tracing::debug!("Running load test for {:?}", duration);
     let cloned_item = item.clone();
@@ -113,6 +116,7 @@ pub async fn run_load_test(
                     proxy_address.clone(),
                     addr_id_map.clone(),
                     id_events_map.clone(),
+                    set_proxy,
                 )
                 .await;
 
@@ -120,9 +124,7 @@ pub async fn run_load_test(
                 let mut errors = Vec::new();
 
                 match res {
-                    Ok(m) => {
-                        metrics = Some(m.clone());
-                    }
+                    Ok(m) => metrics = Some(m.clone()),
                     Err(e) => errors.push(e),
                 }
 

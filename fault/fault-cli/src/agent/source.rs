@@ -27,11 +27,10 @@ use swiftide_core::WithBatchIndexingDefaults;
 use swiftide_core::WithIndexingDefaults;
 use swiftide_indexing::transformers::Embed;
 
-use crate::agent::clients::get_client;
-
 use super::CODE_COLLECTION;
 use super::clients::SupportedLLMClient;
 use super::meta::Meta;
+use crate::agent::clients::get_client;
 
 pub async fn index(
     source_dir: &str,

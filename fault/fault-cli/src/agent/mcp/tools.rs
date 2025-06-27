@@ -1,7 +1,9 @@
+use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
 
+use kube::core::duration;
 use rmcp::Error as McpError;
 use rmcp::ServerHandler;
 use rmcp::model::CallToolResult;
@@ -20,6 +22,7 @@ use rmcp::tool;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::json;
+use similar::TextDiff;
 use swiftide::indexing::EmbeddedField;
 use swiftide::integrations::qdrant::Qdrant;
 use swiftide::query;
@@ -27,13 +30,29 @@ use swiftide::query::answers;
 use swiftide::query::query_transformers;
 use swiftide_core::EmbeddingModel;
 use swiftide_core::SimplePrompt;
+use url::Url;
 
 use crate::agent::CODE_COLLECTION;
 use crate::agent::clients::SupportedLLMClient;
 use crate::agent::clients::get_client;
 use crate::agent::mcp::code;
 use crate::agent::mcp::code::extract_function_snippet;
+use crate::agent::mcp::code::guess_file_language;
 use crate::agent::mcp::code::list_functions;
+use crate::inject::k8s::scenario;
+use crate::report;
+use crate::report::types::Report;
+use crate::scenario::executor::run_scenario_first_item;
+use crate::scenario::types::Scenario;
+use crate::scenario::types::ScenarioItem;
+use crate::scenario::types::ScenarioItemCall;
+use crate::scenario::types::ScenarioItemCallStrategy;
+use crate::scenario::types::ScenarioItemContext;
+use crate::scenario::types::ScenarioItemProxySettings;
+use crate::scenario::types::ScenarioItemSLO;
+use crate::types::BandwidthUnit;
+use crate::types::FaultConfiguration;
+use crate::types::StreamSide;
 
 #[derive(Serialize, Deserialize, schemars::JsonSchema)]
 pub struct CodeBlock {
@@ -43,6 +62,26 @@ pub struct CodeBlock {
     pub full: String,
     #[schemars(description = "full function body only")]
     pub body: String,
+}
+
+#[derive(Serialize, Deserialize, schemars::JsonSchema)]
+pub struct CodeChange {
+    #[schemars(description = "score before the improvements were computed")]
+    pub score: f64,
+    #[schemars(
+        description = "a short summary of the main threats you found and changes you made"
+    )]
+    pub explanation: String,
+    #[schemars(
+        description = "the full content of the file before the changes"
+    )]
+    pub old: String,
+    #[schemars(description = "the full content of the file after the changes")]
+    pub new: String,
+    #[schemars(description = "a list of dependencies that may be required to install as part of the changes")]
+    pub dependencies: Vec<String>,
+    #[schemars(description = "the computed diff between old and new")]
+    pub diff: String,
 }
 
 #[derive(Default, Clone)]
@@ -196,7 +235,7 @@ impl FaultMCP {
 
     #[tool(
         name = "score.performance",
-        description = "Compute performance score"
+        description = "Compute a performance score of a code block, snippet or function"
     )]
     async fn score_performance(
         &self,
@@ -250,7 +289,7 @@ impl FaultMCP {
 
     #[tool(
         name = "score.reliability",
-        description = "Compute reliability score"
+        description = "Compute a reliability score of a code block, snippet or function"
     )]
     async fn score_reliability(
         &self,
@@ -304,7 +343,7 @@ impl FaultMCP {
     /// Suggest a diff to improve performance from current to target score
     #[tool(
         name = "suggest.performance_improvement",
-        description = "Generate a unified diff to improve the function's performance"
+        description = "Generate a unified diff which improves the code's performance"
     )]
     async fn suggest_performance_improvement(
         &self,
@@ -391,7 +430,7 @@ impl FaultMCP {
     /// Suggest a diff to improve reliability from current to target score
     #[tool(
         name = "suggest.reliability_improvement",
-        description = "Generate a unified diff to improve the function's reliability"
+        description = "Generate a unified diff which improves the code's reliability"
     )]
     async fn suggest_reliability_improvement(
         &self,
@@ -476,6 +515,114 @@ impl FaultMCP {
         Ok(CallToolResult::success(vec![Content::text(diff)]))
     }
 
+    /// Suggest changes for a whole file
+    #[tool(
+        name = "suggest.reliability_code_changes",
+        description = "Generate a unified diff patch for a source code file"
+    )]
+    async fn suggest_reliability_code_changes(
+        &self,
+        #[tool(param)]
+        #[schemars(description = "Absolute local path to a code file")]
+        file: String,
+    ) -> Result<CallToolResult, McpError> {
+        let prompt = include_str!(
+            "../prompts/tool_suggest_complete_reliability_changeset.md"
+        );
+
+        let lang = guess_file_language(&file)?;
+
+        let snippet = fs::read_to_string(&file).map_err(|e| {
+            McpError::internal_error(
+                "read_file",
+                Some(json!({"err": e.to_string()})),
+            )
+        })?;
+
+        let filled =
+            prompt.replace("{lang}", &lang).replace("{snippet}", &snippet);
+
+        let llm =
+            get_client(self.llm_type, &self.prompt_model, &self.embed_model)
+                .map_err(|e| {
+                    McpError::internal_error(
+                        "client_build",
+                        Some(json!({"err": e.to_string()})),
+                    )
+                })?;
+
+        let sp: Arc<dyn SimplePrompt> = llm.clone();
+        let em: Arc<dyn EmbeddingModel> = llm.clone();
+
+        let qdrant: Qdrant = Qdrant::builder()
+            .batch_size(50)
+            .vector_size(1536)
+            .with_vector(EmbeddedField::Combined)
+            .with_sparse_vector(EmbeddedField::Combined)
+            .collection_name(CODE_COLLECTION)
+            .build()
+            .map_err(|e| {
+                McpError::internal_error(
+                    "qdrant_builder",
+                    Some(json!({"err": e.to_string()})),
+                )
+            })?;
+
+        let pipeline = query::Pipeline::default()
+            .then_transform_query(query_transformers::Embed::from_client(
+                em.clone(),
+            ))
+            .then_retrieve(qdrant.clone())
+            .then_answer(answers::Simple::from_client(sp.clone()));
+
+        let q: String = filled.into();
+        let resp = pipeline.query(q).await.map_err(|e| {
+            McpError::internal_error(
+                "query",
+                Some(json!({"err": e.to_string()})),
+            )
+        })?;
+        let answer = resp.answer().to_string();
+
+        let code = answer
+            .trim_start_matches("```json")
+            .trim_start_matches(|c| c == '\r' || c == '\n')
+            .trim_end_matches("```")
+            .trim_end_matches(|c| c == '\r' || c == '\n');
+
+        let mut parsed: CodeChange =
+            serde_json::from_str(&code).map_err(|e| {
+                tracing::error!("failed to parse changes response {}", e);
+                McpError::internal_error(
+                    "parse_changes_response",
+                    Some(json!({"err": e.to_string()})),
+                )
+            })?;
+
+        let filename = Path::new(&file)
+            .file_name()
+            .and_then(|os_str| os_str.to_str())
+            .unwrap();
+
+        let old_text = snippet;
+        let new_text = &parsed.new;
+        let text_diff = TextDiff::from_lines(&old_text, &new_text);
+        parsed.diff = text_diff
+            .unified_diff()
+            .context_radius(10)
+            .header(filename, filename)
+            .to_string();
+
+        Ok(CallToolResult::success(vec![Content::json(parsed).map_err(
+            |e| {
+                McpError::internal_error(
+                    "sugget_changes",
+                    Some(json!({"err": e.to_string()})),
+                )
+            },
+        )?]))
+    }
+
     #[tool(
         name = "suggest.slos",
         description = "Generate valuable SLOs for a code snippet"
@@ -493,9 +640,8 @@ impl FaultMCP {
     ) -> Result<CallToolResult, McpError> {
         let prompt = include_str!("../prompts/tool_suggest_slo.md");
 
-        let filled = prompt
-            .replace("{lang}", &lang)
-            .replace("{snippet}", &snippet);
+        let filled =
+            prompt.replace("{lang}", &lang).replace("{snippet}", &snippet);
 
         let llm =
             get_client(self.llm_type, &self.prompt_model, &self.embed_model)
@@ -513,6 +659,492 @@ impl FaultMCP {
         })?;
 
         Ok(CallToolResult::success(vec![Content::text(diff)]))
+    }
+
+    #[tool(
+        name = "evaluate.latency_impact",
+        description = "Measure the impact of increased latency on response time"
+    )]
+    async fn run_latency_scenario(
+        &self,
+        #[tool(param)]
+        #[schemars(description = "Endpoint URL")]
+        url: String,
+        #[tool(param)]
+        #[schemars(description = "Endpoint HTTP method")]
+        method: String,
+        #[tool(param)]
+        #[schemars(
+            description = "JSON-encoded string to pass as a the body when method has one. Leave empty to not set it. When set, the content-type will be set to application/json."
+        )]
+        body: String,
+        #[tool(param)]
+        #[schemars(description = "Duration of the run: 10s, 30s, 1m...")]
+        duration: String,
+        #[tool(param)]
+        #[schemars(
+            description = "Latency to introduce in milliseconds, e.g. 300"
+        )]
+        latency: f64,
+        #[tool(param)]
+        #[schemars(
+            description = "Latency standard deviation in milliseconds. Set 0 to stick to the latency without variation"
+        )]
+        deviation: f64,
+        #[tool(param)]
+        #[schemars(
+            description = "Direction on which to apply the latency, one of ingress or egress. A good default is to use ingress."
+        )]
+        direction: String,
+        #[tool(param)]
+        #[schemars(
+            description = "Network side on which applying the latency, one of client or server. A good default is to use server."
+        )]
+        side: String,
+        #[tool(param)]
+        #[schemars(
+            description = "Apply the latency every time data is written or read on the stream. The default is to apply the fault once only over the entire course of the stream.."
+        )]
+        per_read_write_op: bool,
+        #[tool(param)]
+        #[schemars(description = "Number of concurrent clients, e..g. 1")]
+        num_clients: usize,
+        #[tool(param)]
+        #[schemars(description = "Request per second, e.g. 2")]
+        rps: usize,
+        #[tool(param)]
+        #[schemars(
+            description = "Client timeout in seconds to apply on calls made to your application"
+        )]
+        timeout: u64,
+        #[tool(param)]
+        #[schemars(
+            description = "List of mapping to map local ports to remote addresses. The target url will always be set by default but you can add more. Proxies look like: PORT=REMOTE_HOST"
+        )]
+        proxies: Vec<String>,
+    ) -> Result<CallToolResult, McpError> {
+        let stream_side = if side == "client".to_owned() {
+            StreamSide::Client
+        } else {
+            StreamSide::Server
+        };
+
+        let fault = FaultConfiguration::Latency {
+            distribution: Some("normal".to_string()),
+            global: Some(!per_read_write_op),
+            side: Some(stream_side),
+            mean: Some(latency),
+            stddev: Some(deviation),
+            min: None,
+            max: None,
+            shape: None,
+            scale: None,
+            direction: Some(direction),
+            period: None,
+        };
+
+        let report = run_scenario(
+            url,
+            method,
+            body,
+            duration,
+            fault,
+            num_clients,
+            rps,
+            timeout,
+            proxies,
+        )
+        .await?;
+
+        Ok(CallToolResult::success(vec![Content::text(report.render())]))
+    }
+
+    #[tool(
+        name = "evaluate.jitter_impact",
+        description = "Measure the impact of jitter on response time"
+    )]
+    async fn run_jitter_scenario(
+        &self,
+        #[tool(param)]
+        #[schemars(description = "Endpoint URL")]
+        url: String,
+        #[tool(param)]
+        #[schemars(description = "Endpoint HTTP method")]
+        method: String,
+        #[tool(param)]
+        #[schemars(
+            description = "JSON-encoded string to pass as a the body when method has one. Leave empty to not set it. When set, the content-type will be set to application/json."
+        )]
+        body: String,
+        #[tool(param)]
+        #[schemars(description = "Duration of the run: 10s, 30s, 1m...")]
+        duration: String,
+        #[tool(param)]
+        #[schemars(description = "Amplitude in milliseconds, e.g. 100")]
+        amplitude: f64,
+        #[tool(param)]
+        #[schemars(
+            description = "Frequency per second (Hertz) to which the jitter should be applied, e.g. 3"
+        )]
+        frequency: f64,
+        #[tool(param)]
+        #[schemars(
+            description = "Direction on which to apply the jitter, one of ingress or egress. A good default is to use ingress."
+        )]
+        direction: String,
+        #[tool(param)]
+        #[schemars(
+            description = "Network side on which applying the jitter, one of client or server. A good default is to use server."
+        )]
+        side: String,
+        #[tool(param)]
+        #[schemars(description = "Number of concurrent clients, e..g. 1")]
+        num_clients: usize,
+        #[tool(param)]
+        #[schemars(description = "Request per second, e.g. 2")]
+        rps: usize,
+        #[tool(param)]
+        #[schemars(
+            description = "Client timeout in seconds to apply on calls made to your application"
+        )]
+        timeout: u64,
+        #[tool(param)]
+        #[schemars(
+            description = "List of mapping to map local ports to remote addresses. The target url will always be set by default but you can add more. Proxies look like: PORT=REMOTE_HOST"
+        )]
+        proxies: Vec<String>,
+    ) -> Result<CallToolResult, McpError> {
+        let stream_side = if side == "client".to_owned() {
+            StreamSide::Client
+        } else {
+            StreamSide::Server
+        };
+
+        let fault = FaultConfiguration::Jitter {
+            amplitude: amplitude,
+            frequency: frequency,
+            direction: Some(direction),
+            side: Some(stream_side),
+            period: None,
+        };
+
+        let report = run_scenario(
+            url,
+            method,
+            body,
+            duration,
+            fault,
+            num_clients,
+            rps,
+            timeout,
+            proxies,
+        )
+        .await?;
+
+        Ok(CallToolResult::success(vec![Content::text(report.render())]))
+    }
+
+    #[tool(
+        name = "evaluate.bandwidth_impact",
+        description = "Measure the impact of bandwidth constraints on response time and behavior"
+    )]
+    async fn run_bandwidth_scenario(
+        &self,
+        #[tool(param)]
+        #[schemars(description = "Endpoint URL")]
+        url: String,
+        #[tool(param)]
+        #[schemars(description = "Endpoint HTTP method")]
+        method: String,
+        #[tool(param)]
+        #[schemars(
+            description = "JSON-encoded string to pass as a the body when method has one. Leave empty to not set it. When set, the content-type will be set to application/json."
+        )]
+        body: String,
+        #[tool(param)]
+        #[schemars(description = "Duration of the run: 10s, 30s, 1m...")]
+        duration: String,
+        #[tool(param)]
+        #[schemars(description = "Bandwidth rate to restrict traffic to: 300")]
+        rate: u32,
+        #[tool(param)]
+        #[schemars(description = "Bandwidth limit: e.g. Kbps, Bps")]
+        unit: String,
+        #[tool(param)]
+        #[schemars(
+            description = "Direction on which to apply the bandwidth, one of ingress or egress. A good default is to use ingress."
+        )]
+        direction: String,
+        #[tool(param)]
+        #[schemars(
+            description = "Network side on which applying the bandwidth, one of client or server. A good default is to use server."
+        )]
+        side: String,
+        #[tool(param)]
+        #[schemars(description = "Number of concurrent clients, e..g. 1")]
+        num_clients: usize,
+        #[tool(param)]
+        #[schemars(description = "Request per second, e.g. 2")]
+        rps: usize,
+        #[tool(param)]
+        #[schemars(
+            description = "Client timeout in seconds to apply on calls made to your application"
+        )]
+        timeout: u64,
+        #[tool(param)]
+        #[schemars(
+            description = "List of mapping to map local ports to remote addresses. The target url will always be set by default but you can add more. Proxies look like: PORT=REMOTE_HOST"
+        )]
+        proxies: Vec<String>,
+    ) -> Result<CallToolResult, McpError> {
+        let stream_side = if side == "client".to_owned() {
+            StreamSide::Client
+        } else {
+            StreamSide::Server
+        };
+
+        let fault = FaultConfiguration::Bandwidth {
+            rate: rate,
+            unit: BandwidthUnit::from_str(&unit).unwrap_or_default(),
+            direction: Some(direction),
+            side: Some(stream_side),
+            period: None,
+        };
+
+        let report = run_scenario(
+            url,
+            method,
+            body,
+            duration,
+            fault,
+            num_clients,
+            rps,
+            timeout,
+            proxies,
+        )
+        .await?;
+
+        Ok(CallToolResult::success(vec![Content::text(report.render())]))
+    }
+
+    #[tool(
+        name = "evaluate.packet_loss_impact",
+        description = "Measure the impact of packet loss on response time and behavior"
+    )]
+    async fn run_packet_loss_scenario(
+        &self,
+        #[tool(param)]
+        #[schemars(description = "Endpoint URL")]
+        url: String,
+        #[tool(param)]
+        #[schemars(description = "Endpoint HTTP method")]
+        method: String,
+        #[tool(param)]
+        #[schemars(
+            description = "JSON-encoded string to pass as a the body when method has one. Leave empty to not set it. When set, the content-type will be set to application/json."
+        )]
+        body: String,
+        #[tool(param)]
+        #[schemars(description = "Duration of the run: 10s, 30s, 1m...")]
+        duration: String,
+        #[tool(param)]
+        #[schemars(
+            description = "Direction on which to apply the packet loss, one of ingress or egress. A good default is to use ingress."
+        )]
+        direction: String,
+        #[tool(param)]
+        #[schemars(
+            description = "Network side on which applying the packet loss, one of client or server. A good default is to use server."
+        )]
+        side: String,
+        #[tool(param)]
+        #[schemars(description = "Number of concurrent clients, e..g. 1")]
+        num_clients: usize,
+        #[tool(param)]
+        #[schemars(description = "Request per second, e.g. 2")]
+        rps: usize,
+        #[tool(param)]
+        #[schemars(
+            description = "Client timeout in seconds to apply on calls made to your application"
+        )]
+        timeout: u64,
+        #[tool(param)]
+        #[schemars(
+            description = "List of mapping to map local ports to remote addresses. The target url will always be set by default but you can add more. Proxies look like: PORT=REMOTE_HOST"
+        )]
+        proxies: Vec<String>,
+    ) -> Result<CallToolResult, McpError> {
+        let stream_side = if side == "client".to_owned() {
+            StreamSide::Client
+        } else {
+            StreamSide::Server
+        };
+
+        let fault = FaultConfiguration::PacketLoss {
+            direction: Some(direction),
+            side: Some(stream_side),
+            period: None,
+        };
+
+        let report = run_scenario(
+            url,
+            method,
+            body,
+            duration,
+            fault,
+            num_clients,
+            rps,
+            timeout,
+            proxies,
+        )
+        .await?;
+
+        Ok(CallToolResult::success(vec![Content::text(report.render())]))
+    }
+
+    #[tool(
+        name = "evaluate.http_error_impact",
+        description = "Measure the impact of HTTP error on response time and behavior"
+    )]
+    async fn run_http_error_scenario(
+        &self,
+        #[tool(param)]
+        #[schemars(description = "Endpoint URL")]
+        url: String,
+        #[tool(param)]
+        #[schemars(description = "Endpoint HTTP method")]
+        method: String,
+        #[tool(param)]
+        #[schemars(
+            description = "JSON-encoded string to pass as the request body when method has one. Leave empty to not set it. When set, the content-type will be set to application/json."
+        )]
+        body: String,
+        #[tool(param)]
+        #[schemars(
+            description = "Probability, between 0.0 and 1.0, on how often the error is set."
+        )]
+        probability: f64,
+        #[tool(param)]
+        #[schemars(description = "Response status code.")]
+        status_code: u16,
+        #[tool(param)]
+        #[schemars(description = "Response body to set.")]
+        error_body: String,
+        #[tool(param)]
+        #[schemars(description = "Duration of the run: 10s, 30s, 1m...")]
+        duration: String,
+        #[tool(param)]
+        #[schemars(description = "Number of concurrent clients, e..g. 1")]
+        num_clients: usize,
+        #[tool(param)]
+        #[schemars(description = "Request per second, e.g. 2")]
+        rps: usize,
+        #[tool(param)]
+        #[schemars(
+            description = "Client timeout in seconds to apply on calls made to your application"
+        )]
+        timeout: u64,
+        #[tool(param)]
+        #[schemars(
+            description = "List of mapping to map local ports to remote addresses. The target url will always be set by default but you can add more. Proxies look like: PORT=https://REMOTE_HOST:REMOTE_PORT"
+        )]
+        proxies: Vec<String>,
+    ) -> Result<CallToolResult, McpError> {
+        let fault = FaultConfiguration::HttpError {
+            status_code: status_code,
+            body: Some(error_body),
+            probability: probability,
+            period: None,
+        };
+        let report = run_scenario(
+            url,
+            method,
+            body,
+            duration,
+            fault,
+            num_clients,
+            rps,
+            timeout,
+            proxies,
+        )
+        .await?;
+
+        Ok(CallToolResult::success(vec![Content::text(report.render())]))
+    }
+
+    #[tool(
+        name = "evaluate.blackhole_impact",
+        description = "Measure the impact of network blackhole response time and behavior"
+    )]
+    async fn run_blackhole_scenario(
+        &self,
+        #[tool(param)]
+        #[schemars(description = "Endpoint URL")]
+        url: String,
+        #[tool(param)]
+        #[schemars(description = "Endpoint HTTP method")]
+        method: String,
+        #[tool(param)]
+        #[schemars(
+            description = "JSON-encoded string to pass as the request body when method has one. Leave empty to not set it. When set, the content-type will be set to application/json."
+        )]
+        body: String,
+        #[tool(param)]
+        #[schemars(
+            description = "Direction on which to apply the packet loss, one of ingress or egress. A good default is to use ingress."
+        )]
+        direction: String,
+        #[tool(param)]
+        #[schemars(
+            description = "Network side on which applying the packet loss, one of client or server. A good default is to use server."
+        )]
+        side: String,
+        #[tool(param)]
+        #[schemars(description = "Duration of the run: 10s, 30s, 1m...")]
+        duration: String,
+        #[tool(param)]
+        #[schemars(description = "Number of concurrent clients, e..g. 1")]
+        num_clients: usize,
+        #[tool(param)]
+        #[schemars(description = "Request per second, e.g. 2")]
+        rps: usize,
+        #[tool(param)]
+        #[schemars(
+            description = "Client timeout in seconds to apply on calls made to your application"
+        )]
+        timeout: u64,
+        #[tool(param)]
+        #[schemars(
+            description = "List of mapping to map local ports to remote addresses. The target url will always be set by default but you can add more. Proxies look like: PORT=REMOTE_HOST"
+        )]
+        proxies: Vec<String>,
+    ) -> Result<CallToolResult, McpError> {
+        let stream_side = if side == "client".to_owned() {
+            StreamSide::Client
+        } else {
+            StreamSide::Server
+        };
+
+        let fault = FaultConfiguration::Blackhole {
+            direction: Some(direction),
+            side: Some(stream_side),
+            period: None,
+        };
+
+        let report = run_scenario(
+            url,
+            method,
+            body,
+            duration,
+            fault,
+            num_clients,
+            rps,
+            timeout,
+            proxies,
+        )
+        .await?;
+
+        Ok(CallToolResult::success(vec![Content::text(report.render())]))
     }
 
     #[tool(
@@ -612,45 +1244,120 @@ impl FaultMCP {
 impl ServerHandler for FaultMCP {
     fn get_info(&self) -> ServerInfo {
         ServerInfo {
-            instructions: Some("A simple calculator".into()),
-            capabilities: ServerCapabilities::builder()
-                .enable_tools()
-                .enable_prompts()
-                .build(),
+            instructions: Some("Senior AI Agent for your operations".into()),
+            capabilities: ServerCapabilities::builder().enable_tools().build(),
             ..Default::default()
         }
     }
+}
 
-    async fn get_prompt(
-        &self,
-        GetPromptRequestParam { name, arguments }: GetPromptRequestParam,
-        _: RequestContext<RoleServer>,
-    ) -> Result<GetPromptResult, McpError> {
-        match name.as_str() {
-            "example_prompt" => {
-                let message = arguments
-                    .and_then(|json| {
-                        json.get("message")?.as_str().map(|s| s.to_string())
-                    })
-                    .ok_or_else(|| {
-                        McpError::invalid_params(
-                            "No message provided to example_prompt",
-                            None,
-                        )
-                    })?;
+async fn run_scenario(
+    url: String,
+    method: String,
+    body: String,
+    duration: String,
+    fault: FaultConfiguration,
+    num_clients: usize,
+    rps: usize,
+    timeout: u64,
+    proxies: Vec<String>,
+) -> Result<Report, McpError> {
+    let components = Url::parse(&url.clone()).map_err(|e| {
+        McpError::internal_error(
+            "parse_url",
+            Some(json!({"err": e.to_string()})),
+        )
+    })?;
 
-                let prompt = format!(
-                    "This is an example prompt with your message here: '{message}'"
-                );
-                Ok(GetPromptResult {
-                    description: None,
-                    messages: vec![PromptMessage {
-                        role: PromptMessageRole::User,
-                        content: PromptMessageContent::text(prompt),
-                    }],
-                })
-            }
-            _ => Err(McpError::invalid_params("prompt not found", None)),
-        }
+    let scheme = components.scheme();
+
+    let host = components
+        .host_str()
+        .ok_or(McpError::internal_error("extract_url_host", None))?;
+
+    let port = components
+        .port_or_known_default()
+        .ok_or(McpError::internal_error("extract_url_port", None))?;
+
+    let origin = format!("{}://{}:{}", scheme, host, port);
+
+    let headers = if !body.is_empty() {
+        let mut h = HashMap::<String, String>::new();
+        let _ =
+            h.insert("content-type".to_owned(), "application/json".to_owned());
+        Some(h)
+    } else {
+        None
+    };
+
+    let mut disable_http_proxies = false;
+    let mut proxies_mapping = Vec::<String>::new();
+    if !proxies.is_empty() {
+        disable_http_proxies = true;
+        proxies_mapping.extend(proxies);
+    } else {
+        // only apply this proxy when no other proxying was provided
+        // I chose here to only apply the faults to calls made to the app
+        // when no other specific proxies were set. When they are set, this
+        // is an explicit configuration I want to respect
+        proxies_mapping.push(format!("{}={}", 3180, origin));
     }
+
+    let s = Scenario {
+        title: format!("Evaluating runtime performance of {}", url.clone()),
+        description: None,
+        items: vec![ScenarioItem {
+            call: ScenarioItemCall {
+                method: method,
+                url: url,
+                headers: headers,
+                body: (!body.is_empty()).then(|| body),
+                timeout: Some(timeout * 1000u64),
+                meta: None,
+            },
+            context: ScenarioItemContext {
+                upstreams: vec![],
+                faults: vec![fault],
+                strategy: Some(ScenarioItemCallStrategy::Load {
+                    duration: duration,
+                    clients: num_clients,
+                    rps: rps,
+                }),
+                slo: Some(vec![
+                    ScenarioItemSLO {
+                        slo_type: "latency".to_string(),
+                        title: "99% @ 350ms".to_string(),
+                        objective: 99.0,
+                        threshold: 350.0,
+                    },
+                    ScenarioItemSLO {
+                        slo_type: "latency".to_string(),
+                        title: "95% @ 200ms".to_string(),
+                        objective: 95.0,
+                        threshold: 200.0,
+                    },
+                ]),
+                proxy: Some(ScenarioItemProxySettings {
+                    disable_http_proxies: disable_http_proxies,
+                    proxies: proxies_mapping,
+                }),
+                runs_on: None,
+            },
+            expect: None,
+        }],
+        config: None,
+    };
+
+    tracing::debug!("Applying scenario from MCP tool {:?}", s);
+
+    let results = run_scenario_first_item(s).await.map_err(|e| {
+        McpError::internal_error(
+            "run_scenario",
+            Some(json!({"err": e.to_string()})),
+        )
+    })?;
+
+    let report = report::builder::to_report(&results);
+
+    Ok(report)
 }

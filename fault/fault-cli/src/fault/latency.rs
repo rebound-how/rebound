@@ -20,6 +20,7 @@ use rand_distr::Uniform;
 use reqwest::Body;
 use tokio::io::AsyncRead;
 use tokio::io::AsyncWrite;
+use tokio::io::AsyncWriteExt;
 use tokio::io::ReadBuf;
 use tokio::io::split;
 use tokio::time::Duration;
@@ -47,6 +48,7 @@ pub struct LatencyInjector {
 
 impl From<&LatencySettings> for LatencyInjector {
     fn from(settings: &LatencySettings) -> Self {
+        tracing::info!("Setting up latency on {} side", settings.side);
         LatencyInjector { settings: settings.clone() }
     }
 }
@@ -170,6 +172,17 @@ where
     }
 }
 
+#[async_trait::async_trait]
+impl<R, W> Bidirectional for LatencyBidirectional<R, W>
+where
+    R: AsyncRead + Unpin + Send + std::fmt::Debug,
+    W: AsyncWrite + Unpin + Send + std::fmt::Debug,
+{
+    async fn shutdown(&mut self) -> std::io::Result<()> {
+        self.writer.shutdown().await
+    }
+}
+
 impl<R, W> AsyncRead for LatencyBidirectional<R, W>
 where
     R: AsyncRead + Send + Unpin,
@@ -208,6 +221,7 @@ where
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<IoResult<()>> {
+        tracing::debug!("shutting down write side of Latency fault");
         self.project().writer.poll_shutdown(cx)
     }
 }

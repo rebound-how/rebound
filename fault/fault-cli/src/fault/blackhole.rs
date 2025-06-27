@@ -9,6 +9,7 @@ use axum::http;
 use pin_project::pin_project;
 use tokio::io::AsyncRead;
 use tokio::io::AsyncWrite;
+use tokio::io::AsyncWriteExt;
 use tokio::io::ReadBuf;
 use tokio::io::split;
 
@@ -37,6 +38,8 @@ impl<S> BlackholeRead<S> {
         settings: BlackholeSettings,
         event: Option<Box<dyn ProxyTaskEvent>>,
     ) -> Self {
+        tracing::info!("Setting up a blackhole on {} side", settings.side);
+
         BlackholeRead { inner, side: settings.side.clone(), event }
     }
 }
@@ -152,6 +155,17 @@ impl<R, W> BlackholeBidirectional<R, W> {
     }
 }
 
+#[async_trait::async_trait]
+impl<R, W> Bidirectional for BlackholeBidirectional<R, W>
+where
+    R: AsyncRead + Unpin + Send + std::fmt::Debug,
+    W: AsyncWrite + Unpin + Send + std::fmt::Debug,
+{
+    async fn shutdown(&mut self) -> std::io::Result<()> {
+        self.writer.shutdown().await
+    }
+}
+
 impl<R, W> AsyncRead for BlackholeBidirectional<R, W>
 where
     R: AsyncRead + Unpin,
@@ -190,6 +204,7 @@ where
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<IoResult<()>> {
+        tracing::debug!("shutting down write side of blackhole fault");
         self.project().writer.poll_shutdown(cx)
     }
 }

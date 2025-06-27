@@ -56,6 +56,7 @@ impl JitterInjector {
 
 impl From<&JitterSettings> for JitterInjector {
     fn from(settings: &JitterSettings) -> Self {
+        tracing::info!("Setting up jitter on {} side", settings.side);
         JitterInjector { settings: settings.clone() }
     }
 }
@@ -171,6 +172,13 @@ impl JitterStream {
     }
 }
 
+#[async_trait::async_trait]
+impl Bidirectional for JitterStream {
+    async fn shutdown(&mut self) -> std::io::Result<()> {
+        self.stream.shutdown().await
+    }
+}
+
 impl AsyncRead for JitterStream {
     fn poll_read(
         self: Pin<&mut Self>,
@@ -246,6 +254,7 @@ impl AsyncWrite for JitterStream {
         mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<std::io::Result<()>> {
+        tracing::debug!("shutting down write side of Jitter fault");
         Pin::new(&mut self.stream).poll_shutdown(cx)
     }
 }

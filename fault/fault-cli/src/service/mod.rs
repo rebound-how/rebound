@@ -118,7 +118,6 @@ Handlers
 async fn new_results(
     Json(result): Json<ItemResult>,
 ) -> Json<ScenarioResultResponse> {
-    println!("{:?}", result);
     Json(ScenarioResultResponse {})
 }
 
@@ -128,7 +127,6 @@ async fn new_results(
 async fn new_event(
     Json(event): Json<EventLifecycle>,
 ) -> Json<ScenarioResultResponse> {
-    println!("{:?}", event);
     Json(ScenarioResultResponse {})
 }
 

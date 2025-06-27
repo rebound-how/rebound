@@ -157,7 +157,7 @@ pub fn load_injector(fault: &FaultConfig) -> Box<dyn FaultInjector> {
 
 #[async_trait]
 impl ProxyPlugin for CompositePlugin {
-    #[tracing::instrument]
+    #[tracing::instrument(skip_all, name = "HTTP Client")]
     async fn prepare_client(
         &self,
         builder: ClientBuilder,
@@ -174,7 +174,7 @@ impl ProxyPlugin for CompositePlugin {
         Ok(current_builder)
     }
 
-    #[tracing::instrument]
+    #[tracing::instrument(skip_all, name = "HTTP Request")]
     async fn process_request(
         &self,
         req: ReqwestRequest,
@@ -191,7 +191,7 @@ impl ProxyPlugin for CompositePlugin {
         Ok(current_req)
     }
 
-    #[tracing::instrument]
+    #[tracing::instrument(skip_all, name = "HTTP Response")]
     async fn process_response(
         &self,
         resp: http::Response<Vec<u8>>,
@@ -208,7 +208,7 @@ impl ProxyPlugin for CompositePlugin {
         Ok(current_resp)
     }
 
-    #[tracing::instrument]
+    #[tracing::instrument(skip_all, name = "Inject Fault")]
     async fn inject_tunnel_faults(
         &self,
         client_stream: Box<dyn Bidirectional + 'static>,
@@ -222,7 +222,6 @@ impl ProxyPlugin for CompositePlugin {
         let mut modified_server_stream = server_stream;
 
         for injector in self.injectors.iter() {
-            tracing::warn!("injector {:?} {}", injector, injector.is_enabled());
             if injector.is_enabled() {
                 let mut client = modified_client_stream;
                 let mut server = modified_server_stream;

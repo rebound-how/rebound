@@ -127,4 +127,8 @@ impl Report {
         fs::write(path, md.clone())?;
         Ok(md)
     }
+
+    pub fn render(&self) -> String {
+        render::render(&self, ReportFormat::Markdown)
+    }
 }

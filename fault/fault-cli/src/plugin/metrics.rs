@@ -13,6 +13,7 @@ use pin_project::pin_project;
 use reqwest::Body;
 use tokio::io::AsyncRead;
 use tokio::io::AsyncWrite;
+use tokio::io::AsyncWriteExt;
 use tokio::io::ReadBuf;
 use tokio_util::io::ReaderStream;
 
@@ -175,6 +176,17 @@ impl<S> WrapperStream<S> {
     }
 }
 
+#[async_trait::async_trait]
+impl<S> Bidirectional for WrapperStream<S>
+where
+    S: AsyncRead + AsyncWrite + Unpin + Send + std::fmt::Debug + 'static,
+{
+    async fn shutdown(&mut self) -> std::io::Result<()> {
+        use tokio::io::AsyncWriteExt;
+        self.stream.shutdown().await
+    }
+}
+
 impl<S: AsyncRead + Unpin> AsyncRead for WrapperStream<S> {
     fn poll_read(
         self: Pin<&mut Self>,
@@ -213,6 +225,7 @@ impl<S: AsyncWrite + Unpin> AsyncWrite for WrapperStream<S> {
         mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<std::io::Result<()>> {
+        tracing::debug!("shutting down write side of Metrics monitor");
         Pin::new(&mut self.stream).poll_shutdown(cx)
     }
 }

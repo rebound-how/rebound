@@ -8,6 +8,7 @@ use async_std_resolver::resolver_from_system_conf;
 use axum::body::Body;
 use axum::http::Request as AxumRequest;
 use axum::http::Response as AxumResponse;
+use hyper::upgrade::Upgraded;
 use hyper_util::rt::TokioIo;
 use tokio::io::AsyncWriteExt;
 use tokio::io::split;
@@ -24,9 +25,16 @@ use crate::plugin::ProxyPlugin;
 use crate::proxy::ProxyState;
 use crate::types::ConnectRequest;
 
+#[async_trait::async_trait]
+impl Bidirectional for TokioIo<Upgraded> {
+    async fn shutdown(&mut self) -> std::io::Result<()> {
+        AsyncWriteExt::shutdown(self).await
+    }
+}
+
 /// Handles CONNECT method requests by establishing a TCP tunnel,
 /// injecting any configured network faults, and applying plugin middleware.
-#[tracing::instrument]
+#[tracing::instrument(skip_all)]
 pub async fn handle_connect(
     source_addr: SocketAddr,
     req: AxumRequest<Body>,
@@ -175,80 +183,90 @@ async fn bidirectional_copy(
     let (mut read_inbound, mut write_inbound) = split(incoming);
     let (mut read_outbound, mut write_outbound) = split(outbound);
 
+    let c2s_clone = Arc::clone(&c2s);
+    let s2c_clone = Arc::clone(&s2c);
+
     // Connect the client reader to the server writer.
     // That is, whenever we receive data from the client, we forward it to the
     // server.
     let client_to_server = async {
-        let count = tokio::io::copy(&mut read_inbound, &mut write_outbound)
-            .await
-            .inspect_err(|e| {
-                error!(
-                    error = e.to_string(),
-                    "error copying read_inbound to write_outbound"
-                )
-            })?;
+        let count =
+            tokio::io::copy(&mut read_inbound, &mut write_outbound).await?;
+        c2s_clone.lock().await.size = count;
 
-        let mut lock = c2s.lock().await;
-        lock.size = count;
+        match write_outbound.shutdown().await {
+            Err(ref err)
+                if matches!(
+                    err.kind(),
+                    ErrorKind::UnexpectedEof | ErrorKind::NotConnected
+                ) =>
+            {
+                tracing::debug!("write_outbound shutdown ignored: {:?}", err);
+            }
+            Err(err) => {
+                tracing::debug!(
+                    error = err.to_string(),
+                    "error shutting down write_outbound!"
+                );
+                return Err(err);
+            }
+            _ => {}
+        }
 
-        write_outbound.shutdown().await.inspect_err(|e| {
-            error!(error = e.to_string(), "error shutting down write_outbound!")
-        })
+        Ok(())
     };
 
     // Connect the server reader to the client writer.
     // That is, whenever we receive data from the server, we forward it to the
     // client.
     let server_to_client = async {
-        let count = tokio::io::copy(&mut read_outbound, &mut write_inbound)
-            .await
-            .inspect_err(|e| {
-                error!(
-                    error = e.to_string(),
-                    "error copying read_outbound to write_inbound!"
-                )
-            })?;
+        let count =
+            tokio::io::copy(&mut read_outbound, &mut write_inbound).await?;
+        s2c_clone.lock().await.size = count;
 
-        if let Err(err) = write_inbound.shutdown().await {
-            match err.kind() {
-                // The client can shut down the inbound connection sometimes. If
-                // this is the case, shutting down this connection
-                // will throw this error. In practice, it doesn't really matter.
-                // There's no good way to check if a connection is
-                // closed without trying to read from it and seeing what
-                // happens. It's effectively the same as doing this.
-                ErrorKind::NotConnected => {
-                    tracing::debug!(
-                        "unable to shutdown server stream as client stream already is shutdown"
-                    );
-                }
-
-                _ => {
-                    error!(
-                        error = err.to_string(),
-                        error_kind = err.kind().to_string(),
-                        "error shutting down write_inbound!"
-                    );
-
-                    return Err(err);
-                }
+        match write_inbound.shutdown().await {
+            Err(ref err)
+                if matches!(
+                    err.kind(),
+                    ErrorKind::UnexpectedEof | ErrorKind::NotConnected
+                ) =>
+            {
+                tracing::debug!("write_inbound shutdown ignored: {:?}", err);
             }
+            Err(err) => {
+                tracing::debug!(
+                    error = err.to_string(),
+                    "error shutting down write_inbound!"
+                );
+                return Err(err);
+            }
+            _ => {}
         }
-
-        let mut lock = s2c.lock().await;
-        lock.size = count;
 
         Ok(())
     };
 
-    // Poll both tasks.
-    tokio::try_join!(client_to_server, server_to_client)?;
+    let (res_c2s, res_s2c) = tokio::join!(client_to_server, server_to_client);
 
-    let lock = c2s.lock().await;
-    let c2s_count = lock.size;
+    match (res_c2s, res_s2c) {
+        (Ok(_), Ok(_)) => {}
+        (Err(ref e), Ok(_)) | (Ok(_), Err(ref e))
+            if e.kind() == ErrorKind::UnexpectedEof =>
+        {
+            tracing::debug!("One direction ended with unexpected EOF: {:?}", e);
+            let _ = write_outbound.shutdown().await;
+            let _ = write_inbound.shutdown().await;
+        }
+        (Err(e1), Err(_e2)) => return Err(Box::new(e1)),
+        (Err(e), _) | (_, Err(e)) => return Err(Box::new(e)),
+    }
 
-    let lock = s2c.lock().await;
-    let s2c_count = lock.size;
+    // Explicitly drop read halves to close those ends
+    drop(read_inbound);
+    drop(read_outbound);
+
+    let c2s_count = c2s.lock().await.size;
+    let s2c_count = s2c.lock().await.size;
 
     Ok((c2s_count, s2c_count))
 }

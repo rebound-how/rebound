@@ -1,13 +1,19 @@
 use std::io::ErrorKind;
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::sync::atomic::AtomicU64;
+use std::sync::atomic::Ordering;
+use std::time::Duration;
 
 use anyhow::Result;
 use rustls_pki_types::ServerName;
 use rustls_platform_verifier::ConfigVerifierExt;
+use socket2::SockRef;
+use socket2::TcpKeepalive;
 use tokio::io::AsyncWriteExt;
 use tokio::io::split;
 use tokio::net::TcpStream;
+use tokio::select;
 use tokio::sync::Mutex;
 use tokio_rustls::TlsConnector;
 use tokio_rustls::rustls::ClientConfig;
@@ -21,7 +27,7 @@ use crate::plugin::ProxyPlugin;
 use crate::proxy::ProxyState;
 use crate::types::ProxyMap;
 
-#[tracing::instrument]
+#[tracing::instrument(skip_all)]
 pub async fn handle_stream(
     stream: TcpStream,
     connect_to: SocketAddr,
@@ -80,79 +86,73 @@ async fn bidirectional_copy(
     incoming: Box<dyn Bidirectional + 'static>,
     outbound: Box<dyn Bidirectional + 'static>,
 ) -> Result<(u64, u64), ProxyError> {
-    let c2s = Arc::new(Mutex::new(TransferredBytesSize { size: 0 }));
-    let s2c = Arc::new(Mutex::new(TransferredBytesSize { size: 0 }));
+    let c2s = Arc::new(AtomicU64::new(0));
+    let s2c = Arc::new(AtomicU64::new(0));
 
-    // Split the streams into read and write halves.
     let (mut read_inbound, mut write_inbound) = split(incoming);
     let (mut read_outbound, mut write_outbound) = split(outbound);
 
-    // Connect the client reader to the server writer.
-    // That is, whenever we receive data from the client, we forward it to the
-    // server.
-    let client_to_server = async {
-        let count =
-            tokio::io::copy(&mut read_inbound, &mut write_outbound).await?;
+    let mut c2s_done = false;
+    let mut s2c_done = false;
 
-        let mut lock = c2s.lock().await;
-        lock.size = count;
-
-        if let Err(err) = write_outbound.shutdown().await {
-            match err.kind() {
-                ErrorKind::UnexpectedEof => {}
-                _ => {
-                    error!(
-                        error = err.to_string(),
-                        error_kind = err.kind().to_string(),
-                        "error shutting down write_outbound!"
-                    );
-
-                    return Err(err);
+    loop {
+        select! {
+            result = tokio::io::copy(&mut read_inbound, &mut write_outbound), if !c2s_done => {
+                match result {
+                    Ok(count) => {
+                        c2s.store(count, Ordering::Relaxed);
+                        if let Err(e) = write_outbound.shutdown().await {
+                            if e.kind() != ErrorKind::UnexpectedEof {
+                                return Err(ProxyError::IoError(e));
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        if e.kind() != ErrorKind::UnexpectedEof {
+                            return Err(ProxyError::IoError(e));
+                        }
+                        tracing::debug!("Client to server ended with EOF: {:?}", e);
+                    }
                 }
+                c2s_done = true;
+            }
+
+            result = tokio::io::copy(&mut read_outbound, &mut write_inbound), if !s2c_done => {
+                match result {
+                    Ok(count) => {
+                        s2c.store(count, Ordering::Relaxed);
+                        if let Err(e) = write_inbound.shutdown().await {
+                            if e.kind() != ErrorKind::UnexpectedEof {
+                                return Err(ProxyError::IoError(e));
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        if e.kind() != ErrorKind::UnexpectedEof {
+                            return Err(ProxyError::IoError(e));
+                        }
+                        tracing::debug!("Server to client ended with EOF: {:?}", e);
+                    }
+                }
+                s2c_done = true;
+            }
+
+            else => {
+                // Both sides are done
+                break;
             }
         }
+    }
 
-        Ok(())
-    };
+    drop(read_inbound);
+    drop(read_outbound);
 
-    // Connect the server reader to the client writer.
-    // That is, whenever we receive data from the server, we forward it to the
-    // client.
-    let server_to_client = async {
-        let count =
-            tokio::io::copy(&mut read_outbound, &mut write_inbound).await?;
+    let c2s_total = c2s.load(Ordering::Relaxed);
+    let s2c_total = s2c.load(Ordering::Relaxed);
 
-        let mut lock = s2c.lock().await;
-        lock.size = count;
+    tracing::debug!("c2s {} bytes / s2c {} bytes", c2s_total, s2c_total);
 
-        if let Err(err) = write_inbound.shutdown().await {
-            match err.kind() {
-                ErrorKind::UnexpectedEof => {}
-                _ => {
-                    error!(
-                        error = err.to_string(),
-                        error_kind = err.kind().to_string(),
-                        "error shutting down write_inbound!"
-                    );
-
-                    return Err(err);
-                }
-            }
-        }
-
-        Ok(())
-    };
-
-    // Poll both tasks.
-    tokio::try_join!(client_to_server, server_to_client)?;
-
-    let lock = c2s.lock().await;
-    let c2s_count = lock.size;
-
-    let lock = s2c.lock().await;
-    let s2c_count = lock.size;
-
-    Ok((c2s_count, s2c_count))
+    Ok((c2s_total, s2c_total))
 }
 
 async fn process_tcp_stream(
@@ -168,8 +168,10 @@ async fn process_tcp_stream(
 
     stream.set_nodelay(true)?;
 
-    let raw_server_stream =
+    let mut raw_server_stream =
         TcpStream::connect(connect_to).await.map_err(ProxyError::from)?;
+
+    raw_server_stream.set_nodelay(true)?;
 
     let client_stream: Box<dyn Bidirectional + 'static> = Box::new(stream);
     let server_stream: Box<dyn Bidirectional + 'static> =

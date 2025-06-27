@@ -192,7 +192,7 @@ pub struct ScenarioHTTPGlobalConfig {
 }
 
 /// Global configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct ScenarioGlobalConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub http: Option<ScenarioHTTPGlobalConfig>,

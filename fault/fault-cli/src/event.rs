@@ -354,7 +354,7 @@ pub struct TaskManager {
 
 impl TaskManager {
     pub fn new() -> Arc<Self> {
-        let (sender, receiver) = kanal::bounded_async(500);
+        let (sender, receiver) = kanal::unbounded_async();
         Arc::new(TaskManager { sender, receiver: receiver.clone() })
     }
 

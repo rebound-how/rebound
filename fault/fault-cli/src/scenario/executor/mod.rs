@@ -9,6 +9,7 @@ use std::time::Instant;
 
 use anyhow::Result;
 use arc_swap::ArcSwap;
+use chrono::Utc;
 use kanal::AsyncReceiver;
 use parse_duration;
 use tokio::sync::watch;
@@ -36,6 +37,10 @@ use crate::proxy::monitor_and_update_proxy_config;
 use crate::proxy::protocols::http::init::initialize_http_proxy;
 use crate::proxy::protocols::tcp::init::initialize_tcp_proxies;
 use crate::proxy::protocols::tcp::init::parse_proxy_protocols;
+use crate::scenario::event::ScenarioEventManager;
+use crate::scenario::types::Scenario;
+use crate::scenario::types::ScenarioResult;
+use crate::scenario::types::ScenariosResults;
 use crate::sched;
 use crate::sched::run_fault_schedule;
 use crate::types::ProxyAddrConfig;
@@ -68,15 +73,13 @@ pub async fn execute_item(
     let remote_host = url.host_str().ok_or("Missing host").unwrap().to_string();
     let remote_port = url.port_or_known_default().unwrap();
 
-    let (proto, host, port) = proxy::protocols::tcp::init::parse_right(
-        &format!("{}://{}:{}", url.scheme(), remote_host, remote_port),
-    )
+    let _ = proxy::protocols::tcp::init::parse_right(&format!(
+        "{}://{}:{}",
+        url.scheme(),
+        remote_host,
+        remote_port
+    ))
     .map_err(|s| ProxyError::Other(s))?;
-
-    let proxy_config = ProxyAddrConfig {
-        proxy_ip: Ipv4Addr::from_str("127.0.0.1")?,
-        proxy_port: 3180,
-    };
 
     let _proxy_updater_handle = tokio::spawn(monitor_and_update_proxy_config(
         proxy_state.clone(),
@@ -102,7 +105,17 @@ pub async fn execute_item(
     let proxy_address = format!("127.0.0.1:{}", "3180");
     let _proxy_handle;
 
+    let mut set_proxy = false;
     if enable_http_proxies {
+        tracing::debug!("Enabling HTTP proxy {} on scenario", proxy_address);
+
+        set_proxy = true;
+
+        let proxy_config = ProxyAddrConfig {
+            proxy_ip: Ipv4Addr::from_str("127.0.0.1")?,
+            proxy_port: 3180,
+        };
+
         _proxy_handle = initialize_http_proxy(
             &proxy_config,
             proxy_state.clone(),
@@ -156,6 +169,7 @@ pub async fn execute_item(
                     duration,
                     clients,
                     rps,
+                    set_proxy,
                 )
                 .await?)
             }
@@ -257,4 +271,49 @@ fn upstream_to_addr(
     let port = url.port_or_known_default().unwrap();
 
     Ok(format!("{}:{}", host, port))
+}
+
+pub async fn run_one(item: &ScenarioItem) -> Result<ItemResult> {
+    let task_manager = TaskManager::new();
+    let (event_manager, _) = ScenarioEventManager::new(500);
+
+    let addr_id_map: Arc<scc::HashMap<String, Uuid>> =
+        Arc::new(scc::HashMap::default());
+
+    let id_events_map: Arc<scc::HashMap<Uuid, ScenarioItemLifecycle>> =
+        Arc::new(scc::HashMap::default());
+
+    let event = Arc::new(event_manager.new_event().await.unwrap());
+
+    let scenario_config = ScenarioGlobalConfig::default();
+
+    Ok(execute_item(
+        item.clone(),
+        event.clone(),
+        Some(scenario_config),
+        addr_id_map.clone(),
+        id_events_map.clone(),
+        task_manager.clone(),
+    )
+    .await?)
+}
+
+pub async fn run_scenario_first_item(
+    scenario: Scenario,
+) -> Result<ScenariosResults> {
+    let start = Utc::now();
+    let mut results = Vec::new();
+
+    if let Some(item) = scenario.items.first() {
+        let item_result = run_one(&item).await?;
+        results.push(item_result);
+    }
+
+    let final_results = ScenariosResults {
+        start,
+        end: Utc::now(),
+        results: vec![ScenarioResult { scenario: scenario, results: results }],
+    };
+
+    Ok(final_results)
 }
