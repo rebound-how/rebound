@@ -1,5 +1,4 @@
 import asyncio
-import difflib
 import json
 import os
 import shutil
@@ -39,7 +38,7 @@ async def main(verbose: bool) -> None:
 
     async with Client(config) as client:
         p = await client.call_tool(
-            "suggest.reliability_code_changes", {
+            "fault_make_reliability_and_perf_changes", {
                 "file": str(Path.cwd() / "app.py"),
             })
 

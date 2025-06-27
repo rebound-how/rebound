@@ -51,7 +51,7 @@ async def main(url: str, upstream: str, bandwidth: int, verbose: bool) -> None:
 
     async with Client(config) as client:
         p = await client.call_tool(
-            "evaluate.bandwidth_impact", {
+            "fault_run_bandwidth_impact_scenario", {
                 "url": url,
                 "method": "GET",
                 "body": "",

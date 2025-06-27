@@ -30,7 +30,7 @@ async def main(code_file: str, verbose: bool) -> None:
 
     async with Client(config) as client:
         p = await client.call_tool(
-            "extract.function_names", {
+            "fault_list_function_names", {
                 "file": code_file,
             })
         

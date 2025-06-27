@@ -1,6 +1,8 @@
 import asyncio
 import os
 import shutil
+from pathlib import Path
+from tempfile import gettempdir
 
 from fastmcp import Client
 from fastmcp.utilities.logging import configure_logging
@@ -15,7 +17,7 @@ async def main(source_dir: str, verbose: bool) -> None:
     args = []
     if verbose:
         configure_logging("DEBUG")
-        args = ["--log-stdout", "--log-level", "debug"]
+        args = ["--log-file", str(Path(gettempdir()) / "fault.log"), "--log-level", "debug"]
     
     args.append("agent")
     args.append("tool")
@@ -34,7 +36,7 @@ async def main(source_dir: str, verbose: bool) -> None:
 
     async with Client(config) as client:
         p = await client.call_tool(
-            "source.index", {
+            "fault_index_source_code", {
                 "source_dir": source_dir,
                 "lang": "python"
             })

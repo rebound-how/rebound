@@ -35,7 +35,7 @@ async def main(code_file: str, func_name: str, lang: str, verbose: bool) -> None
 
     async with Client(config) as client:
         p = await client.call_tool(
-            "extract.code_block", {
+            "fault_suggest_service_level_objectives_slo", {
                 "file": code_file,
                 "func": func_name
             })

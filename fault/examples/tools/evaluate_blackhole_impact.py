@@ -52,7 +52,7 @@ async def main(url: str, upstream: str, verbose: bool) -> None:
 
     async with Client(config) as client:
         p = await client.call_tool(
-            "evaluate.blackhole_impact", {
+            "fault_run_blackhole_impact_scenario", {
                 "url": url,
                 "method": "GET",
                 "body": "",

@@ -3,21 +3,13 @@ use std::fs;
 use std::path::Path;
 use std::sync::Arc;
 
-use kube::core::duration;
 use rmcp::Error as McpError;
 use rmcp::ServerHandler;
 use rmcp::model::CallToolResult;
 use rmcp::model::Content;
-use rmcp::model::GetPromptRequestParam;
-use rmcp::model::GetPromptResult;
-use rmcp::model::PromptMessage;
-use rmcp::model::PromptMessageContent;
-use rmcp::model::PromptMessageRole;
 use rmcp::model::ServerCapabilities;
 use rmcp::model::ServerInfo;
 use rmcp::schemars;
-use rmcp::service::RequestContext;
-use rmcp::service::RoleServer;
 use rmcp::tool;
 use serde::Deserialize;
 use serde::Serialize;
@@ -39,7 +31,6 @@ use crate::agent::mcp::code;
 use crate::agent::mcp::code::extract_function_snippet;
 use crate::agent::mcp::code::guess_file_language;
 use crate::agent::mcp::code::list_functions;
-use crate::inject::k8s::scenario;
 use crate::report;
 use crate::report::types::Report;
 use crate::scenario::executor::run_scenario_first_item;
@@ -80,7 +71,7 @@ pub struct CodeChange {
     pub new: String,
     #[schemars(description = "a list of dependencies that may be required to install as part of the changes")]
     pub dependencies: Vec<String>,
-    #[schemars(description = "the computed diff between old and new")]
+    #[schemars(description = "the computed unified-diff between old and new")]
     pub diff: String,
 }
 
@@ -114,8 +105,8 @@ impl FaultMCP {
     }
 
     #[tool(
-        name = "extract.function_names",
-        description = "List all function names in the given file"
+        name = "fault_list_function_names",
+        description = "List all function names in the given source code file"
     )]
     async fn list_functions(
         &self,
@@ -150,7 +141,7 @@ impl FaultMCP {
     }
 
     #[tool(
-        name = "source.index",
+        name = "fault_index_source_code",
         description = "Index a source code directory"
     )]
     async fn index_source(
@@ -188,7 +179,7 @@ impl FaultMCP {
     }
 
     #[tool(
-        name = "extract.code_block",
+        name = "fault_extract_code_block",
         description = "Extract function code block by name"
     )]
     async fn extract_code_block(
@@ -234,7 +225,7 @@ impl FaultMCP {
     }
 
     #[tool(
-        name = "score.performance",
+        name = "fault_score_performance",
         description = "Compute a performance score of a code block, snippet or function"
     )]
     async fn score_performance(
@@ -288,7 +279,7 @@ impl FaultMCP {
     }
 
     #[tool(
-        name = "score.reliability",
+        name = "fault_score_reliability",
         description = "Compute a reliability score of a code block, snippet or function"
     )]
     async fn score_reliability(
@@ -342,7 +333,7 @@ impl FaultMCP {
 
     /// Suggest a diff to improve performance from current to target score
     #[tool(
-        name = "suggest.performance_improvement",
+        name = "fault_suggest_better_function_performance",
         description = "Generate a unified diff which improves the code's performance"
     )]
     async fn suggest_performance_improvement(
@@ -429,7 +420,7 @@ impl FaultMCP {
 
     /// Suggest a diff to improve reliability from current to target score
     #[tool(
-        name = "suggest.reliability_improvement",
+        name = "fault_suggest_better_function_reliability",
         description = "Generate a unified diff which improves the code's reliability"
     )]
     async fn suggest_reliability_improvement(
@@ -517,10 +508,10 @@ impl FaultMCP {
 
     /// Suggest changes for a whole file
     #[tool(
-        name = "suggest.reliability_code_changes",
-        description = "Generate a unified diff patch for a source code file"
+        name = "fault_make_reliability_and_perf_changes",
+        description = "Generate a unified diff patch for a source code file to improve reliability and performance"
     )]
-    async fn suggest_reliability_code_changes(
+    async fn suggest_code_changes(
         &self,
         #[tool(param)]
         #[schemars(description = "Absolute local path to a code file")]
@@ -624,7 +615,7 @@ impl FaultMCP {
     }
 
     #[tool(
-        name = "suggest.slos",
+        name = "fault_suggest_service_level_objectives_slo",
         description = "Generate valuable SLOs for a code snippet"
     )]
     async fn suggest_slo(
@@ -662,7 +653,7 @@ impl FaultMCP {
     }
 
     #[tool(
-        name = "evaluate.latency_impact",
+        name = "fault_run_latency_impact_scenario",
         description = "Measure the impact of increased latency on response time"
     )]
     async fn run_latency_scenario(
@@ -760,7 +751,7 @@ impl FaultMCP {
     }
 
     #[tool(
-        name = "evaluate.jitter_impact",
+        name = "fault_run_jitter_impact_scenario",
         description = "Measure the impact of jitter on response time"
     )]
     async fn run_jitter_scenario(
@@ -845,7 +836,7 @@ impl FaultMCP {
     }
 
     #[tool(
-        name = "evaluate.bandwidth_impact",
+        name = "fault_run_bandwidth_impact_scenario",
         description = "Measure the impact of bandwidth constraints on response time and behavior"
     )]
     async fn run_bandwidth_scenario(
@@ -928,7 +919,7 @@ impl FaultMCP {
     }
 
     #[tool(
-        name = "evaluate.packet_loss_impact",
+        name = "fault_run_packet_loss_impact_scenario",
         description = "Measure the impact of packet loss on response time and behavior"
     )]
     async fn run_packet_loss_scenario(
@@ -1003,7 +994,7 @@ impl FaultMCP {
     }
 
     #[tool(
-        name = "evaluate.http_error_impact",
+        name = "fault_run_http_error_impact_scenario",
         description = "Measure the impact of HTTP error on response time and behavior"
     )]
     async fn run_http_error_scenario(
@@ -1073,7 +1064,7 @@ impl FaultMCP {
     }
 
     #[tool(
-        name = "evaluate.blackhole_impact",
+        name = "fault_run_blackhole_impact_scenario",
         description = "Measure the impact of network blackhole response time and behavior"
     )]
     async fn run_blackhole_scenario(
@@ -1148,7 +1139,7 @@ impl FaultMCP {
     }
 
     #[tool(
-        name = "analysis.reliability",
+        name = "fault_function_reliability_deep_analysis",
         description = "Deep evaluation of reliability anti-patterns of a function"
     )]
     async fn evaluate_code_lite(

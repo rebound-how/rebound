@@ -8,7 +8,7 @@ Generate a complete file that transforms the **original** implementation of this
 * Do NOT change the behavior of the code. Just make it more reliable sensibly.
 * Assume function arguments have been validated and are correct.
 * If the function is missing a docstring, add a comprehensive one.
-* Look into topics such as fault tolerance, retries, timeout managements, error handling...
+* Look into topics such as fault tolerance, retries, timeout managements, error handling, missing health check, production readiness...
 * Do not include any explanation - output only the code:
 
 ```{lang}

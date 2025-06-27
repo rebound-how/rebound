@@ -6,8 +6,6 @@ use std::time::Duration;
 
 use anyhow::Result;
 use init::resolve_remote_host;
-use socket2::SockRef;
-use socket2::TcpKeepalive;
 use tokio::io::AsyncWriteExt;
 use tokio::sync::mpsc;
 use tokio::time::Instant;

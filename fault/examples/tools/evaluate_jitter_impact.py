@@ -52,13 +52,13 @@ async def main(url: str, upstream: str, amplitude: float, frequency: float, verb
 
     async with Client(config) as client:
         p = await client.call_tool(
-            "evaluate.jitter_impact", {
+            "fault_run_jitter_impact_scenario", {
                 "url": url,
                 "method": "GET",
                 "body": "",
                 "duration": "10s",
-                "amplitude": latency,
-                "frequency": False,
+                "amplitude": amplitude,
+                "frequency": frequency,
                 "direction": "ingress",
                 "side": "server",
                 "num_clients": 1,
@@ -82,4 +82,4 @@ if __name__ == "__main__":
     parser.add_argument("frequency", type=float)
     args = parser.parse_args()
 
-    asyncio.run(main(args.url, args.upstream, args.amplitude, args.frequency))
+    asyncio.run(main(args.url, args.upstream, args.amplitude, args.frequency, args.verbose))

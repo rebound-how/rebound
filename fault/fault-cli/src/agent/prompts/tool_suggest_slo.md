@@ -14,7 +14,7 @@ Each SLO must include exactly three fields:
 
 • `type`: the kind of the objective: "latency", "availability", "error"
 • `title`: a clear title.
-• `objective`: a clear, measurable target.
+• `objective`: a clear, measurable target as a float value in the [0, 100[ range
 • `explanation`: a concise description of the objective and its usefulness.
 • `threshold`: a threshold value for the objective.
 * `unit`: the treshold's unit (e.g. "ms", "s") if none, leave empty.

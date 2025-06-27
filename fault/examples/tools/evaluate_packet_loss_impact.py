@@ -51,7 +51,7 @@ async def main(url: str, upstream: str, verbose: bool) -> None:
 
     async with Client(config) as client:
         p = await client.call_tool(
-            "evaluate.packet_loss_impact", {
+            "fault_run_packet_loss_impact_scenario", {
                 "url": url,
                 "method": "GET",
                 "body": "",

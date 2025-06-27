@@ -52,7 +52,7 @@ async def main(url: str, upstream: str, latency: float, verbose: bool) -> None:
 
     async with Client(config) as client:
         p = await client.call_tool(
-            "evaluate.latency_impact", {
+            "fault_run_latency_impact_scenario", {
                 "url": url,
                 "method": "GET",
                 "body": "",

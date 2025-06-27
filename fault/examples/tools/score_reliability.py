@@ -35,7 +35,7 @@ async def main(code_file: str, func_name: str, lang: str, verbose: bool) -> None
 
     async with Client(config) as client:
         p = await client.call_tool(
-            "extract.code_block", {
+            "fault_extract_code_block", {
                 "file": code_file,
                 "func": func_name
             })
@@ -43,7 +43,7 @@ async def main(code_file: str, func_name: str, lang: str, verbose: bool) -> None
         snippet = json.loads(p[0].text)["full"]
 
         p = await client.call_tool(
-            "score.reliability", {
+            "fault_score_reliability", {
                 "snippet": snippet,
                 "lang": lang
             })

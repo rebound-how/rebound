@@ -35,7 +35,7 @@ async def main(code_file: str, func_name: str, lang: str, target_score: float, v
 
     async with Client(config) as client:
         p = await client.call_tool(
-            "extract.code_block", {
+            "fault_extract_code_block", {
                 "file": code_file,
                 "func": func_name
             })
@@ -43,7 +43,7 @@ async def main(code_file: str, func_name: str, lang: str, target_score: float, v
         snippet = json.loads(p[0].text)["full"]
 
         p = await client.call_tool(
-            "score.performance", {
+            "sfault_score_performance", {
                 "snippet": snippet,
                 "lang": lang
             })
@@ -51,7 +51,7 @@ async def main(code_file: str, func_name: str, lang: str, target_score: float, v
         score = json.loads(p[0].text)["score"]
 
         p = await client.call_tool(
-            "suggest.performance_improvement", {
+            "fault_suggest_better_function_performance", {
                 "snippet": snippet,
                 "lang": lang,
                 "score": score,

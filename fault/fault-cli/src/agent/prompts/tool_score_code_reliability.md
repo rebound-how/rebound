@@ -14,6 +14,6 @@ Your response **must be valid JSON** with exactly two fields:
 **Requirements:**
 
 * Focus on error handling, edge cases, and fallback logic.
-* Consider retries, exception safety, resource cleanup, and idempotency.
+* Consider retries, safety, resource cleanup, missing health check, production readiness, idempotence...
 * Do **not** include any additional keys or text outside the JSON object.
 * Try to appreciate the context in which the function may have to be used.
