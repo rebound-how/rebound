@@ -475,7 +475,7 @@ These options define the LLm parameters of the agent.
 
 !!! note
 
-    <span class="f">fault</span> supports
+    <span class="f">fault</span> supports [Gemini](../how-to/agent/llm-configuration.md#gemini),
     [OpenAI](../how-to/agent/llm-configuration.md#openai),
     [ollama](../how-to/agent/llm-configuration.md#ollama) and
     [OpenRouter](../how-to/agent/llm-configuration.md#openrouter).

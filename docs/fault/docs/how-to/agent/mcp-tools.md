@@ -22,7 +22,8 @@ This guide will take you through the
         export OPENAI_API_KEY=sk-...
         ```
 
-        The agent works fine with [ollama](./llm-configuration.md#ollama) and
+        The agent works fine with [Gemini](https://ai.google.dev/),
+        [ollama](./llm-configuration.md#ollama) and
         [OpenRouter](./llm-configuration.md#openrouter) so you may switch to
         either. You want to have a look at an [example below](#tool-full-file-code-changes-recommendations).
 

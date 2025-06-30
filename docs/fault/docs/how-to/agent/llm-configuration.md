@@ -31,6 +31,60 @@ suggest that you set the environment variables once and for all. Otherwise,
 your command line will get busy very quickly.
 
 
+## Gemini
+
+<span class="f">fault</span> supports
+[Gemini](https://ai.google.dev/).
+
+-   [X] Set an Gemini's API key
+
+    Set the `GEMINI_API_KEY` for the `fault` binary to pick it up.
+
+    ```bash
+    export GEMINI_API_KEY=...
+    ```
+
+    Make sure the key is allowed to use the models you wich to use as well.
+
+-   [X] Configure the client
+
+    Enable the Gemini client. This can also be
+    set via the `FAULT_AGENT_CLIENT` environment variable.
+
+    ```bash
+    --llm-client gemini
+    ```
+
+-   [X] Configure the model parameters
+
+    The model used for reasoning. This can also be
+    set via the `LLM_PROMPT_REASONING_MODEL` environment variable.
+
+    ```bash
+    --llm-prompt-reasoning-model gemini-2.5-flash
+    ```
+
+    The embedding model, default to `text-embedding-3-small`. This can also be
+    set via the `FAULT_AGENT_EMBED_MODEL` environment variable.
+
+    ```bash
+    --llm-embed-model gemini-embedding-exp-03-07
+    ```
+
+    !!! warning "Embedding model not yet supported"
+
+        Currently, the embedding model is ignored and
+        <span class="f">fault</span> uses
+        [fastembed](https://github.com/qdrant/fastembed) instead. A future
+        release will support Google's model.
+
+    The embedding model dimension, default to `384`. This can also be
+    set via the `FAULT_AGENT_EMBED_MODEL_DIMENSION` environment variable.
+
+    ```bash
+    --llm-embed-model-dim 384
+    ```
+
 ## OpenAI
 
 <span class="f">fault</span> supports
@@ -59,7 +113,7 @@ the `OPENAI_API_KEY` environment variable.
 
 -   [X] Configure the model parameters
 
-    The model used for reasoning, default top `o4-mini`). This can also be
+    The model used for reasoning, default to `o4-mini`). This can also be
     set via the `LLM_PROMPT_REASONING_MODEL` environment variable.
 
     ```bash

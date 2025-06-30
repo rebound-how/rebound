@@ -557,6 +557,8 @@ impl FaultMCP {
 
         if self.llm_type == SupportedLLMClient::OpenRouter {
             em = Arc::new(FastEmbed::try_default().unwrap().to_owned());
+        } else if self.llm_type == SupportedLLMClient::Gemini {
+            em = Arc::new(FastEmbed::try_default().unwrap().to_owned());
         } else {
             em = llm.clone();
         }

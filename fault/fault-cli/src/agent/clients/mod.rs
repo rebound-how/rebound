@@ -10,6 +10,7 @@ use swiftide_core::EmbeddingModel;
 use swiftide_core::LanguageModelWithBackOff;
 use swiftide_core::SimplePrompt;
 
+pub(crate) mod gemini;
 pub(crate) mod ollama;
 pub(crate) mod openai;
 pub(crate) mod openrouter;
@@ -19,6 +20,7 @@ pub(crate) mod openrouter;
 )]
 #[serde(rename_all = "lowercase")]
 pub enum SupportedLLMClient {
+    Gemini,
     OpenAI,
     OpenRouter,
     Ollama,
@@ -67,6 +69,9 @@ pub fn get_client(
         SupportedLLMClient::Ollama => {
             Ok(Arc::new(ollama::get_client(prompt_model, embed_model)?))
         }
+        SupportedLLMClient::Gemini => {
+            Ok(Arc::new(gemini::get_client(prompt_model, embed_model)?))
+        }
     }
 }
 
@@ -84,6 +89,9 @@ pub fn get_llm_client(
         }
         SupportedLLMClient::Ollama => {
             Ok(Box::new(ollama::get_client(prompt_model, embed_model)?))
+        }
+        SupportedLLMClient::Gemini => {
+            Ok(Box::new(gemini::get_client(prompt_model, embed_model)?))
         }
     }
 }

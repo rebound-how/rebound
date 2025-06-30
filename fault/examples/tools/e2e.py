@@ -29,6 +29,16 @@ async def main(llm: str, verbose: bool) -> None:
 
     if llm == "openai":
         env["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+    elif llm == "gemini":
+        args.append("--llm-client")
+        args.append("gemini")
+        args.append("--llm-prompt-reasoning-model")
+        args.append("gemini-2.5-flash")
+        #args.append("--llm-embed-model")
+        #args.append("gemini-embedding-exp-03-07")
+        args.append("--llm-embed-model-dim")
+        args.append("384")
+        env["GEMINI_API_KEY"] = os.getenv("GEMINI_API_KEY")
     elif llm == "openrouter":
         args.append("--llm-client")
         args.append("open-router")
@@ -82,7 +92,7 @@ async def main(llm: str, verbose: bool) -> None:
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("--llm", choices=["openai", "openrouter", "ollama"])
+    parser.add_argument("--llm", choices=["openai", "openrouter", "ollama", "gemini"])
     parser.add_argument("--verbose",action='store_true')
     args = parser.parse_args()
 
