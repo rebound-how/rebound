@@ -289,16 +289,14 @@ pub fn extract_json_fence(md: &str) -> Option<String> {
 
     for event in parser {
         match event {
-            Event::Start(Tag::CodeBlock(cb)) => {
-                match cb {
-                    pulldown_cmark::CodeBlockKind::Indented => {},
-                    pulldown_cmark::CodeBlockKind::Fenced(block) => {
-                        if block.trim().starts_with("json") {
-                            in_json_block = true;
-                        }
-                    },
+            Event::Start(Tag::CodeBlock(cb)) => match cb {
+                pulldown_cmark::CodeBlockKind::Indented => {}
+                pulldown_cmark::CodeBlockKind::Fenced(block) => {
+                    if block.trim().starts_with("json") {
+                        in_json_block = true;
+                    }
                 }
-            }
+            },
             Event::End(TagEnd::CodeBlock) if in_json_block => {
                 return Some(buf);
             }

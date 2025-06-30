@@ -617,7 +617,6 @@ impl FaultMCP {
                 .context_radius(10)
                 .header(filename, filename)
                 .to_string();
-
         }
 
         Ok(CallToolResult::success(vec![Content::json(parsed).map_err(
