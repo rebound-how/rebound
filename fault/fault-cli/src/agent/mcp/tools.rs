@@ -3,7 +3,6 @@ use std::fs;
 use std::path::Path;
 use std::sync::Arc;
 
-use outlines_core::json_schema;
 use pulldown_cmark::Parser;
 use pulldown_cmark::TextMergeStream;
 use regex::Regex;

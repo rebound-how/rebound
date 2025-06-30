@@ -6,11 +6,13 @@ use anyhow::Result;
 use async_trait::async_trait;
 use inquire::Select;
 use kanal::AsyncSender;
+use qdrant_client::qdrant::Filter;
 use swiftide::chat_completion::ToolCall;
 use swiftide::chat_completion::ToolOutput;
 use swiftide::chat_completion::errors::ToolError;
 use swiftide::indexing::EmbeddedField;
 use swiftide::integrations::fastembed::FastEmbed;
+use swiftide::integrations::qdrant;
 use swiftide::integrations::qdrant::Qdrant;
 use swiftide::integrations::{self};
 use swiftide::query::Query;
@@ -50,10 +52,10 @@ struct OpIdRetriever {
 }
 
 #[async_trait]
-impl Retrieve<HybridSearch> for OpIdRetriever {
+impl Retrieve<HybridSearch<Filter>> for OpIdRetriever {
     async fn retrieve(
         &self,
-        strategy: &HybridSearch,
+        strategy: &HybridSearch<Filter>,
         query: Query<states::Pending>,
     ) -> Result<Query<states::Retrieved>> {
         let q = self

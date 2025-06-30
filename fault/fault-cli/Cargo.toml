@@ -111,6 +111,7 @@ tree-sitter-javascript = { version = "0.23.1", optional = true }
 tree-sitter-go = { version = "0.23.4", optional = true }
 tree-sitter-yaml = { version = "0.7.1", optional = true }
 schemars = { version = "0.9.0", optional = true }
+qdrant-client = { version = "1.14.0", optional = true }
 
 # discovery
 kube = { version = "1.1.0", features = ["jsonpatch"], optional = true }
@@ -120,7 +121,6 @@ json-patch = { version = "4.0.0", features = ["utoipa"], optional = true }
 google-cloud-run-v2 = { version = "0.3.0", optional = true }
 google-cloud-gax = { version = "0.22.0", optional = true }
 google-cloud-longrunning = { version = "0.24.0", optional = true }
-outlines-core = "0.2.11"
 
 # ebpf feature
 [target.'cfg(target_os = "linux")'.dependencies]
@@ -200,7 +200,8 @@ agent = [
     "dep:tree-sitter-rust",
     "dep:tree-sitter-go",
     "dep:tree-sitter-python",
-    "dep:schemars"
+    "dep:schemars",
+    "dep:qdrant-client"
 ]
 openapi = [
     "dep:oas3",
