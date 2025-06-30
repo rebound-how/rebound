@@ -945,16 +945,6 @@ pub struct AgentCommandCommon {
     )]
     pub llm_prompt_reasoning_model: String,
 
-    /// Prompt chat model
-    #[arg(
-        long,
-        help_heading = "Agent Options",
-        help = "LLM prompt chat model, used by the review command.",
-        env = "FAULT_AGENT_PROMPT_CHAT_MODEL",
-        default_value = "gpt-4.1-mini"
-    )]
-    pub llm_prompt_chat_model: String,
-
     /// Embed model
     #[arg(
         long,
@@ -964,6 +954,16 @@ pub struct AgentCommandCommon {
         default_value = "text-embedding-3-small"
     )]
     pub llm_embed_model: String,
+
+    /// Embed model dimension
+    #[arg(
+        long,
+        help_heading = "Agent Options",
+        help = "LLM embed model dimension.",
+        env = "FAULT_AGENT_EMBED_MODEL_DIMENSION",
+        default_value_t = 1536u64
+    )]
+    pub llm_embed_model_dim: u64,
 }
 
 /// Configuration for reviewing source code

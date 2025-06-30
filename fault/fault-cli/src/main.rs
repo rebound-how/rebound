@@ -512,6 +512,7 @@ async fn main() -> Result<()> {
                 let llm_prompt_reasoning_model =
                     common.llm_prompt_reasoning_model.clone();
                 let llm_embed_model = common.llm_embed_model.clone();
+                let llm_embed_model_dim = common.llm_embed_model_dim;
 
                 let (sender, receiver) = kanal::unbounded_async();
 
@@ -567,6 +568,7 @@ async fn main() -> Result<()> {
                             &llm_prompt_model,
                             &llm_prompt_reasoning_model,
                             &llm_embed_model,
+                            llm_embed_model_dim,
                             sender,
                         )
                         .await?;
@@ -587,6 +589,7 @@ async fn main() -> Result<()> {
                 let llm_prompt_model =
                     common.llm_prompt_reasoning_model.clone();
                 let llm_embed_model = common.llm_embed_model.clone();
+                let llm_embed_model_dim = common.llm_embed_model_dim;
 
                 let (sender, receiver) = kanal::bounded_async(8);
 
@@ -600,6 +603,7 @@ async fn main() -> Result<()> {
                         llm_client,
                         &llm_prompt_model,
                         &llm_embed_model,
+                        llm_embed_model_dim,
                     )
                     .await?)
                 });
@@ -656,6 +660,7 @@ async fn main() -> Result<()> {
                 let llm_prompt_model =
                     common.llm_prompt_reasoning_model.clone();
                 let llm_embed_model = common.llm_embed_model.clone();
+                let llm_embed_model_dim = common.llm_embed_model_dim;
 
                 let resource = Select::new("Service:", resources).prompt()?;
 
@@ -672,6 +677,7 @@ async fn main() -> Result<()> {
                         llm_client,
                         &llm_prompt_model,
                         &llm_embed_model,
+                        llm_embed_model_dim,
                     )
                     .await?)
                 });
@@ -705,9 +711,15 @@ async fn main() -> Result<()> {
                 let llm_prompt_model =
                     common.llm_prompt_reasoning_model.clone();
                 let llm_embed_model = common.llm_embed_model.clone();
+                let llm_embed_model_dim = common.llm_embed_model_dim;
 
-                agent::mcp::run(llm_client, &llm_prompt_model, &llm_embed_model)
-                    .await?
+                agent::mcp::run(
+                    llm_client,
+                    &llm_prompt_model,
+                    &llm_embed_model,
+                    llm_embed_model_dim,
+                )
+                .await?
             }
         },
         #[cfg(feature = "injection")]

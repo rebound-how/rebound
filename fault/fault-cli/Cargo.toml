@@ -120,6 +120,7 @@ json-patch = { version = "4.0.0", features = ["utoipa"], optional = true }
 google-cloud-run-v2 = { version = "0.3.0", optional = true }
 google-cloud-gax = { version = "0.22.0", optional = true }
 google-cloud-longrunning = { version = "0.24.0", optional = true }
+outlines-core = "0.2.11"
 
 # ebpf feature
 [target.'cfg(target_os = "linux")'.dependencies]
@@ -152,6 +153,7 @@ path = "src/main.rs"
 [features]
 default = [
     "demo",
+    "agent",
     "scenario",
     "injection"
 ]

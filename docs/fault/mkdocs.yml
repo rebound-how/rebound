@@ -46,6 +46,7 @@ nav:
       - "Run": how-to/scenarios/run.md
       - "Report": how-to/scenarios/reporting.md
     - "Agent":
+      - "LLM Configuration": how-to/agent/llm-configuration.md
       - "MCP Server Configuration": how-to/agent/mcp-server-configuration.md
       - "MCP Tools": how-to/agent/mcp-tools.md
       - "Scenario Analysis": how-to/agent/report-advices.md

@@ -40,6 +40,7 @@ pub async fn analyze(
     client_type: SupportedLLMClient,
     prompt_model: &str,
     embed_model: &str,
+    embed_model_dim: u64,
 ) -> Result<ReportReviews> {
     let mut advices = Vec::new();
 
@@ -53,7 +54,7 @@ pub async fn analyze(
 
     let qdrant: Qdrant = Qdrant::builder()
         .batch_size(50)
-        .vector_size(1536)
+        .vector_size(embed_model_dim)
         .with_vector(EmbeddedField::Combined)
         .with_sparse_vector(EmbeddedField::Combined)
         .collection_name(CODE_COLLECTION)

@@ -45,6 +45,12 @@ what <span class="f">fault</span> suggests you may want to add or remove from yo
     LLM requires accepting a level of fuzzyness and adjustments. Engineering
     is still very much a human endeavour!
 
+!!! question "Is this a MCP agent tool?"
+
+    The feature describe in this guide is not a [MCP tool](./mcp-tools.md).
+    Instead it's a CLI feature that queries the LLM of your choice for
+    an analysis of your source code.
+
 ## Review a Python Web Application
 
 In this scenario we take a very basic Python application, using the

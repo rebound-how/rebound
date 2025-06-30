@@ -181,6 +181,7 @@ pub struct InjectCode {
     pub meta: Meta,
     pub prompt_model: String,
     pub embed_model: String,
+    pub embed_model_dim: u64,
     pub source_dir: String,
     pub source_lang: String,
     pub advices_path: Option<String>,
@@ -192,6 +193,7 @@ impl InjectCode {
     pub fn new_with_models(
         prompt_model: &str,
         embed_model: &str,
+        embed_model_dim: u64,
         source_dir: &str,
         source_lang: &str,
         meta: Meta,
@@ -202,6 +204,7 @@ impl InjectCode {
             meta,
             prompt_model: prompt_model.to_string(),
             embed_model: embed_model.to_string(),
+            embed_model_dim: embed_model_dim,
             source_dir: source_dir.to_string(),
             source_lang: source_lang.to_string(),
             advices_path,
@@ -228,7 +231,7 @@ impl InjectCode {
 
         let qdrant: Qdrant = Qdrant::builder()
             .batch_size(50)
-            .vector_size(3072)
+            .vector_size(self.embed_model_dim)
             .with_vector(EmbeddedField::Combined)
             .with_sparse_vector(EmbeddedField::Combined)
             .collection_name(CODE_COLLECTION)
@@ -320,6 +323,7 @@ fn create_agent(
     prompt_model: &str,
     reasoning_model: &str,
     embed_model: &str,
+    embed_model_dim: u64,
     sender: AsyncSender<CodeReviewEvent>,
 ) -> Result<Agent> {
     let llm = get_client(prompt_model, embed_model)?;
@@ -334,6 +338,7 @@ fn create_agent(
         .tools([InjectCode::new_with_models(
             reasoning_model,
             embed_model,
+            embed_model_dim,
             source_dir,
             source_lang,
             meta,
@@ -359,6 +364,7 @@ pub async fn review_source(
     prompt_model: &str,
     reasoning_model: &str,
     embed_model: &str,
+    embed_model_dim: u64,
     sender: AsyncSender<CodeReviewEvent>,
 ) -> Result<()> {
     let meta = select_meta(metas)?;
@@ -372,6 +378,7 @@ pub async fn review_source(
         prompt_model,
         reasoning_model,
         embed_model,
+        embed_model_dim,
         sender,
     )?;
     agent.run_once().await?;

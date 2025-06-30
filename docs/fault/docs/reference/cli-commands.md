@@ -25,6 +25,7 @@ subcommands for building scenarios from OpenAPI specification.
 
 ### `agent`
 
+Run a MCP Server and tools.
 Analyze scenario results and suggest code changes using LLM.
 
 ### `demo`
@@ -474,8 +475,10 @@ These options define the LLm parameters of the agent.
 
 !!! note
 
-    Currently, only OpenAI is enabled. Next release will support Ollama and
-    Open Router.
+    <span class="f">fault</span> supports
+    [OpenAI](../how-to/agent/llm-configuration.md#openai),
+    [ollama](../how-to/agent/llm-configuration.md#ollama) and
+    [OpenRouter](../how-to/agent/llm-configuration.md#openrouter).
 
 - **`--llm-client <client>`**  
   _Select the LLM client to use._  
@@ -484,10 +487,6 @@ These options define the LLm parameters of the agent.
 - **`--llm-prompt-reasoning-model <model>`**  
   _Reasoning model to use._  
   _Default:_ `o4-mini`
-
-- **`--llm-prompt-chat-model <model>`**  
-  _Chat prompt model to use._  
-  _Default:_ `gpt-4.1-mini`
 
 - **`--llm-embed-model <model>`**  
   _Embedding model to use._  

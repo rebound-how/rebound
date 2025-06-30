@@ -3,6 +3,9 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use anyhow::Result;
+use pulldown_cmark::Event;
+use pulldown_cmark::Tag;
+use pulldown_cmark::TagEnd;
 use rmcp::Error as McpError;
 use serde_json::json;
 use swiftide::indexing;
@@ -28,6 +31,7 @@ use tree_sitter::StreamingIteratorMut;
 use crate::agent::CODE_COLLECTION;
 use crate::agent::clients::SupportedLLMClient;
 use crate::agent::clients::get_client;
+use crate::cli;
 
 pub struct SnippetComponents {
     pub full: String,
@@ -219,24 +223,31 @@ pub async fn index(
     client_type: SupportedLLMClient,
     prompt_model: &str,
     embed_model: &str,
+    embed_model_dim: u64,
 ) -> Result<()> {
     let lang = SupportedLanguages::from_str(source_lang)?;
 
     let llm = get_client(client_type, prompt_model, embed_model)?;
 
     let sp: Arc<dyn SimplePrompt> = llm.clone();
-    let em: Arc<dyn EmbeddingModel> = llm.clone();
+    let em: Arc<dyn EmbeddingModel>;
+
+    if client_type == SupportedLLMClient::OpenRouter {
+        em = Arc::new(FastEmbed::try_default().unwrap().to_owned());
+    } else {
+        em = llm.clone();
+    }
+
+    let fastembed_sparse = FastEmbed::try_default_sparse()?;
 
     let duckdb_client = Duckdb::builder()
         .connection(duckdb::Connection::open(cache_db_path).unwrap())
         .build()
         .unwrap();
 
-    let fastembed_sparse = FastEmbed::try_default_sparse()?;
-
     let qdrant = Qdrant::builder()
         .batch_size(64)
-        .vector_size(1536)
+        .vector_size(embed_model_dim)
         .with_vector(EmbeddedField::Combined)
         .with_sparse_vector(EmbeddedField::Combined)
         .collection_name(CODE_COLLECTION)
@@ -269,4 +280,33 @@ pub async fn index(
     .await?;
 
     Ok(())
+}
+
+pub fn extract_json_fence(md: &str) -> Option<String> {
+    let parser = pulldown_cmark::Parser::new(md);
+    let mut in_json_block = false;
+    let mut buf = String::new();
+
+    for event in parser {
+        match event {
+            Event::Start(Tag::CodeBlock(cb)) => {
+                match cb {
+                    pulldown_cmark::CodeBlockKind::Indented => {},
+                    pulldown_cmark::CodeBlockKind::Fenced(block) => {
+                        if block.trim().starts_with("json") {
+                            in_json_block = true;
+                        }
+                    },
+                }
+            }
+            Event::End(TagEnd::CodeBlock) if in_json_block => {
+                return Some(buf);
+            }
+            Event::Text(text) if in_json_block => {
+                buf.push_str(&text);
+            }
+            _ => {}
+        }
+    }
+    None
 }

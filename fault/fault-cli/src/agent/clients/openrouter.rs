@@ -2,7 +2,6 @@ use anyhow::Result;
 use swiftide::integrations::{self};
 use swiftide_core::LanguageModelWithBackOff;
 
-// prompt "anthropic/claude-3.7-sonnet:thinking"
 pub fn get_client(
     prompt_model: &str,
     embed_model: &str,
@@ -12,8 +11,10 @@ pub fn get_client(
         prompt_model,
         embed_model
     );
+
     let or_client = integrations::open_router::OpenRouter::builder()
-        .default_embed_model(embed_model)
+        // OpenRouter doesn't have embedding models so this is moot
+        //.default_embed_model(embed_model)
         .default_prompt_model(prompt_model)
         .build()?;
 

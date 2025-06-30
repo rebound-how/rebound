@@ -107,7 +107,6 @@ In addition, this subcommand supports the same proxy fault options as the
 |----------------------------------|---------------------|--------------------------------------------------------------------------------------------------|
 | `FAULT_AGENT_CLIENT`                  | `open-ai`    | The LLM client to use (amongst `open-ai`, `open-router` or `ollama`).                                                 |
 | `LLM_PROMPT_REASONING_MODEL`                  | `o4-mini`    | The LLM reasoning model to use.                                                 |
-| `LLM_PROMPT_CHAT_MODEL`                  | `gpt-4.1-mini`    | The LLM chat model to use.                                                 |
 | `FAULT_AGENT_EMBED_MODEL`                  | `text-embedding-3-small`    | The LLM embedding model to use.                                                 |
 
 ### `scenario-review` Subcommand Variables

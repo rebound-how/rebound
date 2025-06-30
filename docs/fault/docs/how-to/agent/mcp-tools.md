@@ -22,6 +22,10 @@ This guide will take you through the
         export OPENAI_API_KEY=sk-...
         ```
 
+        The agent works fine with [ollama](./llm-configuration.md#ollama) and
+        [OpenRouter](./llm-configuration.md#openrouter) so you may switch to
+        either. You want to have a look at an [example below](#tool-full-file-code-changes-recommendations).
+
     -   [X] Install a local qdrant database
 
         <span class="f">fault</span> uses [qdrant](https://qdrant.tech/) for its vector database. You
@@ -66,7 +70,7 @@ It supports the [MCP](https://modelcontextprotocol.io/) specification.
     For the purpose of demonstration, we suggest you run the following server
     with a single endpoint:
 
-    ```python title="app.py"
+    ```python title="app/app.py"
     import os
 
     import httpx
@@ -103,7 +107,7 @@ It supports the [MCP](https://modelcontextprotocol.io/) specification.
 
     ```bash
     export UPSTREAM_URL=http://localhost:34000  # (1)!
-    fastapi dev app.py --port 9090
+    fastapi dev app/app.py --port 9090
     ```
 
     1. This will ensure the remote call made from the endpoint goes through `fault`. 
@@ -651,7 +655,7 @@ attention requires this function.
     tail -f /tmp/fault.log
     ```
 
-## Tool: Performance improvements suggestions
+## Tool: Function performance improvements suggestions
 
 Scoring the performance of a **single function** will help you understand how
 much attention it requires.
@@ -779,7 +783,7 @@ much attention it requires.
     ```
 
 
-## Tool: Reliability improvements suggestions
+## Tool: Function reliability improvements suggestions
 
 Scoring the reliability of a **single function** will help you understand how
 much attention it requires.
@@ -1111,7 +1115,7 @@ Service Level Objects are powerful tools to pilot your user satisfaction.
     tail -f /tmp/fault.log
     ```
 
-## Tool: Suggests Code Changes
+## Tool: Full file code changes recommendations
 
 <span class="f">fault</span> may generate a unified diff of changed to apply
 to a **full file** in order to improve its performance and reliability.
@@ -1239,7 +1243,7 @@ to a **full file** in order to improve its performance and reliability.
         +        raise HTTPException(status_code=500, detail="Internal Server Error")
         ```
 
-    ```python hl_lines="40-43"
+    ```python hl_lines="70-72"  title="e2e.py"
     import asyncio
     import json
     import os
@@ -1249,14 +1253,18 @@ to a **full file** in order to improve its performance and reliability.
 
     from fastmcp import Client
     from fastmcp.utilities.logging import configure_logging
-    from unidiff import PatchSet
+    from rich.console import Console
+
+    console = Console()
 
 
-    async def main(verbose: bool) -> None:
+    async def main(llm: str, verbose: bool) -> None:
         fault_path = shutil.which("fault")
         if not fault_path:
             print("fault: command not found")
             return
+
+        env = {}
 
         args = []
         if verbose:
@@ -1264,6 +1272,27 @@ to a **full file** in order to improve its performance and reliability.
             args = ["--log-file", str(Path(gettempdir()) / "fault.log"), "--log-level", "debug"]
         
         args.append("agent")
+
+        if llm == "openai":
+            env["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+        elif llm == "openrouter":
+            args.append("--llm-client")
+            args.append("open-router")
+            args.append("--llm-prompt-reasoning-model")
+            args.append("google/gemma-3-27b-it")
+            args.append("--llm-embed-model-dim")
+            args.append("384")
+            env["OPENROUTER_API_KEY"] = os.getenv("OPENROUTER_API_KEY")
+        elif llm == "ollama":
+            args.append("--llm-client")
+            args.append("ollama")
+            args.append("--llm-prompt-reasoning-model")
+            args.append("gemma3:4b")
+            args.append("--llm-embed-model")
+            args.append("mxbai-embed-large")
+            args.append("--llm-embed-model-dim")
+            args.append("1024")
+
         args.append("tool")
 
         config = {
@@ -1271,32 +1300,40 @@ to a **full file** in order to improve its performance and reliability.
                 "local": {
                     "command": fault_path,
                     "args": args,
-                    "env": {
-                        "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY")
-                    }
+                    "env": env
                 },
             }
         }
 
         async with Client(config) as client:
+            await client.call_tool(
+                "fault_index_source_code", {
+                    "source_dir": str(Path.cwd() / "app"),
+                    "lang": "python"
+                })
+
             p = await client.call_tool(
                 "fault_make_reliability_and_perf_changes", {
-                    "file": str(Path.cwd() / "app.py"),
+                    "file": str(Path.cwd() / "app" / "app.py"),
                 })
 
             r = json.loads(p[0].text)
-            print(r["score"])
-            print(r["explanation"])
-            print(r["dependencies"])
-            print(r["diff"])
+
+            console.print(f"[purple]Score[/] {r['score']}")
+            console.print(f"[purple]Explanation[/] {r['explanation']}")
+            console.print(f"[purple]Dependencies[/] {r['dependencies']}")
+            console.print(f"[purple]Proposed changes[/]\n{r['diff']}")
+
 
     if __name__ == "__main__":
         import argparse
         parser = argparse.ArgumentParser()
+        parser.add_argument("--llm", choices=["openai", "openrouter", "ollama"])
         parser.add_argument("--verbose",action='store_true')
         args = parser.parse_args()
 
-        asyncio.run(main(args.verbose))
+        asyncio.run(main(args.llm, args.verbose))
+
     ```
 
 !!! tip
@@ -1399,7 +1436,7 @@ to a **full file** in order to improve its performance and reliability.
                     "rps": 3,
                     "timeout": 5,
                     "proxies": [
-                        f"34000={upstream}:443"
+                        f"34000={upstream}:443" # (1)!
                     ]
                 })
 
@@ -1416,6 +1453,9 @@ to a **full file** in order to improve its performance and reliability.
 
         asyncio.run(main(args.url, args.upstream, args.verbose))
     ```
+
+    1. Mapping the proxy address `0.0.0.0:34000` to forward traffic to the
+       real upstream server on port 443.
 
 In the case of our application above this would be called as follows:
 
@@ -1532,7 +1572,7 @@ upstream server (`https://jsonplaceholder.typicode.com`).
                     "rps": 3,
                     "timeout": 10,
                     "proxies": [
-                        f"34000={upstream}:443"
+                        f"34000={upstream}:443" # (1)!
                     ]
                 })
 
@@ -1551,6 +1591,9 @@ upstream server (`https://jsonplaceholder.typicode.com`).
         asyncio.run(main(args.url, args.upstream, args.latency, args.verbose))
 
     ```
+
+    1. Mapping the proxy address `0.0.0.0:34000` to forward traffic to the
+       real upstream server on port 443.
 
 In the case of our application above this would be called as follows:
 
@@ -1658,7 +1701,7 @@ python inject-latency.py http://localhost:9090 https://jsonplaceholder.typicode.
                     "timeout": 10,
                     "rps": 3,
                     "proxies": [
-                        f"34000={upstream}:443"
+                        f"34000={upstream}:443" # (1)!
                     ]
                 })
 
@@ -1675,6 +1718,9 @@ python inject-latency.py http://localhost:9090 https://jsonplaceholder.typicode.
 
         asyncio.run(main(args.url, args.upstream, args.verbose))
     ```
+
+    1. Mapping the proxy address `0.0.0.0:34000` to forward traffic to the
+       real upstream server on port 443.
 
 In the case of our application above this would be called as follows:
 
@@ -1786,7 +1832,7 @@ python inject-packet-loss.py http://localhost:9090 https://jsonplaceholder.typic
                     "rps": 2,
                     "timeout": 10,
                     "proxies": [
-                        f"34000={upstream}:443"
+                        f"34000={upstream}:443" # (1)!
                     ]
                 })
 
@@ -1804,6 +1850,9 @@ python inject-packet-loss.py http://localhost:9090 https://jsonplaceholder.typic
 
         asyncio.run(main(args.url, args.upstream, args.bandwidth, args.verbose))
     ```
+
+    1. Mapping the proxy address `0.0.0.0:34000` to forward traffic to the
+       real upstream server on port 443.
 
 In the case of our application above this would be called as follows (reduced to 1024 bytes per second):
 
@@ -1968,7 +2017,7 @@ python inject-bandwidth.py http://localhost:9090 https://jsonplaceholder.typicod
                     "rps": 3,
                     "timeout": 10,
                     "proxies": [
-                        f"34000={upstream}:443"
+                        f"34000={upstream}:443" # (1)!
                     ]
                 })
 
@@ -1988,6 +2037,9 @@ python inject-bandwidth.py http://localhost:9090 https://jsonplaceholder.typicod
         asyncio.run(main(args.url, args.upstream, args.amplitude, args.frequency))
 
     ```
+
+    1. Mapping the proxy address `0.0.0.0:34000` to forward traffic to the
+       real upstream server on port 443.
 
 In the case of our application above this would be called as follows:
 

@@ -3,6 +3,10 @@ use std::fs;
 use std::path::Path;
 use std::sync::Arc;
 
+use outlines_core::json_schema;
+use pulldown_cmark::Parser;
+use pulldown_cmark::TextMergeStream;
+use regex::Regex;
 use rmcp::Error as McpError;
 use rmcp::ServerHandler;
 use rmcp::model::CallToolResult;
@@ -16,6 +20,7 @@ use serde::Serialize;
 use serde_json::json;
 use similar::TextDiff;
 use swiftide::indexing::EmbeddedField;
+use swiftide::integrations::fastembed::FastEmbed;
 use swiftide::integrations::qdrant::Qdrant;
 use swiftide::query;
 use swiftide::query::answers;
@@ -55,7 +60,7 @@ pub struct CodeBlock {
     pub body: String,
 }
 
-#[derive(Serialize, Deserialize, schemars::JsonSchema)]
+#[derive(Serialize, Deserialize, Default, schemars::JsonSchema)]
 pub struct CodeChange {
     #[schemars(description = "score before the improvements were computed")]
     pub score: f64,
@@ -82,6 +87,7 @@ pub struct FaultMCP {
     pub llm_type: SupportedLLMClient,
     pub prompt_model: String,
     pub embed_model: String,
+    pub embed_model_dim: u64,
 }
 
 const PERFORMANCE_TEMPLATE: &str =
@@ -98,11 +104,13 @@ impl FaultMCP {
         llm_type: SupportedLLMClient,
         prompt_model: &str,
         embed_model: &str,
+        embed_model_dim: u64,
     ) -> Self {
         Self {
             llm_type,
             prompt_model: prompt_model.into(),
             embed_model: embed_model.into(),
+            embed_model_dim,
         }
     }
 
@@ -168,6 +176,7 @@ impl FaultMCP {
             self.llm_type,
             &self.prompt_model,
             &self.embed_model,
+            self.embed_model_dim,
         )
         .await
         .map_err(|e| {
@@ -382,7 +391,7 @@ impl FaultMCP {
 
         let qdrant: Qdrant = Qdrant::builder()
             .batch_size(50)
-            .vector_size(1536)
+            .vector_size(self.embed_model_dim)
             .with_vector(EmbeddedField::Combined)
             .with_sparse_vector(EmbeddedField::Combined)
             .collection_name(CODE_COLLECTION)
@@ -469,7 +478,7 @@ impl FaultMCP {
 
         let qdrant: Qdrant = Qdrant::builder()
             .batch_size(50)
-            .vector_size(1536)
+            .vector_size(self.embed_model_dim)
             .with_vector(EmbeddedField::Combined)
             .with_sparse_vector(EmbeddedField::Combined)
             .collection_name(CODE_COLLECTION)
@@ -545,11 +554,17 @@ impl FaultMCP {
                 })?;
 
         let sp: Arc<dyn SimplePrompt> = llm.clone();
-        let em: Arc<dyn EmbeddingModel> = llm.clone();
+        let em: Arc<dyn EmbeddingModel>;
+
+        if self.llm_type == SupportedLLMClient::OpenRouter {
+            em = Arc::new(FastEmbed::try_default().unwrap().to_owned());
+        } else {
+            em = llm.clone();
+        }
 
         let qdrant: Qdrant = Qdrant::builder()
             .batch_size(50)
-            .vector_size(1536)
+            .vector_size(self.embed_model_dim)
             .with_vector(EmbeddedField::Combined)
             .with_sparse_vector(EmbeddedField::Combined)
             .collection_name(CODE_COLLECTION)
@@ -575,36 +590,35 @@ impl FaultMCP {
                 Some(json!({"err": e.to_string()})),
             )
         })?;
+
         let answer = resp.answer().to_string();
+        tracing::debug!("LLM replied with: {}", answer);
 
-        let code = answer
-            .trim_start_matches("```json")
-            .trim_start_matches(|c| c == '\r' || c == '\n')
-            .trim_end_matches("```")
-            .trim_end_matches(|c| c == '\r' || c == '\n');
+        let mut parsed = CodeChange::default();
 
-        let mut parsed: CodeChange =
-            serde_json::from_str(&code).map_err(|e| {
-                tracing::error!("failed to parse changes response {}", e);
+        if let Some(code) = code::extract_json_fence(&answer) {
+            parsed = serde_json::from_str(&code).map_err(|e| {
                 McpError::internal_error(
-                    "parse_changes_response",
+                    "parse_code_change",
                     Some(json!({"err": e.to_string()})),
                 )
             })?;
 
-        let filename = Path::new(&file)
-            .file_name()
-            .and_then(|os_str| os_str.to_str())
-            .unwrap();
+            let filename = Path::new(&file)
+                .file_name()
+                .and_then(|os_str| os_str.to_str())
+                .unwrap();
 
-        let old_text = snippet;
-        let new_text = &parsed.new;
-        let text_diff = TextDiff::from_lines(&old_text, &new_text);
-        parsed.diff = text_diff
-            .unified_diff()
-            .context_radius(10)
-            .header(filename, filename)
-            .to_string();
+            let old_text = snippet;
+            let new_text = &parsed.new;
+            let text_diff = TextDiff::from_lines(&old_text, &new_text);
+            parsed.diff = text_diff
+                .unified_diff()
+                .context_radius(10)
+                .header(filename, filename)
+                .to_string();
+
+        }
 
         Ok(CallToolResult::success(vec![Content::json(parsed).map_err(
             |e| {

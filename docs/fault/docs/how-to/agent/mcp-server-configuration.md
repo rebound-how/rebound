@@ -1,4 +1,4 @@
-# Configure <span class="f">fault</span> Your MCP Agent Servers
+# Configure Your <span class="f">fault</span> MCP Agent Server
 
 This guide will take you through configuring the <span class="f">fault</span>
 [MCP server](https://modelcontextprotocol.io/specification/2025-06-18/server).
@@ -48,7 +48,6 @@ This guide will take you through configuring the <span class="f">fault</span>
         We are using the default OpenAI API and therefore expect the
         `OPENAI_API_KEY`. If you switch to ollama or Open Router, these
         settings may differ. Do not commit this file if you copy your key.
-        Or you may also use the 
 
     You may also want to enable a log file for the `fault` MCP server:
 
@@ -78,6 +77,37 @@ This guide will take you through configuring the <span class="f">fault</span>
     You may want to explore the [Cursor](https://docs.cursor.com/context/model-context-protocol) documentation for more
     information.
 
+    If you want to use ollama instead, for instance using the
+    [gemma3](https://ollama.com/library/gemma3) model, you may do it as follows:
+
+    ```json
+    {
+        "mcpServers": {
+            "fault": {
+                "type": "stdio",
+                "command": "fault",
+                "disabled": false,
+                "args": [
+                    "--log-file",
+                    "/tmp/fault.log",
+                    "--log-level",
+                    "debug",
+                    "agent",
+                    "--llm-client",
+                    "ollama",
+                    "--llm-prompt-reasoning-model",
+                    "gemma3:4b",
+                    "--llm-prompt-chat-model",
+                    "gemma3:4b",
+                    "--llm-embed-model",
+                    "mxbai-embed-large",
+                    "tool"
+                ]
+            }
+        }
+    }
+    ```
+
 ## Kilo Code
 
 -   [X] Configure the MCP settings for [Kilo Code](https://kilocode.ai/)
@@ -104,12 +134,16 @@ This guide will take you through configuring the <span class="f">fault</span>
     }
     ```
 
+    !!! note
+
+        You may need to restart the Visual Studio Code instance for the changes
+        to take effect.
+
     !!! tip
 
         We are using the default OpenAI API and therefore expect the
         `OPENAI_API_KEY`. If you switch to ollama or Open Router, these
         settings may differ. Do not commit this file if you copy your key.
-        Or you may also use the 
 
     You may also want to enable a log file for the `fault` MCP server:
 
@@ -139,11 +173,57 @@ This guide will take you through configuring the <span class="f">fault</span>
     You may want to explore the [Kilo Code](https://kilocode.ai/docs/features/mcp/using-mcp-in-kilo-code#configuring-mcp-servers) documentation for more
     information.
 
+    If you want to use ollama instead, for instance using the
+    [gemma3](https://ollama.com/library/gemma3) model, you may do it as follows:
+
+    ```json
+    {
+        "mcpServers": {
+            "fault": {
+                "type": "stdio",
+                "command": "fault",
+                "disabled": false,
+                "args": [
+                    "--log-file",
+                    "/tmp/fault.log",
+                    "--log-level",
+                    "debug",
+                    "agent",
+                    "--llm-client",
+                    "ollama",
+                    "--llm-prompt-reasoning-model",
+                    "gemma3:4b",
+                    "--llm-prompt-chat-model",
+                    "gemma3:4b",
+                    "--llm-embed-model",
+                    "mxbai-embed-large",
+                    "tool"
+                ]
+            }
+        }
+    }
+    ```
+
+## Kwaak
+
+-   [X] Configure the MCP settings for [Kwaak](https://github.com/bosun-ai/kwaak)
+
+    Add the following section to the {==kwaak.toml==} file at the
+    root directory of any project:
+
+    ```toml
+    [[mcp]]
+    name = "fault"
+    command = "fault"
+    args = ["--log-file", "/tmp/fault.log", "--log-level", "debug", "agent", "tool"]
+    env = [["OPENAI_API_KEY", "env:OPENAI_API_KEY"]]
+    ```
 
     !!! tip
 
-        You may need to restart the Visual Studio Code instance for the changes
-        to take effect.
+        We are using the default OpenAI API and therefore expect the
+        `OPENAI_API_KEY`. If you switch to ollama or Open Router, these
+        settings may differ. Do not commit this file if you copy your key.
 
 ## Zed
 
@@ -174,7 +254,6 @@ This guide will take you through configuring the <span class="f">fault</span>
         We are using the default OpenAI API and therefore expect the
         `OPENAI_API_KEY`. If you switch to ollama or Open Router, these
         settings may differ. Do not commit this file if you copy your key.
-        Or you may also use the 
 
     You may also want to enable a log file for the `fault` MCP server:
 
@@ -205,6 +284,42 @@ This guide will take you through configuring the <span class="f">fault</span>
 
     You may want to explore the [Zed](https://zed.dev/docs/ai/mcp) documentation for more
     information.
+
+## FastMCP
+
+-   [X] Configure the MCP settings for [FastMCP](https://github.com/jlowin/fastmcp)
+
+    Add the following section to the configuration section:
+
+    ```python
+    import os
+    import shutil
+
+    from fastmcp import Client
+
+    async list_fault_tools() -> None:
+        config = {
+            "mcpServers": {
+                "local": {
+                    "command": shutil.which("fault"),
+                    "args": [
+                        "--log-file",
+                        "/tmp/fault.log",
+                        "--log-level",
+                        "debug",
+                        "agent",
+                        "tool"
+                    ],
+                    "env": {
+                        "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY")
+                    }
+                },
+            }
+        }
+
+        async with Client(config) as client:
+            fault_tools = await client.list_tools()
+    ```
 
 ## Next Steps
 
