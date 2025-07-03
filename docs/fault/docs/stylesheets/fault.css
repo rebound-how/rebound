@@ -1,15 +1,18 @@
 :root>* {
-  --md-primary-fg-color: hsl(214, 67%, 14%);
-  --md-primary-fg-color--light: hsl(214, 67%, 14%);
-  --md-primary-fg-color--dark: hsl(214, 67%, 14%);
+    --dark-color: #001a26;
 
-  --md-accent-fg-color: hsl(45, 92%, 47%);
-  --md-accent-fg-color--light: hsl(45, 92%, 47%);
-  --md-accent-fg-color--dark: hsl(45, 92%, 47%);
+    --md-primary-fg-color: var(--dark-color);
+    --md-primary-fg-color--light: var(--dark-color);
+    --md-primary-fg-color--dark: var(--dark-color);
 
-  --md-footer-bg-color: hsl(214, 67%, 14%);
+    --accent-color: #67b0c2;
 
-  --md-typeset-a-color: hsl(205, 100%, 50%);
+    --md-accent-fg-color: var(--accent-color);
+    --md-accent-fg-color--light: var(--accent-color);
+    --md-accent-fg-color--dark: var(--accent-color);
+    --md-footer-bg-color: var(--dark-color);
+
+  --md-typeset-a-color: #00a7d6;
 
   --border-radius-s: 0.4rem;
   --border-radius-m: 0.6rem;
@@ -56,7 +59,7 @@
 }
 
 .md-typeset [type="checkbox"]:checked + .task-list-indicator::before {
-  background: hsl(205, 100%, 50%);
+  background: #00a7d6;
 }
 
 .f {

@@ -4,42 +4,82 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/default.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/json.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/markdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/diff.min.js"></script>
 <link rel="stylesheet" href="/assets/landing.css">
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.feat').forEach(feat => {
-      const images = feat.dataset.images.split(',');
-      let idx = 0;
+    hljs.highlightAll();
 
-      const imgEl = feat.querySelector('.carousel-img');
-      const items = feat.querySelectorAll('.menu-item');
+    const originalText = `function greet() {
+  console.log("Hello");
+  console.log("Hello, world!");
+  return true;
+}`;
 
-      function update(newIdx) {
-        if (newIdx === idx) return;
-
-        const preload = new Image();
-        preload.src = "/assets/images/" + images[newIdx];
-
-        preload.onload = () => {
-          imgEl.style.opacity = 0;
-          imgEl.addEventListener('transitionend', function handler() {
-            imgEl.removeEventListener('transitionend', handler);
-            imgEl.src = preload.src;
-            imgEl.style.opacity = 1;
-          });
-        };
-
-        items.forEach(li =>
-          li.classList.toggle('active', +li.dataset.index === newIdx)
-        );
-
-        idx = newIdx;
+    const patch = [
+      {
+        removeLine: '  console.log("Hello");',
+        addLine: 'console.log("Hello, beautiful CSS!" );'
       }
+    ];
 
-      items.forEach(li =>
-        li.addEventListener('click', () => update(+li.dataset.index))
-      );
-    });
+    const codeEl = document.getElementById('typecode');
+    const charDelay = 50;
+    const hunkDelay = 300;
+
+    // Typewriter reveal of base code
+    function typeWriter(text, idx = 0) {
+      if (idx <= text.length) {
+        codeEl.textContent = text.slice(0, idx);
+        setTimeout(() => typeWriter(text, idx + 1), charDelay);
+      } else {
+        wrapLines();
+      }
+    }
+
+    // Wrap each line in span for patch manipulation
+    function wrapLines() {
+      const lines = codeEl.textContent.split('\n');
+      codeEl.innerHTML = lines
+        .map(line => `<span class="line" data-text="${line.replace(/"/g, '&quot;')}">${line}</span>`)
+        .join('');
+      applyPatch();
+    }
+
+    // Insert patch with pop-in for added
+    function applyPatch() {
+      const linesArr = Array.from(codeEl.querySelectorAll('.line'));
+      patch.forEach((hunk, i) => {
+        setTimeout(() => {
+          const target = linesArr.find(el => el.dataset.text === hunk.removeLine);
+          if (!target) return;
+          // mark removed line
+          target.classList.add('removed');
+          target.textContent = `- ${hunk.removeLine.trim()}`;
+          // create new element in collapsed pop state
+          const newEl = document.createElement('span');
+          newEl.className = 'line added-enter';
+          newEl.dataset.text = hunk.addLine;
+          newEl.textContent = `+ ${hunk.addLine}`;
+          target.parentNode.insertBefore(newEl, target.nextSibling);
+          // trigger pop-in to expanded state
+          requestAnimationFrame(() => {
+            newEl.classList.add('added');
+            newEl.classList.remove('added-enter');
+          });
+          // hide cursor when complete
+          if (i === patch.length - 1) {
+            setTimeout(() => codeEl.classList.add('done'), charDelay);
+          }
+        }, hunkDelay * (i + 1));
+      });
+    }
+
+    typeWriter(originalText);
   });
 </script>
 <style>
@@ -49,35 +89,690 @@
 
 
 {% block container %}
-<div class="md-content hero-bg" data-md-component="content">
-  <article class="md-content__inner md-typeset">
+<div class="md-content" data-md-component="content">
+  <article class="md-content__inner md-typeset top">
     <div class="hero">
       <div class="hero__content">
-        <div class="logo scratchy" translate="no">fault</div>
-        <h1><span class="tagline">progress through failures</span></h1>
+        <div class="logo" translate="no"><span class="gradient-text">Build</span> AI-Generated Code <span
+            class="gradient-text">Your Users</span> Can <span class="gradient-text">Rely On</span></div>
+        <h2><span class="tagline" translate="no">
+            <span class="tagline-fault">fault</span> is an Open-Source Rust-powered CLI and AI-MCP server that lets engineers and AI
+            agents team up to ship production-ready code.
+          </span></h2>
         <div class="hero__actions">
-          <a class="md-button md-button--primary rounded" href="/tutorials/install/">
+          <a class="md-button md-button--primary" href="/tutorials/install/">
             Get Started
           </a>
-          <a class="md-button rounded" href="https://github.com/rebound-how/rebound">
+          <a class="md-button gh" href="https://github.com/rebound-how/rebound">
             View on GitHub
           </a>
+        </div>
+        <div class="row showme">
+          <div class="col">
+
+            <h1>Plug <span class="tagline-fault">fault</span> into your favorite AI-Editor</h1>
+            <div class="grid cards samples">
+
+              <ul class="text-right">
+                <li>
+                  <div class="tabs">
+                    <input type="radio" name="mode" id="tab-score" checked>
+                    <label for="tab-score" class="show-score">Score</label> |
+
+                    <input type="radio" name="mode" id="tab-review">
+                    <label for="tab-review" class="show-review">Review</label> |
+
+                    <input type="radio" name="mode" id="tab-change">
+                    <label for="tab-change" class="show-change">Change</label> |
+
+                    <input type="radio" name="mode" id="tab-measure">
+                    <label for="tab-measure" class="show-measure">Measure</label> |
+
+                    <input type="radio" name="mode" id="tab-monitor">
+                    <label for="tab-monitor" class="show-monitor">Monitor</label>
+                    <hr />
+                    <div class="panel panel-score">
+                      <div class="text-left cmd">
+                        <span class="twemoji">{% include ".icons/material/console-line.svg" %} </span>
+                        fault agent tool <span class="mcp-tool mcp-tool-score">fault_score_reliability</span>
+                      </div>
+                      <pre class="text-left">
+                        <code class="language-json">
+{
+  "explanation": "The function has no error handling, timeout, retry or fallback logic, making it prone to upstream failures causing unhandled exceptions.",
+  "score": 0.2
+}
+                      </code>
+                    </pre>
+                    </div>
+                    <div class="panel panel-review">
+                      <div class="text-left cmd">
+                        <span class="twemoji">{% include ".icons/material/console-line.svg" %} </span> fault agent
+                        code-review
+                      </div>
+                      <pre class="text-left">
+                        <code class="language-markdown">Here’s a small, focused refactor of your `/` handler that will immediately improve resilience, observability and error‐handling without drastically changing your app:
+
+
+1. **Single, long-lived HTTP client**  
+   Re-using an `httpx.Client` gives you connection pooling and lets you centrally configure timeouts.
+
+2. **Per-request timeouts**  
+   By setting `timeout=httpx.Timeout(connect=5, read=10)` we fail fast on network issues.
+
+3. **Retries with exponential backoff**  
+   The [`backoff`](https://pypi.org/project/backoff/) library wraps `_fetch_todo()` so that transient errors and 5xx status codes automatically retry (up to 5× or ~30 s total).
+
+4. **Error propagation & HTTPExceptions**  
+   We catch `RequestError` (network) vs `HTTPStatusError` (non-2xx) and translate them into appropriate 5xx/4xx FastAPI responses.
+
+5. **Logging**  
+   Warnings on upstream 4xxs and errors on network failures let you trace the failure mode in your logs.
+
+## Next steps
+
+- **Metrics & tracing**:  
+  Plug in Prometheus counters or OpenTelemetry spans around `_fetch_todo` to observe retry counts, latencies, and success/fail rates.  
+- **Circuit breaker**:  
+  If your upstream is flapping, consider a circuit-breaker pattern (e.g. [`pybreaker`](https://pypi.org/project/pybreaker/)) to avoid overwhelming it.  
+- **Async support**:  
+  If you expect high concurrency, convert to `httpx.AsyncClient` and make `index` an `async def`.  
+
+These minimal changes will immediately make your endpoint far more reliable under network glitches or upstream outages—yet remain straightforward to slot into your existing `app.py`.</code>
+                      </pre>
+                    </div>
+                    <div class="panel panel-change">
+                      <div class="text-left cmd">
+                        <span class="twemoji">{% include ".icons/material/console-line.svg" %} </span> fault agent
+                        tool <span class="mcp-tool mcp-tool-change">fault_make_reliability_and_perf_changes</span>
+                      </div>
+
+                      <pre class="text-left">
+                        <code class="language-diff">--- app.py
++++ app.py
+@@ -1,15 +1,58 @@
+ import os
++import logging
+ 
+ import httpx
+-from fastapi import FastAPI
++from fastapi import FastAPI, HTTPException
+ 
+ UPSTREAM_URL = os.getenv("UPSTREAM_URL", "https://jsonplaceholder.typicode.com")
++REQUEST_TIMEOUT = float(os.getenv("REQUEST_TIMEOUT", 5.0))
++MAX_RETRIES = int(os.getenv("MAX_RETRIES", 3))
++BACKOFF_FACTOR = float(os.getenv("BACKOFF_FACTOR", 0.5))
++RETRY_STATUS_CODES = [502, 503, 504]
+ 
+ app = FastAPI()
++logger = logging.getLogger("uvicorn.error")
+ 
++transport = httpx.RetryTransport(
++    retries=MAX_RETRIES,
++    backoff_factor=BACKOFF_FACTOR,
++    status_forcelist=RETRY_STATUS_CODES,
++    allowed_methods=["GET"],
++)
+ 
++@app.on_event("startup")
++async def startup_event():
++    '''
++    Initialize the HTTPX client with retry and timeout settings for resilience.
++    '''
++    app.state.client = httpx.AsyncClient(
++        base_url=UPSTREAM_URL,
++        timeout=httpx.Timeout(REQUEST_TIMEOUT),
++        transport=transport,
++        headers={"Host": "jsonplaceholder.typicode.com"},
++    )
++
++@app.on_event("shutdown")
++async def shutdown_event():
++    '''
++    Close the HTTPX client on application shutdown to release resources.
++    '''
++    await app.state.client.aclose()
++
+ @app.get("/")
+-def index():
+-    return httpx.get(f"{UPSTREAM_URL}/todos/1", headers={
+-        "Host": "jsonplaceholder.typicode.com"
+-    }).json()
++async def index():
++    '''
++    Retrieves a todo item from the upstream service.
++    Implements retry logic, timeouts, and error handling for resilience.
++    '''
++    try:
++        response = await app.state.client.get("/todos/1")
++        response.raise_for_status()
++    except httpx.RequestError as exc:
++        logger.error(f"Request error: {exc}")
++        raise HTTPException(status_code=503, detail="Upstream service unavailable")
++    except httpx.HTTPStatusError as exc:
++        logger.error(f"Invalid response {exc.response.status_code}: {exc}")
++        raise HTTPException(status_code=502, detail="Upstream returned an error")
++
++    return response.json()
+
+                        </code>
+                      </pre>
+                    </div>
+                    <div class="panel panel-monitor">
+                      <div class="text-left cmd">
+                        <span class="twemoji">{% include ".icons/material/console-line.svg" %} </span> fault agent
+                        tool <span class="mcp-tool mcp-tool-monitor">fault_suggest_service_level_objectives_slo</span>
+                      </div>
+
+                      <pre class="text-left">
+                        <code class="language-json">[
+  {
+    "type": "latency",
+    "title": "P95 Latency for /todos/1 API",
+    "objective": 95.0,
+    "explanation": "95th percentile of request latency must stay under threshold to ensure responsiveness",
+    "threshold": 0.3,
+    "unit": "s",
+    "window": "7d",
+    "sli": {
+      "prometheus": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{handler=\"/todos/1\"}[5m])) by (le)) * 1000",
+      "gcp/cloudrun": {
+        "displayName": "95% - P95 Latency - Calendar day",
+        "goal": 0.95,
+        "calendarPeriod": "DAY",
+        "serviceLevelIndicator": {
+          "windowsBased": {
+            "windowPeriod": "300s",
+            "goodTotalRatioThreshold": {
+              "basicSliPerformance": {
+                "latency": {
+                  "threshold": "0.3s"
+                }
+              },
+              "threshold": 0.95
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "availability",
+    "title": "2xx Success Rate for /todos/1 API",
+    "objective": 99.9,
+    "explanation": "Percentage of requests returning HTTP 2xx status codes",
+    "threshold": 99.9,
+    "unit": "",
+    "window": "7d",
+    "sli": {
+      "prometheus": "sum(rate(http_requests_total{handler=\"/todos/1\",status=~\"2..\"}[5m]))/sum(rate(http_requests_total{handler=\"/todos/1\"}[5m]))*100",
+      "gcp/cloudrun": {
+        "displayName": "99.9% - Availability - Calendar day",
+        "goal": 0.999,
+        "calendarPeriod": "DAY",
+        "serviceLevelIndicator": {
+          "windowsBased": {
+            "windowPeriod": "300s",
+            "goodTotalRatioThreshold": {
+              "threshold": 0.999
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "error",
+    "title": "5xx Error Rate for /todos/1 API",
+    "objective": 1.0,
+    "explanation": "Percentage of requests resulting in HTTP 5xx errors must remain low",
+    "threshold": 1.0,
+    "unit": "%",
+    "window": "7d",
+    "sli": {
+      "prometheus": "sum(rate(http_requests_total{handler=\"/todos/1\",status=~\"5..\"}[5m]))/sum(rate(http_requests_total{handler=\"/todos/1\"}[5m]))*100",
+      "gcp/cloudrun": {
+        "displayName": "1% - 5xx Error Rate - Calendar day",
+        "goal": 0.01,
+        "calendarPeriod": "DAY",
+        "serviceLevelIndicator": {
+          "windowsBased": {
+            "windowPeriod": "300s",
+            "goodTotalRatioThreshold": {
+              "threshold": 0.01
+            }
+          }
+        }
+      }
+    }
+  }
+]
+
+                        </code>
+                      </pre>
+                    </div>
+                    <div class="panel panel-measure">
+                      <div class="text-left cmd">
+                        <span class="twemoji">{% include ".icons/material/console-line.svg" %} </span> fault agent
+                        tool <span class="mcp-tool mcp-tool-measure">fault_run_latency_impact_scenario</span>
+                      </div>
+
+                      <pre class="text-left">
+                        <code class="language-markdown"># Report
+
+
+## Scenario: Evaluating runtime performance of http://localhost:9090  (items: 1)
+
+### 🎯 `GET` http://localhost:9090 | Passed
+
+**Call**:
+
+- Method: `GET`
+- Timeout: 10000ms
+- Headers: -
+- Body?: No
+
+**Strategy**: load for 10s with 1 clients @ 3 RPS
+
+**Faults Applied**:
+
+| Type | Timeline | Description |
+|------|----------|-------------|
+| latency | 0% `xxxxxxxxxx` 100% | Latency: ➡️🖧, Per Read/Write Op.: false, 
+  Distribution: normal, Mean: 300.00 ms, Stddev: 0.00 ms |
+
+
+**Run Overview**:
+
+Num. Requests: 29
+Num. Errors: 0 (0.0%)
+Min. Response Time: 334.14
+Max Response Time: 462.50
+Mean Latency (ms): 339.96
+Total Time: 10 seconds and 214 ms
+
+| Latency Percentile | Latency (ms) | Num. Requests (% of total) |
+|------------|--------------|-----------|
+| p25 | 335.78 | 8 (27.6%) |
+| p50 | 339.96 | 15 (51.7%) |
+| p75 | 342.26 | 23 (79.3%) |
+| p95 | 406.86 | 29 (100.0%) |
+| p99 | 462.50 | 29 (100.0%) |
+
+| SLO       | Pass? | Objective | Margin | Num. Requests Over Threshold (% of total) |
+|-----------|-------|-----------|--------|--------------------------|
+| 99% @ 350ms | ❌ | 99% < 350ms | Above by 112.5ms | 2 (6.9%) |
+| 95% @ 200ms | ❌ | 95% < 200ms | Above by 206.9ms | 29 (100.0%) |
+</code>
+                      </pre>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </article>
+  <article class="md-content__inner md-typeset why full-width">
+    <h1>AI-Code Generators Need Guidance</h1>
+    <h3>We believe software engineers experience has never been more necessary.</h3>
+    <div class="container tiles">
+      <hr />
+      <div class="row">
+        <div class="col">
+
+          <div class="card">
+            <header>
+              <h2><strong>Lack of operational context</strong></h2>
+            </header>
+            <p>AI-Editors focus on your source code but are limited by what that they see. Operations are still out of
+              their reach, thus leading to code that isn't always appropriate for your unique needs.</p>
+          </div>
+
+        </div>
+        <div class="col">
+
+          <div class="card">
+            <header>
+              <h2><strong>Refactoring pain is real</strong></h2>
+            </header>
+            <p>Acceleration in bootsrapping with AI-Generated code is undeniable. Yet, delivery pipelines remain
+              time-constant as the output requires attention and refactoring before it can be pushed to production.</p>
+          </div>
+
         </div>
       </div>
     </div>
   </article>
+
   <article class="md-content__inner md-typeset subhero">
     {% block content %}
     {% include "partials/content.html" %}
     {% endblock %}
   </article>
+  <article class="md-content__inner md-typeset features">
+
+    <h1>Modern Features for Hybrid Engineering Teams</h1>
+    <h3>AI is an evolution of the engineering industry journey. Not a rupture from its past.</h3>
+    <hr />
+    <div class="row">
+      <div class="col">
+        <div class="grid cards has-border box">
+          <ul>
+            <li>
+              <p><strong>Fully Open Source</strong>
+                <hr />
+              <p>fault is open-sourced under a permissive license and part of <a href="https://rebound.how/">Rebound</a>
+                family. Feel free to <a href="https://github.com/rebound-how/rebound">contribute</a> to it</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="grid cards has-border box">
+          <ul>
+            <li>
+              <p><strong>Made for Engineers</strong>
+                <hr />
+              <p>fault is designed to work equally well with engineers and AI-agents in a team effort.</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <div class="grid cards has-border box">
+          <ul>
+            <li>
+              <p><strong>AI Reviews</strong></p>
+              <hr />
+              <p>Perform <a href="/how-to/agent/code-suggestions/">code review</a> and generate platform & <a
+                  href="/how-to/agent/report-advices/">reliability reports</a> from real performance scenario
+                executions</a>.</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="grid cards has-border box">
+          <ul>
+            <li>
+              <p><strong>Choose Your LLM</strong></p>
+              <hr />
+              <p>fault supports OpenAI, Gemini, OpenRouter and ollama. <a href="/how-to/agent/llm-configuration/">Pick
+                  up the LLM</a> that best matches your working style.</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="grid cards has-border box">
+          <ul>
+            <li>
+              <p><strong>MCP Server</strong>
+                <hr />
+              <p>Plug fault into any AI-Code editor and help them produce sound production output with fault various <a
+                  href="/how-to/agent/mcp-tools/">tools</a>.</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <div class="grid cards has-border box">
+          <ul>
+            <li>
+              <p><strong>Battery Included & Extensible</strong></p>
+              <hr />
+              <p>
+                Common <a href="/how-to/proxy/faults/configure-latency/">network faults</a> such as latency, blackhole
+                or packet loss.
+              </p>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="grid cards has-border box">
+          <ul>
+            <li>
+              <p><strong>Automation Friendly</strong></p>
+              <hr />
+              <p>Automate <a href="/reference/scenario-file-format/">reliability scenarios</a> from your favourite <a
+                  href="/how-to/ci/github/">CI</a> with a simple YAML syntax.</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="grid cards has-border box">
+          <ul>
+            <li>
+              <p><strong>OpenAPI Scenarios Generation</strong></p>
+              <hr />
+              <p>Use your OpenAPI specification to quickly <a href="/how-to/scenarios/generate/">generate reliability
+                  scenarios</a>.</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="grid cards has-border box">
+          <ul>
+            <li>
+              <p><strong>Complex Scenarios</strong></p>
+              <hr />
+              <p>Easily <a href="/how-to/proxy/lifecycle/#scheduling">schedule</a> complex scenarios by configuring
+                timelines of fault injection.</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <div class="grid cards has-border box">
+          <ul>
+            <li>
+              <p><strong>Platform Injection</strong></p>
+              <hr />
+              <p>
+                Easily inject network faults into <a href="/how-to/inject/kubernetes/">Kubernetes</a>, <a
+                  href="/how-to/inject/gcp/">Google Cloud Platform Cloud Run</a>...
+              </p>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="grid cards has-border box">
+          <ul>
+            <li>
+              <p><strong>SRE In a Box</strong></p>
+              <hr />
+              <p>fault brings <a hrfe="/how-to/scenarios/generate/#next-steps">Service Level Objective</a> into the
+                party as a first small step in your SRE journey.</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <div class="grid cards has-border box">
+          <ul>
+            <li>
+              <p><strong>Run Where You Are</strong></p>
+              <hr />
+              <p>
+                fault is a rust-CLI binary that can run on Linux, macOS and Windows.
+                Deploy it also in <a href="/how-to/platform/run-on-kubernetes/">Kubernetes</a>, <a
+                  href="/how-to/ci/github/">GitHub Action</a>, <a href="/how-to/run-with-chaostoolkit/">Chaos
+                  Toolkit</a> or <a href="/how-to/run-with-reliably/">Reliably</a>.
+              </p>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="grid cards has-border box">
+          <ul>
+            <li>
+              <p><strong>Support Any TCP Protocol</strong></p>
+              <hr />
+              <p>While fault is well-suited for HTTP, it can be just as easily applied to any <a
+                  href="/how-to/proxy/protocols/tcp/">TCP-based protocol</a>. Explore how your application reacts.</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="grid cards has-border box">
+          <ul>
+            <li>
+              <p><strong>Observability Ready</strong></p>
+              <hr />
+              <p>fault can be configured to send <a href="/how-to/observability/traces/">Open Telemetry traces</a> to
+                your favorite provider. Observe the effect of fault injection in your system.</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="grid cards has-border box">
+          <ul>
+            <li>
+              <p><strong>eBPF Support</strong></p>
+              <hr />
+              <p>Intercept traffic without changing anything in your application with fault's <a
+                  href="/how-to/proxy/stealth/configure-stealth-mode/">eBPF support</a>. Turn fault injection into a
+                stealth game.</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </article>
+  <article class="md-content__inner md-typeset cta">
+
+    <div class="container tiles">
+      <div class="row">
+        <div class="col-3"></div>
+        <div class="col-6">
+
+          <div class="card text-center">
+            <h1>Ready?</h1>
+            <div>
+              <h3 class="text-center">Download fault and build production-grade applications now.
+              </h3>
+            </div>
+            <hr />
+            <div><a class="md-button md-button--primary" href="/tutorials/install/">
+                Get Started
+              </a>
+            </div>
+          </div>
+
+        </div>
+        <div class="col-3"></div>
+      </div>
+    </div>
+  </article>
+  <article class="md-content__inner md-typeset faq" id="faq">
+    <h1>Frequently Asked Questions</h1>
+    <h3>Everything you need to know about bringing fault into your organization.</h3>
+    <hr />
+    <div class="container tiles">
+      <div class="row">
+        <div class="col-3"></div>
+        <div class="col-6">
+          <details class="quote">
+            <summary>What is fault?</summary>
+            <p>fault is a developer product aiming at supporting engineers keep their high-standards while onboarding AI
+              into their pipeline.</p>
+          </details>
+          <details class="quote">
+            <summary>How is fault delivered?</summary>
+            <p>fault is a rust-cli. It runs natively on Linux, macOSX and Windows.</p>
+          </details>
+          <details class="quote">
+            <summary>Is fault free?</summary>
+            <p>The fault CLI is free and open-source and will remain so. You will pay for any LLM model through your own
+              subscription.</p>
+          </details>
+          <details class="quote">
+            <summary>Do you offer enterprise commercial support?</summary>
+            <p>As part of the <a href="https://rebound.how/">Rebound</a> family, we do indeed support fault
+              commercially. Please feel free to <a href="https://rebound.how/support/#contact">reach out to us</a>.</p>
+          </details>
+          <details class="quote">
+            <summary>Do you upload my data anywhere?</summary>
+            <p>The fault CLI doesn't send your data or code anywhere. If you use a Cloud-based LLM such as OpenAI,
+              Gemini or Open Router, your code will be sent there partially indeed. If you want to remain fully private,
+              we suggest you use ollama that fault also supports.</p>
+          </details>
+          <details class="quote">
+            <summary>What programming language do you support?</summary>
+            <p>Currently fault supports Python, Javascript, TypeScript, go and rust. More languages will likely be
+              added.</p>
+          </details>
+          <details class="quote">
+            <summary>Can I use fault without its AI features?</summary>
+            <p>Absolutely. While fault provides AI-specific features, its core capabilities are not tied to AI at all.
+              You can thus use fault to explore your reliability using the CLI directly. fault is made for all kinds of
+              engineers!</p>
+          </details>
+          <details class="quote">
+            <summary>Can I contributed to fault?</summary>
+            <p>Yes! fault is open-source and love any kind of contributions. From typos to issue fixes or feature
+              requests. Please join us.</p>
+          </details>
+        </div>
+        <div class="col-3"></div>
+      </div>
+    </div>
+
+  </article>
+  <article class="md-content__inner md-typeset where">
+    <div class="container tiles">
+      <div class="row">
+        <div class="col-4">
+          <h2>fault</h2>
+          <p>Helping Engineers and AI-agents cooperate to build reliable applications</p>
+        </div>
+        <div class="col-2"></div>
+        <div class="col-2"></div>
+        <div class="col-2">
+          <header>RESOURCES</header>
+          <ul>
+            <li><a href="/how-to/install/">Documentation</a></li>
+            <li><a href="/tutorials/getting-started/">Tutorials</a></li>
+          </ul>
+        </div>
+        <div class="col-2">
+          <header>SUPPORT</header>
+          <ul>
+            <li><a href="https://github.com/rebound-how/rebound/issues">Issues</a></li>
+            <li><a href="https://github.com/orgs/rebound-how/discussions/categories/ideas">Feature Requests</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </article>
 </div>
 {% endblock %}
 
 {% block tabs %}
-{% endblock %}
-
-{% block site_nav %}
 {% endblock %}
 
 
