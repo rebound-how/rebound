@@ -20,16 +20,6 @@ async def main(source_dir: str, verbose: bool) -> None:
         args = ["--log-file", str(Path(gettempdir()) / "fault.log"), "--log-level", "debug"]
     
     args.append("agent")
-    args.append("--llm-client")
-    args.append("open-router")
-    args.append("--llm-prompt-reasoning-model")
-    args.append("google/gemma-3-27b-it")
-    args.append("--llm-prompt-chat-model")
-    args.append("google/gemma-3-27b-it")
-    args.append("--llm-embed-model")
-    args.append("mxbai-embed-large")
-    args.append("--llm-embed-model-dim")
-    args.append("384")
     args.append("tool")
 
     config = {

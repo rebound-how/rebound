@@ -2,6 +2,8 @@ import asyncio
 import json
 import os
 import shutil
+from pathlib import Path
+from tempfile import gettempdir
 
 from fastmcp import Client
 from fastmcp.utilities.logging import configure_logging
@@ -16,7 +18,7 @@ async def main(code_file: str, func_name: str, lang: str, verbose: bool) -> None
     args = []
     if verbose:
         configure_logging("DEBUG")
-        args = ["--log-stdout", "--log-level", "debug"]
+        args = ["--log-file", str(Path(gettempdir()) / "fault.log"), "--log-level", "debug"]
     
     args.append("agent")
     args.append("tool")
@@ -35,15 +37,15 @@ async def main(code_file: str, func_name: str, lang: str, verbose: bool) -> None
 
     async with Client(config) as client:
         p = await client.call_tool(
-            "fault_suggest_service_level_objectives_slo", {
+            "fault_extract_code_block", {
                 "file": code_file,
                 "func": func_name
             })
         
-        snippet = json.loads(p[0].text)["full"]
+        snippet = json.loads(p[0].text)["body"]
 
         p = await client.call_tool(
-            "suggest.slos", {
+            "fault_suggest_service_level_objectives_slo", {
                 "snippet": snippet,
                 "lang": lang
             })

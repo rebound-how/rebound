@@ -92,7 +92,7 @@ async def main(llm: str, verbose: bool) -> None:
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("--llm", choices=["openai", "openrouter", "ollama", "gemini"])
+    parser.add_argument("--llm", choices=["openai", "openrouter", "ollama", "gemini"], default="openai")
     parser.add_argument("--verbose",action='store_true')
     args = parser.parse_args()
 
