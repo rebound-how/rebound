@@ -40,6 +40,7 @@ pub async fn index(
     client_type: SupportedLLMClient,
     prompt_model: &str,
     embed_model: &str,
+    embed_model_dim: u64,
 ) -> Result<()> {
     let lang = SupportedLanguages::from_str(source_lang)?;
 
@@ -58,7 +59,7 @@ pub async fn index(
 
     let qdrant = Qdrant::builder()
         .batch_size(64)
-        .vector_size(1536)
+        .vector_size(embed_model_dim)
         .with_vector(EmbeddedField::Combined)
         .with_sparse_vector(EmbeddedField::Combined)
         .collection_name(CODE_COLLECTION)

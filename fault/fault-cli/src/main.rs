@@ -556,6 +556,7 @@ async fn main() -> Result<()> {
                             llm_client,
                             &llm_prompt_model,
                             &llm_embed_model,
+                            llm_embed_model_dim,
                         )
                         .await?;
 
