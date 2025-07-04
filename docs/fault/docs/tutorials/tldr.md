@@ -1,6 +1,29 @@
 # tl;dr
 
-## Getting started with the CLI
+## Overview
+
+<span class="f">fault</span> comes with two main capabilities in one CLI.
+
+* Fault Injection: operation oriented features
+* AI Agent: LLM-based features
+
+```mermaid
+---
+config:
+  theme: 'forest'
+---
+mindmap
+  root((fault CLI))
+    Fault Injection
+      Proxy
+      Scenario
+    AI Agent
+      Review
+      MCP
+```
+
+
+## Getting started with fault injection
 
 The core of <span class="f">fault</span> is its fault injection engine. It
 allows you to:
