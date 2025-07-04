@@ -3,7 +3,7 @@
   <p align="center"><img src="https://raw.githubusercontent.com/rebound-how/www/refs/heads/main/src/icons/products-marks/fault.svg"></p>
 </h2>
 
-<h4 align="center">fault | Developer-Friendly Reliability Engineering</h4>
+<h4 align="center">fault | Helping Engineers and AI-agents cooperate to build reliable applications</h4>
 
 <p align="center">
    <img alt="fault Version" src="https://img.shields.io/crates/v/fault-cli">
