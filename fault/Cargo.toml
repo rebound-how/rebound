@@ -4,7 +4,7 @@ members = ["fault-cli", "fault-ebpf-programs"]
 default-members = ["fault-cli"]
 
 [workspace.package]
-version = "0.10.0"
+version = "0.11.0"
 edition = "2024"
 rust-version = "1.85"
 license-file = "LICENSE"
