@@ -1,27 +1,39 @@
 # tl;dr
 
-## The one-liner <span class="f">fault</span> HTTP proxy
+## Getting started with the CLI
 
-The following command starts the proxy impacting any HTTP requests to any
-upstream host with a `300ms` latency on average.
+The core of <span class="f">fault</span> is its fault injection engine. It
+allows you to:
 
-```console
-fault run --with-latency --latency-mean=300 --upstream=* 
-```
 
-Send your HTTP/HTTPS traffic to `<proxy ip>:3180` and observe the latency
-impacting the response time.
+-   [X] Inject faults into your services
 
-## The one-liner <span class="f">fault</span> TCP proxy
+    Run `fault run` to start injecting network failures
 
-The following command starts the proxy impacting any TCP stream to host
-`remote.com:9000` with a `300ms` latency on average.
+-   [X] Automate these failures into YAML files that can be run from your CI
 
-```console
-fault run --with-latency --latency-mean=300 --proxy "7878:remote.com:9000"
-```
+    Run `fault scenario generate` and `fault scenario run` to create
+    YAML-based scenarios that can be stored alongside your code and executed
+    from your CI.
 
-Replace `remote.com:9000` with `<proxy ip>:7878` in your application.
+
+## Getting started with the AI Agent
+
+If you are keen to get started with the AI-agent, the general steps are as
+follows:
+
+-   [X] Pick up your favorite LLM
+
+    <span class="f">fault</span> supports OpenAI, Gemini, OpenRouter and ollama.
+    If you use any of the cloud-based LLMs, you will need to generate an API
+    key. If you want privacy, go with ollama.
+
+-   [X] Configure your AI-Code editor
+
+    [Setup the editor](../how-to/agent/llm-configuration.md) of your choice so
+    it knows how to find fault as a MCP server. Most of the time it's by adding
+    a `mcpServers` object somewhere in their settings file.
+
 
 ## Next Steps
 
