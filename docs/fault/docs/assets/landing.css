@@ -1512,3 +1512,34 @@ label[for="tab-measure"]:hover {
 .box:hover::before {
     opacity: 1;
 }
+
+.mode {
+    padding: .8rem;
+    padding-bottom: 60px;
+}
+
+.mode h2 {
+    margin-bottom: 60px;
+}
+
+.fault {
+
+    font-family: "Lexend", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-weight: 300;
+}
+
+.codeline {
+    text-align: center;
+    font-family: "Lexend", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-weight: 300;
+    font-size: 24px;
+    padding-top: 50px;
+}
+
+.codeline .twemoji {
+    vertical-align: text-bottom;
+}
