@@ -833,24 +833,33 @@ pub async fn run_fault_injector_roundtrip<P: Platform>(
         svc.name.yellow()
     );
 
-    if let Some(duration) = duration {
-        match parse_duration::parse(duration.as_str()) {
+    match duration {
+        Some(d) => match parse_duration::parse(d.as_str()) {
             Ok(total) => {
-                println!("  Injecting fault for {}", duration);
-                sleep(total).await
+                println!("  Injecting fault for {}", d);
+                tokio::select! {
+                    _ = tokio::signal::ctrl_c() => {
+                        tracing::info!("Shutdown signal received. Initiating shutdown.");
+                    }
+
+                    _ = sleep(total) => {
+                        tracing::info!("Time's up! Shutting down now.");
+                    }
+                }
             }
             Err(_) => anyhow::bail!("failed to parse the duration flag"),
+        },
+        None => {
+            let _ = Confirm::new(&format!(
+                "Press '{}' to finish and rollback",
+                "y".to_string().green()
+            ))
+            .prompt();
         }
-    } else {
-        let _ = Confirm::new(&format!(
-            "Press '{}' to finish and rollback",
-            "y".to_string().green()
-        ))
-        .prompt();
     }
 
-    plt.rollback().await?;
     println!("  Rolling back fault...");
+    plt.rollback().await?;
     //plt.wait_cleanup().await?;
     println!("  Rolled back.");
 

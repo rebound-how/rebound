@@ -2,4 +2,4 @@
 
 ## Changed
 
-- Variety of minor cleanups
+- Better handling of Ctrl-C on the inject command
