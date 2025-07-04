@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
 {% block extrahead %}
+<meta name="google" content="notranslate">
+<meta name="googlebot" content="notranslate">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
@@ -12,6 +15,7 @@
 <link rel="stylesheet" href="/assets/landing.css">
 <script>
   document.addEventListener('DOMContentLoaded', () => {
+    document.documentElement.translate = false;
     hljs.highlightAll();
   });
 </script>
