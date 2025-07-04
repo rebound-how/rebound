@@ -23,7 +23,7 @@ strategy.
 
 Rebound is composed of three main applications:
 
-* [fault](./fault/README.md): a Rust-powered CLI that simulates network disruptions right on your local machine.
+* [fault](./fault/README.md): a Rust-powered CLI & AI MCP server that simulates network disruptions right from your machine.
 * [Chaos Toolkit](./chaostoolkit/README.md): a Python CLI with a rich Chaos Engineering ecosystem to evaluate your response to operational incidents.
 * [Reliably](./reliably/README.md): a full platform to centralize and orchestrate your reliability strategy.
 
