@@ -1543,3 +1543,10 @@ label[for="tab-measure"]:hover {
 .codeline .twemoji {
     vertical-align: text-bottom;
 }
+
+
+.footer-logo img {
+  height: 1em;
+  width: auto; 
+  vertical-align: middle;
+}

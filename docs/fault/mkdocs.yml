@@ -1,4 +1,4 @@
-site_name: "fault."
+site_name: "fault"
 site_description: "Helping Engineers and AI-agents cooperate to build reliable applications"
 site_author: "Sylvain Hellegouarch"
 site_url: https://fault-project.com
@@ -76,10 +76,11 @@ nav:
 theme:
   name: material
   custom_dir: docs/overrides
+  favicon: assets/logo-fault-dark.svg
+  logo: assets/logo-fault-light.svg
   icon:
     annotation: material/plus-circle
     repo: fontawesome/brands/github
-    logo: material/ethernet
   palette:
     primary: custom
 

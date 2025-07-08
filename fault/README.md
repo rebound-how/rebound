@@ -1,6 +1,6 @@
 <h2 align="center">
   <br>
-  <p align="center"><img src="https://raw.githubusercontent.com/rebound-how/www/refs/heads/main/src/icons/products-marks/fault.svg"></p>
+  <p align="center"><img src="https://github.com/rebound-how/rebound/blob/main/docs/fault/docs/assets/logo-full.png"></p>
 </h2>
 
 <h4 align="center">fault | Helping Engineers and AI-agents cooperate to build reliable applications</h4>
