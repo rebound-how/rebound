@@ -1,7 +1,10 @@
 <h2 align="center">
   <br>
-  ![fault logo](../docs/fault/docs/assets/logo-full-dark.png#gh-dark-mode-only)
-  ![fault logo](../docs/fault/docs/assets/logo-full-light.png.png#gh-light-mode-only)
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/rebound-how/rebound/refs/heads/main/docs/fault/docs/assets/logo-full-light.png">
+    <img alt="fault" src="https://raw.githubusercontent.com/rebound-how/rebound/refs/heads/main/docs/fault/docs/assets/logo-full-dark.png">
+  </picture>
+
 </h2>
 
 <h4 align="center">fault | Helping Engineers and AI-agents cooperate to build reliable applications</h4>
