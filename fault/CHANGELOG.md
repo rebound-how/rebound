@@ -2,4 +2,4 @@
 
 ## Changed
 
-- Better handling of Ctrl-C on the inject command
+- Added support for AWS ECS injection
