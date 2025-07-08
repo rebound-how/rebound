@@ -121,6 +121,8 @@ json-patch = { version = "4.0.0", features = ["utoipa"], optional = true }
 google-cloud-run-v2 = { version = "0.3.0", optional = true }
 google-cloud-gax = { version = "0.22.0", optional = true }
 google-cloud-longrunning = { version = "0.24.0", optional = true }
+aws-config = { version = "1.8.1", optional = true }
+aws-sdk-ecs = { version = "1.86.0", optional = true }
 
 # ebpf feature
 [target.'cfg(target_os = "linux")'.dependencies]
@@ -216,7 +218,9 @@ discovery = [
     "dep:json-patch",
     "dep:google-cloud-run-v2",
     "dep:google-cloud-gax",
-    "dep:google-cloud-longrunning"
+    "dep:google-cloud-longrunning",
+    "dep:aws-config",
+    "dep:aws-sdk-ecs"
 ]
 injection = [
     "discovery",

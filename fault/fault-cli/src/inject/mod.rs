@@ -8,13 +8,14 @@ use serde::Serialize;
 
 use crate::discovery::types::Resource;
 
+pub(crate) mod aws;
 #[cfg(feature = "scenario")]
 pub(crate) mod event;
 pub(crate) mod gcp;
 pub(crate) mod k8s;
 
 /// A discovered, addressable backend service.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ServiceResource {
     pub name: String,
     pub address: String,
@@ -30,6 +31,7 @@ pub struct _InjectionHandle {
 pub enum InjectionHandle {
     Kubernetes { rollback_token: String },
     CloudRun { rollback_token: String, op: Operation },
+    Ecs { rollback_token: String, lbs: String },
 }
 
 /// Common interface for fault‐proxy injection on different platforms.

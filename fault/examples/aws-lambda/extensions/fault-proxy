@@ -1,0 +1,68 @@
+#!/bin/sh
+
+ORIGINAL_RUNTIME_API_PORT="8080"
+FAULT_PROXY_PORT="3180"
+
+echo "Starting fault TCP proxy for Lambda Runtime API..."
+/opt/fault \
+  --log-stdout \
+  --log-level debug \
+  run \
+  --no-ui \
+  --disable-http-proxy \
+  --with-latency \
+  --latency-mean 300 \
+  --proxy="${FAULT_PROXY_PORT}=http://127.0.0.1:${ORIGINAL_RUNTIME_API_PORT}" &
+
+FAULT_PID=$!
+
+sleep 1
+
+echo "Fault proxy started on port ${FAULT_PROXY_PORT}, forwarding to ${ORIGINAL_RUNTIME_API_PORT}."
+
+# register the extension
+HEADERS=$(mktemp)
+REGISTER_RES=$(/opt/curl -sS -X POST "http://${AWS_LAMBDA_RUNTIME_API}/2020-01-01/extension/register" \
+  -LD "$HEADERS" \
+  -H "Lambda-Extension-Name: fault-proxy" \
+  -d '{ "events": ["INVOKE", "SHUTDOWN"] }')
+
+
+# debugging if that was failing
+# echo "[Extension DEBUG] Register Headers: $(cat "$HEADERS")"
+# echo "[Extension DEBUG] Register Body: $REGISTER_BODY"
+
+# get our extension ID
+EXTENSION_ID=$(grep -Fi 'Lambda-Extension-Identifier:' "$HEADERS" | tr -d '[:space:]' | cut -d: -f2)
+echo "[Extension] Registered extension with ID: ${EXTENSION_ID}"
+
+if [ -z "$EXTENSION_ID" ]; then
+    echo "[Extension ERROR] Failed to register extension. Could not find Lambda-Extension-Identifier in headers." >&2
+    echo "[Extension ERROR] Full curl response headers:" >&2
+    cat "$HEADERS" >&2
+    echo "[Extension ERROR] Curl response body: $REGISTER_BODY" >&2
+    exit 1
+fi
+echo "[Extension] Registered extension with ID: ${EXTENSION_ID}"
+
+# cleanup
+rm "$HEADERS"
+
+# enter the lambda event loop
+echo "[Extension] Entering extension event loop..."
+while true; do
+  EVENTS_RES=$(/opt/curl -s -X GET "http://${AWS_LAMBDA_RUNTIME_API}/2020-01-01/extension/event/next" \
+    -H "Lambda-Extension-Identifier: ${EXTENSION_ID}")
+
+  EVENT_TYPE=$(echo "$EVENTS_RES" | /opt/jq -r .eventType)
+
+  if [ "$EVENT_TYPE" = "SHUTDOWN" ]; then
+    echo "[Extension] Received SHUTDOWN event from Lambda. Terminating fault proxy (PID: $FAULT_PID)..."
+    kill -s SIGINT "$FAULT_PID"
+    wait "$FAULT_PID"
+    echo "[Extension] Fault proxy terminated."
+    break
+  elif [ "$EVENT_TYPE" = "INVOKE" ]; then
+    echo "[Extension] Received INVOKE event from Lambda. Fault proxy is active."
+  fi
+done

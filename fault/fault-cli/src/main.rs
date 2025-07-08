@@ -762,6 +762,24 @@ async fn main() -> Result<()> {
                 )
                 .await?;
             }
+            cli::FaultInjectionCommands::Aws(cfg) => {
+                let fault_settings = cfg.options.to_environment_variables();
+                let plt = &mut inject::aws::EcsPlatform::new_proxy(
+                    &cfg.region.clone().unwrap_or("".to_string()),
+                    &cfg.cluster.clone().unwrap_or("".to_string()),
+                    &cfg.service_name.clone().unwrap_or("".to_string()),
+                    cfg.image.clone(),
+                    fault_settings,
+                )
+                .await?;
+
+                run_fault_injector_roundtrip(
+                    plt,
+                    cfg.service_name.clone(),
+                    &cfg.duration,
+                )
+                .await?;
+            }
         },
     };
 

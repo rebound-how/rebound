@@ -375,6 +375,32 @@ fault run \
 
 Inject <span class="f">fault</span> into your platform resources.
 
+### AWS Options
+
+- **`--region <region>`**  
+  Region of the target service._  
+  **Example:** `--project europe-west1`
+
+- **`--cluster <cluster>`**  
+  _ECS Cluster hosting of the target service._  
+  **Example:** `--cluster my-cluster-56x7xhg`
+
+- **`--service <service>`**  
+  _Target ECS service._  
+  **Example:** `--service web`
+
+- **`--image <image>`**  
+  _Container image to inject, its entrypoint must be the `fault` binary._  
+  _Default:_ `ghcr.io/rebound-how/fault:latest`  
+  **Example:** `--image myimage:latest`
+
+- **`--duration <duration>`**  
+  _Duration for which the fault is injected. If unset, `fault` waits for the user input. Follows [this format](https://docs.rs/parse_duration/latest/parse_duration/#syntax)_  
+  **Example:** `--duration 30s`
+
+In addition, this subcommand supports all the fault options of the `run`
+command.
+
 ### GCP Options
 
 - **`--project <project>`**  

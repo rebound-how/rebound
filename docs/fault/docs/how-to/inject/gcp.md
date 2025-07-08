@@ -10,7 +10,64 @@ Platform Cloud Run. You will not need to change any code.
         If you haven’t installed <span class="f">fault</span> yet, follow the
         [installation instructions](../install.md).
 
+
+<img src="/assets/tapes/inject-gcp.gif">
+
+
 ## Inject Latency Into a Cloud Run Service
+
+Clmoud Run is the GCP platform to run workload using containers. The approach taken
+by <span class="f">fault</span> is to create a new revision where we add a
+sidecar container to an existing Cloud Run specification. This container then
+becomes the entrypoint of network
+traffic. <span class="f">fault</span> is configured to then route
+all traffic from that port to the application's port transparently. When done,
+we rollback to the previous revision.
+
+**raffic Before fault Is Injected**
+```mermaid
+---
+config:
+  theme: 'default'
+  themeVariables:
+      'git0': '#ff00ff'
+  gitGraph:
+    showBranches: true
+    showCommitLabel: true
+    mainBranchName: 'normal'
+---
+gitGraph
+       commit id: "LB"
+       commit id: "Backend Service"
+       commit id: "Cloud Run"
+       commit id: "Application Container"
+```
+
+**Traffic After fault Is Injected**
+
+```mermaid
+---
+config:
+  theme: 'default'
+  themeVariables:
+      'git0': '#ff00ff'
+      'git1': '#00ffff'
+  gitGraph:
+    showBranches: true
+    showCommitLabel: true
+    mainBranchName: 'normal'
+---
+gitGraph
+       commit id: "LB"
+       commit id: "Injected" type: HIGHLIGHT
+       commit id: "Backend Service"
+       branch fault
+       commit id: "Cloud Run"
+       commit id: "fault Container"
+       commit id: "Application Container"
+       checkout normal
+       merge fault id: "Rolled back" type: HIGHLIGHT
+```
 
 -   [X] Create a basic Cloud Run service
 

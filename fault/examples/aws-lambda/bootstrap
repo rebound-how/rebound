@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cat /var/runtime/bootstrap.py
+
+AWS_LAMBDA_RUNTIME_API="127.0.0.1:3180" exec -- "$@"

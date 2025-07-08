@@ -1,4 +1,3 @@
-// src/discovery.rs
 use anyhow::Result;
 use chrono::Utc;
 use google_cloud_gax::paginator::ItemPaginator;

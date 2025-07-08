@@ -68,6 +68,19 @@ be simpler to populate these options via environment variables.
 
 ## `injection` Command Variables
 
+### `aws` Subcommand Variables
+
+| **Name**                         | **Default Value**   | **Explanation**                                                                                  |
+|----------------------------------|---------------------|--------------------------------------------------------------------------------------------------|
+| `FAULT_INJECTION_AWS_ECS_CLUSTER`                  | (none)    | ECS Cluster hosting the service.                                                 |
+| `FAULT_INJECTION_AWS_REGION`                  | (none)    | Regions where the service lives.                                                 |
+| `FAULT_INJECTION_AWS_ECS_SERVICE`                  | (none)    | Target ECS service name to inject faults into.                                                 |
+| `FAULT_INJECTION_AWS_IMAGE`                  | (none)    | Container image to run as the sidecar of the service.                                                 |
+| `FAULT_INJECTION_GCP_DURATION`                  | (none)    | Duration for which the fault is applied. Follows [this format](https://docs.rs/parse_duration/latest/parse_duration/#syntax).                                                 |
+
+In addition, this subcommand supports the same proxy fault options as the
+`run` command.
+
 ### `gcp` Subcommand Variables
 
 | **Name**                         | **Default Value**   | **Explanation**                                                                                  |

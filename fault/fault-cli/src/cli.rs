@@ -1176,6 +1176,7 @@ pub struct FaultInjectionCommandOptions {
 pub enum FaultInjectionCommands {
     Gcp(FaultInjectionGcpConfig),
     Kubernetes(FaultInjectionKubernetesConfig),
+    Aws(FaultInjectionAWSConfig),
 }
 
 #[cfg(feature = "injection")]
@@ -1266,6 +1267,59 @@ pub struct FaultInjectionKubernetesConfig {
         long,
         help = "How long to run the injection for.",
         env = "FAULT_INJECTION_K8S_DURATION",
+        value_parser
+    )]
+    pub duration: Option<String>,
+
+    #[command(flatten)]
+    pub options: Box<FaultInjectionCommandOptions>,
+}
+
+#[cfg(feature = "injection")]
+#[derive(Args, Clone, Debug, Serialize, Deserialize)]
+pub struct FaultInjectionAWSConfig {
+    /// Region where the function lives.
+    #[arg(
+        short,
+        long,
+        help = "Region where the function lives.",
+        env = "FAULT_INJECTION_AWS_REGION"
+    )]
+    pub region: Option<String>,
+
+    /// Function to inject fault into
+    #[arg(
+        short,
+        long,
+        help = "Name of the cluster.",
+        env = "FAULT_INJECTION_AWS_ECS_CLUSTER"
+    )]
+    pub cluster: Option<String>,
+
+    /// Service to inject fault into
+    #[arg(
+        short,
+        long,
+        help = "Name of the service.",
+        env = "FAULT_INJECTION_AWS_ECS_SERVICE"
+    )]
+    pub service_name: Option<String>,
+
+    /// Container image performing the fault
+    #[arg(
+        short,
+        long,
+        help = "Container image performing the fault.",
+        env = "FAULT_INJECTION_AWS_IMAGE",
+        default_value = "ghcr.io/rebound-how/fault:latest"
+    )]
+    pub image: String,
+
+    /// How long to run the injection for
+    #[arg(
+        long,
+        help = "How long to run the injection for.",
+        env = "FAULT_INJECTION_AWS_DURATION",
         value_parser
     )]
     pub duration: Option<String>,

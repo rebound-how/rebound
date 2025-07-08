@@ -39,6 +39,8 @@ nav:
       - "Blackhole": how-to/proxy/faults/configure-blackhole.md
       - "Extend fault": how-to/proxy/faults/extending.md
     - "Platform Injection":
+      - "Overview": how-to/inject/overview.md
+      - "AWS": how-to/inject/aws.md
       - "Google Cloud Platform": how-to/inject/gcp.md
       - "Kubernetes": how-to/inject/kubernetes.md
     - "Scenarios":
