@@ -1,6 +1,7 @@
 <h2 align="center">
   <br>
-  <p align="center"><img src="https://github.com/rebound-how/rebound/blob/main/docs/fault/docs/assets/logo-full.png"></p>
+  ![fault logo](../docs/fault/docs/assets/logo-full-dark.png#gh-dark-mode-only)
+  ![fault logo](../docs/fault/docs/assets/logo-full-light.png.png#gh-light-mode-only)
 </h2>
 
 <h4 align="center">fault | Helping Engineers and AI-agents cooperate to build reliable applications</h4>
