@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>platform-review-report</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="http://localhost:8000/assets/stylesheets/main.342714a4.min.css" />
+  <link rel="stylesheet" href="http://localhost:8000/assets/stylesheets/palette.06af60db.min.css" />
+</head>
+<body>
+<h1 id="platform-resilience-report-analysis">Platform resilience report
+analysis</h1>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a
+href="#service-resilience-reliability-and-performance-overview">Service
+Resilience, Reliability, and Performance Overview</a></li>
+<li><a href="#resource-deep-dive-scenarios">Resource Deep Dive
+Scenarios</a></li>
+<li><a href="#recommendations">Recommendations</a>
+<ul>
+<li><a href="#summary-table">Summary Table</a></li>
+<li><a href="#1-harden--client">1. Harden Client</a></li>
+<li><a href="#2-add-a-circuit-breaker">2. Add a Circuit Breaker</a></li>
+<li><a href="#3-instrument-tracing--metrics">3. Instrument Tracing &amp;
+Metrics</a></li>
+<li><a href="#4-kubernetes-pod--service-best-practices">4. Kubernetes
+Pod &amp; Service Best Practices</a></li>
+<li><a href="#5-add-autoscaling--pdbs">5. Add Autoscaling &amp;
+PDBs</a></li>
+<li><a href="#6-optional-migrate-to-serverless">6. (Optional) Migrate to
+Serverless</a></li>
+</ul></li>
+<li><a href="#threats--next-steps">Threats &amp; Next Steps</a>
+<ul>
+<li><a href="#1-harden--client">1. Harden Client</a></li>
+<li><a href="#2-add-circuit-breaker">2. Add Circuit Breaker</a></li>
+<li><a href="#3-instrument-tracing--metrics">3. Instrument Tracing &amp;
+Metrics</a></li>
+<li><a href="#4-kubernetes-pod--service-best-practices">4. Kubernetes
+Pod &amp; Service Best Practices</a></li>
+<li><a href="#5-add-autoscaling--pdbs">5. Add Autoscaling &amp;
+PDBs</a></li>
+<li><a href="#6-migrate-to-serverless-cloud-runlambda">6. Migrate to
+Serverless (Cloud Run/Lambda)</a></li>
+</ul></li>
+</ul>
+<hr />
+<h2 id="executive-summary">Executive Summary</h2>
+<p>As we enhance the upstream integration of our FastAPI service, six
+key recommendations promise improved reliability, observability, and
+scalability. Below is a concise overview for product leadership.</p>
+<h3 id="findings">Findings</h3>
+<ul>
+<li>The service currently issues simple <code>httpx</code> requests to
+an upstream API without resilience or observability safeguards.</li>
+<li>Lack of timeouts, retries, circuit breakers, tracing, autoscaling,
+and best-practice Kubernetes configuration exposes us to outages,
+performance degradation, and capacity constraints.</li>
+</ul>
+<h3 id="recommendations">Recommendations</h3>
+<ol type="1">
+<li>Harden the <code>httpx</code> client<br />
+• Configure sensible timeouts and retries with backoff.</li>
+<li>Add a circuit breaker<br />
+• Prevent cascade failures by quickly failing when upstream errors
+exceed thresholds.</li>
+<li>Instrument tracing &amp; metrics<br />
+• Capture end-to-end request spans and key metrics (latency, error
+rates).</li>
+<li>Apply Kubernetes pod &amp; service best practices<br />
+• Tune liveness/readiness probes and anti-affinity to reduce flapping
+and optimize scheduling.</li>
+<li>Enable autoscaling &amp; PodDisruptionBudgets (PDBs)<br />
+• Automate scale-out under load and protect against disruptive
+evictions.</li>
+<li>Evaluate migration to serverless (Cloud Run/Lambda)<br />
+• Leverage managed scaling but plan for cold starts and vendor
+lock-in.</li>
+</ol>
+<h3 id="key-threats-mitigations">Key Threats &amp; Mitigations</h3>
+<ul>
+<li>Over-aggressive timeouts/retries → false errors<br />
+• Mitigation: synthetic latency tests; alert on retry rates
+&gt;10%.</li>
+<li>Premature or sticky circuit breaker → self-inflicted downtime<br />
+• Mitigation: chaos tests; alert on circuits open &gt;1 min.</li>
+<li>Instrumentation overhead → increased latency or costs<br />
+• Mitigation: monitor P95 latency drift; audit metric cardinality.</li>
+<li>Probe misconfiguration → pod restarts<br />
+• Mitigation: simulate resource pressure; alert on readiness
+failures.</li>
+<li>HPA/PDB mis-tuning → under-provisioning or stuck evictions<br />
+• Mitigation: load tests at 2× QPS; alert on pending pods.</li>
+<li>Cold starts &amp; budget overruns in serverless<br />
+• Mitigation: track cold start percentiles; set cost alerts.</li>
+</ul>
+<h3 id="next-steps">Next Steps</h3>
+<ul>
+<li>Implement each recommendation iteratively, validate with targeted
+load and chaos testing.</li>
+<li>Define and onboard alerts for all key metrics.</li>
+<li>Review impacts in staging before rollout to production.</li>
+</ul>
+<h2 id="service-resilience-reliability-and-performance-overview">Service
+Resilience, Reliability, and Performance Overview</h2>
+<p>The <code>producer</code> Service is a ClusterIP load-balancer
+exposing port 8080 to three backend pods, providing basic in-cluster
+fault tolerance and even traffic distribution with sessionAffinity
+disabled. Because internalTrafficPolicy is set to Cluster and there’s no
+external load balancer or zone-aware routing, resilience and performance
+are tied directly to pod health and node connectivity without advanced
+affinity or multi-AZ failover optimizations.</p>
+<h2 id="resource-deep-dive-scenarios">Resource Deep Dive Scenarios</h2>
+<p><em>Evaluation of current service capacity, growth paths, and
+stress-resilience strategies</em></p>
+<table>
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 28%" />
+<col style="width: 23%" />
+<col style="width: 30%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Scenario</th>
+<th>Current State</th>
+<th>Implication</th>
+<th>Recommendation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1. Current reliability &amp; performance</td>
+<td>• <code>ClusterIP</code> on 3 pods<br>•
+<code>sessionAffinity: None</code><br>•
+<code>internalTrafficPolicy: Cluster</code><br>• No zone-aware routing
+or external LB</td>
+<td>• Even traffic distribution inside cluster<br>• Pod or node failure
+reduces capacity by ~33%</td>
+<td>• Add liveness/readiness probes to avoid routing to unhealthy
+pods<br>• Spread pods across nodes (anti-affinity)<br>• Instrument
+CPU/memory metrics and set alerts</td>
+</tr>
+<tr class="even">
+<td>2. Growth for increasing volume</td>
+<td>• Static replica count<br>• Manual scaling only</td>
+<td>• Pods quickly saturate under sustained traffic growth<br>• Manual
+intervention delays capacity increases</td>
+<td>• Enable HorizontalPodAutoscaler on CPU/RAM (or custom request-rate
+metrics)<br>• Deploy Cluster Autoscaler to add nodes when pods
+pending<br>• Define PodDisruptionBudget to protect minimum capacity</td>
+</tr>
+<tr class="odd">
+<td>3. Remaining performant under stress</td>
+<td>• Single-tier LB, no retries or circuit breakers<br>• Upstream HTTP
+calls via default <code>httpx.get</code></td>
+<td>• High concurrency → request queueing, potential timeouts on
+external API calls</td>
+<td>• Tune <code>httpx</code> client with connection pooling, timeouts
+and retries<br>• Adopt service mesh or sidecar for circuit breaking and
+rate limiting<br>• Consider <code>internalTrafficPolicy: Local</code> to
+reduce cross-node hops</td>
+</tr>
+</tbody>
+</table>
+<h2 id="recommendations-1">Recommendations</h2>
+<p><em>Specific code, configuration, and infrastructure changes to
+improve service resilience and scalability.</em></p>
+<h3 id="summary-table">Summary Table</h3>
+<table>
+<colgroup>
+<col style="width: 24%" />
+<col style="width: 7%" />
+<col style="width: 14%" />
+<col style="width: 12%" />
+<col style="width: 17%" />
+<col style="width: 24%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Recommendation</th>
+<th>Type</th>
+<th>Priority</th>
+<th>Benefit</th>
+<th>Complexity</th>
+<th>Estimated Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1. Harden <code>httpx</code> client: timeouts + retries +
+pooling</td>
+<td>Code</td>
+<td>Critical</td>
+<td>Reduces hung requests &amp; errors</td>
+<td>Low</td>
+<td>Low</td>
+</tr>
+<tr class="even">
+<td>2. Add Circuit Breaker around upstream calls</td>
+<td>Code</td>
+<td>Recommended</td>
+<td>Fails fast, protects overload</td>
+<td>Medium</td>
+<td>Low–Med</td>
+</tr>
+<tr class="odd">
+<td>3. Instrument tracing &amp; metrics</td>
+<td>Code/Infra</td>
+<td>Recommended</td>
+<td>Visibility into bottlenecks</td>
+<td>Medium</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>4. Kubernetes: probes, PodAntiAffinity, Service tuning</td>
+<td>Infra</td>
+<td>Critical</td>
+<td>Better failover &amp; even traffic</td>
+<td>Low</td>
+<td>Low</td>
+</tr>
+<tr class="odd">
+<td>5. Kubernetes: HPA, Cluster Autoscaler, PDB</td>
+<td>Infra</td>
+<td>Recommended</td>
+<td>Auto scale with demand</td>
+<td>Medium</td>
+<td>Medium</td>
+</tr>
+<tr class="even">
+<td>6. Migrate to serverless (Cloud Run/Lambda)</td>
+<td>Infra</td>
+<td>Nice-to-have</td>
+<td>Zero-manage scaling</td>
+<td>High</td>
+<td>Variable</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="harden-httpx-client">1. Harden <code>httpx</code> Client</h3>
+<p><em>Add timeouts, connection pooling, and retry transport to avoid
+blocking and transient failures.</em></p>
+<h4 id="code-change-pull-request-style">Code Change (Pull-Request
+Style)</h4>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode diff"><code class="sourceCode diff"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">@@ app.py</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="st">-import httpx</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="va">+import httpx</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="va">+from httpx import RetryTransport, Timeout</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a> # create a singleton client with pooled connections &amp; retries</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="st">-client = httpx.Client()</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="va">+client = httpx.Client(</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="va">+    transport=RetryTransport(</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="va">+        retries=3,           # retry up to 3 times on network errors</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="va">+        backoff_factor=0.2,  # exponential backoff</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="va">+        status_forcelist=[429, 500, 502, 503, 504]</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="va">+    ),</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="va">+    timeout=Timeout(5.0, connect=2.0),  # overall/request/connect timeouts</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="va">+    limits=httpx.Limits(max_keepalive_connections=10, max_connections=50)</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="va">+)</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a> @app.get(&quot;/&quot;)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a> def index():</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="st">-    return httpx.get(f&quot;{UPSTREAM_URL}/todos/1&quot;, headers={</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="st">-        &quot;Host&quot;: &quot;jsonplaceholder.typicode.com&quot;</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="st">-    }).json()</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="va">+    resp = client.get(</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="va">+        f&quot;{UPSTREAM_URL}/todos/1&quot;,</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="va">+        headers={&quot;Host&quot;: &quot;jsonplaceholder.typicode.com&quot;}</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="va">+    )</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="va">+    resp.raise_for_status()</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="va">+    return resp.json()</span></span></code></pre></div>
+<p><strong>Discussion</strong></p>
+<ul>
+<li>Implements safe defaults to guard against slow or failing
+upstreams.</li>
+<li>Low code complexity; immediately mitigates hanging requests.</li>
+</ul>
+<hr />
+<h3 id="add-a-circuit-breaker">2. Add a Circuit Breaker</h3>
+<p><em>Prevent cascading failures by failing fast when upstream is
+unhealthy.</em></p>
+<h4 id="code-change-pull-request-style-1">Code Change (Pull-Request
+Style)</h4>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode diff"><code class="sourceCode diff"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">@@ app.py</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="va">+import pybreaker</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="va">+</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="va">+# configure a circuit breaker for the upstream service</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="va">+breaker = pybreaker.CircuitBreaker(</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="va">+    fail_max=5,                      # open circuit after 5 failures</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="va">+    reset_timeout=30,                # attempt to close after 30 seconds</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="va">+    exclude_exc_list=[httpx.HTTPStatusError]</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="va">+)</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a> @app.get(&quot;/&quot;)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a> def index():</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="st">-    resp = client.get(f&quot;{UPSTREAM_URL}/todos/1&quot;, headers={&quot;Host&quot;: &quot;jsonplaceholder.typicode.com&quot;})</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="va">+    # wrap call in circuit breaker</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="va">+    resp = breaker.call(</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="va">+        lambda: client.get(</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="va">+            f&quot;{UPSTREAM_URL}/todos/1&quot;,</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="va">+            headers={&quot;Host&quot;: &quot;jsonplaceholder.typicode.com&quot;}</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="va">+        )</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="va">+    )</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>     resp.raise_for_status()</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>     return resp.json()</span></code></pre></div>
+<p><strong>Discussion</strong></p>
+<ul>
+<li>Protects both your service and upstream from overload spikes.</li>
+<li>Medium effort (adds dependency, monitoring of breaker state).</li>
+</ul>
+<hr />
+<h3 id="instrument-tracing-metrics">3. Instrument Tracing &amp;
+Metrics</h3>
+<p><em>Enhance observability to identify hotspots and failures.</em></p>
+<h4 id="code-change-pull-request-style-2">Code Change (Pull-Request
+Style)</h4>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode diff"><code class="sourceCode diff"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">@@ app.py</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="va">+from fastapi.middleware.cors import CORSMiddleware</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="va">+from opentelemetry import trace</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="va">+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="va">+</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a> app = FastAPI()</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="va">+</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="va">+# enable basic request tracing</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="va">+FastAPIInstrumentor.instrument_app(app)</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="va">+</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="va">+# (optional) add CORS or other middleware below</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="va">+app.add_middleware(</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="va">+    CORSMiddleware,</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="va">+    allow_origins=[&quot;*&quot;], allow_methods=[&quot;*&quot;], allow_headers=[&quot;*&quot;]</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="va">+)</span></span></code></pre></div>
+<p><strong>Discussion</strong></p>
+<ul>
+<li>Plug in Prometheus/Grafana or GCP/AWS X-Ray quickly.</li>
+<li>Medium complexity; adds operational visibility.</li>
+</ul>
+<hr />
+<h3 id="kubernetes-pod-service-best-practices">4. Kubernetes Pod &amp;
+Service Best Practices</h3>
+<p><em>Ensure traffic is distributed evenly and unhealthy pods are
+removed.</em></p>
+<h4 id="configuration-change">Configuration Change</h4>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">apiVersion</span><span class="kw">:</span><span class="at"> apps/v1</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">kind</span><span class="kw">:</span><span class="at"> Deployment</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">metadata</span><span class="kw">:</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">name</span><span class="kw">:</span><span class="at"> my-service</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">spec</span><span class="kw">:</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">replicas</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">selector</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="fu">matchLabels</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="fu">app</span><span class="kw">:</span><span class="at"> my-service</span><span class="kw">}}</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">template</span><span class="kw">:</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">metadata</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="fu">labels</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="fu">app</span><span class="kw">:</span><span class="at"> my-service</span><span class="kw">}}</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">spec</span><span class="kw">:</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co">      # anti-affinity to spread pods across nodes</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">affinity</span><span class="kw">:</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">podAntiAffinity</span><span class="kw">:</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">requiredDuringSchedulingIgnoredDuringExecution</span><span class="kw">:</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">labelSelector</span><span class="kw">:</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="at">              </span><span class="fu">matchLabels</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="fu">app</span><span class="kw">:</span><span class="at"> my-service</span><span class="kw">}</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">topologyKey</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;kubernetes.io/hostname&quot;</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">containers</span><span class="kw">:</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> app</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">image</span><span class="kw">:</span><span class="at"> my-service:latest</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">readinessProbe</span><span class="kw">:</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">httpGet</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="fu">path</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;/health&quot;</span><span class="kw">,</span><span class="at"> </span><span class="fu">port</span><span class="kw">:</span><span class="at"> </span><span class="dv">80</span><span class="kw">}</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">initialDelaySeconds</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">periodSeconds</span><span class="kw">:</span><span class="at"> </span><span class="dv">10</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">livenessProbe</span><span class="kw">:</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">httpGet</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="fu">path</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;/health&quot;</span><span class="kw">,</span><span class="at"> </span><span class="fu">port</span><span class="kw">:</span><span class="at"> </span><span class="dv">80</span><span class="kw">}</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">initialDelaySeconds</span><span class="kw">:</span><span class="at"> </span><span class="dv">30</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">periodSeconds</span><span class="kw">:</span><span class="at"> </span><span class="dv">20</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="fu">apiVersion</span><span class="kw">:</span><span class="at"> v1</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="fu">kind</span><span class="kw">:</span><span class="at"> Service</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="fu">metadata</span><span class="kw">:</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">name</span><span class="kw">:</span><span class="at"> my-service</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="fu">spec</span><span class="kw">:</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">type</span><span class="kw">:</span><span class="at"> LoadBalancer</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">internalTrafficPolicy</span><span class="kw">:</span><span class="at"> Local</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">sessionAffinity</span><span class="kw">:</span><span class="at"> None</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">selector</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="fu">app</span><span class="kw">:</span><span class="at"> my-service</span><span class="kw">}</span></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">ports</span><span class="kw">:</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">port</span><span class="kw">:</span><span class="at"> 80; targetPort: 80</span></span></code></pre></div>
+<p><strong>Discussion</strong></p>
+<ul>
+<li>Probes remove bad pods fast.</li>
+<li>Anti-affinity reduces blast radius.</li>
+<li><code>Local</code> policy avoids cross-node hops.</li>
+</ul>
+<hr />
+<h3 id="add-autoscaling-pdbs">5. Add Autoscaling &amp; PDBs</h3>
+<p><em>Automatically scale pods and nodes; protect minimum
+capacity.</em></p>
+<h4 id="configuration-change-1">Configuration Change</h4>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">apiVersion</span><span class="kw">:</span><span class="at"> autoscaling/v2</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">kind</span><span class="kw">:</span><span class="at"> HorizontalPodAutoscaler</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">metadata</span><span class="kw">:</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">name</span><span class="kw">:</span><span class="at"> my-service-hpa</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">spec</span><span class="kw">:</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">scaleTargetRef</span><span class="kw">:</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">apiVersion</span><span class="kw">:</span><span class="at"> apps/v1</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">kind</span><span class="kw">:</span><span class="at"> Deployment</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">name</span><span class="kw">:</span><span class="at"> my-service</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">minReplicas</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">maxReplicas</span><span class="kw">:</span><span class="at"> </span><span class="dv">10</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">metrics</span><span class="kw">:</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">type</span><span class="kw">:</span><span class="at"> Resource</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">resource</span><span class="kw">:</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">name</span><span class="kw">:</span><span class="at"> cpu</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">target</span><span class="kw">:</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">type</span><span class="kw">:</span><span class="at"> Utilization</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">averageUtilization</span><span class="kw">:</span><span class="at"> </span><span class="dv">60</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="fu">apiVersion</span><span class="kw">:</span><span class="at"> policy/v1</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="fu">kind</span><span class="kw">:</span><span class="at"> PodDisruptionBudget</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="fu">metadata</span><span class="kw">:</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">name</span><span class="kw">:</span><span class="at"> my-service-pdb</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="fu">spec</span><span class="kw">:</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">minAvailable</span><span class="kw">:</span><span class="at"> </span><span class="dv">2</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">selector</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="fu">matchLabels</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="fu">app</span><span class="kw">:</span><span class="at"> my-service</span><span class="kw">}}</span></span></code></pre></div>
+<p><strong>Discussion</strong></p>
+<ul>
+<li>Ensures capacity during upgrades or node drains.</li>
+<li>Medium complexity; requires cluster auto-scaler.</li>
+</ul>
+<hr />
+<h3 id="optional-migrate-to-serverless">6. (Optional) Migrate to
+Serverless</h3>
+<p><em>Leverage Cloud Run / AWS Lambda for fully-managed
+scaling.</em></p>
+<p><strong>Discussion</strong></p>
+<ul>
+<li>Offloads infra management.</li>
+<li>High migration effort; consider if traffic patterns are spiky.</li>
+<li>Nice-to-have once code is hardened.</li>
+</ul>
+<hr />
+<p>By implementing <strong>1</strong> and <strong>4</strong> as
+<strong>Critical</strong>, you immediately guard against request hangs,
+unhealthy pods, and uneven traffic. Next, <strong>2</strong>,
+<strong>3</strong>, and <strong>5</strong> strengthen resilience and
+observability. Finally, <strong>6</strong> offers a long-term,
+serverless path once costs and effort are justified.</p>
+<h2 id="threats-next-steps">Threats &amp; Next Steps</h2>
+<p><em>Analysis of potential threats/trade-offs and validation
+strategies for each recommendation.</em></p>
+<table>
+<colgroup>
+<col style="width: 6%" />
+<col style="width: 17%" />
+<col style="width: 35%" />
+<col style="width: 16%" />
+<col style="width: 24%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Rec #</th>
+<th>Recommendation</th>
+<th>Potential Threat / Trade-off</th>
+<th>Business Risk</th>
+<th>Monitoring / Metric</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Harden <code>httpx</code> client</td>
+<td>Overly aggressive timeouts or retries leading to false
+negatives</td>
+<td>Increased error rate, lost revenue on failed requests</td>
+<td>Request latency, retry count, client error rate</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Add Circuit Breaker</td>
+<td>Circuit opens too early or remains open too long</td>
+<td>Self-inflicted downtime, unhappy end users</td>
+<td>Circuit open/close events, failure count</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Instrument Tracing &amp; Metrics</td>
+<td>Added latency, high cardinality metrics, potential data leakage</td>
+<td>Higher costs, performance degradation, compliance violations</td>
+<td>Span duration histogram, metrics storage rate</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Kubernetes Pod &amp; Service Best Practices</td>
+<td>Misconfigured probes causing flapping pods</td>
+<td>Reduced availability, increased support tickets</td>
+<td>Pod restart count, readiness failures</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Add Autoscaling &amp; PDBs</td>
+<td>Scale-up too slow or PDB blocks legitimate pod evictions</td>
+<td>Under-provision during spikes or blocked maintenance</td>
+<td>Pod count vs. CPU/memory, PDB eviction events</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Migrate to Serverless (Cloud Run/Lambda)</td>
+<td>Cold starts, vendor lock-in, unexpected billing spikes</td>
+<td>Latency spikes, budget overruns, migration rollback costs</td>
+<td>Cold start rate, invocation latency percentiles</td>
+</tr>
+</tbody>
+</table>
+<h3 id="harden-httpx-client-1">1. Harden <code>httpx</code> Client</h3>
+<ul>
+<li><strong>Potential Threats / Trade-offs</strong><br />
+• Too low timeouts may surface transient failures as hard errors<br />
+• Excessive retries can amplify upstream load</li>
+<li><strong>Follow-up Tests &amp; Metrics</strong><br />
+• Synthetic P95 latency tests against upstream with varied timeout
+settings<br />
+• Track retry counts per minute and correlate to error spikes</li>
+<li><strong>Risk Manifestation &amp; Monitoring</strong><br />
+• Sudden jump in client error rate when upstream is slow<br />
+• Use alert on retry rate &gt;10% of total requests</li>
+<li><strong>Downstream Impact</strong><br />
+• If retries are mis-tuned, downstream consumers see higher 5xx
+rates</li>
+</ul>
+<h3 id="add-circuit-breaker">2. Add Circuit Breaker</h3>
+<ul>
+<li><strong>Potential Threats / Trade-offs</strong><br />
+• Circuit opens prematurely under a small error burst<br />
+• Long reset timeout prevents recovery when upstream recovers</li>
+<li><strong>Follow-up Tests &amp; Metrics</strong><br />
+• Chaos tests that inject intermittent upstream failures<br />
+• Monitor circuit state transitions and failure thresholds</li>
+<li><strong>Risk Manifestation &amp; Monitoring</strong><br />
+• Persistent “circuit open” errors in logs<br />
+• Alert if circuit remains open &gt;1min outside maintenance
+windows</li>
+<li><strong>Downstream Impact</strong><br />
+• All requests fail fast, shifting load to fallback or causing client
+errors</li>
+</ul>
+<h3 id="instrument-tracing-metrics-1">3. Instrument Tracing &amp;
+Metrics</h3>
+<ul>
+<li><strong>Potential Threats / Trade-offs</strong><br />
+• Increased P50/P95 latency due to span instrumentation overhead<br />
+• High-cardinality tags may exhaust metric storage</li>
+<li><strong>Follow-up Tests &amp; Metrics</strong><br />
+• Measure end-to-end latency before/after instrumentation<br />
+• Audit cardinality of incoming metric labels</li>
+<li><strong>Risk Manifestation &amp; Monitoring</strong><br />
+• Spikes in storage usage or ingestion errors in Prometheus/GCM<br />
+• Alert when average request latency increases &gt;5%
+post-deployment</li>
+<li><strong>Downstream Impact</strong><br />
+• Slower API responses; potential billing hike for metric ingestion</li>
+</ul>
+<h3 id="kubernetes-pod-service-best-practices-1">4. Kubernetes Pod &amp;
+Service Best Practices</h3>
+<ul>
+<li><strong>Potential Threats / Trade-offs</strong><br />
+• Over-sensitive liveness/readiness probes trigger unnecessary
+restarts<br />
+• PodAntiAffinity can restrict scheduling density on small clusters</li>
+<li><strong>Follow-up Tests &amp; Metrics</strong><br />
+• Simulate gradual CPU/memory pressure and verify probe behavior<br />
+• Monitor unscheduled pods due to affinity constraints</li>
+<li><strong>Risk Manifestation &amp; Monitoring</strong><br />
+• Elevated <code>CrashLoopBackOff</code> counts<br />
+• Alert on &gt;5 readiness failures per pod per hour</li>
+<li><strong>Downstream Impact</strong><br />
+• Temporary capacity loss, longer queue times, potential SLA
+breaches</li>
+</ul>
+<h3 id="add-autoscaling-pdbs-1">5. Add Autoscaling &amp; PDBs</h3>
+<ul>
+<li><strong>Potential Threats / Trade-offs</strong><br />
+• HPA misfires—scales too slowly under bursty traffic<br />
+• PDB prevents evictions, blocking critical upgrades or drain
+operations</li>
+<li><strong>Follow-up Tests &amp; Metrics</strong><br />
+• Load tests ramping traffic at 2× expected QPS and monitor pod
+count<br />
+• Simulate a node drain and confirm PDB behavior</li>
+<li><strong>Risk Manifestation &amp; Monitoring</strong><br />
+• Queue lengths growing while HPA remains at minReplicas<br />
+• Alert on pending pods or failed evictions due to PDB</li>
+<li><strong>Downstream Impact</strong><br />
+• Latency spikes or downtime during maintenance or traffic surges</li>
+</ul>
+<h3 id="migrate-to-serverless-cloud-runlambda">6. Migrate to Serverless
+(Cloud Run/Lambda)</h3>
+<ul>
+<li><strong>Potential Threats / Trade-offs</strong><br />
+• Cold start latency spikes impacting user experience<br />
+• Vendor lock-in making future migrations costly</li>
+<li><strong>Follow-up Tests &amp; Metrics</strong><br />
+• Track cold start frequency and tail latency percentiles<br />
+• Cost analysis under steady and spiky traffic profiles</li>
+<li><strong>Risk Manifestation &amp; Monitoring</strong><br />
+• Elevated 95th/99th percentile latency correlated with
+invocations<br />
+• Alert on cost per million invocations exceeding budget threshold</li>
+<li><strong>Downstream Impact</strong><br />
+• User-facing latency spikes, unexpected billing overruns, migration
+delays</li>
+</ul>
+<hr />
+<p>Generated on 2025-07-09 14:53:07.409680198 UTC</p>
+</body>
+</html>

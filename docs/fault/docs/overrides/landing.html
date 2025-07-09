@@ -33,7 +33,8 @@
         <div class="logo" translate="no"><span class="gradient-text">Build</span> AI-Generated Code <span
             class="gradient-text">Your Users</span> Can <span class="gradient-text">Rely On</span></div>
         <h2><span class="tagline" translate="no">
-            <span class="tagline-fault">fault</span> is an Open-Source Rust-powered CLI and AI-MCP server that lets engineers and AI
+            <span class="tagline-fault">fault</span> is an Open-Source Rust-powered CLI and AI-MCP server that lets
+            engineers and AI
             agents team up to ship production-ready code.
           </span></h2>
         <div class="hero__actions">
@@ -43,311 +44,6 @@
           <a class="md-button gh" href="https://github.com/rebound-how/rebound">
             View on GitHub
           </a>
-        </div>
-        <div class="row showme">
-          <div class="col">
-
-            <h1>Plug <span class="tagline-fault">fault</span> into your favorite AI-Editor</h1>
-            <div class="grid cards samples">
-
-              <ul class="text-right">
-                <li>
-                  <div class="tabs">
-                    <input type="radio" name="mode" id="tab-score" checked>
-                    <label for="tab-score" class="show-score">Score</label> |
-
-                    <input type="radio" name="mode" id="tab-review">
-                    <label for="tab-review" class="show-review">Review</label> |
-
-                    <input type="radio" name="mode" id="tab-change">
-                    <label for="tab-change" class="show-change">Change</label> |
-
-                    <input type="radio" name="mode" id="tab-measure">
-                    <label for="tab-measure" class="show-measure">Measure</label> |
-
-                    <input type="radio" name="mode" id="tab-monitor">
-                    <label for="tab-monitor" class="show-monitor">Monitor</label>
-                    <hr />
-                    <div class="panel panel-score">
-                      <div class="text-left cmd">
-                        <span class="twemoji">{% include ".icons/material/console-line.svg" %} </span>
-                        fault agent tool <span class="mcp-tool mcp-tool-score">fault_score_reliability</span>
-                      </div>
-                      <pre class="text-left">
-                        <code class="language-json">
-{
-  "explanation": "The function has no error handling, timeout, retry or fallback logic, making it prone to upstream failures causing unhandled exceptions.",
-  "score": 0.2
-}
-                      </code>
-                    </pre>
-                    </div>
-                    <div class="panel panel-review">
-                      <div class="text-left cmd">
-                        <span class="twemoji">{% include ".icons/material/console-line.svg" %} </span> fault agent
-                        code-review
-                      </div>
-                      <pre class="text-left">
-                        <code class="language-markdown">Here’s a small, focused refactor of your `/` handler that will immediately improve resilience, observability and error‐handling without drastically changing your app:
-
-
-1. **Single, long-lived HTTP client**  
-   Re-using an `httpx.Client` gives you connection pooling and lets you centrally configure timeouts.
-
-2. **Per-request timeouts**  
-   By setting `timeout=httpx.Timeout(connect=5, read=10)` we fail fast on network issues.
-
-3. **Retries with exponential backoff**  
-   The [`backoff`](https://pypi.org/project/backoff/) library wraps `_fetch_todo()` so that transient errors and 5xx status codes automatically retry (up to 5× or ~30 s total).
-
-4. **Error propagation & HTTPExceptions**  
-   We catch `RequestError` (network) vs `HTTPStatusError` (non-2xx) and translate them into appropriate 5xx/4xx FastAPI responses.
-
-5. **Logging**  
-   Warnings on upstream 4xxs and errors on network failures let you trace the failure mode in your logs.
-
-## Next steps
-
-- **Metrics & tracing**:  
-  Plug in Prometheus counters or OpenTelemetry spans around `_fetch_todo` to observe retry counts, latencies, and success/fail rates.  
-- **Circuit breaker**:  
-  If your upstream is flapping, consider a circuit-breaker pattern (e.g. [`pybreaker`](https://pypi.org/project/pybreaker/)) to avoid overwhelming it.  
-- **Async support**:  
-  If you expect high concurrency, convert to `httpx.AsyncClient` and make `index` an `async def`.  
-
-These minimal changes will immediately make your endpoint far more reliable under network glitches or upstream outages—yet remain straightforward to slot into your existing `app.py`.</code>
-                      </pre>
-                    </div>
-                    <div class="panel panel-change">
-                      <div class="text-left cmd">
-                        <span class="twemoji">{% include ".icons/material/console-line.svg" %} </span> fault agent
-                        tool <span class="mcp-tool mcp-tool-change">fault_make_reliability_and_perf_changes</span>
-                      </div>
-
-                      <pre class="text-left">
-                        <code class="language-diff">--- app.py
-+++ app.py
-@@ -1,15 +1,58 @@
- import os
-+import logging
- 
- import httpx
--from fastapi import FastAPI
-+from fastapi import FastAPI, HTTPException
- 
- UPSTREAM_URL = os.getenv("UPSTREAM_URL", "https://jsonplaceholder.typicode.com")
-+REQUEST_TIMEOUT = float(os.getenv("REQUEST_TIMEOUT", 5.0))
-+MAX_RETRIES = int(os.getenv("MAX_RETRIES", 3))
-+BACKOFF_FACTOR = float(os.getenv("BACKOFF_FACTOR", 0.5))
-+RETRY_STATUS_CODES = [502, 503, 504]
- 
- app = FastAPI()
-+logger = logging.getLogger("uvicorn.error")
- 
-+transport = httpx.RetryTransport(
-+    retries=MAX_RETRIES,
-+    backoff_factor=BACKOFF_FACTOR,
-+    status_forcelist=RETRY_STATUS_CODES,
-+    allowed_methods=["GET"],
-+)
- 
-+@app.on_event("startup")
-+async def startup_event():
-+    '''
-+    Initialize the HTTPX client with retry and timeout settings for resilience.
-+    '''
-+    app.state.client = httpx.AsyncClient(
-+        base_url=UPSTREAM_URL,
-+        timeout=httpx.Timeout(REQUEST_TIMEOUT),
-+        transport=transport,
-+        headers={"Host": "jsonplaceholder.typicode.com"},
-+    )
-+
-+@app.on_event("shutdown")
-+async def shutdown_event():
-+    '''
-+    Close the HTTPX client on application shutdown to release resources.
-+    '''
-+    await app.state.client.aclose()
-+
- @app.get("/")
--def index():
--    return httpx.get(f"{UPSTREAM_URL}/todos/1", headers={
--        "Host": "jsonplaceholder.typicode.com"
--    }).json()
-+async def index():
-+    '''
-+    Retrieves a todo item from the upstream service.
-+    Implements retry logic, timeouts, and error handling for resilience.
-+    '''
-+    try:
-+        response = await app.state.client.get("/todos/1")
-+        response.raise_for_status()
-+    except httpx.RequestError as exc:
-+        logger.error(f"Request error: {exc}")
-+        raise HTTPException(status_code=503, detail="Upstream service unavailable")
-+    except httpx.HTTPStatusError as exc:
-+        logger.error(f"Invalid response {exc.response.status_code}: {exc}")
-+        raise HTTPException(status_code=502, detail="Upstream returned an error")
-+
-+    return response.json()
-
-                        </code>
-                      </pre>
-                    </div>
-                    <div class="panel panel-monitor">
-                      <div class="text-left cmd">
-                        <span class="twemoji">{% include ".icons/material/console-line.svg" %} </span> fault agent
-                        tool <span class="mcp-tool mcp-tool-monitor">fault_suggest_service_level_objectives_slo</span>
-                      </div>
-
-                      <pre class="text-left">
-                        <code class="language-json">[
-  {
-    "type": "latency",
-    "title": "P95 Latency for /todos/1 API",
-    "objective": 95.0,
-    "explanation": "95th percentile of request latency must stay under threshold to ensure responsiveness",
-    "threshold": 0.3,
-    "unit": "s",
-    "window": "7d",
-    "sli": {
-      "prometheus": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{handler=\"/todos/1\"}[5m])) by (le)) * 1000",
-      "gcp/cloudrun": {
-        "displayName": "95% - P95 Latency - Calendar day",
-        "goal": 0.95,
-        "calendarPeriod": "DAY",
-        "serviceLevelIndicator": {
-          "windowsBased": {
-            "windowPeriod": "300s",
-            "goodTotalRatioThreshold": {
-              "basicSliPerformance": {
-                "latency": {
-                  "threshold": "0.3s"
-                }
-              },
-              "threshold": 0.95
-            }
-          }
-        }
-      }
-    }
-  },
-  {
-    "type": "availability",
-    "title": "2xx Success Rate for /todos/1 API",
-    "objective": 99.9,
-    "explanation": "Percentage of requests returning HTTP 2xx status codes",
-    "threshold": 99.9,
-    "unit": "",
-    "window": "7d",
-    "sli": {
-      "prometheus": "sum(rate(http_requests_total{handler=\"/todos/1\",status=~\"2..\"}[5m]))/sum(rate(http_requests_total{handler=\"/todos/1\"}[5m]))*100",
-      "gcp/cloudrun": {
-        "displayName": "99.9% - Availability - Calendar day",
-        "goal": 0.999,
-        "calendarPeriod": "DAY",
-        "serviceLevelIndicator": {
-          "windowsBased": {
-            "windowPeriod": "300s",
-            "goodTotalRatioThreshold": {
-              "threshold": 0.999
-            }
-          }
-        }
-      }
-    }
-  },
-  {
-    "type": "error",
-    "title": "5xx Error Rate for /todos/1 API",
-    "objective": 1.0,
-    "explanation": "Percentage of requests resulting in HTTP 5xx errors must remain low",
-    "threshold": 1.0,
-    "unit": "%",
-    "window": "7d",
-    "sli": {
-      "prometheus": "sum(rate(http_requests_total{handler=\"/todos/1\",status=~\"5..\"}[5m]))/sum(rate(http_requests_total{handler=\"/todos/1\"}[5m]))*100",
-      "gcp/cloudrun": {
-        "displayName": "1% - 5xx Error Rate - Calendar day",
-        "goal": 0.01,
-        "calendarPeriod": "DAY",
-        "serviceLevelIndicator": {
-          "windowsBased": {
-            "windowPeriod": "300s",
-            "goodTotalRatioThreshold": {
-              "threshold": 0.01
-            }
-          }
-        }
-      }
-    }
-  }
-]
-
-                        </code>
-                      </pre>
-                    </div>
-                    <div class="panel panel-measure">
-                      <div class="text-left cmd">
-                        <span class="twemoji">{% include ".icons/material/console-line.svg" %} </span> fault agent
-                        tool <span class="mcp-tool mcp-tool-measure">fault_run_latency_impact_scenario</span>
-                      </div>
-
-                      <pre class="text-left">
-                        <code class="language-markdown"># Report
-
-
-## Scenario: Evaluating runtime performance of http://localhost:9090  (items: 1)
-
-### 🎯 `GET` http://localhost:9090 | Passed
-
-**Call**:
-
-- Method: `GET`
-- Timeout: 10000ms
-- Headers: -
-- Body?: No
-
-**Strategy**: load for 10s with 1 clients @ 3 RPS
-
-**Faults Applied**:
-
-| Type | Timeline | Description |
-|------|----------|-------------|
-| latency | 0% `xxxxxxxxxx` 100% | Latency: ➡️🖧, Per Read/Write Op.: false, 
-  Distribution: normal, Mean: 300.00 ms, Stddev: 0.00 ms |
-
-
-**Run Overview**:
-
-Num. Requests: 29
-Num. Errors: 0 (0.0%)
-Min. Response Time: 334.14
-Max Response Time: 462.50
-Mean Latency (ms): 339.96
-Total Time: 10 seconds and 214 ms
-
-| Latency Percentile | Latency (ms) | Num. Requests (% of total) |
-|------------|--------------|-----------|
-| p25 | 335.78 | 8 (27.6%) |
-| p50 | 339.96 | 15 (51.7%) |
-| p75 | 342.26 | 23 (79.3%) |
-| p95 | 406.86 | 29 (100.0%) |
-| p99 | 462.50 | 29 (100.0%) |
-
-| SLO       | Pass? | Objective | Margin | Num. Requests Over Threshold (% of total) |
-|-----------|-------|-----------|--------|--------------------------|
-| 99% @ 350ms | ❌ | 99% < 350ms | Above by 112.5ms | 2 (6.9%) |
-| 95% @ 200ms | ❌ | 95% < 200ms | Above by 206.9ms | 29 (100.0%) |
-</code>
-                      </pre>
-                    </div>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </div>
         </div>
 
       </div>
@@ -391,38 +87,55 @@ Total Time: 10 seconds and 214 ms
     {% endblock %}
   </article>
   <article class="md-content__inner md-typeset features">
-    <h1>Safely  Accelerate Your Innovation</h1>
+    <h1>Safely Accelerate Your Innovation</h1>
     <h3>Bring AI-generated code into your delivery pipeline with confidence.</h3>
     <hr />
 
     <div class="row">
       <div class="col">
         <div class="box mode">
-              <h2 class="text-center">Reliability Engineering for Developers</h2>
+          <h2 class="text-center">Reliability Engineering for Developers</h2>
 
-              <p>
-                Explore availability threats right from the start through our builtin fault injection engine.
-                Automate continuous validation and make sure you are respect your SLOs.
+          <p>
+            Explore availability threats right from the start through our builtin fault injection engine.
+            Automate continuous validation and make sure you are respect your SLOs.
 
-              </p>
-                <div class="codeline">
-                   <span class="twemoji">{% include ".icons/material/console-line.svg" %} </span> fault scenario run
-                </div>
+          </p>
+          <div class="codeline">
+            <span class="twemoji">{% include ".icons/material/console-line.svg" %} </span> fault run
+          </div>
+          <div class="codeline">
+            <span class="twemoji">{% include ".icons/material/console-line.svg" %} </span> fault scenario run
+          </div>
         </div>
       </div>
       <div class="col">
         <div class="box mode">
-              <h2 class="text-center">AI-Agent Operational Engineering</h2>
-              <p>Bring a touch of operations into your favourite AI-editor with <span class="fault">fault</span> builtin MCP server.
-              Ensure you deliver production-aware code and reduce your AI-Agent delivery time.
-              </p>
-              
-                <div class="codeline">
-                   <span class="twemoji">{% include ".icons/material/console-line.svg" %} </span> fault agent tool
-                </div>
+          <h2 class="text-center">AI-Agent Operational Engineering</h2>
+          <p>Bring a touch of operations into your favourite AI-editor with <span class="fault">fault</span> builtin MCP
+            server.
+            Ensure you deliver production-aware code and reduce your AI-Agent delivery time.
+          </p>
+
+          <div class="codeline">
+            <span class="twemoji">{% include ".icons/material/console-line.svg" %} </span> fault agent tool
+          </div>
+          <div class="codeline">
+            <span class="twemoji">{% include ".icons/material/console-line.svg" %} </span> fault agent review
+          </div>
         </div>
       </div>
     </div>
+        <div class="row">
+          <div class="col">
+
+        <div class="box box-static">
+            <iframe src="/assets/deck.html" width="100%" height="720px" frameborder="0"
+              title="fault slides presentation">
+            </iframe>
+</div>
+          </div>
+        </div>
   </article>
   <article class="md-content__inner md-typeset features">
     <h1>Modern Features for Hybrid Engineering Teams</h1>
@@ -556,7 +269,8 @@ Total Time: 10 seconds and 214 ms
               <hr />
               <p>
                 Easily inject network faults into <a href="/how-to/inject/kubernetes/">Kubernetes</a>, <a
-                  href="/how-to/inject/gcp/">Google Cloud Platform Cloud Run</a> or <a href="/how-to/inject/aws/">AWS ECS</a>
+                  href="/how-to/inject/gcp/">Google Cloud Platform Cloud Run</a> or <a href="/how-to/inject/aws/">AWS
+                  ECS</a>
               </p>
             </li>
           </ul>
@@ -708,11 +422,14 @@ Total Time: 10 seconds and 214 ms
           </details>
           <details class="quote">
             <summary>How can we get in touch?</summary>
-            <p>First, please don't hesitate. We love hearing from everyone. Just <a href="https://rebound.how/support/#contact">send us a message</a> and we'll get back to you in no times.</p>
+            <p>First, please don't hesitate. We love hearing from everyone. Just <a
+                href="https://rebound.how/support/#contact">send us a message</a> and we'll get back to you in no times.
+            </p>
           </details>
           <details class="quote">
             <summary>Explore more</summary>
-            <p>fault is part of the <a href="https://rebound.how/">Rebound</a> toolset of open-source projects geared towards
+            <p>fault is part of the <a href="https://rebound.how/">Rebound</a> toolset of open-source projects geared
+              towards
               more reliabile operations. Two other projects complete the toolbox:
               <a href="https://chaostoolkit.org/">Chaos Toolkit</a> - a Chaos Engineering tool - as well as
               <a href="https://reliably.com/">Reliably</a> - a reliability platform.

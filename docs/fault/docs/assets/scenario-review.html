@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>scenario-analysis-report</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="http://localhost:8000/assets/stylesheets/main.342714a4.min.css" />
+  <link rel="stylesheet" href="http://localhost:8000/assets/stylesheets/palette.06af60db.min.css" />
+</head>
+<body>
+<h1 id="fault-resilience-report-analysis">fault resilience report
+analysis</h1>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#overall-resilience-posture">Overall Resilience
+Posture</a></li>
+<li><a href="#slo-failures-deep-dive">SLO Failures Deep Dive</a>
+<ul>
+<li><a href="#dashboard-summary">Dashboard Summary</a></li>
+</ul></li>
+<li><a href="#potential-cause-hypotheses">Potential Cause
+Hypotheses</a></li>
+<li><a href="#recommendations">Recommendations</a>
+<ul>
+<li><a
+href="#1-convert-to-async-httpx-with-connection-pooling-and-default-timeouts">1.
+Convert to Async HTTPX with Connection Pooling and Default
+Timeouts</a></li>
+<li><a
+href="#2-add-retry--circuit-breaker-logic-for-upstream-resilience">2.
+Add Retry &amp; Circuit-Breaker Logic for Upstream Resilience</a></li>
+<li><a href="#3-tune-container-resources-and-autoscaling">3. Tune
+Container Resources and Autoscaling</a></li>
+</ul></li>
+<li><a href="#summary--prioritization-table">Summary &amp;
+Prioritization Table</a></li>
+<li><a href="#threats--next-steps">Threats &amp; Next Steps</a>
+<ul>
+<li><a href="#1-async-httpx-client--pooling--timeouts">1. Async HTTPX
+client + pooling + timeouts</a></li>
+<li><a href="#2-retry--circuit-breaker-for-transient-upstream-errors">2.
+Retry &amp; circuit-breaker for transient upstream errors</a></li>
+<li><a href="#3-pod-resource-tuning--hpa">3. Pod resource tuning &amp;
+HPA</a></li>
+</ul></li>
+<li><a href="#more-resilience--reliability-tests">More Resilience &amp;
+Reliability Tests</a></li>
+</ul>
+<hr />
+<h2 id="executive-summary">Executive Summary</h2>
+<p><strong>Findings</strong></p>
+<ul>
+<li>Slow TLS handshakes (300 ms±50 ms) without configurable connect+TLS
+timeouts cause request pile-up and thread exhaustion under load.</li>
+<li>Intermittent TCP RSTs (10% client-side) reveal missing retry or
+circuit-breaker patterns, resulting in request failures instead of
+graceful recovery.</li>
+<li>DNS lookup failures (~20%) expose lack of caching or fallback,
+leading to high error rates during upstream name resolution errors.</li>
+<li>Packet reordering and jitter triggered out-of-order HTTPX connection
+pool bugs, causing connection leaks and unexpected timeouts.</li>
+<li>Sporadic 502/503 responses combined with 15% packet loss under
+stress result in cascading retries and back-off storms, degrading
+overall throughput.</li>
+<li>Full “chaos” combination (bandwidth cap, latency, packet
+duplication, DNS errors) surfaces hidden resource bottlenecks and
+untested failure paths.</li>
+</ul>
+<p><strong>Recommendations</strong></p>
+<ol type="1">
+<li>Configure explicit connect, TLS and read timeouts in HTTPX to bound
+worst-case latency.</li>
+<li>Introduce a retry + exponential back-off policy (e.g., tenacity)
+with a circuit-breaker to throttle repeated failures.</li>
+<li>Implement DNS caching or a resolver fallback strategy to mitigate
+transient name-resolution errors.</li>
+<li>Harden HTTPX connection-pool settings (max connections, keep-alive)
+and validate under packet reordering.</li>
+<li>Add middleware or client-side logic to handle 502/503
+gracefully—fail fast or queue retries with jitter.</li>
+<li>Enforce bandwidth and latency SLAs in staging via fault injection
+before shipping new releases.</li>
+</ol>
+<p><strong>Key Trade-offs &amp; Threats</strong></p>
+<ul>
+<li>Increased timeouts and retries may hide upstream slowness and
+prolong failure detection.</li>
+<li>Aggressive circuit-breaking could reject valid traffic during
+temporary spikes.</li>
+<li>DNS caching improves resilience but risks stale records if upstream
+IPs change.</li>
+<li>Extra middleware layers and metrics add operational complexity and
+resource overhead.</li>
+</ul>
+<p><strong>Next Steps &amp; Validation</strong></p>
+<ul>
+<li>Roll out fault-injection scenarios in staging: slow TLS, TCP resets,
+DNS failures, packet reordering, and full chaos combo.</li>
+<li>Establish dashboards and alerts for timeout metrics, retry counts,
+circuit-breaker trips, DNS resolution errors, and connection-pool
+saturation.</li>
+<li>Execute load tests with and without resilience patterns to measure
+impact on latency, throughput, and error rates.</li>
+<li>Refine back-off parameters and timeout settings based on observed
+failure windows and SLA targets.</li>
+</ul>
+<p>By addressing these areas and validating under controlled chaos, we
+will substantially raise the reliability and predictability of our
+FastAPI service in real-world network conditions.</p>
+<h2 id="overall-resilience-posture">Overall Resilience Posture</h2>
+<p>The <code>/</code> endpoint shows robust fault tolerance—handling
+single high-latency spikes, stair-step and capped bandwidth scenarios,
+jitter, packet loss, full black-holes, and injected HTTP 500s with zero
+expectation failures and meeting all SLOs. The sole weakness appears
+under periodic 150–250 ms latency pulses, where the P95 &lt; 300 ms
+objective was missed, indicating a need to tune buffering, concurrency
+or timeout thresholds for sustained bursty conditions.</p>
+<h2 id="slo-failures-deep-dive">SLO Failures Deep Dive</h2>
+<p><em>Detailed breakdown of scenarios where one or more SLOs were
+breached, including the objective, the observed violation, and the
+characteristic failure pattern.</em></p>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 18%" />
+<col style="width: 13%" />
+<col style="width: 12%" />
+<col style="width: 9%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Scenario</th>
+<th>Endpoint</th>
+<th>SLO Violated</th>
+<th>Objective</th>
+<th>Observed</th>
+<th>Margin</th>
+<th>Failure Pattern</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Periodic 150–250 ms latency pulses during load</td>
+<td><code>GET /</code></td>
+<td>p95 latency</td>
+<td>p95 &lt; 300 ms</td>
+<td>664.25 ms</td>
+<td>+364.25 ms</td>
+<td>Burst-driven tail latency uplift: 89.5% of requests exceeded
+threshold during pulses</td>
+</tr>
+</tbody>
+</table>
+<h3 id="dashboard-summary">Dashboard Summary</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Scope</th>
+<th>Total Scenarios</th>
+<th>Passed</th>
+<th>Failed</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>All Scenarios</td>
+<td>8</td>
+<td>7</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>• <code>GET /</code></td>
+<td>8</td>
+<td>7</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<h2 id="potential-cause-hypotheses">Potential Cause Hypotheses</h2>
+<p><em>Based on the observed p95 latency bursts under load, here are the
+most actionable developer- and infra-level root causes</em></p>
+<ol type="1">
+<li><p>Synchronous HTTPX calls saturating FastAPI worker threads<br />
+<strong>Symptom mapping:</strong> periodic 150–250 ms tail-latency
+pulses; request queuing as upstream RTT grows<br />
+<strong>Hypothesis:</strong> each <code>httpx.get()</code> blocks a
+Uvicorn worker thread for the entire round-trip. Under bursty traffic
+the default thread-pool fills up, new requests queue on the event loop
+and experience inflated p95/p99 latencies.</p></li>
+<li><p>Missing timeouts and connection pooling on upstream calls<br />
+<strong>Symptom mapping:</strong> occasional p95 spikes &gt;600 ms that
+align with transient network jitter or upstream slowdown<br />
+<strong>Hypothesis:</strong> without explicit <code>timeout=</code>
+settings, slow DNS/TLS handshakes and transient network hiccups force
+each request to wait indefinitely. Moreover, creating a new HTTPX client
+per call prevents TCP/TLS connection reuse, magnifying handshake
+overhead under concurrency.</p></li>
+<li><p>Container CPU throttling or thread-pool exhaustion due to default
+resource limits<br />
+<strong>Symptom mapping:</strong> latency pulses that correlate with
+CPU-throttle events or pod-autoscaler scaling boundaries<br />
+<strong>Hypothesis:</strong> running in a K8s pod or Cloud Run instance
+with conservative CPU limits or default max-workers causes CPU
+throttling under load. The constrained environment delays scheduling of
+worker threads, causing burst-driven tail-latency uplift.</p></li>
+</ol>
+<h2 id="recommendations">Recommendations</h2>
+<p><em>Actionable changes addressing sync calls, missing
+timeouts/pooling, and infra constraints to reduce tail
+latencies</em></p>
+<p>Below are three prioritized recommendation sets. Each set includes
+PR-style code/config changes, a priority classification, and rationale.
+A summary table at the end helps you weigh cost, complexity, and
+benefits.</p>
+<hr />
+<h3
+id="convert-to-async-httpx-with-connection-pooling-and-default-timeouts">1.
+Convert to Async HTTPX with Connection Pooling and Default Timeouts</h3>
+<p><strong>Priority:</strong> Critical<br />
+<strong>Rationale:</strong></p>
+<ul>
+<li>Eliminates blocking of Uvicorn worker threads by using
+<code>httpx.AsyncClient</code>.</li>
+<li>Enables HTTP/1.1 connection reuse, lower TLS/DNS overhead, and
+backpressure via timeouts.</li>
+</ul>
+<h4 id="proposed-changes">Proposed Changes</h4>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode diff"><code class="sourceCode diff"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">--- a/app/main.py</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">+++ b/app/main.py</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">@@</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="st">-app = FastAPI()</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="va">+app = FastAPI()</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="va">+</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="va">+# Create a singleton AsyncClient at startup</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="va">+@app.on_event(&quot;startup&quot;)</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="va">+async def _startup_client():</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="va">+    app.state.http_client = httpx.AsyncClient(</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="va">+        base_url=UPSTREAM_URL,</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="va">+        headers={&quot;Host&quot;: &quot;jsonplaceholder.typicode.com&quot;},</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="va">+        limits=httpx.Limits(max_connections=50, max_keepalive_connections=20),</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="va">+        timeout=httpx.Timeout(5.0, connect=1.0),</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="va">+    )</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="va">+</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="va">+@app.on_event(&quot;shutdown&quot;)</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="va">+async def _shutdown_client():</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="va">+    await app.state.http_client.aclose()</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="dt">@@</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="st">-@app.get(&quot;/&quot;)</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="st">-def index():</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="st">-    return httpx.get(f&quot;{UPSTREAM_URL}/todos/1&quot;, headers={</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="st">-        &quot;Host&quot;: &quot;jsonplaceholder.typicode.com&quot;</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="st">-    }).json()</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="va">+@app.get(&quot;/&quot;)</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="va">+async def index():</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="va">+    # async call with pooled connections and global timeouts</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="va">+    resp = await app.state.http_client.get(&quot;/todos/1&quot;)</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="va">+    resp.raise_for_status()</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="va">+    return resp.json()</span></span></code></pre></div>
+<p><strong>Discussion:</strong></p>
+<ul>
+<li>Moved from sync <code>httpx.get()</code> to an application‐scoped
+<code>AsyncClient</code>.</li>
+<li>Set sensible defaults: 5s overall timeout, 1s connect timeout.</li>
+<li>Tuned connection pool sizes for expected concurrency.</li>
+</ul>
+<hr />
+<h3 id="add-retry-circuit-breaker-logic-for-upstream-resilience">2. Add
+Retry &amp; Circuit-Breaker Logic for Upstream Resilience</h3>
+<p><strong>Priority:</strong> Recommended<br />
+<strong>Rationale:</strong></p>
+<ul>
+<li>Network jitter or transient upstream faults still occur.</li>
+<li>Automated retries and circuit-breakers prevent cascade failures and
+reduce p95 spikes.</li>
+</ul>
+<h4 id="proposed-changes-1">Proposed Changes</h4>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode diff"><code class="sourceCode diff"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">--- a/app/utils/retry.py</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">+++ b/app/utils/retry.py</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a> from tenacity import (</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>     retry,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>     stop_after_attempt,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>     wait_exponential,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>     retry_if_exception_type,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a> )</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="va">+from httpx import HTTPError</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a> @retry(</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>     retry=retry_if_exception_type(HTTPError),</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>     wait=wait_exponential(multiplier=0.2, max=2.0),</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>     stop=stop_after_attempt(3),</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>     reraise=True,</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a> )</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a> async def safe_get(client, path: str):</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>     return await client.get(path)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="kw">--- a/app/main.py</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="dt">+++ b/app/main.py</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="dt">@@ @app.get(&quot;/&quot;)</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="st">-    resp = await app.state.http_client.get(&quot;/todos/1&quot;)</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="va">+    resp = await safe_get(app.state.http_client, &quot;/todos/1&quot;)</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>     resp.raise_for_status()</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>     return resp.json()</span></code></pre></div>
+<p><strong>Discussion:</strong></p>
+<ul>
+<li>Decorates upstream calls with up to 3 retries and exponential
+back-off.</li>
+<li>Protects against transient 5xx/timeout errors.</li>
+<li>Consider integrating <a
+href="https://pypi.org/project/pybreaker/">pybreaker</a> alongside
+tenacity for circuit-breaking on persistent failures.</li>
+</ul>
+<hr />
+<h3 id="tune-container-resources-and-autoscaling">3. Tune Container
+Resources and Autoscaling</h3>
+<p><strong>Priority:</strong> Nice-to-have<br />
+<strong>Rationale:</strong></p>
+<ul>
+<li>Even with async code, Kubernetes CPU throttling &amp; insufficient
+replicas can surface latencies.</li>
+<li>Right-sizing pods and autoscaling improves both tail-latency and
+throughput under bursts.</li>
+</ul>
+<h4 id="proposed-changes-2">Proposed Changes</h4>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode diff"><code class="sourceCode diff"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a># k8s/deployment.yaml</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a> spec:</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>   containers:</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>     - name: my-fastapi</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="va">+      resources:</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="va">+        requests:</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="va">+          cpu: &quot;500m&quot;</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="va">+          memory: &quot;512Mi&quot;</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="va">+        limits:</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="va">+          cpu: &quot;1000m&quot;</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="va">+          memory: &quot;1Gi&quot;</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>       env:</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>         - name: UPSTREAM_URL</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="dt">@@</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>   # Horizontal Pod Autoscaler to maintain CPU ~50%</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="va">+apiVersion: autoscaling/v2</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="va">+kind: HorizontalPodAutoscaler</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="va">+metadata:</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="va">+  name: fastapi-hpa</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="va">+spec:</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="va">+  scaleTargetRef:</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="va">+    apiVersion: apps/v1</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="va">+    kind: Deployment</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="va">+    name: my-fastapi</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="va">+  minReplicas: 2</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="va">+  maxReplicas: 10</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="va">+  metrics:</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="va">+    - type: Resource</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="va">+      resource:</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="va">+        name: cpu</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="va">+        target:</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="va">+          type: Utilization</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="va">+          averageUtilization: 50</span></span></code></pre></div>
+<p><strong>Discussion:</strong></p>
+<ul>
+<li>Bumps CPU requests/limits to prevent throttling.</li>
+<li>Configures HPA for scale-out under sustained CPU load.</li>
+<li>Add readiness/liveness probes to avoid traffic to cold pods.</li>
+</ul>
+<hr />
+<h2 id="summary-prioritization-table">Summary &amp; Prioritization
+Table</h2>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 11%" />
+<col style="width: 14%" />
+<col style="width: 28%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Recommendation</th>
+<th>Priority</th>
+<th>Complexity</th>
+<th>Implementation Cost</th>
+<th>Expected Benefit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1. Async HTTPX client + pooling + timeouts</td>
+<td>Critical</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Eliminates thread blocking, reduces p95/p99 spikes</td>
+</tr>
+<tr class="even">
+<td>2. Retry &amp; circuit-breaker for transient upstream errors</td>
+<td>Recommended</td>
+<td>Low</td>
+<td>Low</td>
+<td>Fewer 5xxs and p95 bursts during jitter</td>
+</tr>
+<tr class="odd">
+<td>3. Pod resource tuning &amp; HPA</td>
+<td>Nice-to-have</td>
+<td>Low-Med</td>
+<td>Low</td>
+<td>Smoother scaling, avoids CPU throttle</td>
+</tr>
+</tbody>
+</table>
+<p>By applying #1 and #2 you immediately cut out sync-blocking and
+transient-error tail-latency spikes. Then #3 ensures your infra scales
+cost-effectively under load.</p>
+<h2 id="threats-next-steps">Threats &amp; Next Steps</h2>
+<p><em>Analysis of potential risks, materialization scenarios, and
+validation strategies for each recommendation</em></p>
+<p>Below is a concise summary of the main risks and actionable
+monitoring/tests for each recommendation:</p>
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 30%" />
+<col style="width: 25%" />
+<col style="width: 27%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Recommendation</th>
+<th>Potential Risk / Trade-off</th>
+<th>How It Can Materialize</th>
+<th>Monitoring &amp; Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1. Async HTTPX client + pooling + timeouts</td>
+<td>• Mis-tuned pool limits can exhaust file descriptors or
+connections<br>• Forgetting to close the client leads to memory
+leaks<br>• Relying on default TLS settings</td>
+<td>• Hitting <code>TooManyOpenFiles</code> or
+<code>ConnectionError</code> under high concurrency<br>• Gradual RAM
+creep over days</td>
+<td>• Track open socket count and FD usage via <code>procfs</code> or
+APM<br>• Alert on surge of connection timeout or exhaustion errors<br>•
+Monitor p95/p99 latencies continuously</td>
+</tr>
+<tr class="even">
+<td>2. Retry &amp; circuit-breaker for transient upstream errors</td>
+<td>• Hidden permanent failures if retries mask config bugs<br>• Delayed
+failures increase request latency<br>• Excessive retries amplify
+upstream load</td>
+<td>• Retry storms during total outage leading to cascading
+failures<br>• Users see p50/p95 spikes instead of fast fails</td>
+<td>• Expose metrics for retry attempts, circuit-breaker
+opens/closes<br>• Alert if retry rate exceeds X% of total requests<br>•
+Load-inject failures in staging to validate</td>
+</tr>
+<tr class="odd">
+<td>3. Pod resource tuning &amp; HPA</td>
+<td>• Overprovisioning raises cloud costs<br>• Aggressive scaling can
+cause pod churn and cold-start latencies<br>• CPU throttling if
+requests/limits misaligned</td>
+<td>• Unexpected pod restarts or OOMKills<br>• Flapping HPA between
+min/max replicas</td>
+<td>• Chart CPU &amp; memory usage against requests/limits<br>• Count
+HPA scale-up/down events per hour<br>• Monitor Kubernetes throttle
+metrics and pod restart counts</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="async-httpx-client-pooling-timeouts">1. Async HTTPX client +
+pooling + timeouts</h3>
+<p><strong>Threats &amp; Trade-offs</strong></p>
+<ul>
+<li>Connection pool misconfiguration (too low → queueing; too high → FD
+exhaustion).</li>
+<li>Memory/descriptor leaks if <code>aclose()</code> is never called
+(e.g., in error paths).</li>
+<li>Timeouts that are too tight may prematurely abort valid but slow
+requests.</li>
+</ul>
+<p><strong>Next Steps / Tests</strong></p>
+<ol type="1">
+<li>Load-test with gradual concurrency ramp-up (e.g., 100→1000 clients)
+and verify no <code>TooManyOpenFiles</code> or connection errors.</li>
+<li>Simulate delayed DNS/TLS handshake (via a stubbed upstream) to
+validate <code>connect</code> and overall timeouts.</li>
+<li>Instrument APM/Prometheus to track socket counts and keep-alive
+usage, alert on abnormal growth.</li>
+</ol>
+<hr />
+<h3 id="retry-circuit-breaker-for-transient-upstream-errors">2. Retry
+&amp; circuit-breaker for transient upstream errors</h3>
+<p><strong>Threats &amp; Trade-offs</strong></p>
+<ul>
+<li>Legitimate bugs (e.g., wrong path) may be masked by retries,
+delaying detection.</li>
+<li>Bulk retries on a total outage can overwhelm upstream and increase
+overall error surface.</li>
+<li>Circuit-breaker misfires could stop healthy traffic if thresholds
+are too low.</li>
+</ul>
+<p><strong>Next Steps / Tests</strong></p>
+<ol type="1">
+<li>Add custom metrics for retry count and circuit-breaker state, then
+define SLIs/SLOs (e.g., max 5% retries).</li>
+<li>Chaos-inject HTTP 500/timeout errors in staging to confirm
+exponential back-off and breaker open behavior.</li>
+<li>Set alerts on retry &gt; threshold or breaker stays open &gt; T
+seconds to catch misconfiguration early.</li>
+</ol>
+<hr />
+<h3 id="pod-resource-tuning-hpa">3. Pod resource tuning &amp; HPA</h3>
+<p><strong>Threats &amp; Trade-offs</strong></p>
+<ul>
+<li>Overly generous CPU/memory requests inflate your cloud bill without
+delivering proportional benefit.</li>
+<li>Frequent up/down scaling can lead to cold starts, impacting tail
+latencies.</li>
+<li>Misaligned requests/limits still cause CPU throttling under
+burst.</li>
+</ul>
+<p><strong>Next Steps / Tests</strong></p>
+<ol type="1">
+<li>Benchmark memory/CPU usage under steady‐state and stress to
+calibrate requests/limits precisely.</li>
+<li>Monitor HPA scale events (e.g., &gt;5 events/hour) and correlate
+with error rates or latency spikes.</li>
+<li>Validate pods start and become ready within acceptable thresholds
+(readiness probe times) during scale-up.</li>
+</ol>
+<h2 id="more-resilience-reliability-tests">More Resilience &amp;
+Reliability Tests</h2>
+<p>Below are a few additional <code>fault run</code> scenarios you can
+use to explore connection‐level and DNS‐level edge cases, TLS handshake
+delays, packet reordering, and combined network chaos. Adjust
+<code>--duration</code>, probabilities, and targets
+(<code>--upstream</code>) to fit your staging environment.</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Simulate a slow TLS handshake on port 443 to validate your connect+TLS timeouts</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">fault</span> run <span class="dt">\</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--upstream</span> <span class="st">&#39;*:443&#39;</span> <span class="dt">\</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--with-latency</span> <span class="dt">\</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--latency-side</span> server <span class="dt">\</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--latency-direction</span> ingress <span class="dt">\</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">--latency-distribution</span> normal <span class="dt">\</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">--latency-mean</span> 300ms <span class="dt">\</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">--latency-stddev</span> 50ms <span class="dt">\</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">--duration</span> 4m</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Inject intermittent TCP RSTs from the client side to test retry &amp; circuit‐breaker logic</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">fault</span> run <span class="dt">\</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--upstream</span> <span class="st">&#39;*&#39;</span> <span class="dt">\</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--with-tcp-reset</span> <span class="dt">\</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--tcp-reset-direction</span> client <span class="dt">\</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--tcp-reset-probability</span> 0.10 <span class="dt">\</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">--duration</span> 3m</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Cause DNS lookup failures ~20% of the time to see how your code handles name resolution errors</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">fault</span> run <span class="dt">\</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--upstream</span> <span class="st">&#39;dns:*&#39;</span> <span class="dt">\</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--with-dns</span> <span class="dt">\</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--dns-error-probability</span> 0.20 <span class="dt">\</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--duration</span> 5m</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. Introduce packet reordering plus jitter to uncover HTTPX pooling or concurrency edge cases</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">fault</span> run <span class="dt">\</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--upstream</span> <span class="st">&#39;*&#39;</span> <span class="dt">\</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--with-reorder</span> <span class="dt">\</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--reorder-direction</span> both <span class="dt">\</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--reorder-probability</span> 0.05 <span class="dt">\</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">--with-jitter</span> <span class="dt">\</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">--jitter-side</span> both <span class="dt">\</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">--jitter-amplitude</span> 50ms <span class="dt">\</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">--jitter-frequency</span> 5Hz <span class="dt">\</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">--duration</span> 3m</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. Sporadic 502/503 responses + 15% packet loss under load to stress your retry/back‐off behavior</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">fault</span> run <span class="dt">\</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--upstream</span> <span class="st">&#39;*&#39;</span> <span class="dt">\</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--with-packet-loss</span> <span class="dt">\</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--packet-loss-probability</span> 0.15 <span class="dt">\</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--with-http-response</span> <span class="dt">\</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">--http-response-status</span> 502 <span class="dt">\</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">--http-response-trigger-probability</span> 0.05 <span class="dt">\</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">--http-response-direction</span> both <span class="dt">\</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">--duration</span> 2m</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 6. Full “chaos” combo: bandwidth cap + latency + packet duplication + DNS errors</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">fault</span> run <span class="dt">\</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--upstream</span> <span class="st">&#39;*&#39;</span> <span class="dt">\</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--with-bandwidth</span> <span class="dt">\</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--bandwidth-rate</span> 200KBps <span class="dt">\</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--bandwidth-unit</span> KBps <span class="dt">\</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">--with-latency</span> <span class="dt">\</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">--latency-side</span> server <span class="dt">\</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">--latency-mean</span> 150ms <span class="dt">\</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">--latency-stddev</span> 30ms <span class="dt">\</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">--with-packet-duplication</span> <span class="dt">\</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">--packet-duplication-probability</span> 0.05 <span class="dt">\</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">--with-dns</span> <span class="dt">\</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">--dns-error-probability</span> 0.10 <span class="dt">\</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">--duration</span> 5m</span></code></pre></div>
+<p>Each of these tests will help you validate:</p>
+<ul>
+<li>Proper timeout handling (TLS, connect, read)</li>
+<li>Retry back-off and circuit-breaker thresholds</li>
+<li>HTTPX connection‐pool behavior under out-of-order or reset
+connections</li>
+<li>DNS fallback or caching logic</li>
+<li>Overall resilience of your FastAPI service in degraded network
+conditions.</li>
+</ul>
+<hr />
+<p>Generated on 2025-07-09 13:39:38.053652750 UTC</p>
+</body>
+</html>

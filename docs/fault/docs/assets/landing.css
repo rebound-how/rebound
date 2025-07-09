@@ -1513,6 +1513,18 @@ label[for="tab-measure"]:hover {
     opacity: 1;
 }
 
+.box-static::before {
+    content: "";
+    position: absolute;
+    inset: 0px;
+    background: conic-gradient(from 295deg, #67B0C2 43%, #F7EAC8 50%, #D14B93 61%);
+    filter: blur(20px);
+    transform: translate3d(0px, 0px, -1px);
+    clip-path: polygon(-100vmax -100vmax, 100vmax -100vmax, 100vmax 100vmax, -100vmax 100vmax, -100vmax -100vmax, calc(0px - 0px) calc(0px - 0px), calc(0px - 0px) calc(100% - 0px - 0px), calc(100% - 0px - 0px) calc(100% - 0px - 0px), calc(100% - 0px - 0px) calc(0px - 0px), calc(0px - 0px) calc(0px - 0px));
+    pointer-events: none;
+    opacity: 1;
+}
+
 .mode {
     padding: .8rem;
     padding-bottom: 60px;
