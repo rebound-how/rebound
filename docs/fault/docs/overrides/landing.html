@@ -14,10 +14,31 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/diff.min.js"></script>
 <link rel="stylesheet" href="/assets/landing.css">
 <script>
+  const rules = [
+    { mq: '(max-width: 600px)',  url: '/assets/deck-mobile.html'  },
+    { mq: '(min-width: 601px)',  url: '/assets/deck.html' }
+  ];
+
   document.addEventListener('DOMContentLoaded', () => {
     document.documentElement.translate = false;
     hljs.highlightAll();
-  });
+
+    const iframe = document.getElementById("deck");
+    const mqls   = rules.map(r => ({
+      mql: window.matchMedia(r.mq),
+      url: r.url
+    }));
+
+  function setDeckSource() {
+    const match = mqls.find(x => x.mql.matches);
+    console.log(match);
+    if (match) iframe.src = match.url;
+  }
+
+    mqls.forEach(x => x.mql.addListener(setDeckSource));
+      window.addEventListener('DOMContentLoaded', setDeckSource);
+      window.addEventListener('resize',       setDeckSource);
+    });
 </script>
 <style>
 </style>
@@ -130,7 +151,7 @@
       <div class="col">
 
         <div class="box box-static">
-          <iframe src="/assets/deck.html" width="100%" height="720px" frameborder="0" title="fault slides presentation">
+          <iframe src="/assets/deck.html" id="deck" width="100%" height="720px" frameborder="0" title="fault slides presentation">
           </iframe>
         </div>
       </div>
