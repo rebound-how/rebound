@@ -67,11 +67,6 @@ use cli::ScenarioCommands;
 use colorful::Color;
 use colorful::Colorful;
 use config::ProxyConfig;
-#[cfg(all(
-    target_os = "linux",
-    any(feature = "stealth", feature = "stealth-auto-build")
-))]
-use errors::ProxyError;
 use event::TaskManager;
 use fault::FaultInjector;
 #[cfg(feature = "discovery")]
@@ -307,16 +302,16 @@ async fn main() -> Result<()> {
             ))]
             {
                 if stealth_mode {
-                    if options.stealth.ebpf_process_name.is_none() {
+                    if options.common.stealth.ebpf_process_name.is_none() {
                         tracing::error!(
                             "In stealth mode, you must pass a process name"
                         );
                     } else {
                         match ebpf::get_ebpf_proxy(
                             &http_proxy_nic_config,
-                            options.stealth.ebpf_proxy_iface.clone(),
-                            options.stealth.ebpf_proxy_ip.clone(),
-                            options.stealth.ebpf_proxy_port,
+                            options.common.stealth.ebpf_proxy_iface.clone(),
+                            options.common.stealth.ebpf_proxy_ip.clone(),
+                            options.common.stealth.ebpf_proxy_port,
                         ) {
                             Ok(Some(ebpf_proxy_config)) => {
                                 _ebpf_proxy_guard = initialize_ebpf_proxy(
@@ -329,7 +324,7 @@ async fn main() -> Result<()> {
                                 .unwrap();
 
                                 _guard = ebpf::initialize_stealth(
-                                    &options.stealth,
+                                    &options.common.stealth,
                                     &ebpf_proxy_config,
                                 );
                             }
@@ -867,7 +862,7 @@ async fn main() -> Result<()> {
 
 #[cfg(all(target_os = "linux", feature = "stealth"))]
 fn is_stealth(cli: &RunCommandOptions) -> bool {
-    cli.stealth.ebpf
+    cli.common.stealth.ebpf
 }
 
 #[cfg(all(not(target_os = "linux"), feature = "stealth"))]
