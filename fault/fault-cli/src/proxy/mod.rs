@@ -10,6 +10,7 @@ use crate::plugin::CompositePlugin;
 use crate::plugin::metrics::MetricsInjector;
 use crate::plugin::rpc::RpcPluginManager;
 
+pub mod mapping;
 pub mod protocols;
 
 /// Shared application state
@@ -66,6 +67,18 @@ impl ProxyState {
     pub async fn set_upstream_hosts(&self, new_hosts: Vec<String>) {
         tracing::debug!("Allowed hosts {:?}", new_hosts);
         self.upstream_hosts.store(Arc::new(new_hosts));
+    }
+
+    pub fn add_upstream_host(&self, new_host: &str) {
+        tracing::debug!("Add new allowed host {}", new_host);
+
+        let hosts = self.upstream_hosts.load_full();
+        let mut upstreams = (*hosts).clone();
+        upstreams.insert(0, new_host.into());
+
+        tracing::warn!("upstreams {:?}", upstreams);
+
+        self.upstream_hosts.store(Arc::new(upstreams));
     }
 }
 

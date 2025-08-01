@@ -3,7 +3,9 @@ use std::fmt;
 use async_trait::async_trait;
 use axum::http::Response;
 use axum::http::{self};
+use http::HeaderMap;
 use hyper::StatusCode;
+use reqwest::Body;
 use reqwest::ClientBuilder as ReqwestClientBuilder;
 use reqwest::Request as ReqwestRequest;
 
@@ -14,6 +16,7 @@ use crate::config::HttpResponseSettings;
 use crate::errors::ProxyError;
 use crate::event::FaultEvent;
 use crate::event::ProxyTaskEvent;
+use crate::fault::BoxChunkStream;
 use crate::types::Direction;
 use crate::types::StreamSide;
 
@@ -119,6 +122,16 @@ impl FaultInjector for HttpResponseFaultInjector {
             return Ok(intermediate);
         }
         Ok(resp)
+    }
+
+    async fn apply_on_response_stream(
+        &self,
+        status: StatusCode,
+        headers: HeaderMap,
+        body: BoxChunkStream,
+        _event: Box<dyn ProxyTaskEvent>,
+    ) -> Result<(StatusCode, HeaderMap, BoxChunkStream), ProxyError> {
+        Ok((status, headers, body))
     }
 
     async fn inject(

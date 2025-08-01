@@ -5,6 +5,8 @@ use std::sync::Arc;
 use anyhow::Result;
 use async_trait::async_trait;
 use axum::http;
+use http::HeaderMap;
+use http::StatusCode;
 use tokio::sync::RwLock;
 use tonic::Request;
 use tonic::transport::Channel;
@@ -15,6 +17,7 @@ use crate::config::GrpcSettings;
 use crate::errors::ProxyError;
 use crate::event::ProxyTaskEvent;
 use crate::fault::Bidirectional;
+use crate::fault::BoxChunkStream;
 use crate::fault::grpc::GrpcInjector;
 use crate::plugin::FaultInjector;
 use crate::types::Direction;
@@ -376,6 +379,16 @@ impl FaultInjector for RpcPluginManager {
         }
 
         Ok(modified_stream)
+    }
+
+    async fn apply_on_response_stream(
+        &self,
+        status: StatusCode,
+        headers: HeaderMap,
+        body: BoxChunkStream,
+        _event: Box<dyn ProxyTaskEvent>,
+    ) -> Result<(StatusCode, HeaderMap, BoxChunkStream), ProxyError> {
+        Ok((status, headers, body))
     }
 }
 

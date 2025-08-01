@@ -96,10 +96,9 @@ use proxy::monitor_and_update_proxy_config;
     any(feature = "stealth", feature = "stealth-auto-build")
 ))]
 use proxy::protocols::ebpf::init::initialize_ebpf_proxy;
-use proxy::protocols::http::init::get_http_proxy_address;
-use proxy::protocols::http::init::initialize_http_proxy;
+use proxy::protocols::http::proxy::init::get_http_proxy_address;
+use proxy::protocols::http::proxy::init::initialize_http_proxy;
 use proxy::protocols::tcp::init::initialize_tcp_proxies;
-use proxy::protocols::tcp::init::parse_proxy_protocols;
 #[cfg(feature = "scenario")]
 use scenario::event::ScenarioEventManager;
 #[cfg(feature = "scenario")]
@@ -137,7 +136,12 @@ use tokio_stream::StreamExt;
 use tracing::error;
 use uuid::Uuid;
 
+use crate::config::FaultConfig;
+use crate::errors::ProxyError;
+use crate::proxy::protocols::http::service::init::initialize_http_service_proxies;
 use crate::types::FaultConfiguration;
+use crate::types::ProtocolType;
+use crate::types::ProxyMap;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -199,12 +203,39 @@ async fn main() -> Result<()> {
             // if we are in stealth mode, we'll start the ebpf layer as well
             let stealth_mode = is_stealth(options);
 
-            // initiliaze a default state
+            let common_opts = options.common.common.clone();
+            let mut proxy_maps = common_opts.proxy_map.clone();
+
+            // initialize a default state
             // By default we mean that it doesn't know yet about the user
             // input and therefore has no faults configured
             let proxy_state =
-                state::initialize_proxy_state(&options.common, stealth_mode)
+                state::initialize_proxy_state(&common_opts, stealth_mode)
                     .await?;
+
+            let mut http_proxies_disabled = common_opts.disable_http_proxies;
+
+            // set some well-known defaults
+            match options.run_command() {
+                cli::RunCommands::Proxy {} => {}
+                cli::RunCommands::Llm { target, .. } => match target {
+                    types::LlmTarget::Openai => {
+                        http_proxies_disabled = true;
+
+                        let _ = proxy_state
+                            .add_upstream_host("https://api.openai.com:443");
+
+                        proxy_maps.insert(
+                            0,
+                            "https:45580=https://api.openai.com:443"
+                                .to_string(),
+                        );
+                    }
+                    types::LlmTarget::Azure => todo!(),
+                    types::LlmTarget::Local => todo!(),
+                },
+                cli::RunCommands::Db { target, .. } => todo!(),
+            }
 
             // we keep an eye on changes in the fault configuration
             // so we set the proxy state accordingly
@@ -216,7 +247,7 @@ async fn main() -> Result<()> {
             // if the user configured remote plugins, let's connect and
             // initialize them as if they were fault injectors as
             // well
-            if !options.common.grpc_plugins.clone().is_empty() {
+            if !common_opts.grpc_plugins.clone().is_empty() {
                 let manager = proxy_state.rpc_manager.clone();
 
                 // remote plugins may come and go. We adjust the proxy state
@@ -233,10 +264,10 @@ async fn main() -> Result<()> {
                 });
             }
 
-            let http_proxy_nic_config = get_http_proxy_address(&options.common);
+            let http_proxy_nic_config = get_http_proxy_address(&common_opts);
 
             // it's time to start our HTTP proxies
-            if options.common.disable_http_proxies == false {
+            if http_proxies_disabled == false {
                 _http_proxy_guard = initialize_http_proxy(
                     &http_proxy_nic_config,
                     proxy_state.clone(),
@@ -249,12 +280,20 @@ async fn main() -> Result<()> {
             // we now also start any other proxy that the user has requested us
             // to setup
             let mut proxied_protos = Vec::new();
-            if !options.common.proxy_map.is_empty() {
-                proxied_protos =
-                    parse_proxy_protocols(options.common.proxy_map.clone())
-                        .await?;
+            if !proxy_maps.is_empty() {
+                proxied_protos = ProxyMap::parse_many(proxy_maps.clone())
+                    .map_err(|s| ProxyError::Other(s))?;
+
                 let _tcp_proxy_guard = initialize_tcp_proxies(
-                    proxied_protos.clone(),
+                    ProxyMap::filter_tcp(proxied_protos.clone()),
+                    proxy_state.clone(),
+                    proxy_shutdown_rx.clone(),
+                    task_manager.clone(),
+                )
+                .await;
+
+                let _http_proxies_guard = initialize_http_service_proxies(
+                    ProxyMap::filter_http(proxied_protos.clone()),
                     proxy_state.clone(),
                     proxy_shutdown_rx.clone(),
                     task_manager.clone(),
@@ -319,13 +358,32 @@ async fn main() -> Result<()> {
                 ));
             }*/
 
+            let extra_faults = match options.run_command() {
+                cli::RunCommands::Proxy {} => Vec::new(),
+                cli::RunCommands::Llm { target, cases, settings } => cases
+                    .iter()
+                    .map(|c| FaultConfig::from((c.clone(), &settings)))
+                    .collect(),
+                cli::RunCommands::Db { target, cases, settings } => cases
+                    .iter()
+                    .map(|c| FaultConfig::from((c.clone(), &settings)))
+                    .collect(),
+            };
+
             // let's turn the cli flags into a proxy configuration we can work
             // with
-            let proxy_config = options.into();
+            let proxy_config: ProxyConfig = options.common.clone().into();
+
+            if !extra_faults.is_empty() {
+                tracing::debug!("Additional domain faults {:?}", extra_faults);
+                proxy_config.add(extra_faults.clone());
+            }
 
             // load the configured injectors
             let injectors: Vec<Box<dyn FaultInjector>> =
                 load_injectors(&proxy_config);
+
+            tracing::info!("Final list of injectors {:?}", injectors);
 
             // send the whole thing so the state can record them
             if config_tx.send((proxy_config, injectors.clone())).is_err() {
@@ -334,9 +392,9 @@ async fn main() -> Result<()> {
 
             // Let's get some data ready for the UI
             let total_duration =
-                options.common.duration.as_ref().map(|s| parse(s).unwrap());
+                common_opts.duration.as_ref().map(|s| parse(s).unwrap());
             let fault_schedule =
-                build_schedule_events(options, total_duration)?;
+                build_schedule_events(&options.common, total_duration)?;
 
             let schedule_for_prelude = fault_schedule.clone();
             _fault_schedule_handle = tokio::spawn(run_fault_schedule(
@@ -347,29 +405,30 @@ async fn main() -> Result<()> {
 
             let faults_scheduled = !schedule_for_prelude.is_empty();
 
-            if !options.ui.no_ui {
+            if !options.common.ui.no_ui {
                 let hosts = proxy_state.upstream_hosts.load_full();
                 let upstreams = (*hosts).clone();
 
                 proxy_prelude(
                     http_proxy_nic_config.proxy_address(),
-                    options.common.disable_http_proxies,
+                    http_proxies_disabled,
                     proxied_protos.clone(),
                     proxy_state.clone().rpc_manager.clone(),
-                    options,
+                    &options.common,
                     &upstreams,
                     schedule_for_prelude,
                     total_duration,
-                    options.ui.tail,
+                    options.common.ui.tail,
+                    &extra_faults,
                 )
                 .await;
             }
 
-            if options.ui.no_ui {
+            if options.common.ui.no_ui {
                 _progress_guard = task::spawn(quiet_handle_displayable_events(
                     task_manager.new_subscriber(),
                 ));
-            } else if options.ui.tail {
+            } else if options.common.ui.tail {
                 _progress_guard = task::spawn(full_progress(
                     proxy_shutdown_rx.clone(),
                     task_manager.new_subscriber(),

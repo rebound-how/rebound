@@ -5,9 +5,12 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use axum::http;
 use hickory_resolver::TokioResolver;
+use http::HeaderMap;
+use http::StatusCode;
 use rand::Rng;
 use rand::SeedableRng;
 use rand::rngs::SmallRng;
+use reqwest::Body;
 use reqwest::dns::Addrs;
 use reqwest::dns::Name;
 use reqwest::dns::Resolve;
@@ -21,6 +24,7 @@ use crate::config::FaultKind;
 use crate::errors::ProxyError;
 use crate::event::FaultEvent;
 use crate::event::ProxyTaskEvent;
+use crate::fault::BoxChunkStream;
 use crate::types::Direction;
 use crate::types::StreamSide;
 
@@ -149,6 +153,16 @@ impl FaultInjector for FaultyResolverInjector {
         _event: Box<dyn ProxyTaskEvent>,
     ) -> Result<reqwest::Request, ProxyError> {
         Ok(request)
+    }
+
+    async fn apply_on_response_stream(
+        &self,
+        status: StatusCode,
+        headers: HeaderMap,
+        body: BoxChunkStream,
+        _event: Box<dyn ProxyTaskEvent>,
+    ) -> Result<(StatusCode, HeaderMap, BoxChunkStream), ProxyError> {
+        Ok((status, headers, body))
     }
 
     fn is_enabled(&self) -> bool {

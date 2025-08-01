@@ -1,5 +1,6 @@
 use std::fmt;
 use std::sync::Arc;
+use std::time::Duration;
 
 use arc_swap::ArcSwap;
 use serde::Deserialize;
@@ -7,17 +8,24 @@ use serde::Serialize;
 
 use crate::cli::BandwidthOptions;
 use crate::cli::BlackholeOptions;
+use crate::cli::DbOptions;
 use crate::cli::DnsOptions;
 use crate::cli::HTTPResponseOptions;
 use crate::cli::JitterOptions;
 use crate::cli::LatencyOptions;
+use crate::cli::LlmOptions;
 //use crate::cli::PacketDuplicationOptions;
 use crate::cli::PacketLossOptions;
-use crate::cli::RunCommandOptions;
+use crate::cli::RunCommonOptions;
+use crate::fault::content::ContentInjectSettings;
+use crate::fault::llm::openai::OpenAiInjector;
+use crate::fault::llm::openai::OpenAiSettings;
+use crate::fault::llm::openai::SlowStreamSettings;
 use crate::types::BandwidthUnit;
+use crate::types::DbCase;
 use crate::types::Direction;
-use crate::types::FaultConfiguration;
 use crate::types::LatencyDistribution;
+use crate::types::LlmCase;
 use crate::types::ProtocolType;
 use crate::types::StreamSide;
 
@@ -123,9 +131,14 @@ pub struct GrpcSettings {
     pub capabilities: Option<GrpcCapabilities>,
 }
 
+/// Internal Configuration for Llm faults
+#[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
+pub struct LlmSettings {}
+
 /// Fault Configuration Enum
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub enum FaultConfig {
+    // network
     Dns(DnsSettings),
     Latency(LatencySettings),
     PacketLoss(PacketLossSettings),
@@ -134,6 +147,12 @@ pub enum FaultConfig {
     PacketDuplication(PacketDuplicationSettings),
     HttpError(HttpResponseSettings),
     Blackhole(BlackholeSettings),
+
+    // llm
+    SlowStream(SlowStreamSettings),
+    PromptScramble(OpenAiSettings),
+    InjectBias(OpenAiSettings),
+    TruncateResponse(OpenAiSettings),
 }
 
 /// Implement Default manually for FaultConfig
@@ -156,6 +175,12 @@ impl fmt::Display for FaultConfig {
             }
             FaultConfig::HttpError(_) => write!(f, "http-error"),
             FaultConfig::Blackhole(_) => write!(f, "blackhole"),
+            FaultConfig::PromptScramble(_) => write!(f, "llm-prompt-scramble"),
+            FaultConfig::InjectBias(_) => write!(f, "llm-inject-bias"),
+            FaultConfig::TruncateResponse(_) => {
+                write!(f, "llm-truncate-response")
+            }
+            FaultConfig::SlowStream(_) => write!(f, "llm-slow-stream"),
         }
     }
 }
@@ -171,35 +196,11 @@ impl FaultConfig {
             FaultConfig::PacketDuplication(_) => FaultKind::PacketDuplication,
             FaultConfig::HttpError(_) => FaultKind::HttpError,
             FaultConfig::Blackhole(_) => FaultKind::Blackhole,
+            FaultConfig::PromptScramble(_) => FaultKind::PromptScramble,
+            FaultConfig::InjectBias(_) => FaultKind::InjectBias,
+            FaultConfig::TruncateResponse(_) => FaultKind::TruncateResponse,
+            FaultConfig::SlowStream(_) => FaultKind::SlowStream,
         }
-    }
-
-    pub fn enable(&mut self) {
-        match self {
-            FaultConfig::Dns(settings) => settings.enabled = true,
-            FaultConfig::Latency(settings) => settings.enabled = true,
-            FaultConfig::PacketLoss(settings) => settings.enabled = true,
-            FaultConfig::Bandwidth(settings) => settings.enabled = true,
-            FaultConfig::Jitter(settings) => settings.enabled = true,
-            FaultConfig::PacketDuplication(settings) => settings.enabled = true,
-            FaultConfig::HttpError(settings) => settings.enabled = true,
-            FaultConfig::Blackhole(settings) => settings.enabled = true,
-        };
-    }
-
-    pub fn disable(&mut self) {
-        match self {
-            FaultConfig::Dns(settings) => settings.enabled = false,
-            FaultConfig::Latency(settings) => settings.enabled = false,
-            FaultConfig::PacketLoss(settings) => settings.enabled = false,
-            FaultConfig::Bandwidth(settings) => settings.enabled = false,
-            FaultConfig::Jitter(settings) => settings.enabled = false,
-            FaultConfig::PacketDuplication(settings) => {
-                settings.enabled = false
-            }
-            FaultConfig::HttpError(settings) => settings.enabled = false,
-            FaultConfig::Blackhole(settings) => settings.enabled = false,
-        };
     }
 }
 
@@ -209,6 +210,8 @@ impl FaultConfig {
 pub enum FaultKind {
     #[default]
     Unknown,
+
+    // network
     Dns,
     Latency,
     PacketLoss,
@@ -219,6 +222,12 @@ pub enum FaultKind {
     Blackhole,
     Metrics,
     Grpc,
+
+    // llm
+    SlowStream,
+    PromptScramble,
+    InjectBias,
+    TruncateResponse,
 }
 
 impl fmt::Display for FaultKind {
@@ -235,6 +244,10 @@ impl fmt::Display for FaultKind {
             FaultKind::Blackhole => write!(f, "blackhole"),
             FaultKind::Metrics => write!(f, "metrics"),
             FaultKind::Grpc => write!(f, "grpc"),
+            FaultKind::PromptScramble => write!(f, "prompt-scramble"),
+            FaultKind::InjectBias => write!(f, "inject-bias"),
+            FaultKind::TruncateResponse => write!(f, "truncate-response"),
+            FaultKind::SlowStream => write!(f, "slow-stream"),
         }
     }
 }
@@ -245,8 +258,17 @@ pub struct ProxyConfig {
     pub faults: Arc<ArcSwap<Vec<FaultConfig>>>,
 }
 
-impl From<&Box<RunCommandOptions>> for ProxyConfig {
-    fn from(cli: &Box<RunCommandOptions>) -> Self {
+impl ProxyConfig {
+    pub fn add(&self, faults: Vec<FaultConfig>) {
+        let current = self.faults.load_full();
+        let mut vec = (*current).clone();
+        vec.extend(faults);
+        self.faults.store(Arc::new(vec.to_vec()));
+    }
+}
+
+impl From<RunCommonOptions> for ProxyConfig {
+    fn from(cli: RunCommonOptions) -> Self {
         let mut faults = Vec::new();
 
         if cli.latency.enabled && cli.latency.latency_sched.is_none() {
@@ -389,6 +411,118 @@ impl From<&HTTPResponseOptions> for HttpResponseSettings {
             http_response_body: cli.http_response_body.clone(),
             http_response_trigger_probability: cli
                 .http_response_trigger_probability,
+        }
+    }
+}
+
+impl From<(LlmCase, &LlmOptions)> for FaultConfig {
+    fn from((case, options): (LlmCase, &LlmOptions)) -> Self {
+        match case {
+            LlmCase::SlowStream => {
+                FaultConfig::SlowStream(SlowStreamSettings {
+                    mean_ms: options.slow_stream_mean_delay.unwrap_or(50.0),
+                    stddev_ms: Some(0.0),
+                    probability: options.probability,
+                    kind: FaultKind::SlowStream,
+                    side: StreamSide::Server,
+                    direction: Direction::Egress,
+                })
+            }
+            LlmCase::TokenDrop => FaultConfig::PacketLoss(PacketLossSettings {
+                enabled: true,
+                kind: FaultKind::PacketLoss,
+                direction: Direction::Both,
+                side: StreamSide::Server,
+            }),
+            LlmCase::PromptScramble => {
+                let s = OpenAiSettings {
+                    case: LlmCase::PromptScramble,
+                    pattern: None,
+                    replacement: None,
+                    instruction: options.instruction.clone(),
+                    probability: options.probability,
+                    kind: FaultKind::PromptScramble,
+                    direction: Direction::Egress,
+                    side: StreamSide::Client,
+                };
+                FaultConfig::PromptScramble(s)
+            }
+
+            LlmCase::InjectBias => {
+                let s = OpenAiSettings {
+                    case: LlmCase::InjectBias,
+                    pattern: options.bias_pattern.clone(),
+                    replacement: options.bias_replacement.clone(),
+                    instruction: None,
+                    probability: options.probability,
+                    kind: FaultKind::InjectBias,
+                    direction: Direction::Ingress,
+                    side: StreamSide::Client,
+                };
+                FaultConfig::InjectBias(s)
+            }
+
+            LlmCase::TruncateResponse => {
+                let s = OpenAiSettings {
+                    case: LlmCase::TruncateResponse,
+                    pattern: options.scramble_pattern.clone(),
+                    replacement: options.scramble_with.clone(),
+                    instruction: None,
+                    probability: options.probability,
+                    kind: FaultKind::TruncateResponse,
+                    direction: Direction::Ingress,
+                    side: StreamSide::Client,
+                };
+                FaultConfig::TruncateResponse(s)
+            }
+
+            LlmCase::HttpError => {
+                // your existing HTTP‐error injection
+                FaultConfig::HttpError(HttpResponseSettings {
+                    enabled: true,
+                    kind: FaultKind::HttpError,
+                    http_response_status_code: 500,
+                    http_response_body: Some("SERVER ERROR".into()),
+                    http_response_trigger_probability: options.probability,
+                })
+            }
+        }
+    }
+}
+
+impl From<(DbCase, &DbOptions)> for FaultConfig {
+    fn from((case, options): (DbCase, &DbOptions)) -> Self {
+        match case {
+            DbCase::SlowQuery => {
+                let mean =
+                    options.latency_mean.unwrap_or(Duration::from_millis(200));
+                FaultConfig::Latency(LatencySettings {
+                    enabled: true,
+                    kind: FaultKind::Latency,
+                    distribution: LatencyDistribution::Normal,
+                    direction: Direction::Both,
+                    global: false,
+                    side: StreamSide::Server,
+                    latency_mean: mean.as_secs_f64(),
+                    latency_stddev: 0.0,
+                    latency_shape: 0.0,
+                    latency_scale: 0.0,
+                    latency_min: 0.0,
+                    latency_max: 0.0,
+                })
+            }
+            DbCase::Deadlock => FaultConfig::HttpError(HttpResponseSettings {
+                enabled: true,
+                kind: FaultKind::HttpError,
+                http_response_status_code: options
+                    .error_code
+                    .as_ref()
+                    .and_then(|c| c.parse().ok())
+                    .unwrap_or(500),
+                http_response_body: None,
+                http_response_trigger_probability: options.deadlock_rate,
+            }),
+            _ => FaultConfig::Latency(LatencySettings::default()),
         }
     }
 }

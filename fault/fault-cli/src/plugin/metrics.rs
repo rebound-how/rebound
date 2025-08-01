@@ -8,6 +8,8 @@ use async_trait::async_trait;
 use axum::http;
 use bytes::BytesMut;
 use futures::StreamExt;
+use http::HeaderMap;
+use http::StatusCode;
 use hyper::http::Response;
 use pin_project::pin_project;
 use reqwest::Body;
@@ -21,6 +23,7 @@ use crate::config::FaultKind;
 use crate::errors::ProxyError;
 use crate::event::ProxyTaskEvent;
 use crate::fault::Bidirectional;
+use crate::fault::BoxChunkStream;
 use crate::fault::FaultInjector;
 use crate::types::StreamSide;
 
@@ -77,6 +80,16 @@ impl FaultInjector for MetricsInjector {
         (ProxyError, Box<dyn Bidirectional + 'static>),
     > {
         Ok(Box::new(WrapperStream::new(stream, self.clone(), event.clone())))
+    }
+
+    async fn apply_on_response_stream(
+        &self,
+        status: StatusCode,
+        headers: HeaderMap,
+        body: BoxChunkStream,
+        _event: Box<dyn ProxyTaskEvent>,
+    ) -> Result<(StatusCode, HeaderMap, BoxChunkStream), ProxyError> {
+        Ok((status, headers, body))
     }
 
     async fn apply_on_response(

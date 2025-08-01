@@ -6,7 +6,7 @@ use parse_duration::parse;
 use tokio::time::Instant;
 use tokio::time::sleep_until;
 
-use crate::cli::RunCommandOptions;
+use crate::cli::RunCommonOptions;
 use crate::config::FaultConfig;
 use crate::config::FaultKind;
 use crate::errors::SchedulingError;
@@ -242,7 +242,7 @@ pub struct FaultPeriodEvent {
 }
 
 pub fn build_schedule_events(
-    cli: &RunCommandOptions,
+    cli: &RunCommonOptions,
     total_duration: Option<Duration>,
 ) -> Result<Vec<FaultPeriodEvent>> {
     let mut events: Vec<FaultPeriodEvent> = Vec::<FaultPeriodEvent>::new();

@@ -25,7 +25,7 @@ pub async fn initialize_http_proxy(
     let handle = tokio::spawn(async move {
         let proxy_address = proxy_address.clone();
 
-        http::run_http_proxy(
+        http::proxy::run_http_proxy(
             proxy_address,
             state,
             shutdown_rx,

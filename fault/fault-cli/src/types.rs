@@ -18,10 +18,11 @@ use crate::config::FaultKind;
 use crate::errors::ScenarioError;
 use crate::sched;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, Default, PartialEq)]
 pub enum ProtocolType {
     #[default]
     None,
+    Tcp,
     Http,
     Https,
     Psql,
@@ -72,6 +73,7 @@ impl ProxyMap {
                 ProtocolType::Psqls => true,
                 ProtocolType::Tls => true,
                 ProtocolType::None => false,
+                ProtocolType::Tcp => false,
             },
             None => false,
         }
@@ -998,4 +1000,41 @@ impl DnsTiming {
     pub fn new() -> Self {
         DnsTiming { host: "".to_string(), duration: 0.0, resolved: false }
     }
+}
+
+#[derive(ValueEnum, Clone, Debug)]
+pub enum LlmTarget {
+    Openai,
+    Azure,
+    Local,
+}
+
+#[derive(ValueEnum, Copy, Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub enum LlmCase {
+    SlowStream,
+    PromptScramble,
+    TokenDrop,
+    InjectBias,
+    TruncateResponse,
+    HttpError,
+}
+
+/// Supported DB platforms
+#[derive(ValueEnum, Clone, Debug)]
+pub enum DbTarget {
+    Pg,
+    Mysql,
+    Mongo,
+}
+
+/// Predefined DB fault cases
+#[derive(ValueEnum, Clone, Debug)]
+pub enum DbCase {
+    SlowQuery,
+    ErrorInjection,
+    ConnReset,
+    DataCorruption,
+    StaleReads,
+    Timeout,
+    Deadlock,
 }

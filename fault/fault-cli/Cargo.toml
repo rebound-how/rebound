@@ -44,7 +44,7 @@ hickory-resolver = "0.25"
 chrono = { version = "0.4.41", features = ["serde"] }
 libc = "0.2.172"
 tracing-log = "0.2.0"
-reqwest = { version = "0.12.16", features = ["stream", "json"] }
+reqwest = { version = "0.12.22", features = ["stream", "json", "gzip", "brotli", "zstd"] }
 tokio-util = { version = "0.7.15", features = ["compat"] }
 hyper-util = "0.1.13"
 pin-project = "1.1.10"

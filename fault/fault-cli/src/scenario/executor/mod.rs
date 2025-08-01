@@ -34,9 +34,8 @@ use crate::plugin::load_injectors;
 use crate::proxy;
 use crate::proxy::ProxyState;
 use crate::proxy::monitor_and_update_proxy_config;
-use crate::proxy::protocols::http::init::initialize_http_proxy;
+use crate::proxy::protocols::http::proxy::init::initialize_http_proxy;
 use crate::proxy::protocols::tcp::init::initialize_tcp_proxies;
-use crate::proxy::protocols::tcp::init::parse_proxy_protocols;
 use crate::scenario::event::ScenarioEventManager;
 use crate::scenario::types::Scenario;
 use crate::scenario::types::ScenarioResult;
@@ -73,12 +72,10 @@ pub async fn execute_item(
     let remote_host = url.host_str().ok_or("Missing host").unwrap().to_string();
     let remote_port = url.port_or_known_default().unwrap();
 
-    let _ = proxy::protocols::tcp::init::parse_right(&format!(
-        "{}://{}:{}",
-        url.scheme(),
-        remote_host,
-        remote_port
-    ))
+    let _ = ProxyMap::parse_side(
+        &format!("{}://{}:{}", url.scheme(), remote_host, remote_port),
+        None,
+    )
     .map_err(|s| ProxyError::Other(s))?;
 
     let _proxy_updater_handle = tokio::spawn(monitor_and_update_proxy_config(
@@ -92,7 +89,8 @@ pub async fn execute_item(
     if let Some(proxying) = item.context.proxy.clone() {
         enable_http_proxies = !proxying.disable_http_proxies;
 
-        let proxy_map = parse_proxy_protocols(proxying.proxies).await?;
+        let proxy_map = ProxyMap::parse_many(proxying.proxies)
+            .map_err(|s| ProxyError::Other(s))?;
         _proxy_handle = initialize_tcp_proxies(
             proxy_map,
             proxy_state.clone(),

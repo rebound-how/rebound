@@ -1,8 +1,10 @@
 use std::collections::BTreeMap;
+use std::time::Duration;
 
 use clap::Args;
 use clap::Parser;
 use clap::Subcommand;
+use clap::ValueEnum;
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -12,11 +14,16 @@ use crate::agent::clients::SupportedLLMClient;
 use crate::agent::insight::ReportReviewRole;
 #[cfg(feature = "agent")]
 use crate::agent::platform::PlatformReviewRole;
+use crate::config::LlmSettings;
 #[cfg(feature = "discovery")]
 use crate::discovery::types::ResourcePlatform;
 use crate::types::BandwidthUnit;
+use crate::types::DbCase;
+use crate::types::DbTarget;
 use crate::types::Direction;
 use crate::types::LatencyDistribution;
+use crate::types::LlmCase;
+use crate::types::LlmTarget;
 use crate::types::StreamSide;
 
 #[derive(Parser, Debug)]
@@ -273,6 +280,116 @@ pub enum Commands {
     #[cfg(feature = "demo")]
     #[command(subcommand)]
     Demo(DemoCommands),
+}
+
+#[derive(Parser, Debug)]
+pub struct RunCommandOptions {
+    /// Which kind of fault scenario to run
+    #[clap(subcommand)]
+    subcmd: Option<RunCommands>,
+
+    /// Shared run options (proxy settings, global flags)
+    #[clap(flatten)]
+    pub common: RunCommonOptions,
+}
+
+impl RunCommandOptions {
+    pub fn run_command(&self) -> RunCommands {
+        self.subcmd.clone().unwrap_or(RunCommands::Proxy {})
+    }
+}
+
+#[derive(Parser, Clone, Debug)]
+#[clap(next_help_heading = "LLM Options")]
+pub struct LlmOptions {
+    /// Delay per token when streaming (e.g. "100ms")
+    #[clap(long = "token-latency", value_parser = validate_parse_human_duration)]
+    pub token_latency: Option<Duration>,
+
+    /// Drop probability for token drop (0.0 to 1.0)
+    #[clap(long, default_value = "0.05", value_parser = validate_probability)]
+    pub drop_rate: f64,
+
+    /// Delay in miliseconds to slow the stream by
+    #[clap(long, default_value = "300", value_parser = validate_non_negative_f64)]
+    pub slow_stream_mean_delay: Option<f64>,
+
+    /// Regex pattern to scramble in prompt
+    #[clap(long)]
+    pub scramble_pattern: Option<String>,
+
+    /// Substitute text for scramble
+    #[clap(long)]
+    pub scramble_with: Option<String>,
+
+    /// Regex pattern for bias
+    #[clap(long)]
+    pub bias_pattern: Option<String>,
+
+    /// Substitute text for bias
+    #[clap(long)]
+    pub bias_replacement: Option<String>,
+
+    /// Instruction/System prompt to set on the request
+    #[clap(long)]
+    pub instruction: Option<String>,
+
+    /// Error injection probability for HTTP errors
+    #[clap(long, default_value = "1.0", value_parser = validate_probability)]
+    pub probability: f64,
+}
+
+#[derive(Parser, Clone, Debug)]
+#[clap(next_help_heading = "DB Options")]
+pub struct DbOptions {
+    /// Delay per query (e.g. "200ms")
+    #[clap(long, value_parser = validate_parse_human_duration)]
+    pub latency_mean: Option<Duration>,
+
+    /// Deadlock injection probability (0.0 to 1.0)
+    #[clap(long, default_value = "0.01", value_parser = validate_probability)]
+    pub deadlock_rate: f64,
+
+    /// SQLSTATE error code to inject
+    #[clap(long)]
+    pub error_code: Option<String>,
+
+    /// Probability to corrupt data
+    #[clap(long, default_value = "0.02", value_parser = validate_probability)]
+    pub corruption_rate: f64,
+}
+
+#[derive(Subcommand, Clone, Debug)]
+#[clap(subcommand_required = false, subcommand = "proxy")]
+pub enum RunCommands {
+    #[clap(name = "proxy")]
+    Proxy {},
+
+    Llm {
+        /// Which LLM provider to target
+        #[clap(value_enum)]
+        target: LlmTarget,
+
+        /// Which scenarios to run
+        #[clap(value_enum, long = "case")]
+        cases: Vec<LlmCase>,
+
+        #[clap(flatten)]
+        settings: LlmOptions,
+    },
+
+    Db {
+        /// Which database to target
+        #[clap(value_enum)]
+        target: DbTarget,
+
+        /// Which scenarios to run
+        #[clap(value_enum, long = "case")]
+        cases: Vec<DbCase>,
+
+        #[clap(flatten)]
+        settings: DbOptions,
+    },
 }
 
 #[derive(Parser, Debug, Serialize, Deserialize, Clone)]
@@ -771,7 +888,7 @@ pub struct ProxyUICommon {
 }
 
 #[derive(Args, Clone, Debug, Serialize, Deserialize)]
-pub struct RunCommandOptions {
+pub struct RunCommonOptions {
     #[command(flatten)]
     pub ui: ProxyUICommon,
 
@@ -1391,6 +1508,13 @@ fn validate_http_status(val: &str) -> Result<u16, String> {
     match val.parse::<u16>() {
         Ok(code) if (100..=599).contains(&code) => Ok(code),
         _ => Err(String::from("HTTP status code must be between 100 and 599")),
+    }
+}
+
+fn validate_parse_human_duration(val: &str) -> Result<Duration, String> {
+    match parse_duration::parse(val) {
+        Ok(d) => Ok(d),
+        _ => Err(String::from("failed to parse duration")),
     }
 }
 

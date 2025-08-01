@@ -12,8 +12,10 @@ use axum::body::Body;
 use axum::http;
 use futures::Future;
 use futures::ready;
+use http::HeaderMap;
 use hyper::StatusCode;
 use pin_project::pin_project;
+use reqwest::Body as ReqwestBody;
 use tokio::io::AsyncRead;
 use tokio::io::AsyncWrite;
 use tokio::io::ReadBuf;
@@ -26,6 +28,7 @@ use crate::config::GrpcSettings;
 use crate::errors::ProxyError;
 use crate::event::FaultEvent;
 use crate::event::ProxyTaskEvent;
+use crate::fault::BoxChunkStream;
 use crate::plugin::rpc::service;
 use crate::plugin::rpc::service::plugin_service_client::PluginServiceClient;
 use crate::types::Direction;
@@ -607,6 +610,16 @@ impl FaultInjector for GrpcInjector {
         _event: Box<dyn ProxyTaskEvent>,
     ) -> Result<reqwest::ClientBuilder, crate::errors::ProxyError> {
         Ok(builder)
+    }
+
+    async fn apply_on_response_stream(
+        &self,
+        status: StatusCode,
+        headers: HeaderMap,
+        body: BoxChunkStream,
+        _event: Box<dyn ProxyTaskEvent>,
+    ) -> Result<(StatusCode, HeaderMap, BoxChunkStream), ProxyError> {
+        Ok((status, headers, body))
     }
 
     #[tracing::instrument]

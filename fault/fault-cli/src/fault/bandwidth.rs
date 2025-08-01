@@ -17,6 +17,8 @@ use governor::RateLimiter;
 use governor::clock::DefaultClock;
 use governor::state::InMemoryState;
 use governor::state::direct::NotKeyed;
+use http::HeaderMap;
+use http::StatusCode;
 use pin_project::pin_project;
 use reqwest::Body;
 use reqwest::ClientBuilder;
@@ -37,6 +39,7 @@ use crate::config::FaultKind;
 use crate::errors::ProxyError;
 use crate::event::FaultEvent;
 use crate::event::ProxyTaskEvent;
+use crate::fault::BoxChunkStream;
 use crate::fault::DelayWrapper;
 use crate::fault::FutureDelay;
 use crate::types::Direction;
@@ -88,12 +91,6 @@ where
             None => return Err(inner), /* Fail if quota cannot be
                                         * created */
         };
-
-        tracing::info!(
-            "Setting bandwidth on {} side with max write size {}/Bps",
-            settings.side,
-            rate_bps
-        );
 
         Ok(BandwidthLimitedWrite {
             inner,
@@ -148,12 +145,6 @@ where
             None => return Err(inner), /* Fail if quota cannot be
                                         * created */
         };
-
-        tracing::info!(
-            "Setting bandwidth on {} side with max read size {}/Bps",
-            settings.side,
-            rate_bps
-        );
 
         Ok(BandwidthLimitedRead {
             inner,
@@ -584,5 +575,15 @@ impl FaultInjector for BandwidthLimitFaultInjector {
         }
 
         Ok(resp)
+    }
+
+    async fn apply_on_response_stream(
+        &self,
+        status: StatusCode,
+        headers: HeaderMap,
+        body: BoxChunkStream,
+        _event: Box<dyn ProxyTaskEvent>,
+    ) -> Result<(StatusCode, HeaderMap, BoxChunkStream), ProxyError> {
+        Ok((status, headers, body))
     }
 }

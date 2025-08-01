@@ -9,6 +9,8 @@ use async_trait::async_trait;
 use axum::http;
 use bytes::BytesMut;
 use futures::StreamExt;
+use http::HeaderMap;
+use http::StatusCode;
 use hyper::http::Response;
 use pin_project::pin_project;
 use rand::SeedableRng;
@@ -37,6 +39,7 @@ use crate::config::LatencySettings;
 use crate::errors::ProxyError;
 use crate::event::FaultEvent;
 use crate::event::ProxyTaskEvent;
+use crate::fault::BoxChunkStream;
 use crate::types::Direction;
 use crate::types::LatencyDistribution;
 use crate::types::StreamSide;
@@ -259,11 +262,6 @@ impl FaultInjector for LatencyInjector {
         Box<dyn Bidirectional + 'static>,
         (ProxyError, Box<dyn Bidirectional + 'static>),
     > {
-        tracing::debug!(
-            "Stream side {} - Configured side {}",
-            side,
-            self.settings.side
-        );
         if side != self.settings.side {
             return Ok(stream);
         }
@@ -418,6 +416,16 @@ impl FaultInjector for LatencyInjector {
         }
 
         Ok(request)
+    }
+
+    async fn apply_on_response_stream(
+        &self,
+        status: StatusCode,
+        headers: HeaderMap,
+        body: BoxChunkStream,
+        _event: Box<dyn ProxyTaskEvent>,
+    ) -> Result<(StatusCode, HeaderMap, BoxChunkStream), ProxyError> {
+        Ok((status, headers, body))
     }
 }
 

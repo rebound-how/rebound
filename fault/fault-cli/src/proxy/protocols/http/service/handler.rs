@@ -1,23 +1,36 @@
+use std::error::Error;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
 
+use async_stream::try_stream;
 use axum::body::Body;
 use axum::body::to_bytes;
+use axum::extract::FromRequest;
 use axum::http::HeaderMap as AxumHeaderMap;
 use axum::http::Request as AxumRequest;
 use axum::http::Response as AxumResponse;
 use axum::response::IntoResponse;
+use futures::StreamExt;
+use futures::TryStreamExt;
+use http::HeaderValue;
+use http::Uri;
+use http::header::CONTENT_TYPE;
+use http::header::HOST;
 use hyper::StatusCode;
+use hyper::body::Body as HyperBody;
+use hyper::body::Incoming;
+use reqwest::Body as ReqwestBody;
 use reqwest::header::HeaderMap as ReqwestHeaderMap;
 use tokio::sync::Mutex;
 use tokio::time::Instant;
 use url::Url;
 
-use super::ProxyState;
 use crate::errors::ProxyError;
 use crate::event::ProxyTaskEvent;
+use crate::fault::BoxChunkStream;
 use crate::plugin::ProxyPlugin;
+use crate::proxy::ProxyState;
 use crate::resolver::TimingResolver;
 use crate::types::DnsTiming;
 
@@ -46,24 +59,27 @@ fn convert_headers_to_axum(
 
 pub async fn handle_request(
     source_addr: SocketAddr,
+    upstream_host: String,
     req: AxumRequest<Body>,
     state: Arc<ProxyState>,
     upstream: Url,
     passthrough: bool,
     event: Box<dyn ProxyTaskEvent>,
 ) -> Result<AxumResponse<Body>, ProxyError> {
-    let forward = Forward::new(state.clone());
-    forward.execute(source_addr, req, upstream, passthrough, event).await
+    let forward = ServiceHandler::new(state.clone());
+    forward
+        .execute(source_addr, upstream_host, req, upstream, passthrough, event)
+        .await
 }
 
 /// Struct responsible for forwarding requests.
 #[derive(Debug, Clone)]
-pub struct Forward {
+pub struct ServiceHandler {
     // Shared plugins loaded into the proxy
     state: Arc<ProxyState>,
 }
 
-impl Forward {
+impl ServiceHandler {
     /// Creates a new instance of `Forward`.
     pub fn new(state: Arc<ProxyState>) -> Self {
         Self { state }
@@ -78,7 +94,8 @@ impl Forward {
     pub async fn execute(
         &self,
         source_addr: SocketAddr,
-        request: AxumRequest<Body>,
+        upstream_host: String,
+        mut request: AxumRequest<Body>,
         upstream: Url,
         passthrough: bool,
         event: Box<dyn ProxyTaskEvent>,
@@ -86,7 +103,21 @@ impl Forward {
         let start = Instant::now();
         let _ = event.on_started(upstream.to_string(), source_addr.to_string());
 
+        let uri: Uri = upstream_host.parse().map_err(|e| {
+            tracing::error!("Failed to parse upstream host: {}", e);
+            ProxyError::Internal(format!(
+                "Failed to parse upstream host: {}",
+                e
+            ))
+        })?;
+        let host_header =
+            uri.authority().map(|auth| auth.host()).unwrap_or(&upstream_host);
+
         let method = request.method().clone();
+        let mut headers = request.headers_mut().clone();
+        headers.insert(HOST, host_header.parse::<HeaderValue>()?);
+        *request.headers_mut() = headers;
+
         let headers = request.headers().clone();
 
         let plugins = self.state.faults_plugin.clone();
@@ -134,9 +165,8 @@ impl Forward {
             ))
         })?;
 
-        let status;
-        let resp_headers;
-        let resp_body_bytes;
+        let mut status;
+        let mut resp_headers;
         let mut axum_response;
 
         if !passthrough {
@@ -169,16 +199,8 @@ impl Forward {
                         }
                     };
 
-                    // Extract the response status, headers, and body
                     status = response.status();
                     resp_headers = response.headers().clone();
-                    resp_body_bytes = response.bytes().await.map_err(|e| {
-                        tracing::error!("Failed to read response body: {}", e);
-                        ProxyError::Internal(format!(
-                            "Failed to read response body: {}",
-                            e
-                        ))
-                    })?;
 
                     // Build the Axum response
                     let dummy: AxumResponse<Body> = AxumResponse::default();
@@ -187,19 +209,70 @@ impl Forward {
                     parts.status = status;
                     parts.headers = convert_headers_to_axum(&resp_headers);
 
-                    axum_response = AxumResponse::from_parts(
-                        parts,
-                        resp_body_bytes.to_vec(),
-                    );
+                    if is_streaming(&resp_headers) {
+                        let raw = response.bytes_stream();
+                        let mut stream: BoxChunkStream =
+                            Box::pin(raw.map_err(|e| {
+                                Box::new(e) as Box<dyn Error + Send + Sync>
+                            }));
 
-                    axum_response = {
-                        let plugins_lock = plugins.load();
-                        let resp = axum_response;
-                        plugins_lock
-                            .process_response(resp, event.clone())
-                            .await
-                            .unwrap()
-                    };
+                        {
+                            let plugins_lock = plugins.load();
+                            (status, resp_headers, stream) = plugins_lock
+                                .process_response_stream(
+                                    status,
+                                    resp_headers,
+                                    stream,
+                                    event.clone(),
+                                )
+                                .await
+                                .unwrap()
+                        };
+
+                        let metered = with_metrics(
+                            stream,
+                            event.clone(),
+                            start,
+                            request_bytes as u64,
+                            status,
+                        );
+
+                        let body = axum::body::Body::from_stream(metered);
+                        let mut builder =
+                            http::Response::builder().status(status);
+                        for (k, v) in resp_headers.iter() {
+                            builder = builder.header(k, v);
+                        }
+                        let streamed_response = builder.body(body).unwrap();
+
+                        return Ok(streamed_response);
+                    } else {
+                        let resp_body_bytes =
+                            response.bytes().await.map_err(|e| {
+                                tracing::error!(
+                                    "Failed to read response body: {}",
+                                    e
+                                );
+                                ProxyError::Internal(format!(
+                                    "Failed to read response body: {}",
+                                    e
+                                ))
+                            })?;
+
+                        axum_response = AxumResponse::from_parts(
+                            parts,
+                            resp_body_bytes.to_vec(),
+                        );
+
+                        axum_response = {
+                            let plugins_lock = plugins.load();
+                            let resp = axum_response;
+                            plugins_lock
+                                .process_response(resp, event.clone())
+                                .await
+                                .unwrap()
+                        };
+                    }
 
                     axum_response
                 }
@@ -221,7 +294,7 @@ impl Forward {
                     let (mut parts, _) = dummy.into_parts();
                     parts.status = r.status();
                     resp_headers = r.headers().clone();
-                    resp_body_bytes = r.bytes().await.map_err(|e| {
+                    let resp_body_bytes = r.bytes().await.map_err(|e| {
                         tracing::error!("Failed to read response body: {}", e);
                         ProxyError::Internal(format!(
                             "Failed to read response body: {}",
@@ -260,4 +333,31 @@ impl Forward {
         );
         Ok(axum_response)
     }
+}
+
+fn is_streaming(headers: &ReqwestHeaderMap) -> bool {
+    headers
+        .get(CONTENT_TYPE)
+        .and_then(|hv| hv.to_str().ok())
+        .map(|ct| ct.to_ascii_lowercase().contains("text/event-stream"))
+        .unwrap_or(false)
+}
+
+fn with_metrics(
+    mut stream: BoxChunkStream,
+    event: Box<dyn ProxyTaskEvent>,
+    start: Instant,
+    request_bytes: u64,
+    status: StatusCode,
+) -> BoxChunkStream {
+    let s = try_stream! {
+        let mut total = 0u64;
+        while let Some(chunk) = stream.next().await {
+            let chunk = chunk?;
+            total += chunk.len() as u64;
+            yield chunk;
+        }
+        let _ = event.on_completed(start.elapsed(), request_bytes, total);
+    };
+    Box::pin(s)
 }

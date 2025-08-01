@@ -12,6 +12,7 @@ use tokio::sync::broadcast::error::SendError;
 use uuid::Uuid;
 
 use crate::types::Direction;
+use crate::types::LlmCase;
 use crate::types::StreamSide;
 
 #[derive(Debug, Clone)]
@@ -439,6 +440,11 @@ pub enum FaultEvent {
         side: StreamSide,
         direction: Direction,
     },
+    Llm {
+        direction: Direction,
+        side: StreamSide,
+        case: LlmCase,
+    },
 }
 
 impl FaultEvent {
@@ -452,6 +458,7 @@ impl FaultEvent {
             FaultEvent::HttpResponseFault { .. } => "httperror".to_string(),
             FaultEvent::Blackhole { .. } => "blackhole".to_string(),
             FaultEvent::Grpc { .. } => "grpc".to_string(),
+            FaultEvent::Llm { .. } => "llm".to_string(),
         }
     }
 }

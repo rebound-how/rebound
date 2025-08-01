@@ -25,6 +25,8 @@ use tokio::sync::RwLock;
 use tokio::sync::broadcast;
 
 use crate::cli::RunCommandOptions;
+use crate::cli::RunCommonOptions;
+use crate::config::FaultConfig;
 use crate::config::FaultKind;
 use crate::event::FaultEvent;
 use crate::event::TaskId;
@@ -33,6 +35,7 @@ use crate::event::TaskProgressReceiver;
 #[cfg(feature = "discovery")]
 use crate::inject::Platform;
 use crate::plugin::rpc::RpcPluginManager;
+use crate::plugin::rpc::service::get_plugin_info_response::Direction;
 #[cfg(feature = "scenario")]
 use crate::scenario;
 #[cfg(feature = "scenario")]
@@ -48,7 +51,9 @@ use crate::scenario::types::ItemExpectationDecision;
 use crate::sched::EventType;
 use crate::sched::FaultPeriodEvent;
 use crate::types::LatencyDistribution;
+use crate::types::ProtocolType;
 use crate::types::ProxyMap;
+use crate::types::StreamSide;
 
 /// Struct to hold information about each task
 struct TaskInfo {
@@ -578,6 +583,9 @@ pub async fn full_progress(
                                         } else if let FaultEvent::Blackhole { ..  } = &fault {
                                             fault_results.push_str(&format!("{}{}", sep, "Blackhole".yellow()));
                                             sep = " - ".to_string();
+                                        } else if let FaultEvent::Llm { ..  } = &fault {
+                                            fault_results.push_str(&format!("{}{}", sep, "Llm".yellow()));
+                                            sep = " - ".to_string();
                                         }
 
                                         fault_results.push_str("");
@@ -668,6 +676,7 @@ fn fault_to_string(faults: &Vec<FaultEvent>) -> String {
             }
             FaultEvent::Blackhole { side, .. } => format!("{} blackhole", side),
             FaultEvent::Grpc { side, .. } => format!("{} grpc", side),
+            FaultEvent::Llm { side, .. } => format!("{} llm", side),
         };
         b.push(f);
     }
@@ -711,11 +720,12 @@ pub async fn proxy_prelude(
     disable_http_proxy: bool,
     proxied_protos: Vec<ProxyMap>,
     plugins: Arc<RwLock<RpcPluginManager>>,
-    opts: &RunCommandOptions,
+    opts: &RunCommonOptions,
     upstreams: &[String],
     events: Vec<FaultPeriodEvent>,
     total_duration: Option<Duration>,
     tailing: bool,
+    extra_faults: &Vec<FaultConfig>,
 ) {
     let g = "fault.".gradient(Color::DarkOrange);
     let r = "Your Reliability Toolbox".gradient(Color::Purple1a);
@@ -723,13 +733,23 @@ pub async fn proxy_prelude(
     let pp = proxied_protos
         .iter()
         .map(|p| {
+            let ptype = match p.proto {
+                Some(pt) => match pt {
+                    ProtocolType::Http | ProtocolType::Https => "http",
+                    ProtocolType::Tls | ProtocolType::Tcp => "tcp",
+                    ProtocolType::Psql | ProtocolType::Psqls => "psql",
+                    _ => "",
+                },
+                None => todo!(),
+            };
+
             format!(
                 "     - {} {} {} {}",
                 format!("{}:{}", p.proxy.proxy_ip, p.proxy.proxy_port).cyan(),
                 "=>".dim(),
                 format!("{}:{}", p.remote.remote_host, p.remote.remote_port)
                     .cyan(),
-                "[tcp: tunnel]".dim()
+                format!("[{}]", ptype).dim()
             )
             .to_string()
         })
@@ -1013,6 +1033,64 @@ pub async fn proxy_prelude(
         );
     }
 
+    for fc in extra_faults {
+        match fc.kind() {
+            FaultKind::PromptScramble => {
+                println!(
+                    "{}",
+                    format!(
+                        "     - {}: {}: {:?}, {}: {:?}",
+                        "LLM Prompt Scramble".cyan(),
+                        "side".dim(),
+                        StreamSide::Client,
+                        "direction".dim(),
+                        Direction::Egress
+                    )
+                );
+            }
+            FaultKind::InjectBias => {
+                println!(
+                    "{}",
+                    format!(
+                        "     - {}: {}: {:?}, {}: {:?}",
+                        "Inject LLM Bias".cyan(),
+                        "side".dim(),
+                        StreamSide::Client,
+                        "direction".dim(),
+                        Direction::Egress
+                    )
+                );
+            }
+            FaultKind::TruncateResponse => {
+                println!(
+                    "{}",
+                    format!(
+                        "     - {}: {}: {:?}, {}: {:?}",
+                        "Truncate LLM Response".cyan(),
+                        "side".dim(),
+                        StreamSide::Client,
+                        "direction".dim(),
+                        Direction::Egress
+                    )
+                );
+            }
+            FaultKind::SlowStream => {
+                println!(
+                    "{}",
+                    format!(
+                        "     - {}: {}: {:?}, {}: {:?}",
+                        "Slow LLM Stream".cyan(),
+                        "side".dim(),
+                        StreamSide::Server,
+                        "direction".dim(),
+                        Direction::Egress
+                    )
+                );
+            }
+            _ => {}
+        }
+    }
+
     // If no fault is enabled, let the user know
     if !opts.http_error.enabled
         && !opts.latency.enabled
@@ -1021,6 +1099,7 @@ pub async fn proxy_prelude(
         && !opts.dns.enabled
         && !opts.packet_loss.enabled
         && !opts.blackhole.enabled
+        && extra_faults.is_empty()
     {
         println!(
             "    {}",
@@ -1100,6 +1179,10 @@ fn fault_kind_label_and_color(kind: FaultKind) -> (&'static str, Color) {
         FaultKind::Metrics => ("Metrics", Color::Pink1),
         FaultKind::Unknown => ("Unknown", Color::Grey0),
         FaultKind::Grpc => ("Grpc", Color::IndianRed1a),
+        FaultKind::PromptScramble => ("LLM Scramble", Color::Yellow3a),
+        FaultKind::InjectBias => ("LLM Bias", Color::Yellow3b),
+        FaultKind::TruncateResponse => ("LLM Truncate", Color::Yellow4a),
+        FaultKind::SlowStream => ("LLM Slow Stream", Color::Aquamarine3),
     }
 }
 

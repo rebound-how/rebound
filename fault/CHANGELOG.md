@@ -2,4 +2,4 @@
 
 ## Changed
 
-- Added support for AWS ECS injection
+- Add support for high level fault injection into LLM and DB

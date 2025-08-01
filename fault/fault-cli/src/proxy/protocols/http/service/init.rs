@@ -1,22 +1,16 @@
-use std::net::IpAddr;
-use std::net::SocketAddr;
 use std::sync::Arc;
 
 use anyhow::Result;
-use async_std_resolver::resolver_from_system_conf;
-use futures::future::join_all;
-use rand;
-use rand::seq::IndexedRandom;
 use tokio::sync::mpsc;
 use tokio::task;
 
 use crate::errors::ProxyError;
 use crate::event::TaskManager;
 use crate::proxy::ProxyState;
-use crate::proxy::protocols::tcp;
+use crate::proxy::protocols::http::service::run_http_proxy;
 use crate::types::ProxyMap;
 
-pub async fn initialize_tcp_proxies(
+pub async fn initialize_http_service_proxies(
     proxied_protos: Vec<ProxyMap>,
     state: Arc<ProxyState>,
     shutdown_rx: kanal::AsyncReceiver<()>,
@@ -28,13 +22,12 @@ pub async fn initialize_tcp_proxies(
         return Ok(Vec::new());
     }
 
-    // Create a oneshot channel for readiness signaling
     let (readiness_tx, mut readiness_rx) = mpsc::channel::<()>(count);
 
     let mut handles = Vec::new();
 
     for proto in proxied_protos {
-        let handle = tokio::spawn(tcp::run_tcp_proxy(
+        let handle = tokio::spawn(run_http_proxy(
             proto,
             state.clone(),
             shutdown_rx.clone(),
@@ -55,18 +48,4 @@ pub async fn initialize_tcp_proxies(
     }
 
     Ok(handles)
-}
-
-pub async fn resolve_remote_host(host: String) -> Result<IpAddr, String> {
-    let dns_resolver;
-
-    dns_resolver = resolver_from_system_conf().await.unwrap();
-    let response = dns_resolver.lookup_ip(host.clone()).await.unwrap();
-    let candidates = response.into_iter().collect::<Vec<_>>();
-
-    tracing::debug!("Domain {} Found addresses {:?}", host, candidates);
-
-    let mut rng = rand::rng();
-
-    Ok(candidates.choose(&mut rng).cloned().unwrap())
 }

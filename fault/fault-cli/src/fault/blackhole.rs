@@ -6,7 +6,10 @@ use std::task::Poll;
 
 use async_trait::async_trait;
 use axum::http;
+use http::HeaderMap;
+use http::StatusCode;
 use pin_project::pin_project;
+use reqwest::Body;
 use tokio::io::AsyncRead;
 use tokio::io::AsyncWrite;
 use tokio::io::AsyncWriteExt;
@@ -20,6 +23,7 @@ use crate::config::FaultKind;
 use crate::errors::ProxyError;
 use crate::event::FaultEvent;
 use crate::event::ProxyTaskEvent;
+use crate::fault::BoxChunkStream;
 use crate::types::Direction;
 use crate::types::StreamSide;
 
@@ -331,5 +335,15 @@ impl FaultInjector for BlackholeInjector {
     ) -> Result<http::Response<Vec<u8>>, ProxyError> {
         // no effect
         Ok(resp)
+    }
+
+    async fn apply_on_response_stream(
+        &self,
+        status: StatusCode,
+        headers: HeaderMap,
+        body: BoxChunkStream,
+        _event: Box<dyn ProxyTaskEvent>,
+    ) -> Result<(StatusCode, HeaderMap, BoxChunkStream), ProxyError> {
+        Ok((status, headers, body))
     }
 }

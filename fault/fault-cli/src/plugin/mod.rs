@@ -3,6 +3,9 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use axum::http;
+use http::HeaderMap;
+use http::StatusCode;
+use reqwest::Body;
 use reqwest::ClientBuilder;
 use reqwest::Request as ReqwestRequest;
 use serde::Deserialize;
@@ -13,6 +16,7 @@ use crate::config::ProxyConfig;
 use crate::errors::ProxyError;
 use crate::event::ProxyTaskEvent;
 use crate::fault::Bidirectional;
+use crate::fault::BoxChunkStream;
 use crate::fault::FaultInjector;
 use crate::fault::bandwidth::BandwidthLimitFaultInjector;
 use crate::fault::blackhole::BlackholeInjector;
@@ -20,6 +24,8 @@ use crate::fault::dns::FaultyResolverInjector;
 use crate::fault::http_error::HttpResponseFaultInjector;
 use crate::fault::jitter::JitterInjector;
 use crate::fault::latency::LatencyInjector;
+use crate::fault::llm::openai::OpenAiInjector;
+use crate::fault::llm::openai::SlowStreamInjector;
 use crate::fault::packet_loss::PacketLossInjector;
 use crate::types::StreamSide;
 
@@ -56,6 +62,14 @@ pub trait ProxyPlugin: Send + Sync + std::fmt::Debug + fmt::Display {
         resp: http::Response<Vec<u8>>,
         _event: Box<dyn ProxyTaskEvent>,
     ) -> Result<http::Response<Vec<u8>>, ProxyError>;
+
+    async fn process_response_stream(
+        &self,
+        status: StatusCode,
+        mut headers: HeaderMap,
+        body: BoxChunkStream,
+        _event: Box<dyn ProxyTaskEvent>,
+    ) -> Result<(StatusCode, HeaderMap, BoxChunkStream), ProxyError>;
 
     async fn inject_tunnel_faults(
         &self,
@@ -121,6 +135,18 @@ pub fn load_injectors(config: &ProxyConfig) -> Vec<Box<dyn FaultInjector>> {
             FaultConfig::Blackhole(settings) => {
                 injectors.push(Box::new(BlackholeInjector::from(settings)))
             }
+            FaultConfig::PromptScramble(settings) => {
+                injectors.push(Box::new(OpenAiInjector::from(settings)))
+            }
+            FaultConfig::InjectBias(settings) => {
+                injectors.push(Box::new(OpenAiInjector::from(settings)))
+            }
+            FaultConfig::TruncateResponse(settings) => {
+                injectors.push(Box::new(OpenAiInjector::from(settings)))
+            }
+            FaultConfig::SlowStream(settings) => {
+                injectors.push(Box::new(SlowStreamInjector::from(settings)))
+            }
         })
         .collect();
 
@@ -151,6 +177,18 @@ pub fn load_injector(fault: &FaultConfig) -> Box<dyn FaultInjector> {
         }
         FaultConfig::Blackhole(settings) => {
             Box::new(BlackholeInjector::from(settings))
+        }
+        FaultConfig::PromptScramble(settings) => {
+            Box::new(OpenAiInjector::from(settings))
+        }
+        FaultConfig::InjectBias(settings) => {
+            Box::new(OpenAiInjector::from(settings))
+        }
+        FaultConfig::TruncateResponse(settings) => {
+            Box::new(OpenAiInjector::from(settings))
+        }
+        FaultConfig::SlowStream(settings) => {
+            Box::new(SlowStreamInjector::from(settings))
         }
     }
 }
@@ -206,6 +244,25 @@ impl ProxyPlugin for CompositePlugin {
             }
         }
         Ok(current_resp)
+    }
+
+    #[tracing::instrument(skip_all, name = "HTTP Response Stream")]
+    async fn process_response_stream(
+        &self,
+        status: StatusCode,
+        mut headers: HeaderMap,
+        body: BoxChunkStream,
+        event: Box<dyn ProxyTaskEvent>,
+    ) -> Result<(StatusCode, HeaderMap, BoxChunkStream), ProxyError> {
+        let (mut s, mut h, mut b) = (status, headers, body);
+        for injector in self.injectors.iter() {
+            if injector.is_enabled() {
+                (s, h, b) = injector
+                    .apply_on_response_stream(s, h, b, event.clone())
+                    .await?;
+            }
+        }
+        Ok((s, h, b))
     }
 
     #[tracing::instrument(skip_all, name = "Inject Fault")]

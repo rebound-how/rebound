@@ -10,6 +10,8 @@ use async_trait::async_trait;
 use axum::http;
 use bytes::BytesMut;
 use futures::StreamExt;
+use http::HeaderMap;
+use http::StatusCode;
 use pin_project::pin_project;
 use rand::Rng;
 use rand::SeedableRng;
@@ -32,6 +34,7 @@ use crate::config::PacketLossSettings;
 use crate::errors::ProxyError;
 use crate::event::FaultEvent;
 use crate::event::ProxyTaskEvent;
+use crate::fault::BoxChunkStream;
 use crate::types::Direction;
 use crate::types::StreamSide;
 
@@ -538,6 +541,16 @@ impl FaultInjector for PacketLossInjector {
         // No modifications needed for the request builder in this fault
         // injector
         Ok(builder)
+    }
+
+    async fn apply_on_response_stream(
+        &self,
+        status: StatusCode,
+        headers: HeaderMap,
+        body: BoxChunkStream,
+        _event: Box<dyn ProxyTaskEvent>,
+    ) -> Result<(StatusCode, HeaderMap, BoxChunkStream), ProxyError> {
+        Ok((status, headers, body))
     }
 
     /// Applies packet loss to an outgoing request.

@@ -1,3 +1,4 @@
+use std::error::Error as StdError;
 use std::fmt::Debug;
 use std::future::Future;
 use std::marker::Unpin;
@@ -7,6 +8,10 @@ use std::task::Poll;
 
 use async_trait::async_trait;
 use axum::http;
+use bytes::Bytes;
+use futures::Stream;
+use http::HeaderMap;
+use http::StatusCode;
 use pin_project::pin_project;
 use reqwest::ClientBuilder as ReqwestClientBuilder;
 use reqwest::Request as ReqwestRequest;
@@ -17,11 +22,13 @@ use tokio_rustls::client::TlsStream;
 
 pub mod bandwidth;
 pub mod blackhole;
+pub mod content;
 pub mod dns;
 pub mod grpc;
 pub mod http_error;
 pub mod jitter;
 pub mod latency;
+pub mod llm;
 pub mod packet_loss;
 
 use crate::config::FaultKind;
@@ -112,6 +119,13 @@ impl tokio::io::AsyncWrite for TlsBidirectional {
     }
 }
 
+pub type BoxChunkStream = Pin<
+    Box<
+        dyn Stream<Item = Result<Bytes, Box<dyn StdError + Send + Sync>>>
+            + Send,
+    >,
+>;
+
 #[async_trait]
 pub trait FaultInjector:
     Send + Sync + std::fmt::Debug + std::fmt::Display
@@ -143,6 +157,14 @@ pub trait FaultInjector:
         resp: http::Response<Vec<u8>>,
         _event: Box<dyn ProxyTaskEvent>,
     ) -> Result<http::Response<Vec<u8>>, ProxyError>;
+
+    async fn apply_on_response_stream(
+        &self,
+        status: StatusCode,
+        mut headers: HeaderMap,
+        body: BoxChunkStream,
+        _event: Box<dyn ProxyTaskEvent>,
+    ) -> Result<(StatusCode, HeaderMap, BoxChunkStream), ProxyError>;
 
     fn is_enabled(&self) -> bool;
     fn kind(&self) -> FaultKind;
