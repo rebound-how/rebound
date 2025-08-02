@@ -6,9 +6,10 @@ on your environment.
 
 ## Features Matrix
 
-From a very high-level, <span class="f">fault</span> provides the following features:
+From a very high-level <span class="f">fault</span> provides the following features:
 
 * **Proxy**: a network proxy that model network traffic based on a configuration
+    - **LLM/DB**: proxy subcommands dedicated to explore LLM and database issues
 * **Scenario**: testing automation using the proxy
 * **Injection**: machinery to inject the network proxy into platform resources
 * **AI Agent**: review of results and code from a reliability and resilience perspective

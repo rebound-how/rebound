@@ -66,6 +66,19 @@ be simpler to populate these options via environment variables.
 | `FAULT_DNS_PROBABILITY`                       | `0.5`                | Probability (0–100) to trigger a DNS fault.                                                    |
 | `FAULT_DNS_SCHED`                       | (none)                | Scheduling of the dns fault.                                                    |
 
+### `run llm` Command Variables
+
+| **Name**                         | **Default Value**   | **Explanation**                                                                                  |
+|----------------------------------|---------------------|--------------------------------------------------------------------------------------------------|
+| `FAULT_LLM_ENDPOINT`                  | (none)    | Base URL of the target LLM provider.                                                 |
+| `FAULT_LLM_PROBABILITY`                  | `1.0`    | Probability which will trigger the fault injection (0  means never and 1 means always).                                                 |
+| `FAULT_LLM_SLOW_STREAM_MEAN_DELAY`                  | `300`    | Latency to apply to the LLM response.                                                 |
+| `FAULT_LLM_SCRAMBLE_PATTERN`                  | (none)    | Regex pattern to look for into the request.                                                 |
+| `FAULT_LLM_SCRAMBLE_WITH`                  | (none)    | Replacement string when the pattern matches.                                                 |
+| `FAULT_LLM_SCRAMBLE_INSTRUCTION`                  | (none)    | Instruction to inject into the LLM requests as a system prompt.                                                 |
+| `FAULT_LLM_BIAS_PATTERN`                  | (none)    |  Regex pattern to look for into the response.                                                 |
+| `FAULT_LLM_BIAS_REPLACEMENT`                  | (none)    | Replacement string when the pattern matches.                                                 |
+
 ## `injection` Command Variables
 
 ### `aws` Subcommand Variables

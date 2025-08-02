@@ -70,6 +70,22 @@ Each fault type has a distinct role in helping you simulate and analyze adverse 
 - **Engineering Focus:**  
   Strengthen error-handling routines, validate user-friendly error messages, and implement effective retry or fallback mechanisms.
 
+### LLM Faults
+- **Purpose:**  
+  To adjust the parameters of LLM exchanges.
+- **Use Case:**  
+  Verify your application can handle unexpected responses from LLM.  
+- **Engineering Focus:**  
+  Strengthen error-handling routines, validate user-friendly error messages, and properly deal with LLM changes.
+
+### Database Faults
+- **Purpose:**  
+  To impact communications to and from databases.
+- **Use Case:**  
+  Explore how your application performs under database failures.  
+- **Engineering Focus:**  
+  Strengthen error-handling routines, validate user-friendly error messages, and properly deal with db errors.
+
 ## In Summary
 
 Fault injection is a powerful tool in your reliability engineering toolkit. It not only helps you detect vulnerabilities but also guides you in making informed improvements. By understanding the purpose behind each fault type and how to apply different distribution models, you can build robust systems that continue to perform even under duress.

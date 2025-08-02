@@ -23,9 +23,10 @@ systems lead to healthier operations.
 traffic through its proxy and test your application as normal:
 
 - Forward and tunnel proxy modes
-- HTTP and HTTPS
-- HTTP/1.1 and HTTP/2
-- TCP IPv4 transparent proxy
+- HTTP, HTTPS
+- HTTP/1.1, HTTP/2, SSE
+- TCP transparent proxy
+- LLM & Database high-level faults
 - Scenarii automation
 - eBPF stealth redirection on Linux
 

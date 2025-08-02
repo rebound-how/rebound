@@ -12,7 +12,9 @@ defined in a file or launch a local demo server.
 ### `run`
 
 Run the proxy with fault injection enabled. This command applies the specified
-network faults to HTTP requests and tunnel streams.
+network faults to TCP streams and HTTP requests.
+
+It has two subcommands to specifically explore LLM and database use-cases.
 
 ### `inject`
 
@@ -354,11 +356,66 @@ Learn more about the [Blackhole fault](./builtin-faults.md#blackhole).
   _Default:_ `ingress`
 
 - **`--blackhole-sched <value>`**  
-  [Intervals scheduling](./schedule-intervals-syntax.md) when to apply the fault (require `--duration` whhen using relative schedule).  
+  [Intervals scheduling](./schedule-intervals-syntax.md) when to apply the fault (require `--duration` when using relative schedule).  
   **Example:** `--blackhole-sched "start:30s,duration:60s"`
   **Example:** `--blackhole-sched "start:5%,duration:40%"` (requires `--duration`)
 
 ---
+
+### `llm` Subcommand Options
+
+Specific faults to target your LLM.
+
+**<TARGET>**  Which LLM provider to target, one of `openai`, `gemini`,
+`open-router` and `ollama`
+
+- **`--endpoint`**
+  The base URL of the targeted LLM provider. Usually, you do not need to set
+  this value as the right base url will be set for each provider.
+
+- **`--case`**  
+  Which scenarios to run. Possible values `slow-stream`, `prompt-scramble`,
+  `token-drop`, `inject-bias`, `truncate-response`, `http-error`
+
+- **`--probability`**  
+    Fault injection probability between 0.0 (never) to 1.0 (always)
+  _Default:_ `1.0`
+
+Each case has its own parameters:
+
+When `--case` is `slow-stream`.
+
+- **`--slow-stream-mean-delay`**
+  Delay in miliseconds to slow the stream by.
+  _Default:_ `300`
+
+When `--case` is `token-drop`.
+
+No extra parameters.
+
+When `--case` is `prompt-scramble`.
+
+- **`--scramble-pattern`**
+  Optional regex pattern to scramble in prompt.
+
+- **`--scramble-with`**
+  Optional substitute text for scramble (must be set when `--scramble-pattern`
+  is set)
+
+- **`--instruction`**
+  Optional instruction/System prompt to set on the request.
+
+When `--case` is `inject-bias`.
+
+- **`--bias-pattern`**
+  Regex pattern for bias.
+
+- **`--bias-replacement`**
+    Substitute text for bias.
+
+When `--case` is `http-error`.
+
+No extra parameters.
 
 ### Usage Examples
 
@@ -370,6 +427,13 @@ fault run \
   --with-latency --latency-mean 120.0 --latency-stddev 30.0 \
   --with-bandwidth --bandwidth-rate 2000 --bandwidth-unit KBps
 ```
+
+#### Adding instructions to a LLM call
+
+```bash
+fault run llm openai --instruction "Respond in French"
+```
+
 
 ## `injection` Command Options
 
