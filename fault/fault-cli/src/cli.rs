@@ -7,6 +7,7 @@ use clap::Subcommand;
 use clap::ValueEnum;
 use serde::Deserialize;
 use serde::Serialize;
+use url::Url;
 
 #[cfg(feature = "agent")]
 use crate::agent::clients::SupportedLLMClient;
@@ -302,41 +303,42 @@ impl RunCommandOptions {
 #[derive(Parser, Clone, Debug)]
 #[clap(next_help_heading = "LLM Options")]
 pub struct LlmOptions {
-    /// Delay per token when streaming (e.g. "100ms")
-    #[clap(long = "token-latency", value_parser = validate_parse_human_duration)]
-    pub token_latency: Option<Duration>,
+    // LLM endpoint base URL (leave empty to use the default one for the llm
+    // target)
+    #[clap(
+        long,
+        env = "FAULT_LLM_ENDPOINT",
+        value_parser = parse_url
+    )]
+    pub endpoint: Option<String>,
 
-    /// Drop probability for token drop (0.0 to 1.0)
-    #[clap(long, default_value = "0.05", value_parser = validate_probability)]
-    pub drop_rate: f64,
+    /// Probability for injection [0, 1] (never to always)
+    #[clap(long, default_value = "1.0", value_parser = validate_probability)]
+    pub probability: f64,
 
     /// Delay in miliseconds to slow the stream by
-    #[clap(long, default_value = "300", value_parser = validate_non_negative_f64)]
+    #[clap(long, default_value = "300", value_parser = validate_non_negative_f64, help_heading = "Slow Stream")]
     pub slow_stream_mean_delay: Option<f64>,
 
     /// Regex pattern to scramble in prompt
-    #[clap(long)]
+    #[clap(long, group = "prompt-scramble", help_heading = "Prompt Scramble")]
     pub scramble_pattern: Option<String>,
 
     /// Substitute text for scramble
-    #[clap(long)]
+    #[clap(long, group = "prompt-scramble", help_heading = "Prompt Scramble")]
     pub scramble_with: Option<String>,
 
+    /// Instruction/System prompt to set on the request
+    #[clap(long, group = "prompt-scramble", help_heading = "Prompt Scramble")]
+    pub instruction: Option<String>,
+
     /// Regex pattern for bias
-    #[clap(long)]
+    #[clap(long, group = "inject-bias", help_heading = "Inject Bias")]
     pub bias_pattern: Option<String>,
 
     /// Substitute text for bias
-    #[clap(long)]
+    #[clap(long, group = "inject-bias", help_heading = "Inject Bias")]
     pub bias_replacement: Option<String>,
-
-    /// Instruction/System prompt to set on the request
-    #[clap(long)]
-    pub instruction: Option<String>,
-
-    /// Error injection probability for HTTP errors
-    #[clap(long, default_value = "1.0", value_parser = validate_probability)]
-    pub probability: f64,
 }
 
 #[derive(Parser, Clone, Debug)]
@@ -362,9 +364,10 @@ pub struct DbOptions {
 #[derive(Subcommand, Clone, Debug)]
 #[clap(subcommand_required = false, subcommand = "proxy")]
 pub enum RunCommands {
-    #[clap(name = "proxy")]
+    #[clap(name = "proxy", hide = true)]
     Proxy {},
 
+    #[clap(next_help_heading = "LLM-specific faults")]
     Llm {
         /// Which LLM provider to target
         #[clap(value_enum)]
@@ -378,6 +381,7 @@ pub enum RunCommands {
         settings: LlmOptions,
     },
 
+    #[clap(next_help_heading = "Databaase-specific faults")]
     Db {
         /// Which database to target
         #[clap(value_enum)]
@@ -1516,6 +1520,28 @@ fn validate_parse_human_duration(val: &str) -> Result<Duration, String> {
         Ok(d) => Ok(d),
         _ => Err(String::from("failed to parse duration")),
     }
+}
+
+fn parse_url(input: &str) -> Result<String, String> {
+    let url = Url::parse(input)
+        .map_err(|e| format!("Invalid URL `{}`: {}", input, e))?;
+
+    // only allow http/https
+    match url.scheme() {
+        "http" | "https" => {}
+        other => return Err(format!("Unsupported URL scheme `{}`", other)),
+    }
+
+    let scheme = url.scheme();
+    let host = url
+        .host_str()
+        .ok_or_else(|| format!("Missing host in URL `{}`", input))?;
+
+    let port = url
+        .port_or_known_default()
+        .ok_or_else(|| format!("Could not determine port for `{}`", input))?;
+
+    Ok(format!("{}://{}:{}", scheme, host, port))
 }
 
 #[cfg(feature = "injection")]

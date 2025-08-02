@@ -213,22 +213,67 @@ async fn main() -> Result<()> {
             // set some well-known defaults
             match options.run_command() {
                 cli::RunCommands::Proxy {} => {}
-                cli::RunCommands::Llm { target, .. } => match target {
-                    types::LlmTarget::Openai => {
-                        http_proxies_disabled = true;
+                cli::RunCommands::Llm { target, settings, .. } => {
+                    match target {
+                        types::LlmTarget::Openai => {
+                            http_proxies_disabled = true;
 
-                        let _ = proxy_state
-                            .add_upstream_host("https://api.openai.com:443");
+                            let endpoint = settings.endpoint.unwrap_or(
+                                "https://api.openai.com:443".to_string(),
+                            );
 
-                        proxy_maps.insert(
-                            0,
-                            "https:45580=https://api.openai.com:443"
-                                .to_string(),
-                        );
+                            let _ = proxy_state.add_upstream_host(&endpoint);
+
+                            proxy_maps.insert(
+                                0,
+                                format!("https:45580={}", endpoint).to_string(),
+                            );
+                        }
+                        types::LlmTarget::OpenRouter => {
+                            http_proxies_disabled = true;
+
+                            let endpoint = settings.endpoint.unwrap_or(
+                                "https://openrouter.ai:443".to_string(),
+                            );
+
+                            let _ = proxy_state.add_upstream_host(&endpoint);
+
+                            proxy_maps.insert(
+                                0,
+                                format!("https:45580={}", endpoint).to_string(),
+                            );
+                        }
+                        types::LlmTarget::Gemini => {
+                            http_proxies_disabled = true;
+
+                            let endpoint = settings.endpoint.unwrap_or(
+                                "https://generativelanguage.googleapis.com:443"
+                                    .to_string(),
+                            );
+
+                            let _ = proxy_state.add_upstream_host(&endpoint);
+
+                            proxy_maps.insert(
+                                0,
+                                format!("https:45580={}", endpoint).to_string(),
+                            );
+                        }
+                        types::LlmTarget::Ollama => {
+                            http_proxies_disabled = true;
+
+                            let endpoint = settings.endpoint.unwrap_or(
+                                "http://localhost:11434".to_string(),
+                            );
+
+                            let _ = proxy_state.add_upstream_host(&endpoint);
+
+                            proxy_maps.insert(
+                                0,
+                                format!("http:45580={}", endpoint).to_string(),
+                            );
+                        }
                     }
-                    types::LlmTarget::Azure => todo!(),
-                    types::LlmTarget::Local => todo!(),
-                },
+                }
                 cli::RunCommands::Db { target, .. } => todo!(),
             }
 

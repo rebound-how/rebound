@@ -19,7 +19,7 @@ use crate::types::ProxyMap;
 pub mod handler;
 pub mod init;
 
-#[tracing::instrument]
+#[tracing::instrument(skip_all)]
 async fn handle_http_request(
     source_addr: SocketAddr,
     proto: ProxyMap,
@@ -55,10 +55,6 @@ async fn handle_http_request(
             .await
             .unwrap()
     };
-
-    if !passthrough {
-        tracing::debug!("HTTP request to {}", upstream_url);
-    }
 
     let r = handler::handle_request(
         source_addr,

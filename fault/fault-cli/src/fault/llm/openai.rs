@@ -126,6 +126,7 @@ impl FaultInjector for OpenAiInjector {
             });
 
             let original_body = request.body();
+
             if let Some(body) = original_body {
                 if let Some(bytes) = body.as_bytes() {
                     let new_body = mutate_request(
@@ -404,6 +405,7 @@ impl FaultInjector for SlowStreamInjector {
 // -------------------- Private functions -----------------------------------
 //
 
+#[tracing::instrument]
 fn mutate_request(
     path: &str,
     body: Vec<u8>,
@@ -413,10 +415,16 @@ fn mutate_request(
 ) -> Result<Vec<u8>, ProxyError> {
     let mut doc: Value = match serde_json::from_slice(&body) {
         Ok(j) => j,
-        Err(_) => return Ok(body),
+        Err(e) => {
+            tracing::warn!("Failed parsing OpenAI-like LLM request {}", e);
+            return Ok(body);
+        }
     };
 
-    if path.starts_with("/v1/chat/completion") {
+    if path.starts_with("/v1/chat/completions")
+        || path.starts_with("/api/v1/chat/completions")
+        || path.starts_with("/v1beta/openai/chat/completions")
+    {
         if let Some(sp) = instruction {
             if let Some(arr) =
                 doc.get_mut("messages").and_then(Value::as_array_mut)
@@ -451,7 +459,9 @@ fn mutate_request(
             .map_err(|e| ProxyError::Other(e.to_string()))?;
 
         return Ok(out);
-    } else if path.starts_with("/v1/responses") {
+    } else if path.starts_with("/v1/responses")
+        || path.starts_with("/api/v1/responses")
+    {
         if let Some(sp) = instruction {
             doc["instructions"] = serde_json::Value::String(sp);
         }
@@ -488,6 +498,7 @@ fn mutate_request(
     Ok(body)
 }
 
+#[tracing::instrument]
 fn scramble_response(
     body: Vec<u8>,
     regex: &Regex,
@@ -495,6 +506,8 @@ fn scramble_response(
 ) -> Result<Vec<u8>, ProxyError> {
     match serde_json::from_slice::<Value>(&body) {
         Ok(mut doc) => {
+            tracing::debug!("{:?}", doc);
+
             if let Some(object) = doc.get("object").and_then(Value::as_str) {
                 if object == "chat.completion" {
                     if let Some(choices) =

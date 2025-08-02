@@ -1005,8 +1005,9 @@ impl DnsTiming {
 #[derive(ValueEnum, Clone, Debug)]
 pub enum LlmTarget {
     Openai,
-    Azure,
-    Local,
+    OpenRouter,
+    Gemini,
+    Ollama,
 }
 
 #[derive(ValueEnum, Copy, Clone, Debug, Serialize, Deserialize, PartialEq)]

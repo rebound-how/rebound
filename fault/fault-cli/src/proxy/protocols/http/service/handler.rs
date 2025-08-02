@@ -90,7 +90,7 @@ impl ServiceHandler {
     ///
     /// Applies plugins after request conversion and after receiving the
     /// response.
-    #[tracing::instrument]
+    #[tracing::instrument(skip_all)]
     pub async fn execute(
         &self,
         source_addr: SocketAddr,
