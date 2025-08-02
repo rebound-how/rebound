@@ -313,31 +313,31 @@ pub struct LlmOptions {
     pub endpoint: Option<String>,
 
     /// Probability for injection [0, 1] (never to always)
-    #[clap(long, default_value = "1.0", value_parser = validate_probability)]
+    #[clap(long, default_value = "1.0", value_parser = validate_probability, env = "FAULT_LLM_PROBABILITY",)]
     pub probability: f64,
 
     /// Delay in miliseconds to slow the stream by
-    #[clap(long, default_value = "300", value_parser = validate_non_negative_f64, help_heading = "Slow Stream")]
+    #[clap(long, default_value = "300", value_parser = validate_non_negative_f64, help_heading = "Slow Stream", env = "FAULT_LLM_SLOW_STREAM_MEAN_DELAY")]
     pub slow_stream_mean_delay: Option<f64>,
 
     /// Regex pattern to scramble in prompt
-    #[clap(long, group = "prompt-scramble", help_heading = "Prompt Scramble")]
+    #[clap(long, group = "prompt-scramble", help_heading = "Prompt Scramble", env = "FAULT_LLM_SCRAMBLE_PATTERN")]
     pub scramble_pattern: Option<String>,
 
     /// Substitute text for scramble
-    #[clap(long, group = "prompt-scramble", help_heading = "Prompt Scramble")]
+    #[clap(long, group = "prompt-scramble", help_heading = "Prompt Scramble", env = "FAULT_LLM_SCRAMBLE_WITH")]
     pub scramble_with: Option<String>,
 
     /// Instruction/System prompt to set on the request
-    #[clap(long, group = "prompt-scramble", help_heading = "Prompt Scramble")]
+    #[clap(long, group = "prompt-scramble", help_heading = "Prompt Scramble", env = "FAULT_LLM_SCRAMBLE_INSTRUCTION")]
     pub instruction: Option<String>,
 
     /// Regex pattern for bias
-    #[clap(long, group = "inject-bias", help_heading = "Inject Bias")]
+    #[clap(long, group = "inject-bias", help_heading = "Inject Bias", env = "FAULT_LLM_BIAS_PATTERN")]
     pub bias_pattern: Option<String>,
 
     /// Substitute text for bias
-    #[clap(long, group = "inject-bias", help_heading = "Inject Bias")]
+    #[clap(long, group = "inject-bias", help_heading = "Inject Bias", env = "FAULT_LLM_BIAS_REPLACEMENT")]
     pub bias_replacement: Option<String>,
 }
 
