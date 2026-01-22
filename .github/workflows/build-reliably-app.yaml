@@ -57,7 +57,7 @@ jobs:
       - name: Install dependencies
         working-directory: ./reliably/backend
         run: |
-          pdm sync -d -G gcp
+          pdm sync -G dev -G gcp
 
       - name: Run Lint
         working-directory: ./reliably/backend
