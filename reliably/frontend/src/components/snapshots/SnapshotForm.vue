@@ -341,8 +341,8 @@ function refreshConfig() {
     if (hasGcp !== undefined) {
       hasCustomGCP.value = true;
 
-      const useK8sCreds = getEnvValue(vars, "RELIABLY_GCP_USE_SYSTEM_CREDS");
-      var_GcpUseSystemCreds.value = useK8sCreds !== undefined;
+      const useGcpCreds = getEnvValue(vars, "RELIABLY_GCP_USE_SYSTEM_CREDS");
+      var_GcpUseSystemCreds.value = useGcpCreds !== undefined;
 
       let gcpValue = getEnvValue(vars, "GOOGLE_CLOUD_PROJECT_ID");
       var_GcpProjectId.value = gcpValue == undefined ? "" : gcpValue;
@@ -458,7 +458,9 @@ const proceed = async () => {
     used_for: "snapshot"
   };
 
-  if (snapshotConfig.value === null) {
+  console.log(snapshotConfig.value);
+
+  if (!snapshotConfig.value.integration_id) {
     const integration = await createIntegration({
       name: integrationName.value,
       provider: "snapshot",

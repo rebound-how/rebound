@@ -62,6 +62,10 @@ async def schedule_discovery(
             agent_id,  # type: ignore
         )
 
+        if not snapshot:
+            logger.warning(f"No snapshot was generated in org {org_id}")
+            return None
+
         await create_snapshot(db, org_id, user_id, agent_id, snapshot)  # type: ignore
 
 

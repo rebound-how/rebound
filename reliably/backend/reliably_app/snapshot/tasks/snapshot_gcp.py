@@ -1,9 +1,14 @@
 import asyncio
 import logging
-from typing import Any
+import os
+from configparser import ConfigParser
+from functools import lru_cache
+from pathlib import Path
+from typing import Any, Tuple, TYPE_CHECKING
 
 import msgspec
-from google.oauth2._service_account_async import Credentials
+if TYPE_CHECKING:
+    from google.oauth2._service_account_async import Credentials
 from lueur.models import Discovery
 from lueur.platform.gcp import explore, expand_links
 
@@ -16,6 +21,8 @@ TRUTHY = ("1", "true", "True", "TRUE")
 
 async def generate_snapshot(environment: Environment) -> list[Discovery] | None:
     credentials: Credentials | None = None
+    project_id: str | None = None
+    region: str | None = None
 
     envvars = environment.envvars
     if envvars.get("RELIABLY_GCP_USE_SYSTEM_CREDS") not in TRUTHY:
@@ -49,13 +56,18 @@ async def generate_snapshot(environment: Environment) -> list[Discovery] | None:
                 "https://www.googleapis.com/auth/ndev.clouddns.readonly",
             ],
         )
+    else:
+        project_id, region = get_gcp_project_and_region()
 
     tasks: list[asyncio.Task] = []
 
     async with asyncio.TaskGroup() as tg:
-        tasks.append(tg.create_task(explore(project_id, creds=credentials)))
+        if project_id:
+            logger.debug(f"Using GCP project {project_id}")
+            tasks.append(tg.create_task(explore(project_id, creds=credentials)))
 
         if region:
+            logger.debug(f"Using GCP region {region}")
             tasks.append(
                 tg.create_task(explore(project_id, region, creds=credentials))
             )
@@ -69,3 +81,56 @@ async def generate_snapshot(environment: Environment) -> list[Discovery] | None:
 
 def expand_all_links(d: Discovery, serialized: dict[str, Any]) -> None:
     expand_links(d, serialized)
+
+
+
+@lru_cache(maxsize=1)
+def get_gcp_project_and_region() -> Tuple[str | None, str | None]:
+    """
+    Return (project_id, compute_region) from the active gcloud configuration.
+
+    Values may be None if unset.
+    """
+
+    # 1. Locate gcloud config root
+    config_root = Path(
+        os.environ.get(
+            "CLOUDSDK_CONFIG",
+            Path.home() / ".config" / "gcloud",
+        )
+    )
+
+    if not config_root.exists():
+        return None, None
+
+    # 2. Determine active configuration name
+    active_config_path = config_root / "active_config"
+    if active_config_path.exists():
+        config_name = active_config_path.read_text().strip()
+    else:
+        config_name = "default"
+
+    config_file = config_root / "configurations" / f"config_{config_name}"
+    if not config_file.exists():
+        return None, None
+
+    # 3. Parse INI-style config
+    parser = ConfigParser()
+    parser.read(config_file)
+
+    # --- Project ID ---
+    project_id = None
+    if parser.has_section("core"):
+        project_id = parser.get("core", "project", fallback=None)
+
+    # --- Region ---
+    region = None
+    if parser.has_section("compute"):
+        region = parser.get("compute", "region", fallback=None)
+
+        if not region:
+            zone = parser.get("compute", "zone", fallback=None)
+            if zone and "-" in zone:
+                region = zone.rsplit("-", 1)[0]
+
+    return project_id, region

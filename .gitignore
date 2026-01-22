@@ -325,3 +325,7 @@ deploy/docker/job/.pdm-python
 ###############################################################################
 docs/fault/.pdm-python
 docs/reliably/.pdm-python
+
+
+.unfault/
+.fault/

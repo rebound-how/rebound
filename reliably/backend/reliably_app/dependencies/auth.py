@@ -86,7 +86,7 @@ class APIKeySession(APIKeyBase):  # pragma: no cover
 
     async def __call__(self, request: Request) -> Optional[str]:
         api_key = request.session.get(self.model.name)
-        return self.check_api_key(api_key, self.auto_error)
+        return self.check_api_key(api_key)
 
 
 api_key_header = APIKeyHeader(name="Authorization", auto_error=False)
