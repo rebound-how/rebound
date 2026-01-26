@@ -4,11 +4,10 @@ import os
 from configparser import ConfigParser
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Tuple, TYPE_CHECKING
+from typing import Any, Tuple
 
 import msgspec
-if TYPE_CHECKING:
-    from google.oauth2._service_account_async import Credentials
+from google.oauth2._service_account_async import Credentials
 from lueur.models import Discovery
 from lueur.platform.gcp import explore, expand_links
 

@@ -350,7 +350,7 @@ async def get_most_recent_snapshot_values(
         f"/api/v1/organization/{org_id}/snapshots/current",
         headers=auth_header(authed),
         params={
-            "path": "$.resources.[?@.meta.kind=='loadbalancer'].struct.labels"
+            "path": "$.resources[?@.meta.kind=='loadbalancer'].struct.labels"
         },
     )
     assert response.status_code == 200
