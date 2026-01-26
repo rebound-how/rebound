@@ -123,7 +123,7 @@ jobs:
       - name: Install dependencies
         working-directory: ./reliably/backend
         run: |
-          pdm sync --prod -G gcp -G kubernetes
+          pdm sync -G gcp --without dev
 
       - name: Build frontend
         uses: withastro/action@v2
