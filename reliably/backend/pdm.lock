@@ -2357,7 +2357,7 @@ files = [
 
 [[package]]
 name = "lueur"
-version = "0.22.4"
+version = "0.22.5"
 requires_python = "<4,>=3.11"
 summary = "Lueur library"
 dependencies = [
@@ -2367,8 +2367,8 @@ dependencies = [
     "python-jsonpath>=1.1.1",
 ]
 files = [
-    {file = "lueur-0.22.4-py3-none-any.whl", hash = "sha256:8e157d9b98758bf2356aa3026847202455968342cbcbc74bc92d797026941820"},
-    {file = "lueur-0.22.4.tar.gz", hash = "sha256:3ec4aba12c29c727dd91fd0f739349ed440ab0735452bf28ab5c3ce97a6a1957"},
+    {file = "lueur-0.22.5-py3-none-any.whl", hash = "sha256:d97fd335aa7ef0ac393e781ca54075a78674d97de2452bc5fd32adf649e86358"},
+    {file = "lueur-0.22.5.tar.gz", hash = "sha256:142d8401beda736aee9d24e0b450bb2a28097c19948b1293d92c6ea52facaf3d"},
 ]
 
 [[package]]
