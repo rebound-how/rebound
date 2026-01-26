@@ -61,15 +61,30 @@ async def generate_snapshot(environment: Environment) -> list[Discovery] | None:
 
     tasks: list[asyncio.Task] = []
 
+    include = [
+        "addresses",
+        "gke",
+        "cloudrun",
+        "lb",
+        "forwardingrules",
+        "health_checks",
+        "target_proxies",
+        "dns",
+        "vpc",
+        "monitoring",
+    ]
+
     async with asyncio.TaskGroup() as tg:
         if project_id:
             logger.debug(f"Using GCP project {project_id}")
-            tasks.append(tg.create_task(explore(project_id, creds=credentials)))
+            tasks.append(tg.create_task(explore(
+                project_id, creds=credentials, include=include)))
 
         if region:
             logger.debug(f"Using GCP region {region}")
             tasks.append(
-                tg.create_task(explore(project_id, region, creds=credentials))
+                tg.create_task(explore(
+                    project_id, region, creds=credentials, include=include))
             )
 
     discos = []
