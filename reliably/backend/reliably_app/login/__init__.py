@@ -23,7 +23,7 @@ def register_oauth_providers(settings: Settings) -> None:
             overwrite=True,
             client_id=settings.OAUTH_GITHUB_CLIENT_ID,
             client_secret=settings.OAUTH_GITHUB_CLIENT_SECRET.get_secret_value(),  # type: ignore  # noqa
-            **GitHub.OAUTH_CONFIG,  # type: ignore
+            **GitHub.OAUTH_CONFIG,
         )
         OAUTH_PROVIDERS.append("github")
 
@@ -33,7 +33,7 @@ def register_oauth_providers(settings: Settings) -> None:
             overwrite=True,
             client_id=settings.OAUTH_GOOGLE_CLIENT_ID,
             client_secret=settings.OAUTH_GOOGLE_CLIENT_SECRET.get_secret_value(),  # type: ignore  # noqa
-            **Google.OAUTH_CONFIG,  # type: ignore
+            **Google.OAUTH_CONFIG,
         )
         OAUTH_PROVIDERS.append("google")
 
@@ -48,7 +48,7 @@ def register_oauth_providers(settings: Settings) -> None:
             server_metadata_url=f"{okta_base_url}/oauth2/default/.well-known/oauth-authorization-server",  # noqa
             access_token_url=f"{okta_base_url}/oauth2/default/v1/token",
             authorize_url=f"{okta_base_url}/oauth2/default/v1/authorize",
-            **Okta.OAUTH_CONFIG,  # type: ignore
+            **Okta.OAUTH_CONFIG,
         )
         OAUTH_PROVIDERS.append("okta")
 

@@ -116,7 +116,7 @@ def run_sync_migrations_online(connectable: Engine | None) -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-    connectable: Engine | AsyncEngine = config.attributes.get(
+    connectable: Engine | AsyncEngine = config.attributes.get(  # type: ignore
         "connection", None
     )
 

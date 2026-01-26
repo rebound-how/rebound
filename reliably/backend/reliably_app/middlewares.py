@@ -18,27 +18,27 @@ def configure_middlewares(app: FastAPI, settings: Settings) -> None:
 
 def configure_sec(app: FastAPI, settings: Settings) -> None:
     app.add_middleware(
-        Secweb.CacheControl.CacheControlMiddleware.CacheControl,
+        Secweb.CacheControl.CacheControlMiddleware.CacheControl,  # type: ignore
         Option={
             "s-maxage": 3600,
             "must-revalidate": True,
             "no-transform": True,
         },
     )
-    app.add_middleware(Secweb.XContentTypeOptions.XContentTypeOptions)
-    app.add_middleware(Secweb.StrictTransportSecurity.HSTS)
-    app.add_middleware(Secweb.OriginAgentCluster.OriginAgentCluster)
+    app.add_middleware(Secweb.XContentTypeOptions.XContentTypeOptions)  # type: ignore
+    app.add_middleware(Secweb.StrictTransportSecurity.HSTS)  # type: ignore
+    app.add_middleware(Secweb.OriginAgentCluster.OriginAgentCluster)  # type: ignore
     app.add_middleware(
-        Secweb.XFrameOptions.XFrame,
+        Secweb.XFrameOptions.XFrame,  # type: ignore
         Option="SAMEORIGIN",
     )
-    app.add_middleware(Secweb.xXSSProtection.xXSSProtection)
+    app.add_middleware(Secweb.xXSSProtection.xXSSProtection)  # type: ignore
     app.add_middleware(
-        Secweb.ReferrerPolicy.ReferrerPolicy,
+        Secweb.ReferrerPolicy.ReferrerPolicy,  # type: ignore
         Option=["no-referrer-when-downgrade"],
     )
     app.add_middleware(
-        Secweb.ContentSecurityPolicy.ContentSecurityPolicyMiddleware.ContentSecurityPolicy,  # noqa
+        Secweb.ContentSecurityPolicy.ContentSecurityPolicyMiddleware.ContentSecurityPolicy,    # type: ignore # noqa
         Option={
             "default-src": ["'self'"],
             "script-src": [

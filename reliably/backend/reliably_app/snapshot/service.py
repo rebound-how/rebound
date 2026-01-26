@@ -253,7 +253,7 @@ async def get_data(
         elif isinstance(c, dict):
             converted_candidates = []
             for c in candidates:
-                converted_candidates.extend([f"{k}={v}" for k, v in c.items()])
+                converted_candidates.extend([f"{k}={v}" for k, v in c.items()])  # type: ignore
             candidates = sorted(set(converted_candidates))
 
     return {

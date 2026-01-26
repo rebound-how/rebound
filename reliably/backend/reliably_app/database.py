@@ -29,7 +29,7 @@ __all__ = [
 ]
 
 
-SessionLocal = sessionmaker(
+SessionLocal = sessionmaker(  # type: ignore
     autocommit=False,
     autoflush=False,
     expire_on_commit=False,

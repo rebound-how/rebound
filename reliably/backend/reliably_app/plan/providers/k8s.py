@@ -730,7 +730,7 @@ async def supervise_job(
 
             j = job.status.active[0]
             job = get_k8s_job(k8s_client, j.name, j.namespace, False)
-            status = job.status
+            status = job.status  # type: ignore
         else:
             status = job.status
 

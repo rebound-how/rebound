@@ -182,16 +182,16 @@ def dump_to_dict(dep: Deployment | DeploymentCreate) -> Dict[str, Any]:
 
     match dep.definition.type:
         case "k8s_job":
-            if dep.definition.credentials:  # type: ignore
-                c = dep.definition.credentials.get_secret_value()  # type: ignore  # noqa
+            if dep.definition.credentials:
+                c = dep.definition.credentials.get_secret_value()
                 dump["definition"]["credentials"] = base64.b64encode(
                     encrypt(c, settings)  # type: ignore
                 ).decode("utf-8")
             else:
                 dump["definition"]["credentials"] = None
         case "github":
-            if dep.definition.token:  # type: ignore
-                c = dep.definition.token.get_secret_value()  # type: ignore
+            if dep.definition.token:
+                c = dep.definition.token.get_secret_value()
                 dump["definition"]["token"] = base64.b64encode(
                     encrypt(c, settings)  # type: ignore
                 ).decode("utf-8")
