@@ -4,6 +4,15 @@
 
 [Unreleased]: https://github.com/reliablyhq/cli/compare/0.28.1...HEAD
 
+## [0.29.0][]
+
+[0.29.0]: https://github.com/reliablyhq/cli/compare/0.28.1...0.29.0
+
+### Changed
+
+* Bump dependencies
+* Requires Python 3.12
+
 ## [0.28.1][]
 
 [0.28.1]: https://github.com/reliablyhq/cli/compare/0.28.0...0.28.1
