@@ -11,7 +11,7 @@ on:
 jobs:
   publish-cli:
     name: Publish wheels
-    environment: release
+    environment: release-cli
     permissions:
       id-token: write
     runs-on: "ubuntu-24.04"
