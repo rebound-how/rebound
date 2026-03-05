@@ -1,0 +1,32 @@
+name: Reliably CLI Release
+
+on:
+  push:
+    branches:
+      - release-reliably-cli
+    paths: 
+      - 'reliably/cli/**'
+      - '.github/workflows/release-reliably-cli.yaml'
+
+jobs:
+  publish-cli:
+    name: Publish wheels
+    environment: release
+    permissions:
+      id-token: write
+    runs-on: "ubuntu-24.04"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: "3.12"
+      - name: Build wheels
+        working-directory: ./reliably/cli
+        run: pdm build --no-sdist
+        env:
+          PDM_BUILD_SCM_VERSION: 0.29.0
+      - name: Publish wheels
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: ./reliably/cli/dist
