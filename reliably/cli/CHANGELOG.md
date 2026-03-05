@@ -12,6 +12,7 @@
 
 * Bump dependencies
 * Requires Python 3.12
+* Bump base container image to Ubuntu 25.10
 
 ## [0.28.1][]
 
