@@ -39,7 +39,7 @@ dependencies = [
     "awscli>=1.29.78",
     "chaostoolkit-google-cloud-platform>=0.17.1",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 readme = "README.md"
 license = {text = "Apache-2.0"}
 
