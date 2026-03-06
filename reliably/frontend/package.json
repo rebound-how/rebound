@@ -52,6 +52,7 @@
     "lodash-es": "^4.17.21",
     "marked": "^4.3.0",
     "nanostores": "^0.11.3",
+    "node-fetch": "^3.3.2",
     "shiki": "^2.1.0",
     "tsm": "^2.2.2",
     "v-code-diff": "^1.13.1",
