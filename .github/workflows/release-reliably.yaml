@@ -4,10 +4,10 @@ on:
   push:
     branches:
       - release-reliably
-    paths: 
-      - 'reliably/backend/**'
-      - 'reliably/frontend/**'
-      - '.github/workflows/release-reliably.yaml'
+    paths:
+      - "reliably/backend/**"
+      - "reliably/frontend/**"
+      - ".github/workflows/release-reliably.yaml"
 
 jobs:
   build:
@@ -33,7 +33,7 @@ jobs:
           python-version: "3.13"
           cache: true
           prerelease: true
-          cache-dependency-path: 'reliably/backend/pdm.lock'
+          cache-dependency-path: "reliably/backend/pdm.lock"
 
       - name: Install dependencies
         working-directory: ./reliably/backend
@@ -60,7 +60,7 @@ jobs:
           cp -r ../frontend/dist/* reliably_app/www
           pdm build
         env:
-          PDM_BUILD_SCM_VERSION: 0.6.0
+          PDM_BUILD_SCM_VERSION: 0.6.1
 
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

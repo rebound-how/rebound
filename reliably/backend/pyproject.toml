@@ -75,7 +75,7 @@ Homepage = "https://reliably.com/"
 Documentation = "https://reliably.com/docs/"
 Source = "https://github.com/rebound-how/reliably"
 
-[dependency-groups]
+[project.optional-dependencies]
 gcp = [
     "google-crc32c>=1.5.0",
     "opentelemetry-exporter-gcp-trace>=1.4.0",
@@ -119,6 +119,8 @@ full = [
     "slack-sdk>=3.34.0",
     "chaostoolkit-fault>=0.1.1",
 ]
+
+[dependency-groups]
 dev = [
     "asgi-lifespan==2.*",
     "bandit>=1.7.4",
