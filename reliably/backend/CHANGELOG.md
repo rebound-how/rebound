@@ -17,6 +17,8 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   included in built wheel/sdist metadata (by spec), which caused installers to
   warn that the extras did not exist.
 
+- Build with Python 3.14
+
 ---
 
 ## [0.6.0] - prior release

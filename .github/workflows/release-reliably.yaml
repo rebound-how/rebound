@@ -30,7 +30,7 @@ jobs:
       - name: Set up PDM
         uses: pdm-project/setup-pdm@v4
         with:
-          python-version: "3.13"
+          python-version: "3.14"
           cache: true
           prerelease: true
           cache-dependency-path: "reliably/backend/pdm.lock"
